@@ -56,6 +56,20 @@ def _check_caption_editorial(caption: str) -> list[str]:
     return errors
 
 
+def _check_alt_editorial(alt: str) -> list[str]:
+    """Check alt text against editorial rules and minimum length."""
+    errors = []
+    if len(alt.strip()) < 10:
+        errors.append("mô tả tiếp cận ảnh (image_alt) quá ngắn (<10 ký tự) (R45.1)")
+    if RE_OLD_ADMIN.search(alt):
+        errors.append("mô tả tiếp cận ảnh chứa tên cấp huyện/thị cũ (R45.1)")
+    if RE_FILLERS.search(alt):
+        errors.append("mô tả tiếp cận ảnh chứa từ ngữ filler sáo rỗng (R45.1)")
+    if RE_OLD_PROVINCES.search(alt):
+        errors.append("mô tả tiếp cận ảnh dùng tỉnh cũ ngoài quy chuẩn (R45.1)")
+    return errors
+
+
 class ImageHygieneCheck:
     name, level, rule = "image_hygiene", "hard", "R45.1"
 
@@ -94,6 +108,12 @@ class ImageHygieneCheck:
             caption = attrs.get("image_caption", "")
             if caption:
                 for err in _check_caption_editorial(caption):
+                    violations.append({"file": DATA_REL, "line": 0, "rule": self.rule,
+                                       "msg": f"{eid}: {err}"})
+
+            alt = attrs.get("image_alt", "")
+            if alt:
+                for err in _check_alt_editorial(alt):
                     violations.append({"file": DATA_REL, "line": 0, "rule": self.rule,
                                        "msg": f"{eid}: {err}"})
 

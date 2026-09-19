@@ -1,0 +1,130 @@
+{
+  "updated_count": 25,
+  "enriched": [
+    {
+      "id": "chua-tuyen-linh-mo-cay-bac",
+      "name": "Chùa Tuyên Linh (Tuyên Linh Cổ Tự)",
+      "status": "enriched"
+    },
+    {
+      "id": "chua-vam-ray-chua-phat-nam",
+      "name": "Chùa Vàm Ray (Chùa Phật Nằm)",
+      "status": "enriched"
+    },
+    {
+      "id": "dinh-trung-my",
+      "name": "Đình Trung Mỹ",
+      "status": "enriched"
+    },
+    {
+      "id": "di-tich-cay-da-doi",
+      "name": "Di tích Cây Da Đôi",
+      "status": "enriched"
+    },
+    {
+      "id": "di-tich-khao-co-luu-cu-ii",
+      "name": "Di tích khảo cổ Lưu Cừ II",
+      "status": "enriched"
+    },
+    {
+      "id": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
+      "name": "Đường Hồ Chí Minh trên biển - Bến xuất phát Thạnh Phong",
+      "status": "enriched"
+    },
+    {
+      "id": "chua-krapoumchhouk-chral-chua-cha",
+      "name": "Chùa Krapoumchhouk Chral (Chùa Chà)",
+      "status": "enriched"
+    },
+    {
+      "id": "dinh-loc-thuan",
+      "name": "Đình Lộc Thuận",
+      "status": "enriched"
+    },
+    {
+      "id": "khu-luu-niem-nguyen-thi-dinh",
+      "name": "Khu lưu niệm Nguyễn Thị Định",
+      "status": "enriched"
+    },
+    {
+      "id": "mo-va-khu-luu-niem-vo-truong-toan",
+      "name": "Mộ và Khu lưu niệm Võ Trường Toản",
+      "status": "enriched"
+    },
+    {
+      "id": "nha-tho-la-ma-den-duc-me-hang-cuu-giup-la-ma",
+      "name": "Nhà thờ La Mã (Đền Đức Mẹ Hằng Cứu Giúp La Mã)",
+      "status": "enriched"
+    },
+    {
+      "id": "san-chim-chua-phat-lon-tra-vinh",
+      "name": "Sân chim Trà Vinh (Chùa Phật Lớn)",
+      "status": "enriched"
+    },
+    {
+      "id": "nha-tho-mac-bac-tieu-can",
+      "name": "Nhà thờ Mặc Bắc Tiểu Cần",
+      "status": "enriched"
+    },
+    {
+      "id": "chua-van-phuoc-binh-dai",
+      "name": "Chùa Vạn Phước Bình Đại",
+      "status": "enriched"
+    },
+    {
+      "id": "nha-tho-chanh-toa-tra-vinh-tra-vinh",
+      "name": "Nhà thờ Chánh tòa Trà Vinh (Nhà thờ Mẹ Vô Nhiễm)",
+      "status": "enriched"
+    },
+    {
+      "id": "lang-ong-lang-ong-che-nguyen-van-ton",
+      "name": "Lăng Ông (Lăng Ông Chế - Nguyễn Văn Tồn)",
+      "status": "enriched"
+    },
+    {
+      "id": "khu-mo-than-nhan-danh-than-thoai-ngoc-hau",
+      "name": "Khu mộ thân nhân danh thần Thoại Ngọc Hầu",
+      "status": "enriched"
+    },
+    {
+      "id": "chua-shanghamangala-khmer-vung-liem",
+      "name": "Chùa Hạnh Phúc Tăng (Sanghamangala)",
+      "status": "enriched"
+    },
+    {
+      "id": "dinh-tan-hoa",
+      "name": "Đình Tân Hòa",
+      "status": "enriched"
+    },
+    {
+      "id": "chua-co-nodol",
+      "name": "Chùa Cò (Nodol)",
+      "status": "enriched"
+    },
+    {
+      "id": "chua-samrong-ek",
+      "name": "Chùa Samrông Ek",
+      "status": "enriched"
+    },
+    {
+      "id": "den-tho-bac-ho-tra-vinh",
+      "name": "Đền thờ Bác Hồ Trà Vinh",
+      "status": "enriched"
+    },
+    {
+      "id": "chua-ky-son-khmer-loan-my",
+      "name": "Chùa Kỳ Sơn Khmer Loan Mỹ",
+      "status": "enriched"
+    },
+    {
+      "id": "khu-di-tich-luu-niem-chu-tich-pham-hung",
+      "name": "Khu di tích lưu niệm Chủ tịch Phạm Hùng",
+      "status": "enriched"
+    },
+    {
+      "id": "chua-ba-thien-hau-tra-vinh",
+      "name": "Thiên Hậu Cung (Chùa Bà Thiên Hậu Trà Vinh)",
+      "status": "enriched"
+    }
+  ]
+}

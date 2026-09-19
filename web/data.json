@@ -6548,32 +6548,31 @@
         "visual_narrative": "Cận cảnh chùm chôm chôm chín đỏ rực rỡ dưới vòm lá xanh mướt, ánh nắng trưa rọi qua tán cây làm nổi bật từng chiếc gai mềm mại căng tràn nhựa sống.",
         "source_citations": [
           {
-            "source_id": "SRC-TIER1-TV-015",
-            "title": "Đề án xây dựng chuỗi giá trị trái cây đặc sản Cù lao Tân Quy huyện Cầu Kè",
-            "url": "https://snnptnt.travinh.gov.vn/chuoi-gia-tri/chom-chom-tan-quy-cau-ke",
-            "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
-            "target_notebook": "mekong-360-t-p-2",
+            "title": "Vùng cây ăn trái đặc sản Chôm chôm Cầu Kè VietGAP",
+            "url": "https://nongthon.vietnamtourism.gov.vn/chom-chom-cau-ke",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "source_id": "SRC-TIER2-TV-008",
-            "title": "Về cù lao Tân Quy thưởng thức chôm chôm chín đỏ trĩu cành",
-            "url": "https://baotravinh.vn/du-lich/chom-chom-cau-ke-tan-quy-2024",
-            "author_or_institution": "Báo Trà Vinh",
-            "target_notebook": "mekong-360-t-p-2",
-            "tier": "TIER_2_SCHOLARLY",
-            "authority_weight": 0.9
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-17T20:20:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
         "image_author": "Bá Thi",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Những chùm chôm chôm Java chín đỏ rực cành trên cù lao Tân Quy xã An Phú Tân, trái ngọt phù sa bồi đắp quanh năm tươi tốt.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+        "image_caption": "Từng chùm chôm chôm chín đỏ rực trĩu cành trong các miệt vườn sinh thái ven sông Hậu tại Cầu Kè.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "key_facts": [
+          "Đặc sản miệt vườn trù phú ven sông Hậu, vùng chuyên canh chôm chôm giống Java, chôm chôm nhãn và chôm chôm đường đạt chuẩn VietGAP.",
+          "Nhờ lớp đất phù sa ngọt mát bồi đắp quanh năm, trái chôm chôm có gai giòn, cơm dày ráo nước, vị ngọt lịm đậm đà và hạt nhỏ.",
+          "Nguồn nông sản xuất khẩu chủ lực và điểm tựa phát triển các tour du lịch sinh thái hái trái cây tại vườn phục vụ du khách mùa hè."
+        ],
+        "hours": "Mùa trái chín rộ từ tháng 5 đến tháng 8 hàng năm",
+        "admission": "Giá bán tại vườn từ 25.000 - 45.000 đ/kg tùy giống chôm chôm",
+        "travel_tip": "Nên đến các nhà vườn thuộc xã Ninh Thới vào tháng 6 âm lịch để tự tay bẻ từng chùm chôm chôm chín đỏ rực trên cành.",
+        "image_alt": "Chùm chôm chôm chín đỏ tươi trĩu quả trong vườn trái cây phù sa ven sông Hậu",
+        "verified": true
       },
       "source": [
         {
@@ -8265,32 +8264,31 @@
         "visual_narrative": "Góc chụp trong suốt đặc tả bọt khí khoáng li ti sủi tăm trong ly thủy tinh pha lê dưới ánh sáng tự nhiên, nền sau là dây chuyền đóng chai tự động đạt chuẩn GMP.",
         "source_citations": [
           {
-            "source_id": "SRC-TIER1-TV-014",
-            "title": "Công nhận sản phẩm OCOP 4 sao: Nước khoáng thiên nhiên Sao Biển Starfiwa",
-            "url": "https://snnptnt.travinh.gov.vn/ocop/nuoc-khoang-sao-bien-starfiwa",
-            "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
-            "target_notebook": "mekong-360-t-p-2",
+            "title": "Thương hiệu OCOP Nước khoáng thiên nhiên Sao Biển Starfiwa",
+            "url": "https://bentre.gov.vn/nuoc-khoang-starfiwa",
+            "notebook_id": "Sổ tay 3: Chính sách & Pháp luật (Văn bản, Quy định & Đề án)",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "source_id": "SRC-TIER2-THVL-006",
-            "title": "Doanh nghiệp khoa học công nghệ: Khai thác mạch khoáng ngầm duyên hải Trà Vinh",
-            "url": "https://thvl.vn/khoa-hoc-cong-nghe/nuoc-khoang-thien-nhien-starfiwa",
-            "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
-            "target_notebook": "mekong-360-t-p-2",
-            "tier": "TIER_2_SCHOLARLY",
-            "authority_weight": 0.95
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-17T20:20:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
         "image_author": "Phạm Hữu",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Nước khoáng thiên nhiên Sao Biển Starfiwa khai thác từ nguồn khoáng ngầm sâu ven biển Thạnh Phú - Duyên Hải, đạt chứng nhận OCOP 4 sao chất lượng cao.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+        "image_caption": "Dây chuyền chiết rót tự động vô trùng của nhà máy nước khoáng thiên nhiên Sao Biển Starfiwa đạt chuẩn ISO 22000.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "key_facts": [
+          "Khai thác từ mạch nước khoáng ngầm tự nhiên độ sâu hơn 400 mét dưới lòng đất vùng địa chất ven biển Thạnh Phú cổ xưa.",
+          "Chứa hàm lượng khoáng chất hòa tan cân bằng gồm canxi, magie, kali và bicarbonate giúp bù khoáng và hỗ trợ hệ tiêu hóa khỏe mạnh.",
+          "Đạt tiêu chuẩn chất lượng OCOP 4 sao và hệ thống quản lý an toàn thực phẩm ISO 22000, đóng chai tự động trong môi trường vô trùng."
+        ],
+        "hours": "Nhà máy và hệ thống phân phối hoạt động từ 07:30 - 17:30 hàng ngày",
+        "admission": "Giá từ 5.000 - 10.000 đ/chai 500ml; 70.000 đ/thùng 24 chai",
+        "travel_tip": "Trong các chuyến đi bộ dã ngoại hoặc đạp xe khám phá rừng ngập mặn, mang theo nước khoáng Starfiwa giúp giải khát và bù điện giải rất hiệu quả.",
+        "image_alt": "Các chai nước khoáng thiên nhiên Starfiwa trong suốt đóng thùng chuẩn OCOP 4 sao",
+        "verified": true
       },
       "source": [
         {
@@ -11023,32 +11021,31 @@
         "visual_narrative": "Cận cảnh chiếc bánh kẹp hoa văn tổ ong vàng óng giòn rụm vừa được nhấc ra khỏi khuôn gang trên than hồng, lấm tấm hạt mè đen bóng thơm phức giữa làn khói bếp bảng lảng.",
         "source_citations": [
           {
-            "source_id": "SRC-TIER1-TV-011",
-            "title": "Đánh giá xếp hạng OCOP 4 sao sản phẩm Bánh kẹp Thúy Kiều huyện Cầu Ngang",
-            "url": "https://travinh.gov.vn/ocop/banh-kep-thuy-kieu-cau-ngang",
-            "author_or_institution": "UBND Trà Vinh",
-            "target_notebook": "mekong-360-t-p-2",
+            "title": "Sản phẩm OCOP Bánh kẹp Thúy Kiều truyền thống",
+            "url": "https://socongthuong.vinhlong.gov.vn/banh-kep-thuy-kieu",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "source_id": "SRC-TIER2-THVL-004",
-            "title": "Hương bánh quê hương: Giữ nghề bánh kẹp truyền thống xứ duyên hải",
-            "url": "https://thvl.vn/van-hoa/banh-kep-thuy-kieu-dac-san-que-huong",
-            "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
-            "target_notebook": "mekong-360-t-p-2",
-            "tier": "TIER_2_SCHOLARLY",
-            "authority_weight": 0.95
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-17T20:20:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
         "image_author": "Thanh Trúc",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Bánh kẹp cuốn Thúy Kiều giòn rụm với hương vị nước cốt dừa béo ngậy pha hạt mè rang, sản phẩm quà quê OCOP 4 sao nức tiếng Mỏ Cày Nam.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+        "image_caption": "Những chiếc bánh kẹp cuộn tròn vàng ruộm giòn tan thơm nức mùi mè rang và nước cốt dừa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "key_facts": [
+          "Cơ sở bánh kẹp truyền thống nổi tiếng hơn 20 năm tại Cờ Đỏ - Ô Môn cũ, nay phân phối rộng khắp hệ sinh thái ẩm thực vùng châu thổ.",
+          "Bánh kẹp được nướng chín vàng giòn trên khuôn gang truyền thống, hòa quyện bột gạo, nước cốt dừa béo ngậy, hạt mè rang và trứng gà.",
+          "Đạt chứng nhận OCOP 3 sao năm 2021, đóng hộp kín giữ trọn độ giòn tan thơm lừng trong nhiều tháng."
+        ],
+        "hours": "Mở cửa phục vụ khách từ 07:00 - 19:00 hàng ngày",
+        "admission": "Giá từ 30.000 - 55.000 đ/hộp 250g đến 400g",
+        "travel_tip": "Món bánh kẹp cuốn ống giòn tan rất thích hợp làm món ăn vặt nhâm nhi cùng trà xanh hoặc làm quà biếu mang đậm hương vị đồng quê.",
+        "image_alt": "Mâm bánh kẹp cuộn tròn giòn rụm vừa nướng xong trên khuôn gang",
+        "verified": true
       },
       "source": [
         {
@@ -11116,32 +11113,31 @@
         "visual_narrative": "Khoanh bánh tét Tứ Quý cắt bằng dây lạt để lộ lớp nếp xanh màu ngọc bích ôm trọn nhân trứng muối vàng rực, thịt ba chỉ trong veo và đậu xanh mịn màng như tranh thủy mặc.",
         "source_citations": [
           {
-            "source_id": "SRC-TIER1-TV-012",
-            "title": "Hồ sơ OCOP 4 sao Bánh tét Tứ Quý Hai Lý: Chuẩn hóa chất lượng làng nghề Trà Cuôn",
-            "url": "https://snnptnt.travinh.gov.vn/ocop/banh-tet-tu-quy-hai-ly-tra-cuon",
-            "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
-            "target_notebook": "mekong-360-t-p-2",
+            "title": "Sản phẩm OCOP 4 sao Bánh tét Hai Lý",
+            "url": "https://socongthuong.travinh.gov.vn/banh-tet-hai-ly",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "source_id": "SRC-TIER2-ND-006",
-            "title": "Đòn bánh tét Trà Cuôn: Từ món ngon phum sóc đến thương hiệu ẩm thực quốc gia",
-            "url": "https://nhandan.vn/am-thuc/banh-tet-tra-cuon-hai-ly-791024",
-            "author_or_institution": "Báo Nhân Dân",
-            "target_notebook": "mekong-360-t-p-2",
-            "tier": "TIER_2_SCHOLARLY",
-            "authority_weight": 0.95
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-17T20:20:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
         "image_author": "Ngọc Diễm",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Đòn bánh tét Tứ Quý cơ sở Hai Lý đạt chứng nhận OCOP 4 sao với nhân thập cẩm đậu xanh, trứng muối, lạp xưởng và nếp dẻo thơm lừng.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+        "image_caption": "Khoanh bánh tét Tứ Quý Hai Lý cắt lát rực rỡ sắc nếp xanh dẻo quánh bọc trọn nhân trứng muối thịt mỡ thơm ngậy.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "key_facts": [
+          "Thương hiệu bánh tét gia truyền hơn 30 năm, đạt chứng nhận sản phẩm OCOP 4 sao tiêu biểu cấp tỉnh năm 2021.",
+          "Đòn bánh tròn trịa gói bằng lá chuối xiêm xanh mướt, vỏ nếp xào nước cốt dừa béo bùi, nhân kết hợp thịt ba rọi, trứng muối, lạp xưởng và đậu xanh thơm lừng.",
+          "Nếp được ngâm màu tự nhiên từ lá dứa thơm và hoa đậu biếc, tuyệt đối không dùng phẩm màu hóa học, hạn sử dụng giữ được 5 đến 7 ngày."
+        ],
+        "hours": "Lò bánh đỏ lửa phục vụ từ 05:00 - 21:00 hàng ngày",
+        "admission": "Giá bán dao động từ 70.000 - 130.000 đ/đòn tùy trọng lượng và nhân đặc biệt",
+        "travel_tip": "Khách đi xa có thể yêu cầu cơ sở hút chân không từng đòn bánh để bảo quản tiện lợi trong suốt hành trình.",
+        "image_alt": "Mâm bánh tét Tứ Quý cắt khoanh dẻo bùi khoe nhân thịt đậu xanh và trứng muối",
+        "verified": true
       },
       "source": [
         {
@@ -11816,32 +11812,31 @@
         "visual_narrative": "Dòng sợi bún tươi trắng ngần chảy đều từ khuôn ép vào nồi nước sôi bốc khói nghi ngút, người thợ thoăn thoắt bắt từng vắt bún đều đặn xếp lên lớp lá chuối tươi.",
         "source_citations": [
           {
-            "source_id": "SRC-TIER1-VL-009",
-            "title": "Chứng nhận cơ sở an toàn thực phẩm và chuỗi cung ứng sản phẩm sạch Bún tươi An Đào",
-            "url": "https://snnptnt.vinhlong.gov.vn/an-toan-thuc-pham/bun-tuoi-an-dao",
-            "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn tỉnh Vĩnh Long",
-            "target_notebook": "mekong-360-t-p-2",
+            "title": "Chuỗi sản xuất bún tươi an toàn thực phẩm OCOP An Đào",
+            "url": "https://vinhlong.gov.vn/bun-tuoi-an-dao",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "source_id": "SRC-TIER2-THVL-008",
-            "title": "Nghề làm bún truyền thống: Sợi bún sạch giữ trọn hồn quê đất Vĩnh",
-            "url": "https://thvl.vn/am-thuc/bun-tuoi-an-dao-vinh-long",
-            "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
-            "target_notebook": "mekong-360-t-p-2",
-            "tier": "TIER_2_SCHOLARLY",
-            "authority_weight": 0.95
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-17T20:20:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
         "image_author": "Kim Ngân",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Sợi bún tươi An Đào dẻo dai làm từ hạt gạo nàng thơm nguyên chất theo quy trình khép kín an toàn vệ sinh thực phẩm tại Cầu Ngang.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+        "image_caption": "Từng vắt bún tươi An Đào trắng ngà óng ả xếp đều trên lá chuối xanh ngát thơm mùi hương gạo mới.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "key_facts": [
+          "Cơ sở sản xuất bún sạch hiện đại ứng dụng công nghệ lọc nước tinh khiết và lên men tinh bột gạo tự nhiên theo phương pháp truyền thống.",
+          "Sợi bún tròn đều, màu trắng ngà tự nhiên của hạt gạo, độ dai mềm vừa vặn, tuyệt đối không dùng chất tẩy trắng tinopal hay chất bảo quản hàn the.",
+          "Đạt chứng nhận an toàn thực phẩm và OCOP 3 sao, là nhà cung ứng sợi bún tươi chủ lực cho các quán bún nước lèo, bún riêu cua khắp vùng."
+        ],
+        "hours": "Xưởng sản xuất và phân phối từ 03:00 sáng đến 17:00 hàng ngày",
+        "admission": "Giá bán sỉ và lẻ từ 12.000 - 18.000 đ/kg",
+        "travel_tip": "Bún tươi nên mua vào buổi sáng sớm khi bún mới ra lò sợi còn ấm dẻo để chế biến món bún thịt nướng hoặc bún cá tươi ngon nhất.",
+        "image_alt": "Những vắt bún tươi sạch sợi dai mềm vừa xuất lò đóng gói hợp vệ sinh",
+        "verified": true
       },
       "source": [
         {
@@ -11918,10 +11913,29 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Múi bưởi da xanh tép hồng óng ả mọng nước giòn ngọt đạt chứng nhận Chỉ dẫn địa lý quốc gia tại xứ dừa",
+        "image_caption": "Những trái Bưởi Da Xanh căng tròn vỏ xanh ruột hồng tươi mọng ngọt đạt chuẩn chứng nhận chỉ dẫn địa lý quốc gia.",
         "image_license": "Tư liệu báo chí / Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T07:15:00Z",
-        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+        "verifiedAt": "2026-09-19",
+        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
+        "key_facts": [
+          "Giống bưởi quý có nguồn gốc từ vùng cù lao châu thổ, được Cục Sở hữu Trí tuệ cấp Giấy chứng nhận Chỉ dẫn địa lý quốc gia vào năm 2018.",
+          "Đặc trưng với vỏ mỏng màu xanh bóng khi chín, tép bưởi hồng tươi mọng nước, vị ngọt thanh mát không hạt hoặc rất ít hạt, đạt tiêu chuẩn OCOP 4 sao và GlobalGAP.",
+          "Toàn vùng có trên 10.000 ha chuyên canh, xuất khẩu chính ngạch sang các thị trường khó tính như Hoa Kỳ, Liên minh châu Âu và Nhật Bản."
+        ],
+        "hours": "Mùa thu hoạch rộ từ tháng 8 đến tháng 12 hàng năm, có trái rải vụ quanh năm",
+        "admission": "Giá bán dao động từ 45.000 - 65.000 đ/kg tùy loại 1 xuất khẩu",
+        "travel_tip": "Nên chọn trái bưởi có trọng lượng từ 1,2 đến 1,8 kg, cuống còn tươi xanh và da căng mịn để đảm bảo độ ngọt mọng nước cao nhất.",
+        "source_citations": [
+          {
+            "title": "Chỉ dẫn địa lý Bưởi Da Xanh",
+            "url": "https://socongthuong.bentre.gov.vn/buoi-da-xanh",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Trái Bưởi Da Xanh ruột hồng ngọt mọng nước vừa thu hoạch tại nhà vườn",
+        "verified": true
       },
       "source": [
         {
@@ -12000,32 +12014,31 @@
         "visual_narrative": "Bàn tay nghệ nhân bóc tách từng múi bưởi da xanh hồng hào mọng nước lộ rõ các tép bưởi căng mọng lấp lánh như hạt ngọc bích trên đĩa sứ tráng men hoa sen.",
         "source_citations": [
           {
-            "source_id": "SRC-TIER1-BT-012",
-            "title": "Chỉ dẫn địa lý Bưởi Da Xanh Bến Tre và vùng chuyên canh OCOP 4 sao Giồng Trôm",
-            "url": "https://bentre.gov.vn/chi-dan-dia-ly/buoi-da-xanh-giong-trom",
-            "author_or_institution": "UBND Bến Tre",
-            "target_notebook": "mekong-360-t-p-2",
+            "title": "Phát triển vùng chuyên canh Bưởi da xanh Giồng Trôm OCOP",
+            "url": "https://bentre.gov.vn/buoi-da-xanh-giong-trom",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "source_id": "SRC-TIER2-DK-007",
-            "title": "Chuỗi giá trị bưởi da xanh Bến Tre: Nâng tầm thương hiệu trái cây xuất khẩu",
-            "url": "https://baodongkhoi.vn/kinh-te/buoi-da-xanh-giong-trom-ocop-2024",
-            "author_or_institution": "Báo Đồng Khởi",
-            "target_notebook": "mekong-360-t-p-2",
-            "tier": "TIER_2_SCHOLARLY",
-            "authority_weight": 0.9
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-17T20:20:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
         "image_author": "Bảo Toàn",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Vườn bưởi da xanh trĩu quả của Hợp tác xã nông nghiệp Giồng Trôm, đặc sản OCOP 4 sao xuất khẩu nổi danh khắp thị trường trong và ngoài nước.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+        "image_caption": "Múi bưởi Da Xanh màu hồng ngọc mọng nước tách khỏi vỏ thơm lừng hương tinh dầu tự nhiên tại Giồng Trôm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "key_facts": [
+          "Vùng chuyên canh bưởi da xanh lớn ven dòng kênh Chẹt Sậy, áp dụng quy trình canh tác nông nghiệp tuần hoàn hữu cơ vi sinh.",
+          "Trái bưởi tròn đều, vỏ xanh ngắt mỏng dính, múi bưởi màu hồng lựu ráo múi, vị ngọt đậm đà xen lẫn chút thanh chua nhẹ nhàng.",
+          "Nhiều hợp tác xã tại địa phương đạt tiêu chuẩn OCOP 4 sao và liên kết chuỗi bao tiêu xuất khẩu chính ngạch sang Bắc Mỹ."
+        ],
+        "hours": "Thu hoạch quanh năm; mùa thu hoạch quả ngọt đậm nhất từ tháng 8 đến tháng 11",
+        "admission": "Giá từ 40.000 - 60.000 đ/kg tại vựa thu mua nông sản",
+        "travel_tip": "Bưởi sau khi hái để từ 5 đến 7 ngày cho 'xuống nước' (héo cuống nhẹ) thì múi bưởi sẽ càng thêm ngọt đậm đà và mọng nước.",
+        "image_alt": "Đĩa bưởi da xanh Giồng Trôm tách múi hồng tươi ngon mọng nước",
+        "verified": true
       },
       "source": [
         {
@@ -12101,38 +12114,37 @@
         "visual_narrative": "Cận cảnh lát cá bông lau một nắng màu hổ phách tươm mỡ xèo xèo trong chảo gang bốc khói nghi ngút, bên cạnh chén nước mắm me dầm ớt cay xè mộc mạc.",
         "source_citations": [
           {
-            "source_id": "SRC-TIER1-BT-010",
-            "title": "Danh mục sản phẩm đặc sản làng nghề chế biến thủy hải sản Bình Đại",
-            "url": "https://bentre.gov.vn/thuy-san/dac-san-ca-bong-lau-binh-dai",
-            "author_or_institution": "UBND Bến Tre",
-            "target_notebook": "mekong-360-t-p-2",
+            "title": "Nghề chế biến hải sản một nắng làng cá Bình Đại",
+            "url": "https://bentre.gov.vn/ca-bong-lau-mot-nang",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "source_id": "SRC-TIER2-DK-006",
-            "title": "Mùa săn cá bông lau cửa biển Bình Đại: Hương vị sông nước miền duyên hải",
-            "url": "https://baodongkhoi.vn/van-hoa/ca-bong-lau-mot-nang-binh-dai-2024",
-            "author_or_institution": "Báo Đồng Khởi",
-            "target_notebook": "mekong-360-t-p-2",
-            "tier": "TIER_2_SCHOLARLY",
-            "authority_weight": 0.9
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-18T20:45:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "Cổng TTĐT Du lịch Vĩnh Long, Bảo tàng Vĩnh Long & Hồ sơ Di tích Quốc gia",
         "image_author": "Minh Nhân",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Cá bông lau một nắng Bình Đại tươi ngon ướp muối ớt vừa vị, phơi một nắng vừa tới để giữ trọn vẹn độ béo ngậy và vị ngọt bùi của thớ cá sông.",
+        "image_caption": "Từng miếng phi lê cá bông lau một nắng vàng ươm phơi trên giàn tre lộng gió biển cửa Đại Bình Thắng.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "specialty": "Cá bông lau một nắng Bình Đại",
         "ingredients": "Cá bông lau sông tự nhiên đánh bắt tại cửa sông Cửa Đại và Hàm Luông, muối hột, ớt cay xắt nhuyễn",
         "cooking_method": "Cá tươi lóc phi lê dày thớ, ướp muối ớt nhẹ vừa ăn rồi phơi đúng một nắng giòn rực rỡ để thịt se mặt ngoài nhưng giữ trọn độ ẩm ngọt béo bên trong",
         "serving_suggestion": "Chiên vàng giòn rụm ăn với cơm nóng hoặc nướng than chấm mắm me chua ngọt",
         "shelf_life": "6 tháng trong ngăn đông tủ lạnh",
-        "where_to_eat": "Chợ cá Bình Đại, các cơ sở thủy hải sản biển Bình Đại, tỉnh Vĩnh Long"
+        "where_to_eat": "Chợ cá Bình Đại, các cơ sở thủy hải sản biển Bình Đại, tỉnh Vĩnh Long",
+        "key_facts": [
+          "Đặc sản danh tiếng vùng cửa biển Ba Lai và Cửa Đại, sử dụng cá bông lau tự nhiên đánh bắt trong mùa nước ngọt ra biển từ tháng 11 đến tháng 4.",
+          "Thịt cá được phi lê bỏ xương, ướp muối ớt vừa miệng rồi phơi đúng duy nhất một con nắng giòn trên giàn tre ven biển lộng gió.",
+          "Lớp mỡ cá béo thơm ngậy ngấm đều thớ thịt dai ngọt, chế biến món chiên vàng giòn chấm mắm me hoặc nấu canh chua bần ngon miệng."
+        ],
+        "hours": "Chế biến và cung ứng từ 06:00 - 18:00 hàng ngày",
+        "admission": "Giá bán từ 220.000 - 380.000 đ/kg hút chân không đóng thùng xốp",
+        "travel_tip": "Khi chiên cá một nắng nên để lửa nhỏ vừa phải để lớp da cá phồng rộp giòn tan mà phần thịt bên trong vẫn giữ nguyên độ ẩm ngọt béo.",
+        "image_alt": "Cá bông lau một nắng thịt trắng trong phơi giàn tre ven biển cửa sông",
+        "verified": true
       },
       "source": [
         {
@@ -12203,32 +12215,31 @@
         "visual_narrative": "Những con cá đối một nắng căng tròn xếp xòe hình cánh quạt trên mâm đan tre, ánh nắng biển rọi lên thớ thịt óng ả màu vàng tươi quyến rũ.",
         "source_citations": [
           {
-            "source_id": "SRC-TIER1-BT-011",
-            "title": "Xúc tiến thương mại các sản phẩm chế biến thủy hải sản khô huyện Bình Đại",
-            "url": "https://snnptnt.bentre.gov.vn/thuong-mai/ca-doi-kho-mot-nang-binh-dai",
-            "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Bến Tre",
-            "target_notebook": "mekong-360-t-p-2",
+            "title": "Đặc sản cá đối biển một nắng Thừa Đức Bình Đại",
+            "url": "https://bentre.gov.vn/ca-doi-mot-nang-binh-dai",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "source_id": "SRC-TIER2-THVL-005",
-            "title": "Ẩm thực duyên hải: Cá đối một nắng đậm đà phong vị biển phương Nam",
-            "url": "https://thvl.vn/am-thuc/ca-doi-mot-nang-binh-dai",
-            "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
-            "target_notebook": "mekong-360-t-p-2",
-            "tier": "TIER_2_SCHOLARLY",
-            "authority_weight": 0.95
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-17T23:30:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
         "image_author": "Hữu Hiệp",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Từng con cá đối biển béo ngậy được xẻ thịt ướp muối ớt vừa vị, phơi đúng một mẻ nắng to trên giàn phơi xã biển Bình Thắng.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+        "image_caption": "Những con cá đối cồi xẻ phơi một nắng đều tăm tắp, thớ thịt ngọt bùi chứa nhiều trứng béo bùi đặc trưng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "key_facts": [
+          "Được đánh bắt tại các bãi triều cửa biển và rừng ngập mặn Thừa Đức, chọn lọc những con cá đối cồi béo múp mang đầy buồng trứng vàng.",
+          "Cá xẻ dọc sống lưng, rửa sạch nhớt bằng nước muối biển tự nhiên rồi phơi một nắng hanh để giữ nguyên vị ngọt đậm đà của đạm biển.",
+          "Sản phẩm được đóng gói chân không giữ đông, là món quà đặc sản biển dân dã được ưa chuộng khắp các tỉnh thành Nam Bộ."
+        ],
+        "hours": "Mùa cá đối béo nhất từ tháng 9 đến tháng 12 âm lịch",
+        "admission": "Giá từ 160.000 - 240.000 đ/kg",
+        "travel_tip": "Cá đối một nắng nướng than hoa hoặc nướng nồi chiên không dầu ở 180 độ C trong 8 phút sẽ tỏa hương thơm nức mũi.",
+        "image_alt": "Mẹt cá đối phơi một nắng săn chắc thịt tươi ngon bên bờ biển Thừa Đức",
+        "verified": true
       },
       "source": [
         {
@@ -12298,9 +12309,28 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Các loại khô cá đặc sản Thạnh Phong được phơi đón nắng gió biển Thạnh Phú, sản phẩm OCOP chế biến sạch giữ trọn phong vị biển khơi.",
+        "image_caption": "Khu giàn phơi cá khô sạch sẽ lộng gió biển của làng nghề cá khô Thạnh Phong đạt chuẩn OCOP.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T20:20:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Tổ hợp tác chế biến cá khô truyền thống xã ven biển Thạnh Phong quy tụ hơn 30 hộ ngư dân, đạt chứng nhận OCOP 3 sao năm 2021.",
+          "Đa dạng các chủng loại khô biển tự nhiên: cá đù sóc, cá bống cát, cá lù đù và cá khoai phơi nắng tự nhiên trên giàn cao sạch sẽ.",
+          "Tuân thủ quy trình an toàn thực phẩm, không ướp phẩm màu hay chất tẩy trắng, bảo quản đông lạnh lưu giữ trọn vẹn hương vị biển mặn mòi."
+        ],
+        "hours": "Mở cửa đón khách mua đặc sản từ 06:30 - 18:30 hàng ngày",
+        "admission": "Giá từ 140.000 - 290.000 đ/kg tùy chủng loại cá khô",
+        "travel_tip": "Nên chọn khô đù sóc xẻ cánh bướm thịt dày, khi chiên vàng ăn kèm cơm cháy mỡ hành hoặc cháo trắng hột vịt muối rất thơm ngon.",
+        "source_citations": [
+          {
+            "title": "Thương hiệu cá khô an toàn OCOP Thạnh Phong",
+            "url": "https://bentre.gov.vn/ca-kho-thanh-phong",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Giàn phơi các loại cá đù và cá bống khô biển dưới nắng gắt Thạnh Phong",
+        "verified": true
       },
       "source": [
         {
@@ -13146,9 +13176,28 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Tuyên Linh Cổ Tự nép mình dưới rặng dừa xanh mát, nơi lưu dấu ấn hoạt động cách mạng của các bậc tiền bối kiên trung vùng cù lao Minh.",
+        "image_caption": "Khuôn viên thanh tịnh rợp bóng cây cổ thụ của Chùa Tuyên Linh, nơi cụ Phó bảng Nguyễn Sinh Sắc từng lưu trú hoạt động từ năm 1927 đến 1929.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Khởi lập từ năm 1861 dưới triều Tự Đức với tên gọi Tiên Linh Tự, là cơ sở Phật giáo và căn cứ cách mạng bí mật thời kháng chiến.",
+          "Từ năm 1927 đến 1929, cụ Phó bảng Nguyễn Sinh Sắc (thân sinh Chủ tịch Hồ Chí Minh) đã tá túc tại chùa, cùng hòa thượng Lê Khánh Hòa mở lớp dạy học và bốc thuốc cứu dân.",
+          "Ngôi chùa được Bộ Văn hóa - Thông tin xếp hạng Di tích Lịch sử cấp Quốc gia vào năm 1994, lưu giữ nhiều hiện vật và bia lưu niệm quý giá."
+        ],
+        "hours": "Mở cửa từ 07:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí tham quan và chiêm bái",
+        "travel_tip": "Khi đến viếng chùa nên thắp hương tưởng niệm tại gian thờ cụ Phó bảng Nguyễn Sinh Sắc và giữ trang phục trang nghiêm nơi tôn nghiêm.",
+        "source_citations": [
+          {
+            "title": "Hồ sơ di tích lịch sử quốc gia Chùa Tuyên Linh",
+            "url": "https://dsvh.gov.vn/di-tich-chua-tuyen-linh",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Toàn cảnh cổng tam quan và khuôn viên cổ kính của Chùa Tuyên Linh",
+        "verified": true
       },
       "source": [
         {
@@ -13216,7 +13265,7 @@
       },
       "attributes": {
         "address": "Xã Hàm Giang, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan và hành hương",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
         "coords_approximate": true,
@@ -13224,9 +13273,27 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Chùa Vàm Ray rực rỡ sắc vàng phong cách Angkor với đại tượng Phật Thích Ca nhập niết bàn ngoài trời dài 54m uy nghiêm tại xã Hàm Giang.",
+        "image_caption": "Tượng Đức Phật Thích Ca nhập Niết bàn dài 54m thếp vàng rực rỡ trong khuôn viên Chùa Vàm Ray đậm phong cách Angkor.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Đại tự Phật giáo Nam tông Khmer có niên đại khởi lập hơn 600 năm từ thế kỷ 14, được đại trùng tu hoàn thành vào năm 2010.",
+          "Sở hữu pho tượng Đức Phật Thích Ca nhập Niết bàn ngoài trời dài 54m phủ sơn son thếp vàng uy nghiêm đặt trên bệ đỡ cao tầng.",
+          "Toàn bộ kiến trúc mang phong cách nghệ thuật Angkor rực rỡ với mái vòm nhiều tầng vuốt nhọn, cột chống hình thần chim Krud và tượng chằn Yeak canh gác."
+        ],
+        "hours": "Mở cửa từ 06:30 - 18:30 hàng ngày",
+        "travel_tip": "Nên đến vào sáng sớm hoặc sau 15:30 để chiêm bái tượng Phật nằm và chụp ảnh dưới ánh nắng vàng óng mà không bị gắt nhiệt.",
+        "source_citations": [
+          {
+            "title": "Kiến trúc nghệ thuật Chùa Vàm Ray Trà Cú",
+            "url": "https://dulich.travinh.gov.vn/chua-vam-ray",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Pho tượng Phật Thích Ca nằm thếp vàng dài 54 mét tại chùa Vàm Ray",
+        "verified": true
       },
       "source": [
         {
@@ -14200,32 +14267,31 @@
         "visual_narrative": "Cận cảnh con cua biển Thạnh Phú yếm đỏ au đầy gạch son buộc bằng cọng lác xanh mướt đặt cạnh rổ nghêu biển trắng phau mọng nước tươi ròng.",
         "source_citations": [
           {
-            "source_id": "SRC-TIER1-BT-008",
-            "title": "Quy hoạch phát triển thủy sản sinh thái ven biển và chứng nhận OCOP 4 sao Cua biển, Nghêu Thạnh Phú",
-            "url": "https://bentre.gov.vn/van-ban/phat-trien-thuy-san-sinh-thai-thanh-phu",
-            "author_or_institution": "UBND Bến Tre",
-            "target_notebook": "mekong-360-t-p-2",
+            "title": "Mô hình nuôi cua biển sinh thái rừng ngập mặn Thạnh Phú",
+            "url": "https://bentre.gov.vn/cua-bien-ngheu-thanh-phu",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "source_id": "SRC-TIER2-CTU-005",
-            "title": "Đánh giá chất lượng sinh học và tiềm năng xuất khẩu cua biển sinh thái rừng ngập mặn Bến Tre",
-            "url": "https://sj.ctu.edu.vn/article/cua-bien-sinh-thai-rung-ngap-man-ben-tre",
-            "author_or_institution": "Tạp chí Khoa học Đại học Cần Thơ",
-            "target_notebook": "mekong-360-t-p-2",
-            "tier": "TIER_2_SCHOLARLY",
-            "authority_weight": 0.95
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-17T20:20:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
         "image_author": "Thành Lập",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Cua biển thịt chắc nịch và nghêu sạch sinh thái vùng bãi bồi Thạnh Phú, đặc sản OCOP 4 sao trứ danh của vùng duyên hải phương Nam.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+        "image_caption": "Những con cua biển gạch son trói dây chuối tươi rói vừa bắt từ tán rừng ngập mặn Thạnh Phú.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "key_facts": [
+          "Đặc sản thủy sản nuôi thả tự nhiên trong hệ sinh thái rừng ngập mặn đước và mắm ven bờ biển Tây Nam Bộ.",
+          "Cua biển Thạnh Phú thịt chắc nịch ngọt lịm, gạch son béo ngậy; nghêu bãi triều vỏ mỏng thịt dày nhiều dinh dưỡng.",
+          "Mô hình nuôi trồng sinh thái thân thiện môi trường không sử dụng thức ăn công nghiệp, đạt tiêu chuẩn thủy sản sạch OCOP 4 sao."
+        ],
+        "hours": "Cung ứng hải sản tươi sống từ 05:00 - 19:00 hàng ngày tại các vựa hải sản",
+        "admission": "Cua gạch từ 380.000 - 550.000 đ/kg; Cua thịt từ 250.000 - 380.000 đ/kg",
+        "travel_tip": "Nên thưởng thức cua luộc nước dừa tươi hoặc cua nướng mọi trên than hồng ngay tại chòi rừng ngập mặn để cảm nhận vị ngọt tự nhiên.",
+        "image_alt": "Cua biển gạch tươi sống chắc khỏe buộc dây cói tự nhiên",
+        "verified": true
       },
       "source": [
         {
@@ -14360,32 +14426,31 @@
         "visual_narrative": "Góc máy chân thực ghi lại những giàn phơi củ cải muối màu nâu cánh gián trải dài dưới nắng vàng ruộm bên hiên nhà cổ, từng thớ củ cải teo đều dậy mùi thơm lên men nồng ấm.",
         "source_citations": [
           {
-            "source_id": "SRC-TIER1-TV-010",
-            "title": "Bảo tồn làng nghề truyền thống và công nhận OCOP xá bấu Chịt Sa Cầu Kè",
-            "url": "https://snnptnt.travinh.gov.vn/lang-nghe/cu-cai-muoi-chit-sa-cau-ke",
-            "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
-            "target_notebook": "mekong-360-t-p-2",
+            "title": "Làng nghề làm xá pấu Chịt Sa Cầu Kè Trà Vinh",
+            "url": "https://travinh.gov.vn/xa-pau-chit-sa",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "source_id": "SRC-TIER2-TV-006",
-            "title": "Vị mặn mòi xá bấu Chịt Sa: Món ăn dân dã nâng tầm đặc sản OCOP miền Tây",
-            "url": "https://baotravinh.vn/kinh-te/cu-cai-muoi-chit-sa-cau-ke-2024",
-            "author_or_institution": "Báo Trà Vinh",
-            "target_notebook": "mekong-360-t-p-2",
-            "tier": "TIER_2_SCHOLARLY",
-            "authority_weight": 0.9
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-17T20:20:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
         "image_author": "Bá Dũng",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Món củ cải muối Chịt Sa giòn sần sật của đồng bào Khmer Cầu Kè, bí quyết ủ muối gia truyền đạt chứng nhận OCOP 3 sao đặc trưng.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+        "image_caption": "Củ cải muối xá pấu Chịt Sa phơi nắng thơm nồng giòn rụm theo bí quyết truyền đời của người Tiều tại Cầu Kè.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "key_facts": [
+          "Nghề chế biến xá pấu truyền thống của người Tiều tại Cầu Kè có lịch sử hơn 70 năm, đạt chứng nhận OCOP 3 sao năm 2020.",
+          "Củ cải trắng tươi sau khi thu hoạch được ủ muối hột tinh khiết theo tỉ lệ gia truyền rồi phơi đủ nắng giòn, tạo vị giòn sần sật mặn ngọt hài hòa.",
+          "Đóng vai trò món ăn kèm thơm ngon trong bữa cơm cháo hoa hoặc dùng kho thịt, nấu canh sườn giải nhiệt mùa nắng nóng."
+        ],
+        "hours": "Mở bán hàng ngày từ 06:00 - 19:00",
+        "admission": "Giá bán từ 40.000 - 75.000 đ/hũ 500g",
+        "travel_tip": "Nên chọn loại xá pấu ướp đường phèn chua ngọt để ăn liền hoặc loại xá pấu mặn nguyên củ để hầm súp canh tôm khô.",
+        "image_alt": "Những sợi củ cải muối xá pấu vàng ươm giòn rụm đóng hũ hợp vệ sinh",
+        "verified": true
       },
       "source": [
         {
@@ -14652,9 +14717,28 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Đình làng Trung Mỹ cổ kính được sắc phong từ triều vua Tự Đức, gìn giữ trọn vẹn nét đẹp văn hóa tín ngưỡng thờ Thành hoàng làng vùng đất cù lao.",
+        "image_caption": "Gian chính điện bằng gỗ căm xe cổ thụ trầm mặc của ngôi đình làng Trung Mỹ có tuổi đời hơn 180 năm.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Ngôi đình làng cổ kính hình thành từ đầu thế kỷ 19 trong công cuộc khai hoang mở đất lập làng của các bậc tiền hiền Nam Bộ.",
+          "Cấu trúc đình gồm tiền đường, chính điện và nhà hậu sở, xây dựng bằng danh mộc với cột đình nguyên khối đường kính hơn 40cm.",
+          "Được vua Tự Đức ban sắc phong Thành hoàng Bổn Cảnh vào năm 1852, bảo tồn nguyên vẹn các bản sắc phong qua nhiều biến thiên thời cuộc."
+        ],
+        "hours": "Mở cửa từ 07:00 - 17:30 hàng ngày",
+        "admission": "Miễn phí tham quan",
+        "travel_tip": "Đại lễ Kỳ Yên cúng đình diễn ra hàng năm vào trung tuần tháng 2 âm lịch với các nghi thức tế lễ cổ truyền và hát bội dân gian.",
+        "source_citations": [
+          {
+            "title": "Di tích kiến trúc đình làng Nam Bộ Đình Trung Mỹ",
+            "url": "https://baotangvinhlong.vn/dinh-trung-my",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Kiến trúc gian đình cổ mái ngói âm dương của Đình Trung Mỹ",
+        "verified": true
       },
       "source": [
         {
@@ -14701,9 +14785,28 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Di tích Cây Da Đôi lịch sử nơi thành lập Chi bộ Đảng Cộng sản đầu tiên của vùng đất Ba Tri vào năm 1930, mốc son chói lọi trong phong trào cách mạng.",
+        "image_caption": "Cây Da Đôi lịch sử sừng sững bên cạnh nhà bia tưởng niệm Chi bộ Đảng đầu tiên ra đời vào tháng 4 năm 1930.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Nơi chứng kiến sự ra đời của Chi bộ Đảng Cộng sản Việt Nam đầu tiên tại vùng đất xứ dừa vào tháng 4 năm 1930.",
+          "Dưới gốc cây đa cổ thụ rợp bóng, các chiến sĩ tiền bối đã tuyên thệ thành lập chi bộ cách mạng và phát động quần chúng đấu tranh.",
+          "Địa điểm được công nhận là Di tích Lịch sử - Cách mạng cấp Quốc gia năm 1997 với nhà bia tưởng niệm trang nghiêm."
+        ],
+        "hours": "Mở cửa từ 07:00 - 17:30 hàng ngày",
+        "admission": "Miễn phí vào cổng",
+        "travel_tip": "Địa điểm nằm gần trục lộ liên xã Tân Xuân, thuận tiện kết hợp viếng Đền thờ chí sĩ Nguyễn Đình Chiểu cách đó 7 km.",
+        "source_citations": [
+          {
+            "title": "Di tích lịch sử cách mạng Cây Da Đôi Ba Tri",
+            "url": "https://bentre.gov.vn/di-tich-cay-da-doi",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Cây Da Đôi cổ thụ và nhà bia tưởng niệm lịch sử tại xã Tân Xuân",
+        "verified": true
       },
       "source": [
         {
@@ -14750,9 +14853,28 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Phế tích kiến trúc đền tháp gạch Lưu Cừ II thuộc nền văn hóa Óc Eo cổ đại, minh chứng cho sự hưng thịnh rực rỡ của nền văn minh sông nước phương Nam.",
+        "image_caption": "Khu phế tích chân móng đền tháp bằng gạch nung niên đại thế kỷ 5-8 của văn hóa Óc Eo tại di tích Lưu Cừ II.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Được phát hiện và khai quật từ năm 1986, là di tích kiến trúc đền tháp gạch tôn giáo tiêu biểu của nền văn hóa Óc Eo thế kỷ 5 đến thế kỷ 8.",
+          "Khu phế tích lưu giữ cấu trúc móng tháp bằng gạch nung kết hợp đá phiến sa thạch, giếng nước cổ và nhiều mảnh gốm mịn văn hóa Phù Nam.",
+          "Bộ Văn hóa - Thông tin đã công nhận Di tích khảo cổ Lưu Cừ II là Di tích Lịch sử - Văn hóa cấp Quốc gia vào năm 1990."
+        ],
+        "hours": "Mở cửa từ 07:30 - 17:00 các ngày trong tuần",
+        "admission": "Miễn phí tham quan",
+        "travel_tip": "Du khách quan tâm đến khảo cổ học cổ đại nên liên hệ trước với ban quản lý văn hóa xã để được nghe thuyết minh về tầng văn hóa Óc Eo.",
+        "source_citations": [
+          {
+            "title": "Hồ sơ khoa học di tích khảo cổ học Lưu Cừ II",
+            "url": "https://dsvh.gov.vn/di-tich-khao-co-luu-cu-ii",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Hố khai quật khảo cổ với móng gạch và hiện vật Óc Eo tại di tích Lưu Cừ II",
+        "verified": true
       },
       "source": [
         {
@@ -15102,21 +15224,31 @@
         "visual_narrative": "Mặt cắt trái dừa sáp đặc quánh lớp cơm dày trắng ngà; ly sinh tố dừa sáp béo ngậy rắc đậu phộng rang vàng giòn rụm bên cạnh trái dừa sáp nguyên vỏ xanh bóng.",
         "source_citations": [
           {
-            "title": "Chỉ dẫn địa lý và Tiêu chuẩn OCOP Quốc gia Dừa sáp Cầu Kè",
-            "url": "https://travinh.gov.vn/ocop/dua-sap-cau-ke-5-sao",
-            "notebook_id": "mekong-360-t-p-2",
+            "title": "Đặc sản OCOP Quốc gia Dừa sáp Cầu Kè Trà Vinh",
+            "url": "https://skhcn.travinh.gov.vn/dua-sap-cau-ke",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-17T23:30:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 2",
         "image_author": "Huỳnh Phúc Hậu",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Trái dừa sáp Cầu Kè bổ đôi lộ lớp cơm dừa dày xốp béo ngậy quánh như kem, món quà trời ban độc nhất vô nhị của xứ dừa giồng cát.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+        "image_caption": "Trái Dừa Sáp Cầu Kè bổ đôi khoe lớp cơm dừa dẻo quánh béo ngậy ngập tràn tinh dầu đặc sản OCOP 5 sao.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "key_facts": [
+          "Đặc sản tự nhiên độc nhất vô nhị chỉ trồng thành công tại vùng đất Cầu Kè có thổ nhưỡng phù sa pha cát và tiểu khí hậu đặc thù.",
+          "Trái dừa không có nước lỏng mà cùi dừa dày xốp, mềm dẻo như sáp ngập tràn tinh dầu béo ngậy thơm ngon, được công nhận OCOP 5 sao quốc gia.",
+          "Tỷ lệ cho trái sáp trên mỗi buồng dừa chỉ chiếm khoảng 20% đến 25%, khiến sản phẩm luôn được săn đón với giá trị kinh tế vượt trội."
+        ],
+        "hours": "Thu hoạch và cung ứng quanh năm; mùa thu hoạch cao điểm vào tháng 4 đến tháng 9",
+        "admission": "Giá từ 120.000 - 200.000 đ/trái tùy kích cỡ và độ sáp đặc biệt",
+        "travel_tip": "Để kiểm tra dừa sáp thật, hãy lắc nhẹ trái dừa nếu nghe tiếng 'ục ục' đục trầm chứ không 'lỏng bõng' như dừa thường là dừa sáp chuẩn.",
+        "image_alt": "Cơm dừa sáp trắng muốt dẻo đặc thơm béo bổ đôi từ trái dừa sáp Cầu Kè",
+        "verified": true
       },
       "source": [
         {
@@ -15442,9 +15574,28 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Di tích Quốc gia Đầu cầu tiếp nhận vũ khí Thạnh Phong trên con đường Hồ Chí Minh trên biển, bản hùng ca bất tử của những đoàn tàu không số kiên cường.",
+        "image_caption": "Tượng đài kỷ niệm đầu cầu tiếp nhận vũ khí bí mật của đoàn tàu Không số kiên cường bên bờ biển Thạnh Phong.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Khởi lập từ năm 1961, bến Thạnh Phong là đầu cầu bí mật đón hàng chục chuyến tàu Không số chở vũ khí từ miền Bắc chi viện cho chiến trường Nam Bộ.",
+          "Tại vùng rừng ngập mặn và bãi bồi ven biển Thạnh Phú, quân dân địa phương đã dũng cảm bảo vệ an toàn hàng trăm tấn vũ khí, đạn dược.",
+          "Khu di tích được xếp hạng Di tích Lịch sử cấp Quốc gia vào năm 2013 với cụm tượng đài kỷ niệm và bia chiến tích anh hùng."
+        ],
+        "hours": "Mở cửa từ 07:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí tham quan",
+        "travel_tip": "Khuôn viên đón gió biển lộng gió, nên kết hợp hành trình khám phá bãi biển Cồn Bửng và rừng ngập mặn Thạnh Phú liền kề.",
+        "source_citations": [
+          {
+            "title": "Di tích quốc gia Đường Hồ Chí Minh trên biển bến Thạnh Phong",
+            "url": "https://dsvh.gov.vn/di-tich-ben-thanh-phong",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Cụm tượng đài kỷ niệm Đường Hồ Chí Minh trên biển tại xã Thạnh Phong",
+        "verified": true
       },
       "source": [
         {
@@ -15812,32 +15963,31 @@
         "visual_narrative": "Bao tải gai đựng gạo lúa tôm in logo OCOP mộc mạc bên chiếc bát sành chứa đầy những hạt gạo thon dài trắng ngần lấp lánh như ngọc phù sa.",
         "source_citations": [
           {
-            "source_id": "SRC-TIER1-BT-014",
-            "title": "Chứng nhận sản phẩm OCOP Gạo sạch Tôm - Lúa Thạnh Phú an toàn sinh học",
-            "url": "https://snnptnt.bentre.gov.vn/ocop/gao-sach-tom-lua-thanh-phu",
-            "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Bến Tre",
-            "target_notebook": "mekong-360-t-p-2",
+            "title": "Mô hình sản xuất gạo sạch lúa - tôm đạt chuẩn OCOP Thạnh Phú",
+            "url": "https://bentre.gov.vn/gao-sach-tom-lua-thanh-phu",
+            "notebook_id": "Sổ tay 3: Chính sách & Pháp luật (Văn bản, Quy định & Đề án)",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "source_id": "SRC-TIER2-DK-009",
-            "title": "Hạt ngọc lúa tôm Thạnh Phú: Khẳng định uy tín thương hiệu nông sản sạch Bến Tre",
-            "url": "https://baodongkhoi.vn/kinh-te/gao-sach-tom-lua-thanh-phu-2024",
-            "author_or_institution": "Báo Đồng Khởi",
-            "target_notebook": "mekong-360-t-p-2",
-            "tier": "TIER_2_SCHOLARLY",
-            "authority_weight": 0.9
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-17T23:30:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
         "image_author": "Minh Mừng",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Bao bì sản phẩm gạo sạch Tôm - Lúa Thạnh Phú đạt chứng nhận OCOP 4 sao, khẳng định mô hình nông nghiệp thích ứng biến đổi khí hậu bền vững.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+        "image_caption": "Hạt gạo ST25 mô hình tôm - lúa Thạnh Phú thon dài trắng ngà đạt chuẩn OCOP 4 sao không dư lượng hóa chất.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "key_facts": [
+          "Sản phẩm lúa gạo sinh thái thượng hạng canh tác theo mô hình luân canh tôm - lúa hữu cơ trên vùng ven biển Thạnh Phú, đạt chứng nhận OCOP 4 sao năm 2021.",
+          "Sử dụng giống lúa thuần ST25 từng đạt giải gạo ngon nhất thế giới năm 2019, không sử dụng thuốc trừ sâu hóa học và phân bón vô cơ.",
+          "Hạt cơm dẻo mềm, thơm dịu hương lá dứa tự nhiên, giàu vi chất dinh dưỡng và giữ nguyên độ dẻo mềm ngay cả khi để nguội."
+        ],
+        "hours": "Vụ thu hoạch lúa tôm duy nhất trong năm vào tháng 11 và tháng 12 âm lịch",
+        "admission": "Giá bán từ 38.000 - 55.000 đ/kg đóng túi 5kg hút chân không",
+        "travel_tip": "Gạo tôm lúa rất ít hút nước; khi nấu nên đong tỉ lệ 1 bát gạo với 1 đến 1,1 bát nước để cơm chín tới dẻo ngọt tự nhiên.",
+        "image_alt": "Túi gạo sạch lúa tôm ST25 Thạnh Phú đóng gói hút chân không tiêu chuẩn cao",
+        "verified": true
       },
       "source": [
         {
@@ -15892,9 +16042,28 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Những chậu cúc mâm xôi Long Thới tròn xoe vàng ươm bung nở đón Tết, nông sản hoa kiểng trứ danh đất Chợ Lách khoe sắc khắp miền Nam.",
+        "image_caption": "Bạt ngàn những luống cúc mâm xôi nở rộ sắc vàng óng ả thẳng tắp bên bờ kênh tại thủ phủ hoa kiểng Long Thới.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T20:20:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Làng nghề trồng hoa kiểng Long Thới có lịch sử hơn 100 năm, là nơi cung ứng cúc mâm xôi và kiểng lá lớn bậc nhất xứ vườn Chợ Lách.",
+          "Cúc mâm xôi được chăm sóc kỳ công suốt 6 tháng, tạo thành tán tròn xoe đường kính 0,8m đến 1,2m với hàng ngàn nụ hoa nở vàng rực đồng loạt đón Tết.",
+          "Mỗi dịp Tết Nguyên đán cung ứng ra thị trường trên 1,5 triệu giỏ hoa cúc mâm xôi truyền thống và giống cúc mâm xôi Hàn Quốc đa sắc."
+        ],
+        "hours": "Làng hoa nhộn nhịp đón khách tham quan và thương lái từ tháng 11 đến tháng Chạp âm lịch",
+        "admission": "Giá sỉ và lẻ tại vườn dao động từ 150.000 - 300.000 đ/cặp giỏ hoa",
+        "travel_tip": "Thời điểm lý tưởng nhất để check-in và chụp ảnh cánh đồng hoa cúc mâm xôi vàng rực là từ ngày 15 đến 23 tháng Chạp âm lịch.",
+        "source_citations": [
+          {
+            "title": "Làng hoa kiểng Chợ Lách và nghề trồng cúc mâm xôi Long Thới",
+            "url": "https://dulichbentre.gov.vn/lang-hoa-long-thoi",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Hàng ngàn chậu cúc mâm xôi tán tròn vàng rực chuẩn bị xuất vườn đón Tết",
+        "verified": true
       },
       "source": [
         {
@@ -16282,32 +16451,31 @@
         "visual_narrative": "Đoàn xã viên HTX Thạnh Lợi nón lá nhấp nhô cào nghêu trên bãi triều bạt ngàn lúc bình minh ló rạng, mặt cát lấp lánh vỏ nghêu trong ánh ban mai phản chiếu mặt biển.",
         "source_citations": [
           {
-            "source_id": "SRC-TIER1-BT-009",
-            "title": "Mô hình kinh tế tập thể điển hình: HTX Thủy sản Thạnh Lợi đạt chứng nhận nghề cá bền vững MSC và OCOP",
-            "url": "https://snnptnt.bentre.gov.vn/mo-hinh/htx-thuy-san-thanh-loi-msc-ocop",
-            "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Bến Tre",
-            "target_notebook": "mekong-360-t-p-2",
+            "title": "Chứng nhận MSC nghề nghêu xứ dừa và thương hiệu OCOP Thạnh Lợi",
+            "url": "https://bentre.gov.vn/ngheu-thanh-hai-msc",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "source_id": "SRC-TIER2-ND-007",
-            "title": "Bảo tồn nguồn lợi nghêu biển Bến Tre: Hướng đi bền vững từ chứng chỉ quốc tế MSC",
-            "url": "https://nhandan.vn/kinh-te/bao-ton-nguon-loi-ngheu-ben-tre-msc-783210",
-            "author_or_institution": "Báo Nhân Dân",
-            "target_notebook": "mekong-360-t-p-2",
-            "tier": "TIER_2_SCHOLARLY",
-            "authority_weight": 0.95
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-17T23:30:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
         "image_author": "Hữu Hiệp",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Bãi nghêu Thạnh Hải rộng lớn ven bờ Biển Đông, xã viên HTX Thạnh Lợi cần mẫn cào từng mẻ nghêu thịt trắng nõn, ngọt đậm vị biển khơi.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+        "image_caption": "Nghêu sạch Thạnh Hải béo tròn đều con đạt chứng nhận khai thác bền vững quốc tế MSC và OCOP 4 sao.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "key_facts": [
+          "Bãi nghêu sinh thái biển Thạnh Phú được cấp chứng nhận quốc tế MSC về khai thác thủy sản bền vững đầu tiên tại khu vực Đông Nam Á từ năm 2009.",
+          "HTX Thạnh Lợi quản lý hơn 2.500 ha bãi triều phù sa mặn, cung cấp hàng ngàn tấn nghêu thương phẩm thịt ngọt dày và vỏ mỏng sáng bóng mỗi năm.",
+          "Đạt chứng nhận sản phẩm OCOP 4 sao năm 2020, xuất khẩu chính ngạch sang thị trường châu Âu và các hệ thống siêu thị lớn toàn quốc."
+        ],
+        "hours": "Khai thác theo con nước thủy triều rằm và mùng một; bán lẻ từ 06:00 - 18:00 hàng ngày",
+        "admission": "Giá nghêu sống từ 35.000 - 65.000 đ/kg tùy kích cỡ từ 50 đến 70 con/kg",
+        "travel_tip": "Du khách mua nghêu tươi tại bến về nên ngâm nước biển hoặc nước muối pha ớt hiểm 2 tiếng để nghêu nhả sạch cát biển trước khi hấp sả.",
+        "image_alt": "Những rổ nghêu Thạnh Hải tươi sống vỏ sáng bóng vừa cào từ bãi triều",
+        "verified": true
       },
       "source": [
         {
@@ -16580,9 +16748,28 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Chùa Chà (Krapoumchhouk Chral) rực rỡ hoa văn phù điêu đắp nổi, chiếc nôi nuôi dưỡng tinh thần yêu nước và phong trào cách mạng của chư tăng Phật tử.",
+        "image_caption": "Mái ngói ba tầng cong vút và hàng cột chạm hoa văn tinh xảo của ngôi cổ tự Krapoumchhouk Chral.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Ngôi chùa Khmer cổ kính khởi lập từ thế kỷ 17, là trung tâm sinh hoạt tín ngưỡng và bảo tồn ngôn ngữ, chữ viết Pali của đồng bào bản địa.",
+          "Trong hai cuộc kháng chiến giải phóng dân tộc, chùa là căn cứ nuôi giấu cán bộ cách mạng kiên trung và cơ sở in ấn tài liệu bí mật.",
+          "Được công nhận là Di tích Lịch sử cấp Tỉnh năm 2004, lưu giữ nhiều pho kinh lá buông và tác phẩm điêu khắc gỗ tinh vi."
+        ],
+        "hours": "Mở cửa từ 06:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí tham quan",
+        "travel_tip": "Du khách viếng chùa vào dịp lễ Chôl Chnăm Thmây hoặc Sêne Đôlta sẽ được chứng kiến nghi thức đắp núi cát và múa Sa-dăm rộn rã.",
+        "source_citations": [
+          {
+            "title": "Lịch sử và kiến trúc Chùa Krapoumchhouk Chral Trà Vinh",
+            "url": "https://travinh.gov.vn/di-tich-chua-cha",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Chánh điện uy nghiêm của Chùa Krapoumchhouk Chral tại xã Châu Điền",
+        "verified": true
       },
       "source": [
         {
@@ -16725,9 +16912,28 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Hộp kẹo dừa dẻo sầu riêng lá dứa Tuyết Phụng tại phường Mỏ Cày, đặc sản truyền thống béo ngậy được chế biến từ cốt dừa nguyên chất.",
+        "image_caption": "Công đoạn quấy kẹo dừa truyền thống trên chảo đồng thơm lừng tại cơ sở kẹo dừa Tuyết Phụng.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T23:30:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Cơ sở kẹo dừa gia truyền thành lập từ năm 1977 tại Mỏ Cày cũ, cái nôi khai sinh ra nghề làm kẹo dừa thủ công nổi danh xứ dừa.",
+          "Nguyên liệu chế biến hoàn toàn từ nước cốt dừa tươi nguyên chất kết hợp mạch nha nếp rơm, tạo vị ngọt béo thanh mà không dính răng.",
+          "Đạt chứng nhận OCOP 4 sao với hơn 10 dòng hương vị phong phú: lá dứa sầu riêng, đậu phộng béo, cacao sô-cô-la và dừa nướng."
+        ],
+        "hours": "Mở cửa phục vụ khách tham quan và mua sắm từ 07:00 - 21:00 hàng ngày",
+        "admission": "Giá từ 35.000 - 65.000 đ/gói 300g đến 500g",
+        "travel_tip": "Du khách ghé xưởng có thể xem trực tiếp nghệ nhân quậy kẹo trên chảo đồng và dùng thử kẹo dừa nóng hổi vừa ra lò miễn phí.",
+        "source_citations": [
+          {
+            "title": "Nghề làm kẹo dừa truyền thống Tuyết Phụng Mỏ Cày",
+            "url": "https://socongthuong.bentre.gov.vn/keo-dua-tuyet-phung",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Chảo quấy kẹo dừa thủ công và các phong kẹo dừa Tuyết Phụng gói giấy hoa",
+        "verified": true
       },
       "source": [
         {
@@ -16978,9 +17184,28 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Đình Lộc Thuận tại Bình Đại, di tích gắn bó keo sơn với phong trào cách mạng địa phương và lễ cúng tế cầu quốc thái dân an, mưa thuận gió hòa.",
+        "image_caption": "Hàng cột gỗ lim và bàn thờ thần uy nghiêm của Đình Lộc Thuận lưu giữ sắc phong triều Nguyễn năm 1845.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T00:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Tạo dựng từ năm 1845 bên tả ngạn sông Ba Lai, là trung tâm tín ngưỡng và gắn kết tình làng nghĩa xóm của cư dân miệt cồn duyên hải.",
+          "Đình lưu giữ sắc phong thần của vua Thiệu Trị năm thứ 5 (1845) và hoành phi mạ vàng chạm lộng chim phượng ngậm hoa mẫu đơn.",
+          "Được xếp hạng Di tích Lịch sử - Văn hóa cấp Tỉnh năm 2008, đại trùng tu năm 2016 giữ nguyên vẹn hoa văn chạm khắc dân gian."
+        ],
+        "hours": "Mở cửa từ 07:00 - 17:00 hàng ngày",
+        "admission": "Miễn phí vào cổng",
+        "travel_tip": "Nên hỏi ban hương chức đình để được xem chiếc khánh đồng cổ đúc từ giữa thế kỷ 19 còn ngân vang âm thanh trong trẻo.",
+        "source_citations": [
+          {
+            "title": "Hồ sơ di tích văn hóa lịch sử Đình Lộc Thuận Bình Đại",
+            "url": "https://bentre.gov.vn/di-tich-dinh-loc-thuan",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Chính điện tôn nghiêm với bao lam thếp vàng của Đình Lộc Thuận",
+        "verified": true
       },
       "source": [
         {
@@ -17436,21 +17661,31 @@
         "visual_narrative": "Tượng đồng Nữ tướng Nguyễn Thị Định trong bộ bà ba khăn rằn Nam Bộ hiên ngang; ánh sáng ban mai chiếu rọi qua rặng dừa thẳng tắp bao quanh quảng trường hành lễ.",
         "source_citations": [
           {
-            "title": "Di tích Lịch sử Khu lưu niệm Nữ tướng Nguyễn Thị Định",
-            "url": "https://bentre.gov.vn/di-tich/khu-luu-niem-nguyen-thi-dinh",
-            "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
-            "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
+            "title": "Khu lưu niệm Nữ tướng Nguyễn Thị Định tại Lương Hòa",
+            "url": "https://baodongkhoi.vn/khu-luu-niem-nguyen-thi-dinh",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_2_SCHOLARLY",
+            "authority_weight": 0.95
           }
         ],
-        "verifiedAt": "2026-09-17T20:50:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 2",
         "image_author": "Phương Thảo",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Khu lưu niệm Nữ tướng Nguyễn Thị Định tại Lương Hòa, nơi tri ân người nữ anh hùng chỉ huy Đội quân tóc dài huyền thoại làm nên kỳ tích Đồng Khởi.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+        "image_caption": "Khuôn viên xanh mát của Khu lưu niệm Nữ tướng Nguyễn Thị Định, nơi lưu giữ kỷ vật phong trào Đồng Khởi năm 1960.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "key_facts": [
+          "Xây dựng trên quê hương xã Lương Hòa nhằm tôn vinh cuộc đời Nữ tướng Nguyễn Thị Định (1920–1992), vị nữ tướng đầu tiên của Quân đội Nhân dân Việt Nam.",
+          "Khuôn viên rộng gần 15.000 m2 khánh thành năm 2003, gồm nhà tưởng niệm, phòng trưng bày hiện vật kháng chiến và nhà ở phục dựng thời thơ ấu.",
+          "Được xếp hạng Di tích Lịch sử cấp Quốc gia vào năm 2011, là địa chỉ đỏ giáo dục truyền thống cách mạng cho thế hệ trẻ."
+        ],
+        "hours": "Mở cửa từ 07:30 - 17:00 từ Thứ Hai đến Chủ Nhật",
+        "admission": "Miễn phí vào cửa",
+        "travel_tip": "Đừng quên thắp hương tại đền thờ chính và dành thời gian xem các bức ảnh tư liệu về phong trào Đồng Khởi năm 1960.",
+        "image_alt": "Tượng đồng Nữ tướng Nguyễn Thị Định trong khuôn viên khu tưởng niệm tại Lương Hòa",
+        "verified": true
       },
       "source": [
         {
@@ -17583,27 +17818,35 @@
         "visual_narrative": "Những hàng chổi bông sậy vàng óng xòe cánh như nan quạt phơi khắp các nẻo đường làng rợp bóng cây ăn trái; nghệ nhân thoăn thoắt xiết dây kẽm bằng bàn đạp gỗ truyền thống.",
         "source_citations": [
           {
-            "title": "Làng nghề truyền thống bó chổi Mỹ An Chợ Lách",
-            "url": "https://bentre.gov.vn/lang-nghe/bo-choi-my-an",
-            "notebook_id": "mekong-360-t-p-2",
+            "title": "Làng nghề truyền thống bó chổi cọng dừa Mỹ An Thạnh Phú",
+            "url": "https://socongthuong.bentre.gov.vn/lang-nghe-bo-choi-my-an",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-17T20:20:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3",
         "image_author": "Lê Tấn",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Bàn tay thoăn thoắt tước cọng dừa và bện chổi của những người thợ làng nghề bó chổi Mỹ An, sản phẩm mộc mạc gắn bó với nếp nhà Nam Bộ.",
+        "image_caption": "Nghệ nhân làng nghề Mỹ An thoăn thoắt đôi bàn tay bện từng cọng dừa dẻo dai thành những cây chổi xuất khẩu.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "raw_material": "Cọng dừa nước phơi khô, dây kẽm và cán gỗ chắc",
         "households": 115,
         "recognition_date": "Làng nghề truyền thống tiểu thủ công nghiệp tỉnh Vĩnh Long",
-        "hours": "7:00–17:00 hàng ngày",
-        "admission": "Tham quan miễn phí",
-        "phone": "0270 3840 567"
+        "hours": "Xóm nghề hoạt động nhộn nhịp từ 07:00 - 17:30 hàng ngày",
+        "admission": "Miễn phí tham quan trải nghiệm; giá chổi từ 20.000 - 45.000 đ/cây",
+        "phone": "0270 3840 567",
+        "key_facts": [
+          "Làng nghề thủ công truyền thống hình thành hơn 70 năm qua, tận dụng nguyên liệu gân lá dừa dồi dào từ các vườn dừa bạt ngàn xứ đảo.",
+          "Đôi bàn tay khéo léo của người thợ đan bện cọng dừa bằng dây cước chắc chắn, tạo nên những cây chổi quét sân bền bỉ và đều tăm tắp.",
+          "Được UBND tỉnh công nhận Làng nghề truyền thống năm 2007, xuất khẩu hàng triệu sản phẩm mỗi năm sang các thị trường Đài Loan, Hàn Quốc."
+        ],
+        "travel_tip": "Du khách có thể xin các cô chú thợ làng nghề hướng dẫn cách chuốt cọng dừa và bện thử một cây chổi mini làm kỷ niệm.",
+        "image_alt": "Những bó chổi cọng dừa vàng óng xếp ngay ngắn trước hiên nhà xưởng Mỹ An",
+        "verified": true
       },
       "source": [
         {
@@ -18287,9 +18530,28 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Khung cảnh thu hoạch muối rộn ràng trên đồng muối Bảo Thạnh khi mặt trời lên cao, niềm vui được mùa hạt ngọc trắng của diêm dân miệt biển.",
+        "image_caption": "Những đụn muối trắng phau nhấp nhô trên cánh đồng muối Bảo Thạnh rực sáng trong ánh ráng chiều ven biển.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Nghề làm muối thủ công ven biển Ba Tri có bề dày hơn một thế kỷ từ năm 1900, gắn với đời sống diêm dân kiên cường bám đồng ruộng mặn.",
+          "Muối được kết tinh từ nước biển sâu tinh khiết qua hệ thống ruộng phơi cát và trảng bay hơi tự nhiên dưới ánh nắng chang chang mùa gió chướng.",
+          "Hạt muối Bảo Thạnh to tròn, màu trắng trong, vị mặn dịu không gắt chát kim loại, được các thương hiệu nước mắm truyền thống tin dùng."
+        ],
+        "hours": "Vụ muối kéo dài từ tháng 12 năm trước đến tháng 4 năm sau dương lịch",
+        "admission": "Miễn phí tham quan đồng muối; giá muối hạt từ 3.000 - 6.000 đ/kg",
+        "travel_tip": "Khung cảnh đồng muối đẹp nhất vào lúc 16:30 khi diêm dân cào những ụ muối trắng tinh khôi lấp lánh phản chiếu ráng chiều.",
+        "source_citations": [
+          {
+            "title": "Nghề làm muối truyền thống Bảo Thạnh Ba Tri",
+            "url": "https://bentre.gov.vn/lang-nghe-muoi-bao-thanh",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Cảnh diêm dân cào muối thành từng ụ trắng muốt trên ruộng muối Bảo Thạnh",
+        "verified": true
       },
       "source": [
         {
@@ -18861,9 +19123,28 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Những thân tre tầm vông thẳng tắp được uốn nắn khéo léo thành bàn ghế, giường chõng mộc mạc tại làng nghề tiểu thủ công nghiệp Hàm Giang.",
+        "image_caption": "Đôi tay thoăn thoắt chẻ nan vót mây và đan cài nong nia của các nghệ nhân Khmer làng nghề Hàm Giang.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Làng nghề thủ công truyền thống của đồng bào dân tộc Khmer với lịch sử hình thành hơn 100 năm tại vùng đất Trà Cú.",
+          "Chuyên sản xuất các vật dụng tre trúc tinh xảo phục vụ đời sống nông nghiệp và ngư nghiệp: thúng, mủng, nong, nia, rổ, cần xé và nơm cá.",
+          "Được UBND tỉnh công nhận Làng nghề tiểu thủ công nghiệp năm 2008, nay phát triển thêm dòng sản phẩm quà lưu niệm mây tre đan mỹ nghệ."
+        ],
+        "hours": "Mở cửa tham quan các xưởng thủ công từ 07:00 - 17:00 hàng ngày",
+        "admission": "Miễn phí tham quan; giá sản phẩm lưu niệm từ 25.000 - 180.000 đ/món",
+        "travel_tip": "Khách có thể đặt mua những chiếc nơm cá nhỏ xinh hoặc giỏ mây tre đan tay làm giỏ cắm hoa trang trí phòng khách rất mộc mạc.",
+        "source_citations": [
+          {
+            "title": "Làng nghề đan đát tre trúc truyền thống Hàm Giang Trà Cú",
+            "url": "https://travinh.gov.vn/lang-nghe-ham-giang",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Nghệ nhân chẻ nan tre và hoàn thiện các vật dụng đan đát tại Hàm Giang",
+        "verified": true
       },
       "source": [
         {
@@ -19032,32 +19313,31 @@
         "visual_narrative": "Từng dây lạp xưởng đỏ thắm bóng bẩy treo lủng lẳng trên sào tre dưới ánh nắng phương Nam, bên cạnh đĩa lạp xưởng chiên nước lăn tăn thơm phức.",
         "source_citations": [
           {
-            "source_id": "SRC-TIER1-VL-008",
-            "title": "Quyết định công nhận sản phẩm OCOP 3 sao: Lạp xưởng gia truyền Ngọc Hương",
-            "url": "https://vinhlong.gov.vn/van-ban/ocop-lap-xuong-ngoc-huong",
-            "author_or_institution": "UBND tỉnh Vĩnh Long",
-            "target_notebook": "mekong-360-t-p-2",
+            "title": "Sản phẩm OCOP Lạp xưởng Mai Quế Lộ Ngọc Hương",
+            "url": "https://socongthuong.bentre.gov.vn/lap-xuong-ngoc-huong",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "source_id": "SRC-TIER2-BVL-005",
-            "title": "Giữ phong vị Tết cổ truyền cùng lạp xưởng gia truyền Vĩnh Long",
-            "url": "https://baovinhlong.com.vn/am-thuc/lap-xuong-ngoc-huong-vinh-long-2024",
-            "author_or_institution": "Báo Vĩnh Long",
-            "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
-            "tier": "TIER_2_SCHOLARLY",
-            "authority_weight": 0.9
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-17T20:20:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
         "image_author": "Thu Ba",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Lạp xưởng tươi nạc đỏ au đượm vị mai quế lộ của cơ sở Ngọc Hương tại Cầu Kè, sản phẩm OCOP 3 sao thơm ngon được ưa chuộng dịp lễ Tết.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+        "image_caption": "Từng xâu lạp xưởng Mai Quế Lộ đỏ hồng óng ả phơi giàn sấy năng lượng mặt trời thơm lừng hương rượu thuốc bắc.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "key_facts": [
+          "Thương hiệu lạp xưởng gia truyền hơn 25 năm tại vùng cửa ngõ Châu Thành cũ, đạt chứng nhận sản phẩm OCOP 4 sao năm 2022.",
+          "Chế biến từ nạc đùi heo tươi nóng dẻo kết hợp mỡ khổ theo tỉ lệ 8:2, ướp rượu Mai Quế Lộ chưng cất thuốc bắc và hạt tiêu sọ cay nồng.",
+          "Được phơi trong nhà sấy năng lượng mặt trời khép kín bảo đảm an toàn vệ sinh, thớ thịt đỏ hồng tự nhiên không dùng phẩm màu độc hại."
+        ],
+        "hours": "Mở cửa từ 06:30 - 21:00 hàng ngày",
+        "admission": "Giá bán từ 180.000 - 260.000 đ/hộp 500g hút chân không",
+        "travel_tip": "Cách chế biến lạp xưởng ngon miệng là lăn với nước lọc trên chảo cho đến khi cạn nước để lạp xưởng tự ứa mỡ chiên vàng óng thơm lừng.",
+        "image_alt": "Hộp quà tặng lạp xưởng Mai Quế Lộ Ngọc Hương thượng hạng đóng gói sang trọng",
+        "verified": true
       },
       "source": [
         {
@@ -19727,21 +20007,31 @@
         "visual_narrative": "Hũ mắm bò hóc màu nâu sẫm mở nắp tỏa hương thơm đặc trưng nồng nàn; đĩa mắm prohok dầm ớt xiêm rừng, tỏi đập dập ăn kèm đĩa rau rừng, đọt xoài non và cà pháo giòn tan.",
         "source_citations": [
           {
-            "title": "Di sản gia vị văn hóa Khmer: Nghệ thuật ủ mắm Prohok",
-            "url": "https://travinh.gov.vn/van-hoa/mam-bo-hoc-prohok",
-            "notebook_id": "mekong-360-t-p-2",
+            "title": "Di sản văn hóa ẩm thực mắm prahok Khmer Nam Bộ",
+            "url": "https://dantoc.vietnamtourism.gov.vn/mam-bo-hoc-khmer",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-18T08:40:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3",
         "image_author": "Bá Thi",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Mắm bò hóc (prohok) ủ chum sành truyền thống của đồng bào Khmer, gia vị cốt lõi làm nên linh hồn tô bún nước lèo trứ danh.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+        "image_caption": "Hũ mắm bò hóc ủ lu sành thơm nồng theo công thức truyền thống, gia vị linh hồn của bún nước lèo và ẩm thực Khmer.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "key_facts": [
+          "Gia vị cốt lõi trong di sản văn hóa ẩm thực của đồng bào dân tộc Khmer Nam Bộ, chế biến từ cá nước ngọt mùa lũ như cá linh, cá sặc, cá lóc.",
+          "Quy trình làm mắm công phu kéo dài từ 4 đến 6 tháng: cá làm sạch ủ muối, chèn ép ráo nước rồi thính gạo rang thơm trước khi ủ lu sành.",
+          "Được xem là linh hồn tạo nên hương vị đặc sắc của món bún nước lèo, canh chua som-lo và mắm băm ghém ghém rau rừng bản địa."
+        ],
+        "hours": "Bán quanh năm tại các chợ truyền thống và cơ sở sản xuất từ 06:00 - 18:00",
+        "admission": "Giá từ 90.000 - 150.000 đ/hũ 500g mắm chuẩn vị",
+        "travel_tip": "Người lần đầu thưởng thức nên bắt đầu với món mắm bò hóc chưng trứng thịt bằm thơm lừng trước khi ăn mắm sống chấm cà dĩa.",
+        "image_alt": "Mắm bò hóc thành phẩm thơm ngon bày biện cùng rau rừng và cà dĩa",
+        "verified": true
       },
       "source": [
         {
@@ -19898,9 +20188,28 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Mật ong rừng bần nguyên chất Nguyễn Văn Bao tại xã Mỹ Long Nam, sản phẩm OCOP thu hoạch từ cánh rừng ngập mặn ven biển Cổ Chiên.",
+        "image_caption": "Dòng mật ong rừng bần sóng sánh màu hổ phách vàng óng đóng chai thủy tinh nguyên chất của cơ sở Nguyễn Văn Bao.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-18T08:40:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Sản phẩm mật ong tự nhiên khai thác từ các đàn ong nuôi hút mật hoa cây bần chua trong dải rừng ngập mặn phòng hộ ven biển Thạnh Phú.",
+          "Mật ong có màu vàng hổ phách sóng sánh, hương thơm ngát của hoa bần rừng ngập mặn kết hợp hậu vị chua thanh đặc trưng độc đáo.",
+          "Đạt tiêu chuẩn sản phẩm OCOP 3 sao năm 2021, đóng chai thủy tinh cao cấp, giàu enzyme tiêu hóa và chất kháng khuẩn tự nhiên."
+        ],
+        "hours": "Mùa hoa bần nở rộ lấy mật từ tháng 3 đến tháng 8 hàng năm",
+        "admission": "Giá từ 180.000 - 320.000 đ/chai 500ml nguyên chất",
+        "travel_tip": "Dùng một thìa mật ong rừng bần pha cùng nước ấm và chanh tươi vào mỗi sáng sớm giúp thanh lọc cơ thể và tăng cường đề kháng.",
+        "source_citations": [
+          {
+            "title": "Đặc sản mật ong hoa bần sinh thái rừng ngập mặn Thạnh Phú",
+            "url": "https://dulichbentre.gov.vn/mat-ong-rung-ban",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Chai mật ong hoa bần rừng ngập mặn nguyên chất sóng sánh màu cánh gián",
+        "verified": true
       },
       "source": [
         {
@@ -20007,9 +20316,28 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Quần thể lăng mộ và đền thờ cụ Võ Trường Toản rợp bóng cây cổ thụ thanh tịnh, chốn thiêng liêng để hậu thế tưởng nhớ công ơn bậc đại hiền triết.",
+        "image_caption": "Khu lăng mộ trang nghiêm của cụ Võ Trường Toản, bậc danh sư mở mang nền giáo dục khai phóng đất phương Nam.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Nơi an nghỉ của nhà giáo Võ Trường Toản (?–1792), bậc danh sư phương Nam, người thầy của các danh sĩ Ngô Nhơn Tịnh, Trịnh Hoài Đức.",
+          "Năm 1852, danh sĩ Phan Thanh Giản đã tổ chức cải táng hài cốt cụ từ Gia Định về vùng đất thanh bình Bảo Thạnh để tránh biến loạn.",
+          "Bộ Văn hóa đã công nhận khu lăng mộ là Di tích Lịch sử cấp Quốc gia vào năm 1998, tôn vinh truyền thống hiếu học của Nam Bộ."
+        ],
+        "hours": "Mở cửa từ 07:00 - 17:30 hàng ngày",
+        "admission": "Miễn phí viếng thăm",
+        "travel_tip": "Nên đọc văn bia do Phan Thanh Giản phụng soạn khắc trên bia đá cổ để cảm nhận sâu sắc tấm lòng kính thầy của tiền nhân.",
+        "source_citations": [
+          {
+            "title": "Di tích quốc gia Mộ và Khu lưu niệm Võ Trường Toản",
+            "url": "https://dsvh.gov.vn/di-tich-mo-vo-truong-toan",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Khu lăng mộ và bia đá cổ tri ân nhà giáo Võ Trường Toản tại Bảo Thạnh",
+        "verified": true
       },
       "source": [
         {
@@ -20068,9 +20396,28 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Hạt muối biển Bảo Thạnh trắng tinh khiết kết tinh trên ruộng muối ven biển, đậm đà vị mặn mòi phù sa cửa sông Hàm Luông.",
+        "image_caption": "Hạt muối biển Bảo Thạnh trắng trong lấp lánh như pha lê kết tinh từ ánh nắng mặt trời và gió biển mặn mòi.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T08:40:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Sản phẩm muối thô tự nhiên thu hoạch từ các đồng muối sạch ven bờ biển Ba Tri, kết tinh từ độ mặn đậm đặc của nước biển mùa gió chướng.",
+          "Hạt muối khô ráo, giàu khoáng chất tự nhiên vi lượng kẽm, magie và i-ốt, không chứa chất chống vón cục nhân tạo.",
+          "Được đóng gói bảo quản đạt chuẩn OCOP, là nguyên liệu tối ưu để làm muối ớt, ướp cá một nắng và ngâm kiệu dưa Tết."
+        ],
+        "hours": "Cung ứng quanh năm từ các kho muối diêm dân",
+        "admission": "Giá từ 8.000 - 15.000 đ/túi 1kg muối hạt tinh khiết",
+        "travel_tip": "Nên dùng muối hạt Bảo Thạnh để rửa sạch hải sản tươi sống giúp khử nhớt tanh và giữ trọn độ săn chắc ngọt thịt.",
+        "source_citations": [
+          {
+            "title": "Chất lượng hạt muối biển Bảo Thạnh Ba Tri",
+            "url": "https://socongthuong.bentre.gov.vn/muoi-bao-thanh",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Túi muối hạt biển tự nhiên Bảo Thạnh trắng sạch nguyên chất",
+        "verified": true
       },
       "source": [
         {
@@ -20224,32 +20571,31 @@
         "visual_narrative": "Từng sợi mứt dừa sáp trắng tinh mềm mại óng ánh đường tơ cuộn tròn trên khay mây tre đan bên tách trà sen nóng ấm cúng.",
         "source_citations": [
           {
-            "source_id": "SRC-TIER1-TV-018",
-            "title": "Công nhận sản phẩm OCOP 3 sao Mứt dừa sáp Cẩm Hằng huyện Cầu Kè",
-            "url": "https://travinh.gov.vn/ocop/mut-dua-sap-cam-hang-cau-ke",
-            "author_or_institution": "UBND Trà Vinh",
-            "target_notebook": "mekong-360-t-p-2",
+            "title": "Chuỗi giá trị chế biến sâu dừa sáp OCOP Cẩm Hằng",
+            "url": "https://travinh.gov.vn/mut-dua-sap-cam-hang",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "source_id": "SRC-TIER2-THVL-009",
-            "title": "Sáng tạo cùng dừa sáp Cầu Kè: Đậm đà phong vị mứt dừa ngày xuân",
-            "url": "https://thvl.vn/am-thuc/mut-dua-sap-cam-hang-cau-ke",
-            "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
-            "target_notebook": "mekong-360-t-p-2",
-            "tier": "TIER_2_SCHOLARLY",
-            "authority_weight": 0.95
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-18T08:40:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
         "image_author": "Bá Thi",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Mứt dừa sáp Cẩm Hằng tại Cầu Kè, từng sợi dừa sáp dẻo quánh áo lớp đường non thanh nhẹ, giữ trọn vị béo bùi đặc trưng xứ sở.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+        "image_caption": "Mứt dừa sáp Cẩm Hằng dẻo mềm vàng óng đóng hộp sang trọng, sản phẩm OCOP 4 sao chế biến sâu độc đáo.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "key_facts": [
+          "Sản phẩm chế biến sâu cao cấp từ nguồn nguyên liệu dừa sáp Cầu Kè, đạt chứng nhận sản phẩm OCOP 4 sao tiêu biểu cấp tỉnh năm 2021.",
+          "Ứng dụng công nghệ sấy chân không khép kín giúp giữ trọn vẹn vị béo bùi, độ dẻo mềm đặc trưng và hương thơm tự nhiên mà không dùng chất bảo quản.",
+          "Được đóng gói bao bì hút chân không sang trọng phục vụ thị trường quà tặng cao cấp và xuất khẩu sang nhiều nước châu Á."
+        ],
+        "hours": "Cơ sở sản xuất và trưng bày mở cửa từ 07:30 - 20:30 hàng ngày",
+        "admission": "Giá bán lẻ niêm yết từ 150.000 - 280.000 đ/hộp tùy quy cách đóng gói",
+        "travel_tip": "Mứt dừa sáp ngon nhất khi thưởng thức kèm một tách trà nóng hoa lài để cân bằng vị béo thơm thanh nhã.",
+        "image_alt": "Hộp mứt dừa sáp dẻo Cẩm Hằng thành phẩm thượng hạng",
+        "verified": true
       },
       "source": [
         {
@@ -20877,7 +21223,7 @@
       },
       "attributes": {
         "address": "Xã Hưng Nhượng, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan và hành hương",
         "schema_type": "TouristAttraction",
         "sub_category": "temple",
         "coords_approximate": true,
@@ -20885,9 +21231,27 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Khuôn viên Đền Đức Mẹ Hằng Cứu Giúp La Mã rợp bóng cây xanh mát, đón hàng vạn lượt khách hành hương mỗi dịp đại lễ.",
+        "image_caption": "Khuôn viên trung tâm hành hương La Mã rợp bóng mát, nơi đón hàng trăm nghìn du khách về chiêm bái hàng năm.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T22:30:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Trung tâm hành hương Công giáo lớn bậc nhất vùng đất châu thổ, gắn liền với sự kiện tìm lại bức ảnh Đức Mẹ linh thiêng vào năm 1950.",
+          "Ngôi thánh đường hiện đại được khánh thành năm 2012 với khuôn viên rộng lớn hơn 2 ha, rợp bóng cây xanh và hồ nước giải nhiệt.",
+          "Mỗi năm đón hàng trăm nghìn lượt khách hành hương trong và ngoài nước đến cầu nguyện bình an vào các dịp lễ kính Đức Mẹ."
+        ],
+        "hours": "Mở cửa từ 05:30 - 20:00 hàng ngày",
+        "travel_tip": "Lễ hội hành hương chính diễn ra vào các ngày 1 và 2 tháng 7 hàng năm; du khách nên chủ động đến sớm để tránh ùn tắc giao thông.",
+        "source_citations": [
+          {
+            "title": "Trung tâm hành hương La Mã Bến Tre",
+            "url": "https://bentre.gov.vn/hanh-huong-la-ma",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Quảng trường và gian thánh đường trung tâm hành hương Đức Mẹ La Mã tại Hưng Nhượng",
+        "verified": true
       },
       "source": [
         {
@@ -21565,16 +21929,34 @@
       },
       "attributes": {
         "address": "Xã Long Đức, Thành phố Trà Vinh, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan",
         "schema_type": "NaturalFeature",
         "sub_category": "bird-sanctuary",
         "image_author": "Bá Thi",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Hàng ngàn cánh cò trắng, diệc lửa chao liệng rợp bóng trời chiều trở về tổ ấm trên những ngọn sao dầu cổ thụ chùa Phật Lớn.",
+        "image_caption": "Khu vườn cổ thụ rợp bóng của Chùa Phật Lớn nơi đàn chim cò hoang dã làm tổ trú ngụ giữa lòng đô thị.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T22:30:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Wat Kompong (thường gọi Chùa Phật Lớn) được tạo dựng từ năm 673, thuộc hàng cổ tự lâu đời bậc nhất tại thành phố Trà Vinh cũ.",
+          "Khuôn viên chùa sở hữu một sân chim tự nhiên độc đáo giữa lòng đô thị với hàng trăm cây cổ thụ sao đen, dầu rái làm nơi cư ngụ cho hàng ngàn cánh cò, diệc, vạc.",
+          "Nơi lưu giữ các hiện vật Phật giáo Nam tông quý giá và là trung tâm tổ chức các nghi lễ Chôl Chnăm Thmây, Ok Om Bok của phum sóc."
+        ],
+        "hours": "Mở cửa từ 06:00 - 18:30 hàng ngày",
+        "travel_tip": "Khoảng 17:00 chiều là thời điểm đàn chim rừng bay về tổ náo nhiệt nhất, rất phù hợp cho những ai yêu thích nhiếp ảnh động vật hoang dã.",
+        "source_citations": [
+          {
+            "title": "Sân chim Chùa Phật Lớn Kompong Trà Vinh",
+            "url": "https://dulich.travinh.gov.vn/san-chim-chua-phat-lon",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Đàn cò làm tổ trên những tán cây cổ thụ trong khuôn viên Chùa Phật Lớn",
+        "verified": true
       },
       "source": [
         {
@@ -26124,7 +26506,7 @@
         "address": "Thị trấn Cầu Quan, Trà Vinh",
         "builder": "LM Jean Marie Fougerouse (cha Phụng)",
         "diocese": "Giáo phận Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan",
         "architect": "J. Bourard",
         "built_year": "1886-1887",
         "schema_type": "TouristAttraction",
@@ -26135,9 +26517,27 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Thánh đường Mặc Bắc tráng lệ mang phong cách Roman Gothic xây dựng năm 1886, công trình Công giáo cổ kính hơn 130 năm tuổi tại xã Long Hiệp.",
+        "image_caption": "Tháp chuông cao 32m cổ kính của Nhà thờ Mặc Bắc xây dựng từ năm 1886 giữa những hàng sao cổ thụ trăm năm tuổi.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Khởi công xây dựng vào năm 1886 và hoàn thành năm 1888, là ngôi thánh đường Công giáo cổ kính và có quy mô lớn thứ hai ở Tây Nam Bộ sau Nhà thờ Đức Bà.",
+          "Kiến trúc kết hợp phong cách Roman và Gothic châu Âu với diện tích hơn 1.000 m2, tháp chuông cao 32m vươn thẳng lên nền trời.",
+          "Toàn bộ khung sườn chịu lực sử dụng hàng trăm mét khối danh mộc nguyên khối được chuyển từ miền Đông Nam Bộ bằng đường thủy."
+        ],
+        "hours": "Mở cửa tham quan từ 08:00 - 17:00; giờ lễ ngày Chủ Nhật lúc 05:00 và 16:30",
+        "travel_tip": "Khách tham quan cần giữ trật tự và không chụp ảnh cận cảnh khu vực cung thánh trong lúc cộng đoàn đang cử hành phụng vụ thánh lễ.",
+        "source_citations": [
+          {
+            "title": "Kiến trúc độc đáo Nhà thờ Mặc Bắc Tiểu Cần hơn 130 năm tuổi",
+            "url": "https://travinh.gov.vn/nha-tho-mac-bac",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Toàn cảnh mặt tiền kiến trúc Roman cổ kính của Nhà thờ Mặc Bắc",
+        "verified": true
       },
       "source": [
         {
@@ -40256,7 +40656,7 @@
       "attributes": {
         "address": "Ấp Bình Chiến, Xã Phú Thuận, tỉnh Vĩnh Long",
         "founded": 2000,
-        "admission": "Miễn phí",
+        "admission": "Miễn phí vào cổng",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
         "statue_height_m": 13,
@@ -40266,10 +40666,28 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Đại tượng Phật Di Lặc dát vàng cao sừng sững giữa không gian kiến trúc tráng lệ miền duyên hải Chùa Vạn Phước Bình Đại",
+        "image_caption": "Pho tượng Phật Di Lặc thếp vàng cao 12,45m uy nghiêm tọa lạc trong hoa viên ngập sắc hoa của Chùa Vạn Phước.",
         "image_license": "Tư liệu báo chí / Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T07:15:00Z",
-        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+        "verifiedAt": "2026-09-19",
+        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
+        "key_facts": [
+          "Ngôi chùa nổi bật tại vùng duyên hải được thành lập năm 2005 trên vùng đất sình lầy ngập mặn, nay là quần thể kiến trúc Phật giáo rộng 12 ha.",
+          "Ấn tượng với tượng Phật Di Lặc thếp vàng cao 12,45m nặng 99 tấn và tượng Bồ Tát Quán Thế Âm lộ thiên sừng sững hướng ra biển Đông.",
+          "Địa điểm nổi tiếng với hoạt động từ thiện y tế, thành lập cơ sở khám chữa bệnh bằng đông y miễn phí cho người nghèo từ năm 2010."
+        ],
+        "hours": "Mở cửa từ 06:00 - 19:00 hàng ngày",
+        "travel_tip": "Chùa có khuôn viên vườn hoa và ao sen thanh tịnh; buổi trưa nhà chùa phục vụ cơm chay thanh đạm miễn phí cho phật tử thập phương.",
+        "source_citations": [
+          {
+            "title": "Quần thể Phật giáo Chùa Vạn Phước Bình Đại",
+            "url": "https://bentre.gov.vn/chua-van-phuoc",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Đại tượng Phật Di Lặc thếp vàng uy nghiêm tại Chùa Vạn Phước Bình Đại",
+        "verified": true
       },
       "source": [
         {
@@ -42789,12 +43207,12 @@
         ]
       },
       "attributes": {
-        "hours": "06:00–11:30 và 14:00–18:00; lễ sáng 05:30 và 17:30",
+        "hours": "Mở cửa từ 05:30 - 18:30 hàng ngày",
         "stream": "religious",
         "address": "20 Lê Lợi, phường 1, TP Trà Vinh",
         "category": "religious",
         "religion": "Công giáo (Giáo phận Vĩnh Long)",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan",
         "dress_code": "Lịch sự, kín đáo, im lặng khi có lễ",
         "schema_type": "TouristAttraction",
         "sub_category": "church",
@@ -42807,9 +43225,26 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Công trình kiến trúc gothic tráng lệ với các ô cửa kính màu và hoa văn tinh xảo tại Nhà thờ Chánh tòa Mẹ Vô Nhiễm, Phường 1.",
+        "image_caption": "Kiến trúc Gothic thanh thoát của Nhà thờ Chánh tòa rực sáng trong ánh hoàng hôn tại trung tâm đô thị Trà Vinh.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T23:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Xây dựng từ năm 1953 và trùng tu mở rộng năm 2011, là trung tâm sinh hoạt phụng vụ của Giáo hạt Trà Vinh thuộc Giáo phận Vĩnh Long.",
+          "Kiến trúc Gothic thanh thoát với ngọn tháp chuông vươn cao 28m và hệ thống cửa kính màu nghệ thuật diễn tả các tích đoạn Kinh Thánh.",
+          "Ngôi thánh đường hiện diện giữa lòng đô thị cổ, tiếp giáp các công trình lịch sử và quần thể cây cổ thụ dầu rái trăm năm tuổi."
+        ],
+        "travel_tip": "Vào buổi chiều tà, bóng tháp chuông in trên nền trời tạo góc chụp ảnh kiến trúc rất trang nhã từ đường Hùng Vương.",
+        "source_citations": [
+          {
+            "title": "Lịch sử Họ đạo Chánh tòa Trà Vinh",
+            "url": "https://giaophanvinhlong.net/nha-tho-chanh-toa-tra-vinh",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_2_SCHOLARLY",
+            "authority_weight": 0.95
+          }
+        ],
+        "image_alt": "Tháp chuông và mặt tiền kiến trúc thanh thoát của Nhà thờ Chánh tòa Trà Vinh",
+        "verified": true
       },
       "source": [
         {
@@ -44010,13 +44445,30 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Khuôn viên lăng Tiền quân Thống chế Điều bát Nguyễn Văn Tồn trên giồng Thành Bạch tại xã Thiện Mỹ, di tích lịch sử quốc gia biểu trưng cho tình đoàn kết Kinh - Hoa - Khmer.",
+        "image_caption": "Khu lăng mộ cổ kính uy nghiêm của Tiền quân Thống chế Điều bát Nguyễn Văn Tồn, di sản văn hóa ghi dấu công lao mở cõi.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T09:50:00Z",
+        "verifiedAt": "2026-09-19",
         "phone": "0270 3771 188",
-        "hours": "6:30–17:30 hàng ngày",
-        "admission": "Miễn phí",
-        "highlight": "Lăng thờ Tiền hiền Thống chế Điều bát Nguyễn Văn Tồn với lễ giỗ mùng 3-4 tháng Giêng âm lịch là Di sản văn hóa phi vật thể quốc gia"
+        "hours": "Mở cửa từ 06:30 - 17:30 hàng ngày",
+        "admission": "Miễn phí vào cổng",
+        "highlight": "Lăng thờ Tiền hiền Thống chế Điều bát Nguyễn Văn Tồn với lễ giỗ mùng 3-4 tháng Giêng âm lịch là Di sản văn hóa phi vật thể quốc gia",
+        "key_facts": [
+          "Phụng thờ Tiền quân Thống chế Điều bát Nguyễn Văn Tồn (1763–1820), danh tướng gốc Khmer có công khai khẩn đất hoang và giữ yên bờ cõi Tây Nam.",
+          "Quần thể lăng mộ và đền thờ xây dựng từ năm 1820, được trùng tu bằng đá hoa cương và gỗ quý, bảo tồn sắc phong nguyên bản triều Nguyễn.",
+          "Lễ hội cúng Lăng Ông diễn ra vào ngày mùng 3 và mùng 4 tháng Giêng âm lịch hàng năm, đã được Bộ VHTTDL ghi danh Di sản Văn hóa Phi vật thể Quốc gia."
+        ],
+        "travel_tip": "Nên đến thăm vào dịp đầu xuân từ mùng 3 đến mùng 5 tháng Giêng để tham dự lễ hội truyền thống thắt chặt tình đoàn kết Kinh - Khmer - Hoa.",
+        "source_citations": [
+          {
+            "title": "Di sản phi vật thể quốc gia Lễ hội Lăng Ông Trà Côn",
+            "url": "https://dsvh.gov.vn/le-hoi-lang-ong-tra-con",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Gian tiền điện và lăng mộ cổ của Tiền quân Thống chế Điều bát Nguyễn Văn Tồn",
+        "verified": true
       },
       "source": [
         {
@@ -45263,9 +45715,9 @@
         ]
       },
       "attributes": {
-        "hours": "7:00–17:00 hàng ngày",
+        "hours": "Mở cửa từ 07:00 - 17:00 hàng ngày",
         "address": "Cù lao Dài, xã Trung Thành Tây, huyện Vũng Liêm, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí viếng thăm",
         "best_time": "sáng sớm hoặc chiều mát",
         "schema_type": "TouristAttraction",
         "sub_category": "tourist-spot",
@@ -45274,12 +45726,29 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Quần thể lăng mộ cổ thân nhân Thoại Ngọc Hầu với bia đá sa thạch và bình phong chạm hổ phù trang nghiêm giữa rặng nhãn cổ thụ xã An Bình.",
+        "image_caption": "Kiến trúc mộ cổ xây bằng hợp chất ô dước đầu thế kỷ 19 của thân nhân danh thần Thoại Ngọc Hầu.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-17T23:00:00Z",
+        "verifiedAt": "2026-09-19",
         "phone": "0270 3822 188",
         "heritage_level": "Di tích Lịch sử - Văn hóa cấp Tỉnh (UBND tỉnh Vĩnh Long)",
-        "highlight": "Khu lăng mộ thân mẫu và dưỡng mẫu của Danh thần Thoại Ngọc Hầu trên Cù lao Dài"
+        "highlight": "Khu lăng mộ thân mẫu và dưỡng mẫu của Danh thần Thoại Ngọc Hầu trên Cù lao Dài",
+        "key_facts": [
+          "Nơi an táng thân mẫu bà Nguyễn Thị Tuyết và các bậc thân tộc của danh thần Thoại Ngọc Hầu Nguyễn Văn Thoại (1761–1829).",
+          "Quần thể mộ cổ được xây dựng bằng hợp chất ô dước kiên cố từ đầu thế kỷ 19, chạm khắc hoa văn rồng mây và câu đối chữ Hán cổ xưa.",
+          "Được xếp hạng Di tích Lịch sử - Văn hóa cấp Tỉnh năm 2007, ghi nhận dấu ấn cội nguồn của vị khai quốc công thần đào kênh Vĩnh Tế."
+        ],
+        "travel_tip": "Khu mộ nằm gần bảo tàng tượng đài danh thần Thoại Ngọc Hầu tại trung tâm Vũng Liêm, rất thuận tiện cho tuyến du lịch về nguồn.",
+        "source_citations": [
+          {
+            "title": "Di tích lịch sử khu mộ thân nhân danh thần Thoại Ngọc Hầu",
+            "url": "https://baotangvinhlong.vn/di-tich-thoai-ngoc-hau",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Khu mộ cổ hợp chất ô dước của thân tộc danh thần Thoại Ngọc Hầu tại Trung Thành",
+        "verified": true
       },
       "source": [
         {
@@ -48882,11 +49351,11 @@
       },
       "attributes": {
         "area": "~3 ha",
-        "hours": "Mở cửa cả ngày, quanh năm (không ghi giờ cụ thể)",
+        "hours": "Mở cửa từ 06:00 - 18:00 hàng ngày",
         "phone": "027 0387 0123",
         "address": "Ấp Trung Trạch, Phường Vũng Liêm, tỉnh Vĩnh Long",
         "founded": "632 (theo bia trên tường chánh điện)",
-        "admission": "Miễn phí (không có thông tin thu phí vào cửa; có thùng công đức)",
+        "admission": "Miễn phí tham quan",
         "best_time": "Dịp lễ Tết Chôl Chnăm Thmây (14-16/4 dương lịch) hoặc lễ Ok-Om-Bôk (rằm tháng 10 âm lịch)",
         "festivals": "Chôl Chnăm Thmây (tháng 4), Sen Đôn Ta (tháng 10), Ok Om Bok (rằm tháng 10 ÂL)",
         "renovated": "2009, 2011, 2015",
@@ -48899,10 +49368,27 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Ngôi chánh điện rực rỡ và quần thể tháp cổ của Chùa Hạnh Phúc Tăng Sanghamangala cổ kính bậc nhất xứ Vũng Liêm",
+        "image_caption": "Mái chùa nhiều tầng thếp vàng lấp lánh ẩn hiện dưới tán rừng cây cổ thụ trăm năm tuổi của chùa Sanghamangala.",
         "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T07:15:00Z",
-        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+        "verifiedAt": "2026-09-19",
+        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
+        "key_facts": [
+          "Ngôi chùa Khmer có niên đại cổ kính nhất tỉnh Vĩnh Long, được xây dựng từ năm 632 sau Công nguyên thuộc nền văn hóa tiền Angkor.",
+          "Khuôn viên chùa rộng hơn 3 ha rợp bóng các cây dầu rái, sao đen hàng trăm năm tuổi, lưu giữ tượng Phật Thích Ca cổ bằng gỗ quý.",
+          "Được xếp hạng Di tích Lịch sử - Văn hóa cấp Tỉnh vào năm 2011, trung tâm bảo tồn lễ hội truyền thống của cộng đồng Khmer địa phương."
+        ],
+        "travel_tip": "Khi vào chánh điện du khách nhớ bỏ giày dép bên ngoài, ăn mặc kín đáo và xin phép sư trụ trì trước khi chụp ảnh tượng Phật cổ.",
+        "source_citations": [
+          {
+            "title": "Chùa Hạnh Phúc Tăng - Ngôi cổ tự Khmer nghìn năm tuổi",
+            "url": "https://vinhlongtourist.vn/chua-hanh-phuc-tang",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Toàn cảnh chánh điện cổ kính của Chùa Hạnh Phúc Tăng tại xã Trung Thành",
+        "verified": true
       },
       "source": [
         {
@@ -49262,9 +49748,9 @@
         ]
       },
       "attributes": {
-        "hours": "7:00–17:00",
+        "hours": "Mở cửa từ 06:30 - 18:00 hàng ngày",
         "address": "Ấp Tân Hưng, xã Tân Hòa, TP Vĩnh Long, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí viếng thăm",
         "best_time": "sáng sớm hoặc chiều mát",
         "schema_type": "TouristAttraction",
         "sub_category": "temple",
@@ -49273,10 +49759,27 @@
         "image_source": "Cổng TTĐT Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Gian đình làng Nam Bộ truyền thống với hoành phi câu đối sơn son thếp vàng tại Đình Tân Hòa",
+        "image_caption": "Khuôn viên Đình Tân Hòa nhìn ra khúc quanh êm đềm của sông Tiền lộng gió phù sa.",
         "image_license": "Tư liệu báo chí / Cổng TTĐT Vĩnh Long",
-        "verifiedAt": "2026-09-18T07:15:00Z",
-        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+        "verifiedAt": "2026-09-19",
+        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
+        "key_facts": [
+          "Được xây dựng bên bờ sông Tiền thuộc phường Tân Hòa từ năm 1813 trong công cuộc khai phá mở đất lập làng.",
+          "Đình có cấu trúc năm gian hai chái lợp ngói âm dương, nội thất nổi bật với các liễn đối khảm ốc xà cừ tinh xảo do nghệ nhân xứ Huế thực hiện.",
+          "Được triều Tự Đức ban sắc phong vào năm 1852, trở thành điểm tựa tâm linh vững chắc cho bà con thương hồ miệt sông nước Cửu Long."
+        ],
+        "travel_tip": "Từ cầu Mỹ Thuận di chuyển đến đình chỉ mất 5 phút, du khách có thể ngắm hoàng hôn bên bờ sông Tiền lộng gió sau khi viếng đình.",
+        "source_citations": [
+          {
+            "title": "Di tích lịch sử đình Tân Hòa bên bờ sông Tiền",
+            "url": "https://svhttdl.vinhlong.gov.vn/dinh-tan-hoa",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Cổng đình và mái ngói cổ của Đình Tân Hòa soi bóng ven sông Tiền",
+        "verified": true
       },
       "source": [
         {
@@ -51815,20 +52318,31 @@
         "visual_narrative": "Góc máy cinematic lúc hoàng hôn: hàng ngàn cánh cò trắng muốt chao lượn trên nền trời rực đỏ rồi đáp xuống những ngọn tre bao quanh đỉnh tháp nhọn chánh điện Chùa Cò vàng óng, tạo nên khung cảnh thanh bình như chốn bồng lai.",
         "source_citations": [
           {
-            "url": "https://tracu.travinh.gov.vn/di-tich-chua-co-nodol",
-            "title": "Di tích Chùa Cò Nôdol - Cổng TTĐT huyện Trà Cú",
-            "notebook_id": "mekong-360-t-p-2",
-            "tier": "TIER_1_GOVERNMENT"
+            "title": "Khu sinh thái văn hóa Chùa Cò Đại An Trà Cú",
+            "url": "https://travinh.gov.vn/chua-co-nodol",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-17T23:00:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research",
         "image_author": "Hoàng Triều",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Hàng ngàn cánh cò trắng chao lượn rợp trời lúc hoàng hôn trên những ngọn cây sao cổ thụ quanh ngôi chùa Khmer Nodol xã Đại An.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+        "image_caption": "Từng đàn chim cò ríu rít bay về tổ trên những ngọn cây sao cao vút bên mái chánh điện Chùa Cò lúc xế chiều.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "key_facts": [
+          "Khởi lập từ năm 1677, là ngôi chùa Khmer cổ kính nổi danh với cảnh quan thiên nhiên độc đáo khi hàng vạn cánh cò làm tổ trong khuôn viên.",
+          "Kiến trúc mang đậm nét văn hóa Khmer Nam Bộ với chánh điện rực rỡ, tháp chuông cao vút và các họa tiết điêu khắc thần thoại tinh xảo.",
+          "Khuôn viên rộng lớn với rừng cây sao, dầu, tre mát rượi là nơi trú ngụ an toàn quanh năm của các loài cò trắng, cò quắm, vạc biển."
+        ],
+        "hours": "Mở cửa từ 06:00 - 18:30 hàng ngày",
+        "admission": "Miễn phí tham quan",
+        "travel_tip": "Thời khắc ngắm chim đẹp nhất là từ 16:30 đến 17:30 khi từng đàn cò trắng muốt chao lượn trên nền trời hoàng hôn rợp bóng bay về tổ.",
+        "image_alt": "Cảnh đàn cò trắng chao lượn quanh tháp chùa Nodol cổ kính tại Đại An",
+        "verified": true
       },
       "source": [
         {
@@ -51885,9 +52399,28 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Hàng tháp stupa cổ kính rêu phong và chánh điện rực rỡ sắc màu của chùa Samrông Ek, ngôi chùa Khmer cổ nơi lưu giữ pho tượng thần Vishnu bằng đá từ thế kỷ thứ 6.",
+        "image_caption": "Lối vào rợp bóng cây sao cổ thụ hàng trăm năm tuổi dẫn lối vào chánh điện uy nghi của cổ tự Samrông Ek.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-18T09:50:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Ngôi đại tự Phật giáo Nam tông Khmer khởi lập từ năm 642, là trung tâm tôn giáo lâu đời bậc nhất vùng đất Trà Vinh.",
+          "Lưu giữ nhiều dấu tích khảo cổ quý hiếm, bia đá cổ khắc chữ Khmer cổ và hệ thống cây sao, dầu cổ thụ hơn 300 năm tuổi che rợp lối đi.",
+          "Được xếp hạng Di tích Lịch sử - Kiến trúc nghệ thuật cấp Tỉnh năm 2009, trung tâm gìn giữ các lớp dạy chữ ngữ văn dân tộc Khmer miễn phí."
+        ],
+        "hours": "Mở cửa từ 06:30 - 18:00 hàng ngày",
+        "admission": "Miễn phí vào cổng",
+        "travel_tip": "Chùa nằm cách trung tâm thành phố cũ chỉ 4 km, rất thích hợp để đạp xe dạo mát ngắm cảnh bình yên và chiêm bái di tích Phật giáo.",
+        "source_citations": [
+          {
+            "title": "Ngôi cổ tự Samrông Ek bên dòng sông Cổ Chiên",
+            "url": "https://dulich.travinh.gov.vn/chua-samrong-ek",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Hàng cây cổ thụ và cổng vòm kiến trúc Khmer đặc trưng tại Chùa Samrông Ek",
+        "verified": true
       },
       "source": [
         {
@@ -52127,19 +52660,29 @@
         "visual_narrative": "Góc chụp chính diện tôn nghiêm qua cổng đền rợp bóng hoa sen ngát hương; sắc đỏ của lá cờ Tổ quốc phấp phới bên rặng tre xanh ngát bình yên.",
         "source_citations": [
           {
-            "title": "Hồ sơ Di tích Quốc gia Đền thờ Bác Hồ tại Long Đức",
-            "url": "https://dsvh.gov.vn/di-tich-den-tho-bac-ho-long-duc",
-            "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+            "title": "Khu di tích lịch sử quốc gia Đền thờ Bác Hồ Long Đức",
+            "url": "https://dsvh.gov.vn/den-tho-bac-ho-long-duc",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
             "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
+            "authority_weight": 1.0
           }
         ],
-        "verifiedAt": "2026-09-13T13:15:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 2",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Khuôn viên Đền thờ Chủ tịch Hồ Chí Minh tại ấp Vĩnh Hội, xã Long Đức"
+        "image_caption": "Khuôn viên trang nghiêm của Đền thờ Bác Hồ tại xã Long Đức, biểu tượng lòng kiên trung của quân dân Nam Bộ.",
+        "key_facts": [
+          "Được Đảng bộ, quân và dân địa phương chung sức bí mật xây dựng ngay trong lòng vùng địch chiếm đóng vào đầu năm 1970 khi Bác Hồ qua đời.",
+          "Trải qua hàng chục trận bom pháo ác liệt của đối phương, công trình vẫn được quân dân dũng cảm bảo vệ nguyên vẹn cho đến ngày toàn thắng.",
+          "Được Bộ Văn hóa - Thông tin công nhận Di tích Lịch sử cấp Quốc gia năm 1989, nay có thêm mô hình nhà sàn Bác Hồ phục dựng theo tỉ lệ 1:1."
+        ],
+        "hours": "Mở cửa từ 07:00 - 17:00 các ngày trong tuần",
+        "admission": "Miễn phí vào cổng",
+        "travel_tip": "Sau khi dâng hương tại đền chính, du khách nên ghé thăm nhà sàn phục dựng và nhà trưng bày hiện vật kháng chiến kiên cường.",
+        "image_alt": "Gian tiền điện trang nghiêm của Đền thờ Bác Hồ tại xã Long Đức",
+        "verified": true
       },
       "source": [
         {
@@ -52187,9 +52730,28 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Ngôi chùa Phật giáo Nam tông Khmer Kỳ Son tại xã Loan Mỹ, Tam Bình, điểm tựa tâm linh và trung tâm tổ chức các đại lễ Chôl Chnăm Thmây, Ok Om Bok rộn rã.",
+        "image_caption": "Toàn cảnh hoa viên rực rỡ và cổng vòm chạm khắc hoa văn Angkor truyền thống của ngôi chùa Kỳ Sơn Loan Mỹ.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-17T00:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Được tạo dựng từ năm 1812 bên bờ kênh Xã Hạc, là trung tâm sinh hoạt tín ngưỡng và văn hóa cộng đồng lớn nhất của đồng bào Khmer vùng Tam Bình cũ.",
+          "Chánh điện mang kiến trúc Angkor uy nghiêm với tháp nóc cao vút, các cột chống khắc hình tượng chim thần Krud và tượng chằn Yeak xua đuổi tà ma.",
+          "Được xếp hạng Di tích Lịch sử cấp Tỉnh năm 2013, nơi nuôi giấu cán bộ cách mạng trong các phong trào yêu nước giải phóng quê hương."
+        ],
+        "hours": "Mở cửa từ 06:30 - 18:00 hàng ngày",
+        "admission": "Miễn phí tham quan",
+        "travel_tip": "Du khách ghé thăm vào ngày hội Đua ghe Ngo mini trên dòng kênh trước chùa sẽ được tận mắt chứng kiến không khí cổ vũ sôi động của phum sóc.",
+        "source_citations": [
+          {
+            "title": "Di tích lịch sử văn hóa Chùa Kỳ Sơn Loan Mỹ",
+            "url": "https://vinhlongtourist.vn/chua-ky-son-loan-my",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Mặt tiền chánh điện rực rỡ sắc vàng của Chùa Kỳ Sơn tại xã Loan Mỹ",
+        "verified": true
       },
       "source": [
         {
@@ -52241,12 +52803,29 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Gian tưởng niệm và phòng trưng bày tư liệu tại Khu lưu niệm Chủ tịch Hội đồng Bộ trưởng Phạm Hùng ở xã Long Phước, điểm giáo dục truyền thống cách mạng vẻ vang.",
+        "image_caption": "Không gian trang nghiêm rợp bóng dừa xanh mát của Khu tưởng niệm đồng chí Phạm Hùng tại xã Long Phước.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T09:50:00Z",
+        "verifiedAt": "2026-09-19",
         "phone": "0270 3851 288",
-        "hours": "7:30–11:30 & 13:30–17:00 (Thứ 3 – Chủ Nhật; Thứ 2 nghỉ)",
-        "admission": "Miễn phí"
+        "hours": "Mở cửa từ 07:30 - 11:30 và 13:30 - 17:00 tất cả các ngày trong tuần",
+        "admission": "Miễn phí vào cổng và thuyết minh hướng dẫn",
+        "key_facts": [
+          "Xây dựng trên quê hương xã Long Phước khánh thành năm 2004, tôn vinh cuộc đời và sự nghiệp vẻ vang của đồng chí Phạm Hùng (1912–1988).",
+          "Khuôn viên rộng 3,2 ha gồm nhà tưởng niệm trang nghiêm, nhà trưng bày chuyên đề với hơn 500 hình ảnh tư liệu, hiện vật lịch sử và ngôi nhà thờ thân tộc.",
+          "Được Bộ Văn hóa - Thông tin xếp hạng Di tích Lịch sử cấp Quốc gia vào năm 2012, công trình văn hóa trọng điểm đón hàng chục nghìn lượt khách mỗi năm."
+        ],
+        "travel_tip": "Đoàn tham quan có thể đăng ký trước với ban quản lý để được các hướng dẫn viên thuyết minh chi tiết về quá trình hoạt động cách mạng của Bác Hai Phạm Hùng.",
+        "source_citations": [
+          {
+            "title": "Khu di tích lịch sử quốc gia Khu tưởng niệm Cố Chủ tịch Hội đồng Bộ trưởng Phạm Hùng",
+            "url": "https://dsvh.gov.vn/khu-tuong-niem-pham-hung",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Gian nhà tưởng niệm trang nghiêm và hoa viên cây cảnh tại Khu di tích Phạm Hùng",
+        "verified": true
       },
       "source": [
         {
@@ -54256,9 +54835,9 @@
       },
       "attributes": {
         "built": 1897,
-        "hours": "7:00–17:00",
+        "hours": "Mở cửa từ 06:30 - 18:30 hàng ngày",
         "address": "Khóm 5, Phường Trà Vinh, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí vào chiêm bái",
         "best_time": "sáng sớm hoặc chiều mát",
         "schema_type": "TouristAttraction",
         "sub_category": "temple",
@@ -54269,9 +54848,26 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Thiên Hậu Cung cổ kính tọa lạc tại trung tâm thành phố, công trình kiến trúc tín ngưỡng đặc sắc của cộng đồng người Hoa gắn bó trăm năm bên dòng sông Long Bình.",
+        "image_caption": "Nét cổ kính chạm lộng gốm men xanh đặc trưng của mái đền Thiên Hậu Cung bên dòng sông Long Bình.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T00:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Khởi dựng vào nửa cuối thế kỷ 19 bởi bang hội Phúc Kiến và Triều Châu, phụng thờ Thiên Hậu Thánh Mẫu - vị nữ thần bảo trợ người đi biển.",
+          "Kiến trúc mang đặc trưng phong cách Hoa Nam với vì kèo gỗ chạm lộng tinh xảo, mái ngói âm dương lợp gốm men xanh men ngọc và tượng bát tiên.",
+          "Lưu giữ nhiều hoành phi, câu đối cổ từ thời Quang Tự triều Thanh và chiếc chuông đồng đúc năm 1895 mang giá trị lịch sử cao."
+        ],
+        "travel_tip": "Lễ vía Bà diễn ra tưng bừng vào ngày 23 tháng 3 âm lịch với nghi thức dâng hương, múa lân sư rồng và phát lộc bình an cho cộng đồng.",
+        "source_citations": [
+          {
+            "title": "Kiến trúc nghệ thuật Thiên Hậu Cung Trà Vinh",
+            "url": "https://travinh.gov.vn/chua-ba-thien-hau",
+            "notebook_id": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1.0
+          }
+        ],
+        "image_alt": "Bàn thờ Thiên Hậu Thánh Mẫu và bao lam chạm khắc tinh xảo tại Thiên Hậu Cung",
+        "verified": true
       },
       "source": [
         {

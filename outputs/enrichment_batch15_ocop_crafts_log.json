@@ -1,0 +1,130 @@
+{
+  "updated_count": 25,
+  "enriched": [
+    {
+      "id": "chom-chom-cau-ke",
+      "name": "Chôm chôm Cầu Kè",
+      "status": "enriched"
+    },
+    {
+      "id": "nuoc-khoang-thien-nhien-sao-bien-starfiwa",
+      "name": "Nước khoáng thiên nhiên Sao Biển (Starfiwa)",
+      "status": "enriched"
+    },
+    {
+      "id": "banh-kep-thuy-kieu",
+      "name": "Bánh kẹp Thúy Kiều",
+      "status": "enriched"
+    },
+    {
+      "id": "banh-tet-tu-quy-hai-ly",
+      "name": "Bánh tét Tứ Quý (Hai Lý)",
+      "status": "enriched"
+    },
+    {
+      "id": "bun-tuoi-an-dao",
+      "name": "Bún tươi An Đào",
+      "status": "enriched"
+    },
+    {
+      "id": "buoi-da-xanh-ben-tre",
+      "name": "Bưởi Da Xanh Bến Tre",
+      "status": "enriched"
+    },
+    {
+      "id": "buoi-da-xanh-giong-trom",
+      "name": "Bưởi Da Xanh Giồng Trôm",
+      "status": "enriched"
+    },
+    {
+      "id": "ca-bong-lau-mot-nang-binh-dai",
+      "name": "Cá bông lau một nắng Bình Đại",
+      "status": "enriched"
+    },
+    {
+      "id": "ca-doi-kho-mot-nang-binh-dai",
+      "name": "Cá đối khô một nắng Bình Đại",
+      "status": "enriched"
+    },
+    {
+      "id": "ca-kho-dac-san-thanh-phong-ocop",
+      "name": "Cá khô đặc sản Thạnh Phong (OCOP)",
+      "status": "enriched"
+    },
+    {
+      "id": "cua-bien-va-ngheu-thanh-phu",
+      "name": "Cua biển và nghêu Thạnh Phú",
+      "status": "enriched"
+    },
+    {
+      "id": "cu-cai-muoi-chit-sa",
+      "name": "Củ cải muối Chịt Sa",
+      "status": "enriched"
+    },
+    {
+      "id": "dua-sap-tra-vinh",
+      "name": "Dừa sáp Trà Vinh",
+      "status": "enriched"
+    },
+    {
+      "id": "gao-sach-tom-lua-thanh-phu-ocop",
+      "name": "Gạo sạch Tôm-Lúa Thạnh Phú (OCOP)",
+      "status": "enriched"
+    },
+    {
+      "id": "hoa-cuc-mam-xoi-long-thoi",
+      "name": "Hoa cúc mâm xôi Long Thới",
+      "status": "enriched"
+    },
+    {
+      "id": "hop-tac-xa-thuy-san-thanh-loi-ngheu-thanh-hai-ocop",
+      "name": "Hợp tác xã thủy sản Thạnh Lợi – Nghêu Thạnh Hải (OCOP)",
+      "status": "enriched"
+    },
+    {
+      "id": "keo-dua-mo-cay-co-so-tuyet-phung",
+      "name": "Kẹo dừa Mỏ Cày (cơ sở Tuyết Phụng)",
+      "status": "enriched"
+    },
+    {
+      "id": "lang-nghe-bo-choi-my-an",
+      "name": "Làng nghề bó chổi Mỹ An",
+      "status": "enriched"
+    },
+    {
+      "id": "lang-nghe-san-xuat-muoi-bao-thanh",
+      "name": "Làng nghề sản xuất muối Bảo Thạnh",
+      "status": "enriched"
+    },
+    {
+      "id": "lang-nghe-tieu-thu-cong-nghiep-ham-giang-tre-truc",
+      "name": "Làng nghề tiểu thủ công nghiệp Hàm Giang (tre, trúc)",
+      "status": "enriched"
+    },
+    {
+      "id": "lap-xuong-ngoc-huong",
+      "name": "Lạp xưởng Ngọc Hương",
+      "status": "enriched"
+    },
+    {
+      "id": "mam-bo-hoc-prohok",
+      "name": "Mắm bò hóc (Prohok)",
+      "status": "enriched"
+    },
+    {
+      "id": "mat-ong-rung-ban-nguyen-van-bao",
+      "name": "Mật ong rừng bần Nguyễn Văn Bao",
+      "status": "enriched"
+    },
+    {
+      "id": "muoi-bao-thanh",
+      "name": "Muối Bảo Thạnh",
+      "status": "enriched"
+    },
+    {
+      "id": "mut-dua-sap-cam-hang",
+      "name": "Mứt dừa sáp Cẩm Hằng",
+      "status": "enriched"
+    }
+  ]
+}

@@ -121,3 +121,40 @@ def test_image_hygiene_caption_violations(tmp_path: Path) -> None:
     assert any("từ ngữ filler" in m for m in msgs)
     assert any("mẫu câu sáo mòn" in m for m in msgs)
     assert any("tỉnh cũ" in m for m in msgs)
+
+
+def test_image_hygiene_alt_violations(tmp_path: Path) -> None:
+    entities = [
+        {
+            "id": "flawed-alt-short",
+            "name": "Alt Short",
+            "attributes": {
+                "image_caption": "Chú thích hợp lệ đầy đủ nội dung tư liệu.",
+                "image_alt": "Ảnh chụp",
+            },
+        },
+        {
+            "id": "flawed-alt-filler",
+            "name": "Alt Filler",
+            "attributes": {
+                "image_caption": "Chú thích hợp lệ đầy đủ nội dung tư liệu.",
+                "image_alt": "Bức ảnh thiên đường du lịch miệt vườn",
+            },
+        },
+        {
+            "id": "flawed-alt-admin",
+            "name": "Alt Admin",
+            "attributes": {
+                "image_caption": "Chú thích hợp lệ đầy đủ nội dung tư liệu.",
+                "image_alt": "Toàn cảnh chợ tại huyện Long Hồ",
+            },
+        },
+    ]
+    _setup_mock_repo(tmp_path, entities)
+    check = ImageHygieneCheck(root=tmp_path)
+    res = check.run()
+    assert res["count"] == 3
+    msgs = [v["msg"] for v in res["violations"]]
+    assert any("image_alt) quá ngắn" in m for m in msgs)
+    assert any("từ ngữ filler" in m for m in msgs)
+    assert any("cấp huyện/thị cũ" in m for m in msgs)
