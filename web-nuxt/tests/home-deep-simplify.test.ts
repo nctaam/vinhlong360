@@ -142,6 +142,11 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     // Folio III Stay card action button arrow
     expect(staysVue).toMatch(/\.home-stay-card__action\s+\.btn:hover\s+\.line-icon:last-child\s*\{[^}]*transform:\s*translateX\(3px\)/)
   })
+
+  it('Task 20: Catalog AEO Plaque CTA button enforces tactile active press scale', () => {
+    const aeoVue = readFileSync(resolve(__dirname, '../components/CatalogAeoPlaque.vue'), 'utf8')
+    expect(aeoVue).toMatch(/\.catalog-aeo-plaque__cta:active\s*\{[^}]*transform:\s*scale\(0\.98\);/)
+  })
 })
 
 

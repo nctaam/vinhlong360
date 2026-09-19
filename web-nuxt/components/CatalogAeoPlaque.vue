@@ -230,6 +230,10 @@ const titleId = `catalog-aeo-title-${instanceId}`
   transform: translateY(-1px);
 }
 
+.catalog-aeo-plaque__cta:active {
+  transform: scale(0.98);
+}
+
 .dark .catalog-aeo-plaque__cta:hover {
   background: rgba(var(--white-rgb), 0.08);
 }
