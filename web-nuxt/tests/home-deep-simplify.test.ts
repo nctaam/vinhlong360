@@ -59,5 +59,11 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(showcaseVue).toContain('home-curated-satellite__title')
     expect(showcaseVue).toMatch(/home-curated-satellite__overlay[\s\S]*?padding:\s*var\(--space-4\)/)
   })
+
+  it('Task 8: Hero Feature Dossier coordinates consistently render compass icon', () => {
+    const dossierVue = readFileSync(resolve(__dirname, '../components/home/HomeFeatureDossier.vue'), 'utf8')
+    expect(dossierVue).toMatch(/home-feature-dossier__coords[\s\S]*?<IconLine\s+name="compass"/)
+  })
 })
+
 

@@ -56,7 +56,7 @@
           :data-geo-coordinates="coordinates || '10.254° N, 105.972° E'"
           :title="`Xem vị trí trên bản đồ (${coordinates || '10.254° N, 105.972° E'})`"
         >
-          <IconLine name="pin" aria-hidden="true" />
+          <IconLine name="compass" aria-hidden="true" />
           <span>{{ coordinates || '10.254° N, 105.972° E' }}</span>
         </NuxtLink>
         <span
@@ -65,7 +65,7 @@
           :data-geo-coordinates="coordinates || '10.254° N, 105.972° E'"
           :title="`Tọa độ thực địa: ${coordinates || '10.254° N, 105.972° E'}`"
         >
-          <IconLine name="pin" aria-hidden="true" />
+          <IconLine name="compass" aria-hidden="true" />
           <span>{{ coordinates || '10.254° N, 105.972° E' }}</span>
         </span>
         <SourceMark
