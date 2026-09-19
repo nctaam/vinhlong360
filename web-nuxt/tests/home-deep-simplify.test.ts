@@ -117,6 +117,13 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     const aeoVue = readFileSync(resolve(__dirname, '../components/CatalogAeoPlaque.vue'), 'utf8')
     expect(aeoVue).toMatch(/\.catalog-aeo-plaque__cta\s*\{[^}]*border-radius:\s*var\(--radius-control\);/)
   })
+
+  it('Task 17: Folio V Continuation waypoints structured as tactile cards with unified control radius and featured accent', () => {
+    const freshNocturneCss = readFileSync(resolve(__dirname, '../assets/css/home-nocturne.css'), 'utf8')
+    expect(freshNocturneCss).toMatch(/\.home-continuation__links\s+a\s*\{[^}]*border-radius:\s*var\(--radius-control\);/)
+    expect(freshNocturneCss).toMatch(/\.home-continuation__links\s+a\s*\{[^}]*background:\s*var\(--color-canvas\);/)
+    expect(freshNocturneCss).toMatch(/\.home-continuation__link--featured\s*\{[^}]*border-left:\s*3px\s+solid\s+var\(--alluvial-gold/)
+  })
 })
 
 
