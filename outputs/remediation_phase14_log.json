@@ -1,0 +1,78 @@
+[
+  {
+    "id": "ngay-hoi-van-hoa-the-thao-va-du-lich-huyen-cho-lach-ben-tre",
+    "action": "update_name",
+    "old": "Ngày hội Văn hóa - Thể thao và Du lịch Chợ Lách",
+    "new": "Ngày hội Văn hóa - Thể thao và Du lịch Chợ Lách"
+  },
+  {
+    "id": "hoi-thi-don-ca-tai-tu-cai-luong-huyen-long-ho",
+    "action": "update_name",
+    "old": "Hội thi Đờn ca tài tử - cải lương Long Hồ",
+    "new": "Hội thi Đờn ca tài tử - cải lương Long Hồ"
+  },
+  {
+    "id": "cau-lac-bo-don-ca-tai-tu-huyen-vung-liem",
+    "action": "update_name",
+    "old": "Câu lạc bộ đờn ca tài tử Vũng Liêm",
+    "new": "Câu lạc bộ đờn ca tài tử Vũng Liêm"
+  },
+  {
+    "id": "cau-lac-bo-don-ca-tai-tu-huyen-long-ho",
+    "action": "update_name",
+    "old": "Câu lạc bộ đờn ca tài tử Long Hồ",
+    "new": "Câu lạc bộ đờn ca tài tử Long Hồ"
+  },
+  {
+    "id": "cau-lac-bo-don-ca-tai-tu-huyen-tam-binh",
+    "action": "update_name",
+    "old": "Câu lạc bộ đờn ca tài tử Tam Bình",
+    "new": "Câu lạc bộ đờn ca tài tử Tam Bình"
+  },
+  {
+    "id": "cau-lac-bo-don-ca-tai-tu-huyen-tra-on",
+    "action": "update_name",
+    "old": "Câu lạc bộ đờn ca tài tử Trà Ôn",
+    "new": "Câu lạc bộ đờn ca tài tử Trà Ôn"
+  },
+  {
+    "id": "cau-lac-bo-don-ca-tai-tu-huyen-mang-thit",
+    "action": "update_name",
+    "old": "Câu lạc bộ đờn ca tài tử Mang Thít",
+    "new": "Câu lạc bộ đờn ca tài tử Mang Thít"
+  },
+  {
+    "id": "cau-lac-bo-don-ca-tai-tu-thi-xa-binh-minh",
+    "action": "update_name",
+    "old": "Câu lạc bộ đờn ca tài tử Bình Minh",
+    "new": "Câu lạc bộ đờn ca tài tử Bình Minh"
+  },
+  {
+    "id": "itinerary-tuan-trang-mat-mien-tay-4n3d",
+    "action": "update_name",
+    "old": "Tuần trăng mật Miền Tây – 4 ngày 3 đêm",
+    "new": "Tuần trăng mật Nam Bộ 3 tỉnh – 4 ngày 3 đêm"
+  },
+  {
+    "id": "itinerary-tuan-trang-mat-mien-tay-4n3d",
+    "action": "update_summary",
+    "new": "Hành trình trăng mật 4 ngày 3 đêm ngọt ngào qua ba vùng đất: nghỉ dưỡng sinh thái ven sông Cổ Chiên, thưởng lãm bình minh Ba Động và ngắm hoàng hôn rực rỡ tại xứ dừa."
+  },
+  {
+    "id": "backpacker-mien-tay-3ngay-500k",
+    "action": "update_name",
+    "old": "Backpacker tiết kiệm 3 ngày dưới 500k/ngày - Miền Tây",
+    "new": "Backpacker tiết kiệm 3 ngày dưới 500k/ngày - Châu thổ Cửu Long"
+  },
+  {
+    "id": "backpacker-mien-tay-3ngay-500k",
+    "action": "update_summary",
+    "new": "Chuyến du hành ba lô tiết kiệm 3 ngày 2 đêm khám phá đời sống văn hóa, ẩm thực chợ quê và làng nghề truyền thống châu thổ Cửu Long với chi phí hợp lý."
+  },
+  {
+    "id": "neyu-tea---thi-tran-giong-trom",
+    "action": "update_name",
+    "old": "Neyu Tea - Thị Trấn Giồng Trôm",
+    "new": "Neyu Tea - Giồng Trôm"
+  }
+]

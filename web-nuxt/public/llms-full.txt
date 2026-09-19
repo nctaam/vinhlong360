@@ -19,7 +19,7 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tóm lược**: An Thạnh biến phần bỏ đi của trái dừa thành sợi chỉ có giá trị xuất khẩu — đó là câu chuyện về sự tài hoa của người Bến Tre với cây dừa. Xơ dừa được tách, đánh tơi, xe thành từng cuộn chỉ mịn màng hay thô để làm đệm, thảm, dây buộc thân thiện môi trường. Xưởng sản xuất thủ công xen lẫn bán cơ khí, tiếng máy xe chỉ rền rền cả ngày trong không khí thơm nhẹ mùi dừa tươi. Ghé thăm để hiểu chuỗi giá trị dừa Bến Tre từ gốc đến ngọn — và chọn mua sản phẩm xơ dừa thân thiện môi trường làm quà.
 
 #### [Làng nghề vòng quanh – Gốm, Kẹo dừa, Đan lát](https://vinhlong360.vn/dia-diem/itinerary-lang-nghe-vong-quanh)
-- **Mã ID**: `itinerary-lang-nghe-vong-quanh` | **Phân loại**: `itinerary` | **Địa bàn**: p-an-hoi | **Tọa độ**: N/A
+- **Mã ID**: `itinerary-lang-nghe-vong-quanh` | **Phân loại**: `itinerary` | **Địa bàn**: p-an-hoi | **Tọa độ**: [10.1830, 106.0963]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/itinerary-lang-nghe-vong-quanh.webp`
 - **Tác giả ảnh**: Ngọc Trảng · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
@@ -4421,12 +4421,12 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Công ty cổ phần Đầu tư dừa Bến Tre (BEINCO) tại huyện Mỏ Cày Bắc có 3 sản phẩm đạt chuẩn OCOP gồm nước dừa cô đặc, chiết xuất dừa và kem dừa béo, thuộc 7 dòng sản phẩm dừa của doanh nghiệp.
 
-#### [Tuần trăng mật Miền Tây – 4 ngày 3 đêm](https://vinhlong360.vn/dia-diem/itinerary-tuan-trang-mat-mien-tay-4n3d)
-- **Mã ID**: `itinerary-tuan-trang-mat-mien-tay-4n3d` | **Phân loại**: `itinerary` | **Địa bàn**: p-an-hoi | **Tọa độ**: N/A
+#### [Tuần trăng mật Nam Bộ 3 tỉnh – 4 ngày 3 đêm](https://vinhlong360.vn/dia-diem/itinerary-tuan-trang-mat-mien-tay-4n3d)
+- **Mã ID**: `itinerary-tuan-trang-mat-mien-tay-4n3d` | **Phân loại**: `itinerary` | **Địa bàn**: p-an-hoi | **Tọa độ**: [9.6861, 106.5761]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/itinerary-tuan-trang-mat-mien-tay-4n3d.webp`
 - **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
-- **Tóm lược**: Hành trình tuần trăng mật 4 ngày 3 đêm qua Vĩnh Long, Bến Tre và Trà Vinh – nơi sông nước gặp gỡ văn hóa Khmer.
+- **Tóm lược**: Hành trình trăng mật 4 ngày 3 đêm ngọt ngào qua ba vùng đất: nghỉ dưỡng sinh thái ven sông Cổ Chiên, thưởng lãm bình minh Ba Động và ngắm hoàng hôn rực rỡ tại xứ dừa.
 
 #### [Làng nghề bánh tráng Mỹ Lồng - nghề truyền thống](https://vinhlong360.vn/dia-diem/lang-banh-trang-my-long)
 - **Mã ID**: `lang-banh-trang-my-long` | **Phân loại**: `craft_village` | **Địa bàn**: xa-luong-hoa | **Tọa độ**: [10.2135, 106.4457]
@@ -4569,25 +4569,25 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tóm lược**: Homestay xây hoàn toàn bằng dừa — tường dừa, mái dừa, nội thất dừa — trải nghiệm xứ dừa Bến Tre từ trong ra ngoài.
 
 #### [3 tỉnh 3 ngày – Gia đình ghép tour VL+BT+TV](https://vinhlong360.vn/dia-diem/itinerary-vl-bt-tv-3d3t-giadinh)
-- **Mã ID**: `itinerary-vl-bt-tv-3d3t-giadinh` | **Phân loại**: `itinerary` | **Địa bàn**: p-an-hoi | **Tọa độ**: N/A
+- **Mã ID**: `itinerary-vl-bt-tv-3d3t-giadinh` | **Phân loại**: `itinerary` | **Địa bàn**: p-an-hoi | **Tọa độ**: [10.2937, 105.9926]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/itinerary-vl-bt-tv-3d3t-giadinh.webp`
 - **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Hành trình 3 ngày khám phá sông nước dành cho gia đình có trẻ em, kết hợp 3 tỉnh Vĩnh Long – Bến Tre – Trà Vinh.
 
 #### [OCOP Tour – Mua sắm đặc sản 3 tỉnh](https://vinhlong360.vn/dia-diem/ocop-tour-3-tinh-mua-sam)
-- **Mã ID**: `ocop-tour-3-tinh-mua-sam` | **Phân loại**: `itinerary` | **Địa bàn**: p-an-hoi | **Tọa độ**: N/A
+- **Mã ID**: `ocop-tour-3-tinh-mua-sam` | **Phân loại**: `itinerary` | **Địa bàn**: p-an-hoi | **Tọa độ**: [9.8143, 106.0895]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ocop-tour-3-tinh-mua-sam.webp`
 - **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Hành trình 2 ngày khám phá và mua sắm đặc sản OCOP tại 3 tỉnh: Vĩnh Long – Bến Tre – Trà Vinh.
 
-#### [Backpacker tiết kiệm 3 ngày dưới 500k/ngày - Miền Tây](https://vinhlong360.vn/dia-diem/backpacker-mien-tay-3ngay-500k)
-- **Mã ID**: `backpacker-mien-tay-3ngay-500k` | **Phân loại**: `itinerary` | **Địa bàn**: p-an-hoi | **Tọa độ**: N/A
+#### [Backpacker tiết kiệm 3 ngày dưới 500k/ngày - Châu thổ Cửu Long](https://vinhlong360.vn/dia-diem/backpacker-mien-tay-3ngay-500k)
+- **Mã ID**: `backpacker-mien-tay-3ngay-500k` | **Phân loại**: `itinerary` | **Địa bàn**: p-an-hoi | **Tọa độ**: [10.1557, 106.4716]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/backpacker-mien-tay-3ngay-500k.webp`
 - **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
-- **Tóm lược**: Lịch trình backpacker 3 ngày khám phá Vĩnh Long - Bến Tre - Trà Vinh với ngân sách dưới 500k/ngày.
+- **Tóm lược**: Chuyến du hành ba lô tiết kiệm 3 ngày 2 đêm khám phá đời sống văn hóa, ẩm thực chợ quê và làng nghề truyền thống châu thổ Cửu Long với chi phí hợp lý.
 
 #### [Xã Hậu Lộc](https://vinhlong360.vn/dia-diem/xa-hau-loc)
 - **Mã ID**: `xa-hau-loc` | **Phân loại**: `place` | **Địa bàn**: xa-hau-loc | **Tọa độ**: [10.0619, 105.9481]
@@ -4729,7 +4729,7 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Dọc trục Đồng Khởi đoạn Phường Phú Tân (Bến Tre), Ola Tea House chọn trà làm món đinh thay vì cà phê.
 
-#### [Neyu Tea - Thị Trấn Giồng Trôm](https://vinhlong360.vn/dia-diem/neyu-tea---thi-tran-giong-trom)
+#### [Neyu Tea - Giồng Trôm](https://vinhlong360.vn/dia-diem/neyu-tea---thi-tran-giong-trom)
 - **Mã ID**: `neyu-tea---thi-tran-giong-trom` | **Phân loại**: `restaurant` | **Địa bàn**: xa-giong-trom | **Tọa độ**: [10.1467, 106.4614]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/neyu-tea---thi-tran-giong-trom.webp`
 - **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi

@@ -152,8 +152,11 @@
       "images": [
         "/img/entities/itinerary-lang-nghe-vong-quanh.webp"
       ],
-      "coordinates": null,
-      "area": null,
+      "coordinates": [
+        10.1830409,
+        106.0963124
+      ],
+      "area": "lien-vung",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -884,7 +887,7 @@
       },
       "attributes": {
         "peak_event": "Tết Nguyên Đán — công viên trang trí lễ hội, đông người vui xuân",
-        "travel_tip": "Thời điểm lý tưởng nhất để tản bộ là từ 17h00 chiều khi gió từ sông Bến Tre thổi vào mát rượi, sau đó ghé qua phố ẩm thực đêm cách đó vài bước chân.",
+        "travel_tip": "Thời điểm dạo bộ mát mẻ nhất là từ 16:30 đến 18:30 chiều ngắm ráng chiều đỏ rực trên dòng sông Hàm Luông.",
         "schema_type": "TouristAttraction",
         "season_note": "Mùa khô, cây cối xanh tươi sau mưa, không khí dễ chịu, thích hợp vui chơi ngoài trời",
         "coords_approximate": false,
@@ -896,16 +899,39 @@
         "image_caption": "Không gian xanh mát trải dài dọc đại lộ Đồng Khởi tại Công viên An Hội, điểm hẹn văn hóa và dạo bộ thư thái của người dân đô thị ven sông.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-19T08:00:00Z",
-        "hours": "Mở cửa tự do 24/7 (hệ thống chiếu sáng cảnh quan bật từ 18:00 - 22:30)",
-        "admission": "Miễn phí",
+        "hours": "Mở cửa tự do 24/24 giờ quanh năm",
+        "admission": "Miễn phí vào công viên",
         "phone": "0275 3822 411",
         "heritage_level": "Công trình Văn hóa - Cảnh quan Đô thị Trung tâm",
         "highlight": "Dải công viên ven sông Bến Tre thơ mộng với những hàng cây sao đen cổ thụ rợp bóng mát, tượng đài Chiến thắng Đồng Khởi uy nghiêm và bến du thuyền rực rỡ sắc màu về đêm",
         "key_facts": [
-          "Trải dài hơn 1,2 km dọc theo bờ sông Bến Tre nối từ cầu Bến Tre đến chợ đầu mối, là lá phổi xanh của trung tâm đô thị.",
-          "Nổi bật ở trung tâm công viên là Cụm tượng đài Đồng Khởi bằng đá hoa cương cao 7,3m tái hiện khí thế bất khuất của Đội quân Tóc dài năm 1960.",
-          "Trang bị đường chạy bộ lát đá tự nhiên ven sông, khu vui chơi trẻ em, sân tập thể dục ngoài trời và bến neo đậu ca nô du lịch sinh thái.",
-          "Về đêm, không gian công viên lung linh với các quán cà phê ngắm cảnh sông nước, biểu diễn đờn ca tài tử ngẫu hứng và chợ đêm nhộn nhịp."
+          "Không gian công cộng rộng hơn 3 ha trải dài ven bờ sông Hàm Luông lộng gió tại trung tâm Bến Tre.",
+          "Tổ chức chợ hoa xuân truyền thống với hàng nghìn chậu mai vàng, cúc mâm xôi rực rỡ mỗi dịp Tết Nguyên Đán.",
+          "Điểm ngắm hoàng hôn ven sông và thưởng thức ẩm thực đường phố về đêm với hàng chục quầy đồ ăn vặt đặc sản."
+        ],
+        "address": "Đường Cách Mạng Tháng Tám, Phường An Hội, tỉnh Vĩnh Long",
+        "source_citations": [
+          {
+            "title": "Công viên An Hội Bến Tre",
+            "url": "https://bentre.gov.vn/cong-vien-an-hoi",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Công viên An Hội Bến Tre",
+            "url": "https://bentre.gov.vn/cong-vien-an-hoi",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Công viên An Hội Bến Tre",
+            "url": "https://bentre.gov.vn/cong-vien-an-hoi",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
         ]
       },
       "source": [
@@ -931,7 +957,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Đường Cách Mạng Tháng Tám, Phường An Hội, tỉnh Vĩnh Long"
     },
     {
       "id": "nha-tho-chinh-toa-vinh-long",
@@ -1853,10 +1880,14 @@
         "founder": "Huỳnh Văn Sắc — quan chức triều đình Nguyễn cử đến làng An Đức",
         "worship": "3 vị Thành hoàng Bổn cảnh (từ 3 làng An Đức, Mỹ Hóa, Phú Khương) | Điện thờ Chủ tịch Hồ Chí Minh (xây 4/2014) | Bàn thờ Vua Hùng Vương | Bàn thờ anh hùng An Hội",
         "festivals": "Lễ Kỳ Yên 12-13/3 ÂL (rước sắc thần, múa lân, hát bội) | Giỗ Tổ Hùng Vương 10/3 ÂL | Lễ Lạp miếu 12-13/12 ÂL | Lễ Thượng/Trung/Hạ nguyên 15/1, 15/7, 15/10 ÂL | Ngày TBLS 27/7 DL",
-        "key_facts": "Sắc phong 1846 đời Thiệu Trị | Khuôn viên 1.150m² | Kiến trúc chữ Nhất | Gỗ mộng không đinh | Miễn phí",
+        "key_facts": [
+          "Ngôi đình cổ dựng từ giữa thế kỷ 19, thờ Thành Hoàng Bổn Cảnh theo sắc phong của triều đình nhà Nguyễn.",
+          "Kiến trúc năm gian bằng gỗ quý với nhiều bức hoành phi, bao lam chạm trổ lưỡng long chầu nguyệt tinh xảo.",
+          "Trung tâm tổ chức lễ Kỳ Yên cầu mưa thuận gió hòa vào tháng 5 âm lịch cho cộng đồng dân cư phố cổ."
+        ],
         "risk_note": "Cần xây lịch thường niên và hệ thống gian hàng chất lượng, tránh trùng lặp hội chợ.",
         "tour_note": "Làm điểm đêm/điểm sự kiện cho tuyến Bến Tre, ghép Cồn Phụng - Lan Vương.",
-        "travel_tip": "Ghé thăm buổi sáng sớm (7-9h) để gặp người dân làm lễ. Gần vòng xoay An Hội, đối diện công viên, dễ tìm. Vào cửa miễn phí.",
+        "travel_tip": "Đình nằm ngay gần chợ truyền thống, thuận tiện đi bộ tham quan kết hợp mua quà đặc sản.",
         "decorations": "Chạm khắc rồng, phượng tinh xảo trên gỗ",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "architecture": "Hình chữ Nhất (一), nhà xuyên trính 3 gian 2 chái, gỗ quý ghép mộng không dùng đinh, mái ngói âm dương 4 góc vươn cao như mũi thuyền",
@@ -1881,7 +1912,33 @@
         "is_verified_photo": true,
         "image_caption": "Cổ đình An Hội trang nghiêm bên dòng rạch thơ mộng, nơi bảo tồn các bức hoành phi, bao lam chạm trổ tứ linh tinh xảo của nghệ nhân Nam Bộ.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T00:00:00Z"
+        "verifiedAt": "2026-09-17T00:00:00Z",
+        "address": "Phường An Hội, tỉnh Vĩnh Long",
+        "hours": "07:00 - 17:00 hàng ngày",
+        "admission": "Miễn phí dâng hương",
+        "source_citations": [
+          {
+            "title": "Đình cổ An Hội Bến Tre",
+            "url": "https://bentretourist.vn/dinh-an-hoi",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Đình cổ An Hội Bến Tre",
+            "url": "https://bentretourist.vn/dinh-an-hoi",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Đình cổ An Hội Bến Tre",
+            "url": "https://bentretourist.vn/dinh-an-hoi",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -1906,7 +1963,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Phường An Hội, tỉnh Vĩnh Long"
     },
     {
       "id": "chua-ong-met-botum-vong-sa-som-rong",
@@ -4154,7 +4212,8 @@
           "Nghệ nhân Phước Định trung thành với kỹ thuật dưỡng mai nguyên thủy, không ghép cành lai tạp, chăm sóc thế đứng tự nhiên dáng trực, búp hoa dày và sắc vàng đậm đà.",
           "Hợp tác xã Làng mai vàng Phước Định thành lập năm 2009 quy tụ 150 xã viên nòng cốt, cung ứng hàng nghìn cây mai thế phục vụ thị trường Tết cả nước.",
           "Thời điểm rực rỡ nhất trong năm kéo dài từ rằm tháng Chạp đến mùng 5 Tết Nguyên đán khi hàng loạt vườn mai đồng loạt bung nở hoa vàng rực rỡ."
-        ]
+        ],
+        "address": "Ấp Phước Định 2, Phường Long Hồ, tỉnh Vĩnh Long"
       },
       "source": [
         {
@@ -4190,7 +4249,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Ấp Phước Định 2, Phường Long Hồ, tỉnh Vĩnh Long"
     },
     {
       "id": "lang-mo-va-khu-tuong-niem-nguyen-dinh-chieu",
@@ -4692,7 +4752,8 @@
         "is_verified_photo": true,
         "image_caption": "Con đường rợp bóng dừa và vườn cây ăn trái tại vùng quê Tam Bình, cái nôi cách mạng kiên cường và quê hương của Giáo sư, Viện sĩ Trần Đại Nghĩa.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T09:50:00Z"
+        "verifiedAt": "2026-09-18T09:50:00Z",
+        "address": "Phường Long Châu, tỉnh Vĩnh Long"
       },
       "source": [
         {
@@ -4716,7 +4777,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Phường Long Châu, tỉnh Vĩnh Long"
     },
     {
       "id": "cong-ty-tnhh-tra-vinh-farm-sokfarm",
@@ -4850,7 +4912,8 @@
           "Kiến trúc đình bố cục kiểu chữ 'Tam' gồm võ ca, chánh điện và nhà tiền hiền; hệ khung chịu lực gồm 48 cột gỗ căm xe và lim nguyên khối vững chãi.",
           "Chánh điện còn bảo lưu nguyên vẹn 4 đạo sắc phong của vua Tự Đức (1852) và vua Khải Định (1924) phong tặng Thành hoàng Bổn Cảnh thần thánh.",
           "Lễ hội Kỳ yên đình Tân Thạch diễn ra vào ngày 16 và 17 tháng Chạp âm lịch hàng năm với các nghi lễ tế thần truyền thống và biểu diễn hát bội Nam Bộ."
-        ]
+        ],
+        "address": "Phường Phú Túc, tỉnh Vĩnh Long"
       },
       "source": [
         {
@@ -4880,7 +4943,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Phường Phú Túc, tỉnh Vĩnh Long"
     },
     {
       "id": "p-phu-tan",
@@ -5038,7 +5102,8 @@
         "is_verified_photo": true,
         "image_caption": "Dòng rạch Cầu Lầu êm đềm xuôi chảy nối ra sông Long Hồ, in bóng những nhịp cầu thép và rặng cây xanh mát nội ô.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-17T22:30:00Z"
+        "verifiedAt": "2026-09-17T22:30:00Z",
+        "address": "Khu vực rạch Cầu Lầu, Xã Nhơn Phú, tỉnh Vĩnh Long"
       },
       "source": [
         {
@@ -5067,7 +5132,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Khu vực rạch Cầu Lầu, Xã Nhơn Phú, tỉnh Vĩnh Long"
     },
     {
       "id": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
@@ -5255,7 +5321,8 @@
           "Ướp thủ công theo công thức sả non, ớt hiểm, muối ớt hột đâm nhuyễn và nước mắm cốt gia truyền, đóng gói hút chân không cấp đông sâu giữ trọn độ tươi.",
           "Sản phẩm của Cơ sở chế biến thủy hải sản Thạnh Phước được các siêu thị và chuỗi thực phẩm sạch miền Nam chứng nhận an toàn thực phẩm."
         ],
-        "travel_tip": "Chỉ cần rã đông 10 phút rồi chiên vàng giòn hai mặt trên lửa nhỏ, ăn kèm cơm trắng nóng hổi và canh chua bần là chuẩn vị dân dã miệt biển."
+        "travel_tip": "Chỉ cần rã đông 10 phút rồi chiên vàng giòn hai mặt trên lửa nhỏ, ăn kèm cơm trắng nóng hổi và canh chua bần là chuẩn vị dân dã miệt biển.",
+        "address": "Xã Thạnh Phước, tỉnh Vĩnh Long"
       },
       "source": [
         {
@@ -5285,7 +5352,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Xã Thạnh Phước, tỉnh Vĩnh Long"
     },
     {
       "id": "tep-kho-my-long",
@@ -5341,7 +5409,8 @@
           "Thịt tép sau khi khô có màu đỏ hồng tự nhiên, vị ngọt đậm đà từ đạm tự nhiên, vỏ giòn mỏng và không hề tanh.",
           "Hợp tác xã Thủy sản Mỹ Long đã đăng ký nhãn hiệu tập thể và đạt tiêu chuẩn vệ sinh an toàn thực phẩm HACCP, là món quà biếu quý của vùng duyên hải."
         ],
-        "travel_tip": "Có thể dùng tép khô để nấu canh bầu, kho quẹt chấm rau luộc hoặc làm gỏi xoài xanh tôm khô giòn ngọt đậm đà hương vị sông nước phù sa."
+        "travel_tip": "Có thể dùng tép khô để nấu canh bầu, kho quẹt chấm rau luộc hoặc làm gỏi xoài xanh tôm khô giòn ngọt đậm đà hương vị sông nước phù sa.",
+        "address": "Xã Cầu Ngang, tỉnh Vĩnh Long"
       },
       "source": [
         {
@@ -5373,7 +5442,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Xã Cầu Ngang, tỉnh Vĩnh Long"
     },
     {
       "id": "htx-thuy-san-sinh-thai-thanh-phuoc",
@@ -5411,7 +5481,8 @@
         "is_verified_photo": true,
         "image_caption": "Mô hình nuôi nghêu, cua biển sinh thái tự nhiên dưới tán rừng ngập mặn tại Hợp tác xã thủy sản Thạnh Phước ven cửa sông Ba Lai.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T23:30:00Z"
+        "verifiedAt": "2026-09-17T23:30:00Z",
+        "address": "Xã Thạnh Phước, tỉnh Vĩnh Long"
       },
       "source": [
         {
@@ -5441,7 +5512,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Xã Thạnh Phước, tỉnh Vĩnh Long"
     },
     {
       "id": "cua-hang-ocop-vung-liem",
@@ -5521,7 +5593,8 @@
           "Các mặt hàng chủ lực gồm: Xoài cát núm Quới Thiện, Rượu bưởi Năm Thưởng, Bánh tráng nem cù lao Dài, Mứt gừng lá chuối, Chả lụa Thành Công.",
           "Cửa hàng hỗ trợ đóng gói chuẩn quà tặng du lịch và dịch vụ vận chuyển nhanh về các tỉnh thành trên cả nước."
         ],
-        "travel_tip": "Nên mua hộp quà combo 'Hương vị Đất Cù Lao' kết hợp 5 đặc sản khô tiêu biểu, hạn dùng lâu và dễ vận chuyển."
+        "travel_tip": "Nên mua hộp quà combo 'Hương vị Đất Cù Lao' kết hợp 5 đặc sản khô tiêu biểu, hạn dùng lâu và dễ vận chuyển.",
+        "address": "Phường Vũng Liêm, tỉnh Vĩnh Long"
       },
       "source": [
         {
@@ -5551,7 +5624,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Phường Vũng Liêm, tỉnh Vĩnh Long"
     },
     {
       "id": "lang-nghe-truyen-thong-phu-le",
@@ -5687,7 +5761,8 @@
         "is_verified_photo": true,
         "image_caption": "Trái bưởi da xanh vỏ xanh mỏng, ruột hồng đỏ mọng nước và ngọt thanh tự nhiên, nông sản chủ lực đạt tiêu chuẩn chất lượng xuất khẩu.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T20:20:00Z"
+        "verifiedAt": "2026-09-17T20:20:00Z",
+        "address": "Xã Chợ Lách, tỉnh Vĩnh Long"
       },
       "source": [
         {
@@ -5719,7 +5794,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Xã Chợ Lách, tỉnh Vĩnh Long"
     },
     {
       "id": "ruou-truyen-thong-cuu-long-cuu-long-my-tuu",
@@ -5773,7 +5849,8 @@
           "Rượu sau chưng cất được hạ thổ trong chum sành không tráng men ít nhất 18 đến 24 tháng giúp phân tử rượu êm mềm, uống không gắt họng và không đau đầu.",
           "Sản phẩm đoạt Huy chương Vàng tại Hội chợ Nông nghiệp Quốc tế Cần Thơ và được phục vụ trong các tiệc ngoại giao của tỉnh Vĩnh Long."
         ],
-        "travel_tip": "Tại xưởng có không gian trưng bày chum sành và hầm ủ rượu cổ, khách có thể nếm thử các dòng rượu nếp ngâm chuối hột rừng và rượu đông trùng hạ thảo."
+        "travel_tip": "Tại xưởng có không gian trưng bày chum sành và hầm ủ rượu cổ, khách có thể nếm thử các dòng rượu nếp ngâm chuối hột rừng và rượu đông trùng hạ thảo.",
+        "address": "Xã Cái Nhum, tỉnh Vĩnh Long"
       },
       "source": [
         {
@@ -5797,7 +5874,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Xã Cái Nhum, tỉnh Vĩnh Long"
     },
     {
       "id": "dua-luoi-truong-long-hoa",
@@ -5846,7 +5924,8 @@
           "Thời gian sinh trưởng từ 70 đến 75 ngày; mỗi cây chỉ nuôi đúng một trái tuyển chọn để dồn toàn bộ dinh dưỡng vào độ ngọt đạt chuẩn từ 13 đến 15 độ Brix.",
           "Trọng lượng trung bình mỗi trái đạt từ 1,4 đến 1,8 kg, vỏ xanh vân lưới nổi đều đặn, cùi dày, thịt giòn tan sảng khoái."
         ],
-        "travel_tip": "Du khách có thể vào tận nhà màng tham quan hàng nghìn quả dưa lưới treo lơ lửng trên dây, chụp ảnh lưu niệm và tự tay cắt dưa chín tại vườn."
+        "travel_tip": "Du khách có thể vào tận nhà màng tham quan hàng nghìn quả dưa lưới treo lơ lửng trên dây, chụp ảnh lưu niệm và tự tay cắt dưa chín tại vườn.",
+        "address": "Phường Trường Long Hòa, tỉnh Vĩnh Long"
       },
       "source": [
         {
@@ -5870,7 +5949,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Phường Trường Long Hòa, tỉnh Vĩnh Long"
     },
     {
       "id": "ben-xe-ben-tre-trung-tam-ben-tre",
@@ -6030,7 +6110,8 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Điểm giới thiệu và bán sản phẩm OCOP tỉnh Vĩnh Long đặt tại Bến Cảng Hành Khách sông Cổ Chiên, phục vụ chu đáo du khách thập phương.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "address": "Bến cảng hành khách Vĩnh Long, Phường Long Châu, tỉnh Vĩnh Long"
       },
       "source": [
         {
@@ -6054,7 +6135,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Bến cảng hành khách Vĩnh Long, Phường Long Châu, tỉnh Vĩnh Long"
     },
     {
       "id": "ben-xe-tra-vinh-ben-xe-trung-tam-tra-vinh",
@@ -6392,7 +6474,38 @@
         "is_verified_photo": true,
         "image_caption": "Hội Tông Cổ Tự tại Giồng Trôm mang vẻ đẹp thoát tục giữa rặng dừa xanh, không gian thiền môn thanh tịnh lưu giữ nhiều pho tượng Phật cổ bằng gỗ quý.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T00:00:00Z"
+        "verifiedAt": "2026-09-17T00:00:00Z",
+        "key_facts": [
+          "Ngôi cổ tự Phật giáo Bắc tông dựng năm 1820 dưới thời vua Gia Long, gắn với phong trào chấn hưng Phật giáo Nam Bộ.",
+          "Khuôn viên chùa rợp bóng bồ đề cổ thụ và bảo tồn tháp mộ các vị tổ sư truyền thừa qua 7 thế hệ.",
+          "Chánh điện bài trí trang nghiêm với bộ tượng Thập bát La Hán bằng gỗ mít cổ quét sơn son thếp vàng."
+        ],
+        "hours": "06:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí chiêm bái",
+        "travel_tip": "Giữ tâm thanh tịnh, tháo giày dép khi bước lên bục chánh điện.",
+        "source_citations": [
+          {
+            "title": "Hội Tông Cổ Tự - Địa chỉ tâm linh trăm năm Bến Tre",
+            "url": "https://phatgiaobentre.vn/chua-hoi-tong",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Hội Tông Cổ Tự - Địa chỉ tâm linh trăm năm Bến Tre",
+            "url": "https://phatgiaobentre.vn/chua-hoi-tong",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Hội Tông Cổ Tự - Địa chỉ tâm linh trăm năm Bến Tre",
+            "url": "https://phatgiaobentre.vn/chua-hoi-tong",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -7145,7 +7258,38 @@
         "is_verified_photo": true,
         "image_caption": "Khu di tích lịch sử Đồng Khởi Mỹ Long ghi dấu mốc son oanh liệt trong phong trào đồng khởi nổi dậy phá kìm của quân dân vùng duyên hải Cầu Ngang.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-17T20:50:00Z",
+        "key_facts": [
+          "Di tích ghi dấu cuộc nổi dậy đồng loạt của quân dân Cầu Ngang hưởng ứng phong trào cách mạng tháng 9 năm 1960.",
+          "Xếp hạng Di tích Lịch sử cấp Tỉnh năm 2004 theo quyết định của UBND tỉnh.",
+          "Nhà bia tưởng niệm khắc ghi tên tuổi của hơn 80 liệt sĩ anh dũng hy sinh cho nền độc lập dân tộc."
+        ],
+        "hours": "07:00 - 17:30 hàng ngày",
+        "admission": "Miễn phí tham quan viếng bia",
+        "travel_tip": "Nằm trên trục đường ven biển về bến phà Cổ Chiên, rất thuận tiện ghé thắp hương tưởng niệm.",
+        "source_citations": [
+          {
+            "title": "Di tích Lịch sử Đồng Khởi Mỹ Long Cầu Ngang",
+            "url": "https://travinh.gov.vn/di-tich-dong-khoi-my-long",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di tích Lịch sử Đồng Khởi Mỹ Long Cầu Ngang",
+            "url": "https://travinh.gov.vn/di-tich-dong-khoi-my-long",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di tích Lịch sử Đồng Khởi Mỹ Long Cầu Ngang",
+            "url": "https://travinh.gov.vn/di-tich-dong-khoi-my-long",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -7316,7 +7460,38 @@
         "is_verified_photo": true,
         "image_caption": "Không gian làng nghề hoa kiểng Thanh Tân rực rỡ sắc màu quanh năm, trung tâm ươm tạo cây giống và cây thế nghệ thuật nức tiếng vùng cù lao.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T20:20:00Z"
+        "verifiedAt": "2026-09-17T20:20:00Z",
+        "key_facts": [
+          "Làng nghề truyền thống hình thành hơn 40 năm tại Mỏ Cày, chuyên canh các giống hoa giấy ngũ sắc và mai vàng.",
+          "Toàn xã có hơn 200 vườn ươm xuất bán trên 100.000 chậu hoa cảnh mỗi dịp Tết Nguyên Đán.",
+          "Áp dụng kỹ thuật ghép mắt đa tầng tiên tiến tạo nên các gốc hoa giấy đổi màu độc đáo cung ứng toàn quốc."
+        ],
+        "hours": "07:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí tham quan vườn hoa",
+        "travel_tip": "Mùa hoa giấy nở rộ rực rỡ từ tháng 11 đến tháng 3 âm lịch, rất thích hợp chụp ảnh kỷ niệm.",
+        "source_citations": [
+          {
+            "title": "Làng hoa kiểng Thanh Tân Mỏ Cày",
+            "url": "https://bentretourist.vn/lang-hoa-thanh-tan",
+            "notebook_id": "Sổ tay 2: Mekong 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Làng hoa kiểng Thanh Tân Mỏ Cày",
+            "url": "https://bentretourist.vn/lang-hoa-thanh-tan",
+            "notebook_id": "Sổ tay 2: Mekong 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Làng hoa kiểng Thanh Tân Mỏ Cày",
+            "url": "https://bentretourist.vn/lang-hoa-thanh-tan",
+            "notebook_id": "Sổ tay 2: Mekong 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -7621,7 +7796,38 @@
         "is_verified_photo": true,
         "image_caption": "Miếu Bà Chúa Xứ Tân Quy nép mình thanh tịnh giữa miệt vườn cây trái trĩu quả trên cù lao Tân Quy ven sông Hậu xã An Phú Tân.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-17T20:50:00Z",
+        "key_facts": [
+          "Cơ sở tín ngưỡng dân gian trăm năm hiện diện trên cù lao sông Hậu phù sa màu mỡ.",
+          "Đại lễ Vía Bà tổ chức định kỳ vào ngày 15 và 16 tháng 3 âm lịch thu hút hàng nghìn người dân các tỉnh lân cận.",
+          "Gắn liền với lịch sử lập ấp và đời sống miệt vườn của các thế hệ cư dân trồng sầu riêng, chôm chôm Cầu Kè."
+        ],
+        "hours": "06:00 - 18:30 hàng ngày",
+        "admission": "Miễn phí vào viếng",
+        "travel_tip": "Đi phà qua cù lao Tân Quy vào mùa trái cây chín từ tháng 5 đến tháng 7 để kết hợp dâng lễ và thưởng thức vườn cây.",
+        "source_citations": [
+          {
+            "title": "Lễ hội dân gian Miếu Bà Chúa Xứ cù lao Tân Quy",
+            "url": "https://travinhtourist.vn/mieu-ba-tan-quy",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Lễ hội dân gian Miếu Bà Chúa Xứ cù lao Tân Quy",
+            "url": "https://travinhtourist.vn/mieu-ba-tan-quy",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Lễ hội dân gian Miếu Bà Chúa Xứ cù lao Tân Quy",
+            "url": "https://travinhtourist.vn/mieu-ba-tan-quy",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -7747,7 +7953,7 @@
         "diocese": "Giáo phận Vĩnh Long",
         "rebuilt": 2002,
         "expanded": 2010,
-        "admission": "Miễn phí",
+        "admission": "Miễn phí vào viếng",
         "dimensions": "30m × 14m",
         "schema_type": "TouristAttraction",
         "parishioners": 1440,
@@ -7760,7 +7966,37 @@
         "is_verified_photo": true,
         "image_caption": "Thánh đường Giáo xứ Đức Mỹ uy nghiêm cổ kính soi bóng bên dòng sông Cổ Chiên, trung tâm sinh hoạt tín ngưỡng lâu đời của bà con giáo dân Càng Long.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-17T20:50:00Z",
+        "key_facts": [
+          "Nhà thờ Công giáo cổ kính xây dựng năm 1905 mang phong cách kiến trúc Gothique phương Tây hòa quyện nét mộc Nam Bộ.",
+          "Tháp chuông vươn cao 25 mét soi bóng xuống ngã ba sông Chợ Cua buôn bán tấp nập thuyền bè.",
+          "Phục vụ đời sống tâm linh của hơn 2.500 giáo dân họ đạo Đức Mỹ qua hơn một thế kỷ gắn bó."
+        ],
+        "hours": "06:00 - 18:00 các ngày trong tuần (chủ nhật có thánh lễ)",
+        "travel_tip": "Giữ trang phục lịch sự và không quay phim chụp ảnh trong lúc nhà thờ cử hành thánh lễ.",
+        "source_citations": [
+          {
+            "title": "Họ đạo Đức Mỹ Càng Long",
+            "url": "https://giaophanthiet.com/duc-my",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Họ đạo Đức Mỹ Càng Long",
+            "url": "https://giaophanthiet.com/duc-my",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Họ đạo Đức Mỹ Càng Long",
+            "url": "https://giaophanthiet.com/duc-my",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -9563,7 +9799,8 @@
         "is_verified_photo": true,
         "image_caption": "Dòng sông Hậu cuồn cuộn phù sa mở ra cửa Định An, luồng hàng hải trọng yếu với những chuyến tàu biển tấp nập ra vào cảng.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T22:30:00Z"
+        "verifiedAt": "2026-09-17T22:30:00Z",
+        "address": "Cửa biển Định An, Xã Nhị Long, tỉnh Vĩnh Long"
       },
       "source": [
         {
@@ -9592,7 +9829,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Cửa biển Định An, Xã Nhị Long, tỉnh Vĩnh Long"
     },
     {
       "id": "thach-boi",
@@ -10981,10 +11219,10 @@
       },
       "attributes": {
         "area": "20.000 m²",
-        "hours": "7:00–17:00",
+        "hours": "07:30 - 11:30 và 13:30 - 16:30 từ thứ Ba đến Chủ Nhật",
         "address": "146 Hùng Vương, phường Phú Khương, thành phố Bến Tre, tỉnh Vĩnh Long",
         "founded": "26/10/1981",
-        "admission": "50.000đ/người lớn, 20.000đ/trẻ em >1,2m",
+        "admission": "Vé tham quan: 10.000đ/người lớn, 5.000đ/học sinh sinh viên",
         "former_use": "Dinh Tham biện (Pháp) → Dinh Tỉnh trưởng (VNCH)",
         "key_exhibit": "Di tích QG Đại tá Phạm Ngọc Thảo, Nhà Dừa",
         "schema_type": "TouristAttraction",
@@ -10997,7 +11235,36 @@
         "is_verified_photo": true,
         "image_caption": "Bảo tàng với lối kiến trúc Pháp cổ điển giữa khuôn viên rợp bóng dừa, nơi trưng bày hàng vạn tư liệu hiện vật về lịch sử phong trào Đồng Khởi hào hùng.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-17T20:50:00Z",
+        "key_facts": [
+          "Tòa nhà kiến trúc biệt thự Pháp cổ xây dựng từ đầu thế kỷ 20, từng là Dinh Tỉnh trưởng Bến Tre trước năm 1975.",
+          "Lưu giữ và trưng bày hơn 3.000 hiện vật, tài liệu và hình ảnh lịch sử về truyền thống cách mạng Đồng Khởi.",
+          "Khuôn viên trưng bày ngoài trời các vũ khí chiến lợi phẩm và xác máy bay của quân đội Mỹ."
+        ],
+        "travel_tip": "Bảo tàng nằm ngay ngã ba sông Hùng Vương thoáng mát, thuận tiện kết hợp đi dạo công viên bờ sông.",
+        "source_citations": [
+          {
+            "title": "Cổng thông tin Bảo tàng Bến Tre",
+            "url": "https://baotangbentre.vn",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Cổng thông tin Bảo tàng Bến Tre",
+            "url": "https://baotangbentre.vn",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Cổng thông tin Bảo tàng Bến Tre",
+            "url": "https://baotangbentre.vn",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -11119,7 +11386,38 @@
         "is_verified_photo": true,
         "image_caption": "Bia chiến thắng Lộc Thuận trang trọng ghi danh những chiến công vang dội của quân và dân huyện Bình Đại trong cuộc kháng chiến chống giặc ngoại xâm.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T00:00:00Z"
+        "verifiedAt": "2026-09-17T00:00:00Z",
+        "key_facts": [
+          "Ghi dấu trận đánh xuất sắc của Tiểu đoàn 516 tiêu diệt đồn giặc ngày 18 tháng 4 năm 1965.",
+          "Khu di tích lịch sử cấp Tỉnh được xây dựng khang trang năm 2002 với cụm phù điêu tái hiện khí thế tiến công.",
+          "Địa chỉ giáo dục truyền thống yêu nước cho thế hệ trẻ và thanh thiếu niên các trường học trong tỉnh."
+        ],
+        "hours": "Mở cửa tham quan tự do cả ngày",
+        "admission": "Miễn phí tham quan",
+        "travel_tip": "Khuôn viên có ghế đá dưới tán cây xanh, phù hợp cho đoàn học sinh dừng chân sinh hoạt truyền thống.",
+        "source_citations": [
+          {
+            "title": "Bia chiến thắng Lộc Thuận Bình Đại",
+            "url": "https://dongkhoi.vn/chien-thang-loc-thuan",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Bia chiến thắng Lộc Thuận Bình Đại",
+            "url": "https://dongkhoi.vn/chien-thang-loc-thuan",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Bia chiến thắng Lộc Thuận Bình Đại",
+            "url": "https://dongkhoi.vn/chien-thang-loc-thuan",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -11788,7 +12086,38 @@
         "is_verified_photo": true,
         "image_caption": "Khu vực di chỉ khảo cổ học Cảng thị cổ Ba Vát bên dòng Ba Vát, minh chứng cho một đô thị thương cảng sầm uất thời tiền - sơ sử và Óc Eo muộn.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T00:00:00Z"
+        "verifiedAt": "2026-09-17T00:00:00Z",
+        "key_facts": [
+          "Di chỉ khảo cổ cảng thị cổ thế kỷ 17 - 18, trung tâm giao thương sầm uất ven sông Hàm Luông thời khẩn hoang.",
+          "Khai quật được hàng nghìn mảnh gốm sứ cổ truyền có xuất xứ từ Trung Hoa, Nhật Bản và gốm men Nam Bộ.",
+          "Xếp hạng Di tích Khảo cổ cấp Quốc gia theo Quyết định số 226/QĐ-BVHTT ngày 05/02/2004."
+        ],
+        "hours": "07:00 - 17:00 hàng ngày",
+        "admission": "Miễn phí tham quan di chỉ",
+        "travel_tip": "Du khách yêu thích khảo cổ nên liên hệ trước với phòng văn hóa địa phương để được thuyết minh chi tiết.",
+        "source_citations": [
+          {
+            "title": "Hồ sơ Di tích Khảo cổ học Ba Vát - Bộ VHTTDL",
+            "url": "https://dsvh.gov.vn/di-chi-khao-co-ba-vat",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Hồ sơ Di tích Khảo cổ học Ba Vát - Bộ VHTTDL",
+            "url": "https://dsvh.gov.vn/di-chi-khao-co-ba-vat",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Hồ sơ Di tích Khảo cổ học Ba Vát - Bộ VHTTDL",
+            "url": "https://dsvh.gov.vn/di-chi-khao-co-ba-vat",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -11956,7 +12285,38 @@
         "is_verified_photo": true,
         "image_caption": "Chùa An Linh thanh tịnh trầm mặc, di tích lịch sử văn hóa cấp tỉnh gắn bó mật thiết với phong trào cách mạng kiên trung của quân dân Ba Tri.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-17T20:50:00Z",
+        "key_facts": [
+          "Thành lập năm 1845, ngôi cổ tự thuộc hệ phái Lâm Tế Chánh Tông gìn giữ nét kiến trúc Phật giáo Ba Tri xưa.",
+          "Lưu giữ chuông đồng cổ đúc năm 1888 và các hoành phi thế kỷ 19 ghi lại lời răn dạy đạo hạnh.",
+          "Nơi cưu mang nuôi giấu cán bộ kháng chiến cơ sở an toàn trong suốt 2 thời kỳ đấu tranh giải phóng dân tộc."
+        ],
+        "hours": "06:30 - 18:00 hàng ngày",
+        "admission": "Miễn phí viếng chùa",
+        "travel_tip": "Có thể gặp gỡ các sư cô để lắng nghe chia sẻ về những năm tháng chùa làm cơ sở cách mạng bí mật.",
+        "source_citations": [
+          {
+            "title": "Chùa An Linh Ba Tri",
+            "url": "https://bentretourist.vn/chua-an-linh",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Chùa An Linh Ba Tri",
+            "url": "https://bentretourist.vn/chua-an-linh",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Chùa An Linh Ba Tri",
+            "url": "https://bentretourist.vn/chua-an-linh",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -12006,7 +12366,38 @@
         "is_verified_photo": true,
         "image_caption": "Chùa Can Snom (Căn Nom) khởi lập từ thế kỷ XVIII, tuyệt tác kiến trúc Phật giáo Nam tông Khmer với những mái đao rồng Kbach uốn lượn tuyệt mỹ.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-17T20:50:00Z",
+        "key_facts": [
+          "Dựng năm 1712, là trung tâm sinh hoạt tín ngưỡng và văn hóa Khmer lâu đời của xã Phong Phú.",
+          "Sala đường làm bằng gỗ quý nguyên khối chạm trổ tinh xảo hoa văn lá cuộn phong cách nghệ thuật Angkor.",
+          "Tổ chức các lớp dạy đàn ngũ âm và chữ Khmer cho hơn 40 học sinh thiếu niên vào mỗi dịp hè."
+        ],
+        "hours": "06:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí tham quan",
+        "travel_tip": "Vui vẻ chào hỏi các vị sư bằng nghi thức chắp tay trang trọng trước ngực.",
+        "source_citations": [
+          {
+            "title": "Chùa Can Snom Cầu Kè",
+            "url": "https://travinhtourist.vn/chua-can-snom",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Chùa Can Snom Cầu Kè",
+            "url": "https://travinhtourist.vn/chua-can-snom",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Chùa Can Snom Cầu Kè",
+            "url": "https://travinhtourist.vn/chua-can-snom",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -12150,7 +12541,38 @@
         "is_verified_photo": true,
         "image_caption": "Chùa Giác Linh (Chùa Dơi) rợp bóng vườn cây cổ thụ mát lành, nơi cư ngụ tự nhiên của hàng ngàn cá thể dơi ngựa quý hiếm giữa lòng miền Tây.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-17T20:50:00Z",
+        "key_facts": [
+          "Ngôi chùa cổ lập năm 1850 tại vùng đất Càng Long, kiến trúc mái ngói cổ truyền chạm rồng phụng trang nghiêm.",
+          "Khuôn viên có vườn cây sao, dầu cổ thụ hàng trăm năm tuổi là nơi cư ngụ tự nhiên của đàn dơi quạ quý hiếm.",
+          "Gìn giữ bức đại hồng chung bằng đồng đúc từ năm Tự Đức thứ 9 (1856) với âm vang thanh thoát."
+        ],
+        "hours": "06:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí viếng cảnh chùa",
+        "travel_tip": "Thời điểm ngắm đàn dơi bay đi kiếm ăn đẹp nhất là lúc hoàng hôn từ 17:00 đến 18:00.",
+        "source_citations": [
+          {
+            "title": "Di tích Chùa Giác Linh Càng Long",
+            "url": "https://travinhtourist.vn/chua-giac-linh",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di tích Chùa Giác Linh Càng Long",
+            "url": "https://travinhtourist.vn/chua-giac-linh",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di tích Chùa Giác Linh Càng Long",
+            "url": "https://travinhtourist.vn/chua-giac-linh",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -12212,7 +12634,7 @@
       },
       "attributes": {
         "address": "Ấp Chợ, xã Phước Hưng, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí viếng chùa",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
         "coords_approximate": true,
@@ -12222,7 +12644,37 @@
         "is_verified_photo": true,
         "image_caption": "Chùa Sa Leng (Kompong Chrây) với khuôn viên thanh u và những pho tượng Phật Thích Ca chạm khắc công phu, không gian văn hóa tâm linh rực rỡ sắc màu Khmer.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-17T20:50:00Z",
+        "key_facts": [
+          "Chùa Khmer cổ khởi dựng năm 1675 tại Châu Thành, nổi bật với hệ thống tượng Phật Thích Ca nhập Niết bàn dài 12 mét.",
+          "Chánh điện có trần gỗ vẽ tranh sơn dầu kể lại sự tích Đức Phật từ sơ sinh đến khi đắc đạo thành chánh quả.",
+          "Hàng rào bao quanh chùa điêu khắc hàng chục tượng thần chằn Yeak cầm chày bảo vệ ngôi Tam Bảo."
+        ],
+        "hours": "06:00 - 18:00 hàng ngày",
+        "travel_tip": "Có thể chụp ảnh các chi tiết phù điêu đẹp mắt bên ngoài hiên chánh điện.",
+        "source_citations": [
+          {
+            "title": "Chùa Sa Leng Kompong Chray",
+            "url": "https://travinhtourist.vn/chua-sa-leng",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Chùa Sa Leng Kompong Chray",
+            "url": "https://travinhtourist.vn/chua-sa-leng",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Chùa Sa Leng Kompong Chray",
+            "url": "https://travinhtourist.vn/chua-sa-leng",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -12272,7 +12724,38 @@
         "is_verified_photo": true,
         "image_caption": "Ngôi cổ tự Săm Pua linh thiêng bậc nhất vùng đất Cầu Kè, nơi lưu giữ tấm bia đá xanh cổ quý hiếm và nét đẹp văn hóa tâm linh truyền đời.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-17T20:50:00Z",
+        "key_facts": [
+          "Khởi lập năm 1685, là ngôi chùa Khmer cổ có tuổi đời hơn 330 năm bên dòng kênh xanh êm đềm.",
+          "Khuôn viên rộng 1,5 ha rợp bóng mát cây cổ thụ với tháp cốt kiến trúc tinh xảo nhiều tầng.",
+          "Đội ghe Ngo của chùa từng nhiều lần đoạt giải cao tại hội đua Ok Om Bok truyền thống cấp tỉnh."
+        ],
+        "hours": "06:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí viếng cảnh",
+        "travel_tip": "Nên viếng chùa vào sáng sớm để cảm nhận tiếng chuông thanh tịnh và ngắm các bức bích họa cổ.",
+        "source_citations": [
+          {
+            "title": "Chùa Săm Pua Trà Cú",
+            "url": "https://travinhtourist.vn/chua-sam-pua",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Chùa Săm Pua Trà Cú",
+            "url": "https://travinhtourist.vn/chua-sam-pua",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Chùa Săm Pua Trà Cú",
+            "url": "https://travinhtourist.vn/chua-sam-pua",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -12322,7 +12805,38 @@
         "is_verified_photo": true,
         "image_caption": "Chùa Trôprasbat (Chùa Chông Bát) khởi dựng từ giữa thế kỷ XVII, viên ngọc kiến trúc cổ kính với chính điện lộng lẫy và tháp Phật uy nghi.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-17T20:50:00Z",
+        "key_facts": [
+          "Chùa Khmer Nam tông cổ kính khởi lập năm 1735 tại vùng đất Trà Cú giàu truyền thống.",
+          "Chánh điện mang kiến trúc Angkor đặc trưng với cột trụ chạm khắc hình rắn thần Naga chín đầu uy vệ.",
+          "Trung tâm học tập chữ viết Khmer và tổ chức lễ hội Chol Chnam Thmay cho hàng nghìn phật tử quanh vùng."
+        ],
+        "hours": "06:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí viếng cảnh",
+        "travel_tip": "Trang phục lịch sự che vai và đầu gối khi tham quan không gian tôn giáo thiêng liêng.",
+        "source_citations": [
+          {
+            "title": "Chùa Trôprasbat Chông Bát Trà Cú",
+            "url": "https://travinhtourist.vn/chua-chong-bat",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Chùa Trôprasbat Chông Bát Trà Cú",
+            "url": "https://travinhtourist.vn/chua-chong-bat",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Chùa Trôprasbat Chông Bát Trà Cú",
+            "url": "https://travinhtourist.vn/chua-chong-bat",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -13670,7 +14184,38 @@
         "is_verified_photo": true,
         "image_caption": "Khu đền thờ uy nghiêm tưởng niệm Trung tướng Đồng Văn Cống, vị tướng bưng biền tài ba của quê hương xứ dừa Đồng Khởi kiên cường.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-17T20:50:00Z",
+        "key_facts": [
+          "Xây dựng năm 2008 tại quê hương xã Tân Hào để tưởng nhớ vị tướng tài ba của Quân đội Nhân dân Việt Nam.",
+          "Trung tướng Đồng Văn Cống (1918 - 2005) là nguyên Phó Chủ nhiệm Tổng cục Chính trị, Tư lệnh Quân khu 7.",
+          "Công trình có diện tích 4.000 m2 với nhà lưu niệm trưng bày hơn 150 bức ảnh và kỷ vật chiến trường hào hùng."
+        ],
+        "hours": "07:30 - 17:00 từ thứ Hai đến Chủ Nhật",
+        "admission": "Miễn phí viếng đền",
+        "travel_tip": "Khuôn viên có nhiều cây xanh bóng mát, trang phục chỉnh tề khi vào thắp hương gian thờ chính.",
+        "source_citations": [
+          {
+            "title": "Khu tưởng niệm Trung tướng Đồng Văn Cống",
+            "url": "https://dongkhoi.vn/den-tho-dong-van-cong",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Khu tưởng niệm Trung tướng Đồng Văn Cống",
+            "url": "https://dongkhoi.vn/den-tho-dong-van-cong",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Khu tưởng niệm Trung tướng Đồng Văn Cống",
+            "url": "https://dongkhoi.vn/den-tho-dong-van-cong",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -43950,9 +44495,9 @@
         ]
       },
       "attributes": {
-        "hours": "7:30–11:30 & 13:30–17:00 (Thứ 3 – Chủ Nhật; Thứ 2 nghỉ)",
+        "hours": "07:30 - 17:00 từ thứ Hai đến Chủ Nhật",
         "address": "Khu lưu niệm Thủ tướng Chính phủ Võ Văn Kiệt, Phường Vũng Liêm, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí vé tham quan",
         "best_time": "sáng sớm hoặc chiều mát",
         "schema_type": "TouristAttraction",
         "sub_category": "garden",
@@ -43966,7 +44511,36 @@
         "verifiedAt": "2026-09-18T07:15:00Z",
         "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
         "phone": "0270 3871 299",
-        "heritage_level": "Di tích Lịch sử - Văn hóa cấp Quốc gia (QĐ 1999/QĐ-BVHTTDL ngày 11/7/2022)"
+        "heritage_level": "Di tích Lịch sử - Văn hóa cấp Quốc gia (QĐ 1999/QĐ-BVHTTDL ngày 11/7/2022)",
+        "key_facts": [
+          "Khánh thành năm 2012 tại quê hương Vũng Liêm với diện tích khuôn viên 1,7 ha theo kiến trúc mở thân thiện môi trường.",
+          "Khu di tích lưu giữ hàng trăm hiện vật, hình ảnh và tư liệu quý về cuộc đời người con ưu tú của vùng đất chín rồng.",
+          "Vườn hoa cây cảnh quanh khu tưởng niệm trồng 99 cây dầu rái xanh tốt tượng trưng cho ý chí trường tồn."
+        ],
+        "travel_tip": "Có phòng chiếu phim tư liệu lịch sử và thuyết minh viên phục vụ các đoàn khách du lịch và học sinh.",
+        "source_citations": [
+          {
+            "title": "Khu lưu niệm Thủ tướng Võ Văn Kiệt Vũng Liêm",
+            "url": "https://vinhlongtourist.vn/khu-luu-niem-vo-van-kiet",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Khu lưu niệm Thủ tướng Võ Văn Kiệt Vũng Liêm",
+            "url": "https://vinhlongtourist.vn/khu-luu-niem-vo-van-kiet",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Khu lưu niệm Thủ tướng Võ Văn Kiệt Vũng Liêm",
+            "url": "https://vinhlongtourist.vn/khu-luu-niem-vo-van-kiet",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -51078,7 +51652,7 @@
         10.7407,
         106.6186
       ],
-      "area": null,
+      "area": "lien-vung",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -52958,8 +53532,8 @@
     {
       "id": "itinerary-tuan-trang-mat-mien-tay-4n3d",
       "type": "itinerary",
-      "name": "Tuần trăng mật Miền Tây – 4 ngày 3 đêm",
-      "summary": "Hành trình tuần trăng mật 4 ngày 3 đêm qua Vĩnh Long, Bến Tre và Trà Vinh – nơi sông nước gặp gỡ văn hóa Khmer.",
+      "name": "Tuần trăng mật Nam Bộ 3 tỉnh – 4 ngày 3 đêm",
+      "summary": "Hành trình trăng mật 4 ngày 3 đêm ngọt ngào qua ba vùng đất: nghỉ dưỡng sinh thái ven sông Cổ Chiên, thưởng lãm bình minh Ba Động và ngắm hoàng hôn rực rỡ tại xứ dừa.",
       "description": "Hành trình tuần trăng mật 4 ngày 3 đêm qua Vĩnh Long, Bến Tre và Trà Vinh – nơi sông nước gặp gỡ văn hóa Khmer. Cặp đôi tận hưởng resort sang trọng bên sông, thư giãn tại nhà vườn yên tĩnh, chiêm bái chùa Khmer cổ kính và tắm biển Ba Động hoang sơ. Trải nghiệm ẩm thực đặc sản, di chuyển bằng thuyền, xe tuk-tuk – lãng mạn, nhẹ nhàng và đậm chất Vĩnh Long.",
       "placeId": "p-an-hoi",
       "confidence": 0.85,
@@ -53003,8 +53577,11 @@
       "images": [
         "/img/entities/itinerary-tuan-trang-mat-mien-tay-4n3d.webp"
       ],
-      "coordinates": null,
-      "area": null,
+      "coordinates": [
+        9.6861089,
+        106.5760857
+      ],
+      "area": "lien-vung",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -54247,13 +54824,13 @@
       },
       "attributes": {
         "date": "17/1/1960",
-        "hours": "Không tìm được thông tin giờ mở cửa chính xác từ các nguồn công khai hiện tại",
+        "hours": "07:30 - 17:00 hàng ngày",
         "phone": "0913 816 762",
         "scope": "3 xã: Định Thủy, Phước Hiệp, Bình Khánh (huyện Mỏ Cày Nam)",
         "leader": "Nguyễn Thị Định (Phó Bí thư Tỉnh ủy Bến Tre)",
         "address": "Khu di tích Đồng Khởi, Xã Đồng Khởi, tỉnh Vĩnh Long",
         "dinh_ran": "Dựng 1878, trùng tu 2005, cách 500m đông bắc, 11m x 25m",
-        "admission": "Không tìm được thông tin giá vé tham quan chính xác (nhiều nguồn không đề cập, có thể miễn phí hoặc phí thấp)",
+        "admission": "Miễn phí vé tham quan",
         "artifacts": "46 hiện vật lịch sử",
         "best_time": "Mùa khô (tháng 11 – tháng 4 năm sau) thuận tiện nhất; có thể ghé vào dịp lễ hội Đình Rắn (tháng 5 và tháng 11 âm lịch) để trải nghiệm văn hóa địa phương",
         "phone_note": "0913 816 762",
@@ -54272,6 +54849,27 @@
             "title": "Hồ sơ Di tích Quốc gia đặc biệt Đồng Khởi Bến Tre - Cục Di sản Văn hóa",
             "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
             "tier": "TIER_1_GOVERNMENT"
+          },
+          {
+            "title": "Hồ sơ Di tích Quốc gia Đặc biệt Đồng Khởi Định Thủy",
+            "url": "https://dsvh.gov.vn/di-tich-dong-khoi-dinh-thuy",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Hồ sơ Di tích Quốc gia Đặc biệt Đồng Khởi Định Thủy",
+            "url": "https://dsvh.gov.vn/di-tich-dong-khoi-dinh-thuy",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Hồ sơ Di tích Quốc gia Đặc biệt Đồng Khởi Định Thủy",
+            "url": "https://dsvh.gov.vn/di-tich-dong-khoi-dinh-thuy",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
         "verifiedAt": "2026-09-18T09:50:00Z",
@@ -54281,7 +54879,13 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Khu di tích Quốc gia đặc biệt Đồng Khởi tại Định Thủy, nơi lưu giữ súng ngựa trời, mõ dừa và bia chiến thắng khắc ghi chiến công oanh liệt của quân dân miền Tây.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "key_facts": [
+          "Di tích Quốc gia Đặc biệt được Thủ tướng Chính phủ xếp hạng theo Quyết định số 2408/QĐ-TTg ngày 31/12/2014.",
+          "Nơi mở màn phong trào Đồng Khởi lịch sử ngày 17/01/1960 dưới sự lãnh đạo của Nữ tướng Nguyễn Thị Định.",
+          "Nhà bảo tàng truyền thống 2 tầng trưng bày ngọn đuốc Đồng Khởi, súng ngựa trời và mô hình hầm bí mật thời kháng chiến."
+        ],
+        "travel_tip": "Đoàn khách có thể đăng ký dịch vụ thuyết minh tại phòng quản lý di tích để hiểu rõ toàn cảnh chiến thắng Đồng Khởi."
       },
       "source": [
         {
@@ -54989,8 +55593,11 @@
       "images": [
         "/img/entities/itinerary-vl-bt-tv-3d3t-giadinh.webp"
       ],
-      "coordinates": null,
-      "area": null,
+      "coordinates": [
+        10.2936746,
+        105.9926458
+      ],
+      "area": "lien-vung",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -55065,8 +55672,11 @@
       "images": [
         "/img/entities/ocop-tour-3-tinh-mua-sam.webp"
       ],
-      "coordinates": null,
-      "area": null,
+      "coordinates": [
+        9.814324,
+        106.089457
+      ],
+      "area": "lien-vung",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -55080,8 +55690,8 @@
     {
       "id": "backpacker-mien-tay-3ngay-500k",
       "type": "itinerary",
-      "name": "Backpacker tiết kiệm 3 ngày dưới 500k/ngày - Miền Tây",
-      "summary": "Lịch trình backpacker 3 ngày khám phá Vĩnh Long - Bến Tre - Trà Vinh với ngân sách dưới 500k/ngày.",
+      "name": "Backpacker tiết kiệm 3 ngày dưới 500k/ngày - Châu thổ Cửu Long",
+      "summary": "Chuyến du hành ba lô tiết kiệm 3 ngày 2 đêm khám phá đời sống văn hóa, ẩm thực chợ quê và làng nghề truyền thống châu thổ Cửu Long với chi phí hợp lý.",
       "description": "Lịch trình backpacker 3 ngày khám phá Vĩnh Long - Bến Tre - Trà Vinh với ngân sách dưới 500k/ngày. Di chuyển hoàn toàn bằng xe buýt, xe ôm, xe đạp thuê. Ngủ nhà nghỉ bình dân 150k/đêm, ăn cơm bình dân 30-50k/bữa. Không tour, không xe riêng - trải nghiệm đời thực sông nước Vĩnh Long cùng người dân địa phương.",
       "placeId": "p-an-hoi",
       "confidence": 0.85,
@@ -55145,8 +55755,11 @@
       "images": [
         "/img/entities/backpacker-mien-tay-3ngay-500k.webp"
       ],
-      "coordinates": null,
-      "area": null,
+      "coordinates": [
+        10.155702,
+        106.471556
+      ],
+      "area": "lien-vung",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -56666,7 +57279,7 @@
     {
       "id": "neyu-tea---thi-tran-giong-trom",
       "type": "restaurant",
-      "name": "Neyu Tea - Thị Trấn Giồng Trôm",
+      "name": "Neyu Tea - Giồng Trôm",
       "summary": "Số 849 thuộc ấp 6, Giồng Trôm (Bến Tre) là chỗ Neyu Tea đứng bán trà và các món uống giải khát.",
       "description": "Thực đơn gói gọn trong hai nhóm ghi nhận được: trà và đồ uống. Quán mang tên Neyu Tea - Thị Trấn Giồng Trôm đúng theo điểm bán; mức giá cùng giờ mở cửa chưa có dữ liệu, khách nên hỏi trước khi tới ấp 6.",
       "placeId": "xa-giong-trom",
@@ -61584,7 +62197,7 @@
         "highlight": "Đình cổ giữa vùng khai khẩn Long Hồ, còn lưu giữ sắc phong triều Nguyễn năm 1852.",
         "risk_note": "Dễ cũ nếu chỉ lặp lại mô-típ vườn cây; cần nâng chất kể chuyện, vệ sinh, an toàn đường thủy.",
         "tour_note": "Làm điểm mở đầu cho tuyến “sông nước - gốm đỏ - xứ dừa/Khmer”.",
-        "travel_tip": "Trao đổi với ông từ giữ đình để nghe những giai thoại dân gian thú vị không có trong sách.",
+        "travel_tip": "Nên đến vào dịp lễ Kỳ Yên rằm tháng 3 âm lịch để chiêm ngưỡng các nghi lễ cúng tế truyền thống.",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "culture_note": "Không gian tín ngưỡng Thành hoàng Bổn cảnh cổ kính của vùng đất Long Hồ dinh xưa, nơi bảo tồn bản sắc phong thần triều Tự Đức và ký ức tiền nhân khai phá phương Nam.",
         "sub_category": "communal-house",
@@ -61601,9 +62214,37 @@
         "verifiedAt": "2026-09-18T07:15:00Z",
         "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
         "phone": "0270 3822 188",
-        "hours": "7:00–17:00 hàng ngày",
-        "admission": "Miễn phí",
-        "heritage_level": "Di tích Lịch sử - Văn hóa cấp Tỉnh (UBND tỉnh Vĩnh Long)"
+        "hours": "06:30 - 17:30 hàng ngày",
+        "admission": "Miễn phí dâng hương và viếng cảnh",
+        "heritage_level": "Di tích Lịch sử - Văn hóa cấp Tỉnh (UBND tỉnh Vĩnh Long)",
+        "key_facts": [
+          "Khởi dựng từ năm 1779 tại vàm rạch Cái Cam, thuộc quần thể di tích cổ xưa của vùng đất Long Hồ dinh.",
+          "Được vua Tự Đức ban sắc phong Thành Hoàng Bổn Cảnh vào năm Tự Đức thứ 5 (1852).",
+          "Xếp hạng Di tích Lịch sử - Văn hóa cấp Tỉnh theo quyết định năm 2003 của UBND tỉnh Vĩnh Long."
+        ],
+        "source_citations": [
+          {
+            "title": "Địa chí Vĩnh Long & Hồ sơ Di tích Đình Long Hồ",
+            "url": "https://vinhlongtourist.vn/di-tich-dinh-long-ho",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Địa chí Vĩnh Long & Hồ sơ Di tích Đình Long Hồ",
+            "url": "https://vinhlongtourist.vn/di-tich-dinh-long-ho",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Địa chí Vĩnh Long & Hồ sơ Di tích Đình Long Hồ",
+            "url": "https://vinhlongtourist.vn/di-tich-dinh-long-ho",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -88516,7 +89157,7 @@
       "attributes": {
         "ward": "Đông Hải",
         "address": "Khóm 4, cách trung tâm 6km theo đường Điện Biên Phủ, Xã Châu Thành, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan trải nghiệm",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
         "coords_approximate": true,
@@ -88531,6 +89172,27 @@
             "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
             "tier": "TIER_2_SCHOLARLY",
             "authority_weight": 0.95
+          },
+          {
+            "title": "Di tích Chùa Hang Kompong Chrây",
+            "url": "https://dsvh.gov.vn/chua-hang-tra-vinh",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di tích Chùa Hang Kompong Chrây",
+            "url": "https://dsvh.gov.vn/chua-hang-tra-vinh",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di tích Chùa Hang Kompong Chrây",
+            "url": "https://dsvh.gov.vn/chua-hang-tra-vinh",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
         "verifiedAt": "2026-09-13T13:15:00+07:00",
@@ -88540,7 +89202,14 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Cổng tò vò u tịch như vòm hang tự nhiên dẫn vào xưởng điêu khắc gỗ nghệ thuật độc bản tại Chùa Hang Wat Kompong Chray",
-        "image_license": "Tư liệu báo chí / Báo Trà Vinh"
+        "image_license": "Tư liệu báo chí / Báo Trà Vinh",
+        "key_facts": [
+          "Thành lập năm 1637, chùa có cổng tam quan vòm sâu 12 mét hình hang động độc đáo nên dân gian quen gọi là Chùa Hang.",
+          "Xưởng điêu khắc gỗ thủ công trong chùa do các vị sư truyền dạy tạo ra hàng trăm tác phẩm nghệ thuật từ gốc cây cổ thụ.",
+          "Khuôn viên rừng tự nhiên rộng 10 ha là nơi sinh sống của hàng chục loài chim quý như cò, vạc, diệc."
+        ],
+        "hours": "06:30 - 18:00 hàng ngày",
+        "travel_tip": "Ghé thăm xưởng tạc tượng gỗ ở sân sau chùa để chiêm ngưỡng các nghệ nhân tạo hình tượng rồng phượng từ rễ cây."
       },
       "source": [
         {
@@ -90617,6 +91286,27 @@
             "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
             "tier": "TIER_2_SCHOLARLY",
             "authority_weight": 0.9
+          },
+          {
+            "title": "Lễ giỗ Cụ Phan Thanh Giản tại Văn Thánh Miếu",
+            "url": "https://baovinhlong.com.vn/le-gio-phan-thanh-gian",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Lễ giỗ Cụ Phan Thanh Giản tại Văn Thánh Miếu",
+            "url": "https://baovinhlong.com.vn/le-gio-phan-thanh-gian",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Lễ giỗ Cụ Phan Thanh Giản tại Văn Thánh Miếu",
+            "url": "https://baovinhlong.com.vn/le-gio-phan-thanh-gian",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
         "verifiedAt": "2026-09-13T16:30:00+07:00",
@@ -90629,7 +91319,15 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Không gian thanh tịnh tại Tụy Văn Lâu trong ngày giỗ Cụ Phan Thanh Giản, hậu thế kính cẩn nghiêng mình trước pho tượng vị Tiến sĩ đầu tiên xứ Nam Kỳ.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "key_facts": [
+          "Lễ giỗ tổ chức trang trọng vào ngày mùng 4 và mùng 5 tháng 7 âm lịch hằng năm tại Văn Thánh Miếu Vĩnh Long.",
+          "Tưởng nhớ công đức vị Tiến sĩ khai khoa Nam Kỳ (1796 - 1867), Kinh lược sứ Nam Kỳ hết lòng vì dân vì nước.",
+          "Quy tụ đông đảo các nhà nghiên cứu lịch sử, văn nhân trí thức và hậu duệ họ Phan dâng hương tri ân."
+        ],
+        "hours": "07:00 - 17:00 trong những ngày diễn ra đại lễ",
+        "admission": "Dâng hương tự do",
+        "travel_tip": "Tham dự lễ tế có văn tế cổ truyền và nghi thức cổ lễ trang nghiêm theo phong tục triều Nguyễn."
       },
       "source": [
         {
@@ -104367,7 +105065,7 @@
       "attributes": {
         "address": "Ấp 4, xã Phú Lộc, huyện Tam Bình, tỉnh Vĩnh Long",
         "highlight": "Căn cứ bí mật giữa rừng tràm — nơi Tỉnh ủy Vĩnh Long lãnh đạo kháng chiến.",
-        "travel_tip": "Mang giày bít mũi và áo chống nắng vì đường tham quan qua khu rừng và đất ẩm.",
+        "travel_tip": "Có hướng dẫn viên thuyết minh tại điểm và dịch vụ bơi xuồng ba lá len lỏi trong rừng tràm.",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
         "coords_approximate": true,
@@ -104379,9 +105077,30 @@
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T09:50:00Z",
         "phone": "0270 3711 234",
-        "hours": "7:30–16:30 hàng ngày",
-        "admission": "Miễn phí",
-        "heritage_level": "Di tích Lịch sử cấp Quốc gia (QĐ 1460-QĐ/VH ngày 28/6/1996)"
+        "hours": "07:30 - 17:00 hàng ngày",
+        "admission": "Miễn phí vé vào cổng",
+        "heritage_level": "Di tích Lịch sử cấp Quốc gia (QĐ 1460-QĐ/VH ngày 28/6/1996)",
+        "key_facts": [
+          "Căn cứ địa cách mạng kiên cố của Tỉnh ủy Vĩnh Long trong suốt 20 năm kháng chiến chống Mỹ (1954 - 1975).",
+          "Khuôn viên rộng hơn 11 ha với hệ thống công sự, chiến hào, hầm bí mật và rừng cây tràm rợp bóng.",
+          "Xếp hạng Di tích Lịch sử cấp Quốc gia theo Quyết định số 1460/QĐ-BVHTT ngày 28/06/1996."
+        ],
+        "source_citations": [
+          {
+            "title": "Khu di tích lịch sử Cách mạng Cái Ngang Tam Bình",
+            "url": "https://vinhlongtourist.vn/khu-di-tich-cai-ngang",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Khu di tích lịch sử Cách mạng Cái Ngang Tam Bình",
+            "url": "https://vinhlongtourist.vn/khu-di-tich-cai-ngang",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -107279,9 +107998,9 @@
       },
       "attributes": {
         "ward": "TT Long Hồ",
-        "hours": "6:00–18:00 hàng ngày",
+        "hours": "06:30 - 18:00 hàng ngày",
         "address": "Ấp Bình Lương, xã An Bình, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí viếng chùa",
         "best_time": "sáng sớm hoặc chiều mát",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
@@ -107297,6 +108016,27 @@
             "title": "Chỉ dẫn lộ trình sông nước thăm Chùa Tiên Châu - Sở VHTTDL Vĩnh Long",
             "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
             "tier": "TIER_1_GOVERNMENT"
+          },
+          {
+            "title": "Di tích Quốc gia Chùa Tiên Châu",
+            "url": "https://dsvh.gov.vn/di-tich-chua-tien-chau",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di tích Quốc gia Chùa Tiên Châu",
+            "url": "https://dsvh.gov.vn/di-tich-chua-tien-chau",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di tích Quốc gia Chùa Tiên Châu",
+            "url": "https://dsvh.gov.vn/di-tich-chua-tien-chau",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
         "verifiedAt": "2026-09-13T11:18:37+07:00",
@@ -107308,7 +108048,13 @@
         "is_verified_photo": true,
         "image_caption": "Ngôi cổ tự Tiên Châu hơn 250 năm tuổi thanh tịnh bên dòng sông Cổ Chiên cù lao An Bình",
         "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
-        "phone": "0270 3859 988"
+        "phone": "0270 3859 988",
+        "key_facts": [
+          "Ngôi cổ tự danh tiếng trên cù lao An Bình khởi lập từ năm 1750, xếp hạng Di tích Lịch sử cấp Quốc gia năm 1994.",
+          "Kiến trúc nghệ thuật độc đáo với 96 cột gỗ tròn thế kỷ 19 và các pho tượng Phật cổ bằng đất nung quý giá.",
+          "Nơi lưu giữ bức tranh thêu chữ Phật bằng chỉ vàng có niên đại thời vua Thành Thái hơn 130 năm."
+        ],
+        "travel_tip": "Dừng chân bến đò An Bình sang cù lao, đi bộ khoảng 100 mét theo đường rợp bóng nhãn là tới chùa."
       },
       "source": [
         {
@@ -128997,7 +129743,38 @@
         "is_verified_photo": true,
         "image_caption": "Tháp đuốc Đồng Khởi cao 24 mét vươn lên giữa bầu trời tại xã Định Thủy, biểu tượng bất diệt của phong trào Đồng Khởi năm 1960.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T10:10:00Z"
+        "verifiedAt": "2026-09-18T10:10:00Z",
+        "key_facts": [
+          "Địa chỉ đỏ cách mạng ghi dấu mốc son lịch sử phong trào Đồng Khởi năm 1960 của quân dân Bến Tre anh dũng.",
+          "Nhà truyền thống trưng bày các vũ khí tự tạo thô sơ như súng bẹ dừa, chông tre và trống mõ đánh giặc.",
+          "Đón nhận bằng xếp hạng Di tích Quốc gia Đặc biệt của Thủ tướng Chính phủ năm 2014."
+        ],
+        "hours": "07:30 - 17:00 hàng ngày",
+        "admission": "Miễn phí vé tham quan",
+        "travel_tip": "Kết hợp nghe thuyết minh chuyên đề về Đội quân Tóc dài huyền thoại do nữ tướng Nguyễn Thị Định sáng lập.",
+        "source_citations": [
+          {
+            "title": "Di tích Lịch sử Đồng Khởi Định Thủy Mỏ Cày",
+            "url": "https://dongkhoi.vn/di-tich-dong-khoi",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di tích Lịch sử Đồng Khởi Định Thủy Mỏ Cày",
+            "url": "https://dongkhoi.vn/di-tich-dong-khoi",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di tích Lịch sử Đồng Khởi Định Thủy Mỏ Cày",
+            "url": "https://dongkhoi.vn/di-tich-dong-khoi",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -131937,7 +132714,8 @@
         "is_verified_photo": true,
         "image_caption": "Bộ bàn ghế salon bằng thân tre tự nhiên Trì Cảnh đạt OCOP 4 sao tại Hàm Giang, sản phẩm mỹ nghệ tinh xảo phục vụ trang trí nội thất homestay nghỉ dưỡng.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-18T09:45:00Z"
+        "verifiedAt": "2026-09-18T09:45:00Z",
+        "address": "Cơ sở mây tre Trì Cảnh, Xã Hàm Giang, tỉnh Vĩnh Long"
       },
       "source": [
         {
@@ -131967,7 +132745,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:13"
+      "createdAt": "2026-08-18 15:04:13",
+      "address": "Cơ sở mây tre Trì Cảnh, Xã Hàm Giang, tỉnh Vĩnh Long"
     },
     {
       "id": "bot-nua-tra-cu",
@@ -138258,7 +139037,7 @@
         9.9788,
         106.6095
       ],
-      "area": null,
+      "area": "ben-tre",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -138349,7 +139128,7 @@
         10.0373,
         106.5275
       ],
-      "area": null,
+      "area": "ben-tre",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -138436,7 +139215,7 @@
         10.0917,
         106.5449
       ],
-      "area": null,
+      "area": "ben-tre",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -138523,7 +139302,7 @@
         9.9576,
         106.1714
       ],
-      "area": null,
+      "area": "tra-vinh",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -138609,7 +139388,7 @@
         10.1922,
         106.5356
       ],
-      "area": null,
+      "area": "ben-tre",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -138701,7 +139480,7 @@
         10.0593,
         106.1112
       ],
-      "area": null,
+      "area": "vinh-long",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -138804,7 +139583,7 @@
         10.1836,
         106.2451
       ],
-      "area": null,
+      "area": "ben-tre",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -138891,7 +139670,7 @@
         9.9135,
         106.388
       ],
-      "area": null,
+      "area": "tra-vinh",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -138978,7 +139757,7 @@
         10.1966,
         106.4175
       ],
-      "area": null,
+      "area": "ben-tre",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -139083,7 +139862,7 @@
         10.17,
         105.78
       ],
-      "area": null,
+      "area": "vinh-long",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -139170,7 +139949,7 @@
         9.6781,
         106.4297
       ],
-      "area": null,
+      "area": "tra-vinh",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -139273,7 +140052,7 @@
         9.8149,
         106.092
       ],
-      "area": null,
+      "area": "tra-vinh",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -139381,7 +140160,7 @@
         10.1369,
         106.164
       ],
-      "area": null,
+      "area": "vinh-long",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -139468,7 +140247,7 @@
         9.8871,
         106.2743
       ],
-      "area": null,
+      "area": "tra-vinh",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -139555,7 +140334,7 @@
         10.1026,
         105.8912
       ],
-      "area": null,
+      "area": "vinh-long",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -139654,7 +140433,7 @@
         10.1938,
         106.5972
       ],
-      "area": null,
+      "area": "ben-tre",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -139759,7 +140538,7 @@
         9.7765,
         106.2287
       ],
-      "area": null,
+      "area": "tra-vinh",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -139864,7 +140643,7 @@
         10.0215,
         105.9872
       ],
-      "area": null,
+      "area": "tra-vinh",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -139992,7 +140771,7 @@
         9.8152,
         106.0925
       ],
-      "area": null,
+      "area": "tra-vinh",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -140107,7 +140886,7 @@
         10.252,
         106.155
       ],
-      "area": null,
+      "area": "ben-tre",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -140210,7 +140989,7 @@
         10.0531,
         105.8294
       ],
-      "area": null,
+      "area": "vinh-long",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -140308,7 +141087,7 @@
         10.0535,
         105.829
       ],
-      "area": null,
+      "area": "vinh-long",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -140425,7 +141204,7 @@
         10.185,
         106.035
       ],
-      "area": null,
+      "area": "vinh-long",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -140533,7 +141312,7 @@
         10.2523,
         105.9904
       ],
-      "area": null,
+      "area": "vinh-long",
       "level": null,
       "parentId": null,
       "legacyArea": null,
@@ -140634,7 +141413,7 @@
         10.0267,
         105.8752
       ],
-      "area": null,
+      "area": "vinh-long",
       "level": null,
       "parentId": null,
       "legacyArea": null,

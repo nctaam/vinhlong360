@@ -1,0 +1,277 @@
+[
+  {
+    "id": "itinerary-lang-nghe-vong-quanh",
+    "action": "set_coordinates",
+    "value": [
+      10.1830409,
+      106.0963124
+    ]
+  },
+  {
+    "id": "itinerary-tuan-trang-mat-mien-tay-4n3d",
+    "action": "set_coordinates",
+    "value": [
+      9.6861089,
+      106.5760857
+    ]
+  },
+  {
+    "id": "itinerary-vl-bt-tv-3d3t-giadinh",
+    "action": "set_coordinates",
+    "value": [
+      10.2936746,
+      105.9926458
+    ]
+  },
+  {
+    "id": "ocop-tour-3-tinh-mua-sam",
+    "action": "set_coordinates",
+    "value": [
+      9.814324,
+      106.089457
+    ]
+  },
+  {
+    "id": "backpacker-mien-tay-3ngay-500k",
+    "action": "set_coordinates",
+    "value": [
+      10.155702,
+      106.471556
+    ]
+  },
+  {
+    "id": "cong-vien-an-hoi",
+    "action": "set_address",
+    "value": "Đường Cách Mạng Tháng Tám, Phường An Hội, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "dinh-an-hoi",
+    "action": "set_address",
+    "value": "Phường An Hội, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "lang-mai-vang-phuoc-dinh",
+    "action": "set_address",
+    "value": "Ấp Phước Định 2, Phường Long Hồ, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "huyen-tam-binh",
+    "action": "set_address",
+    "value": "Phường Long Châu, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "dinh-tan-thach",
+    "action": "set_address",
+    "value": "Phường Phú Túc, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "rach-cau-lau-vinh-long",
+    "action": "set_address",
+    "value": "Khu vực rạch Cầu Lầu, Xã Nhơn Phú, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "ca-phi-sa-ot-thanh-phuoc",
+    "action": "set_address",
+    "value": "Xã Thạnh Phước, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "tep-kho-my-long",
+    "action": "set_address",
+    "value": "Xã Cầu Ngang, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "htx-thuy-san-sinh-thai-thanh-phuoc",
+    "action": "set_address",
+    "value": "Xã Thạnh Phước, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "cua-hang-ocop-vung-liem",
+    "action": "set_address",
+    "value": "Phường Vũng Liêm, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "buoi-da-xanh",
+    "action": "set_address",
+    "value": "Xã Chợ Lách, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "ruou-truyen-thong-cuu-long-cuu-long-my-tuu",
+    "action": "set_address",
+    "value": "Xã Cái Nhum, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "dua-luoi-truong-long-hoa",
+    "action": "set_address",
+    "value": "Phường Trường Long Hòa, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "diem-trung-bay-va-ban-san-pham-ocop-vinh-long-tai-ben-cang",
+    "action": "set_address",
+    "value": "Bến cảng hành khách Vĩnh Long, Phường Long Châu, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "song-hau-doan-cua-dinh-an-tra-vinh",
+    "action": "set_address",
+    "value": "Cửa biển Định An, Xã Nhị Long, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "bo-salon-tre-ocop-tri-canh",
+    "action": "set_address",
+    "value": "Cơ sở mây tre Trì Cảnh, Xã Hàm Giang, tỉnh Vĩnh Long"
+  },
+  {
+    "id": "itinerary-lang-nghe-vong-quanh",
+    "action": "set_area",
+    "value": "lien-vung"
+  },
+  {
+    "id": "ben-xe-mien-tay-hcm",
+    "action": "set_area",
+    "value": "lien-vung"
+  },
+  {
+    "id": "itinerary-tuan-trang-mat-mien-tay-4n3d",
+    "action": "set_area",
+    "value": "lien-vung"
+  },
+  {
+    "id": "itinerary-vl-bt-tv-3d3t-giadinh",
+    "action": "set_area",
+    "value": "lien-vung"
+  },
+  {
+    "id": "ocop-tour-3-tinh-mua-sam",
+    "action": "set_area",
+    "value": "lien-vung"
+  },
+  {
+    "id": "backpacker-mien-tay-3ngay-500k",
+    "action": "set_area",
+    "value": "lien-vung"
+  },
+  {
+    "id": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
+    "action": "set_area",
+    "value": "ben-tre"
+  },
+  {
+    "id": "lang-nghe-dan-non-la-an-hiep",
+    "action": "set_area",
+    "value": "ben-tre"
+  },
+  {
+    "id": "dinh-than-an-ngai-trung",
+    "action": "set_area",
+    "value": "ben-tre"
+  },
+  {
+    "id": "chua-ang-ka-nguol-an-truong",
+    "action": "set_area",
+    "value": "tra-vinh"
+  },
+  {
+    "id": "khu-can-cu-tinh-uy-ben-tre-chau-hoa",
+    "action": "set_area",
+    "value": "ben-tre"
+  },
+  {
+    "id": "dinh-lang-hieu-phung",
+    "action": "set_area",
+    "value": "vinh-long"
+  },
+  {
+    "id": "lang-nghe-cay-giong-uon-kieng-hung-khanh-trung",
+    "action": "set_area",
+    "value": "ben-tre"
+  },
+  {
+    "id": "chua-kompong-tung-hung-my",
+    "action": "set_area",
+    "value": "tra-vinh"
+  },
+  {
+    "id": "lang-nghe-dan-trang-gio-cong-dua-luong-phu",
+    "action": "set_area",
+    "value": "ben-tre"
+  },
+  {
+    "id": "vung-chuyen-canh-khoai-lang-tim-nhat-my-thuan",
+    "action": "set_area",
+    "value": "vinh-long"
+  },
+  {
+    "id": "chua-can-tho-ngu-lac",
+    "action": "set_area",
+    "value": "tra-vinh"
+  },
+  {
+    "id": "vuon-dua-sap-cau-ke-phong-thanh",
+    "action": "set_area",
+    "value": "tra-vinh"
+  },
+  {
+    "id": "vung-chuyen-canh-sau-rieng-cu-lao-quoi-an",
+    "action": "set_area",
+    "value": "vinh-long"
+  },
+  {
+    "id": "chua-bang-trau-song-loc",
+    "action": "set_area",
+    "value": "tra-vinh"
+  },
+  {
+    "id": "cho-dau-moi-nong-san-ba-cang-song-phu",
+    "action": "set_area",
+    "value": "vinh-long"
+  },
+  {
+    "id": "vung-nuoi-so-huyet-tom-quang-canh-thanh-tri",
+    "action": "set_area",
+    "value": "ben-tre"
+  },
+  {
+    "id": "chua-o-mich-hung-hoa",
+    "action": "set_area",
+    "value": "tra-vinh"
+  },
+  {
+    "id": "lang-nghe-det-chieu-ca-hon",
+    "action": "set_area",
+    "value": "tra-vinh"
+  },
+  {
+    "id": "banh-ray-khmer-la-dua",
+    "action": "set_area",
+    "value": "tra-vinh"
+  },
+  {
+    "id": "banh-xeo-oc-gao-cho-lach",
+    "action": "set_area",
+    "value": "ben-tre"
+  },
+  {
+    "id": "nghe-nhan-chau-xuong",
+    "action": "set_area",
+    "value": "vinh-long"
+  },
+  {
+    "id": "nghe-nhan-nguyen-thi-thoi",
+    "action": "set_area",
+    "value": "vinh-long"
+  },
+  {
+    "id": "de-an-di-san-duong-dai-mang-thit",
+    "action": "set_area",
+    "value": "vinh-long"
+  },
+  {
+    "id": "nha-gom-do-tu-buoi",
+    "action": "set_area",
+    "value": "vinh-long"
+  },
+  {
+    "id": "lang-nghe-banh-trang-nem-cu-lao-may",
+    "action": "set_area",
+    "value": "vinh-long"
+  }
+]

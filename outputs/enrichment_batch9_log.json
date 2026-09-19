@@ -1,0 +1,127 @@
+[
+  {
+    "id": "cong-vien-an-hoi",
+    "name": "Công viên An Hội",
+    "key_facts_count": 3
+  },
+  {
+    "id": "dinh-an-hoi",
+    "name": "Đình An Hội",
+    "key_facts_count": 3
+  },
+  {
+    "id": "chua-hoi-tong-ben-tre",
+    "name": "Chùa Hội Tông (Hội Tông Cổ Tự)",
+    "key_facts_count": 3
+  },
+  {
+    "id": "di-tich-lich-su-dong-khoi-my-long",
+    "name": "Di tích lịch sử Đồng Khởi Mỹ Long",
+    "key_facts_count": 3
+  },
+  {
+    "id": "lang-nghe-hoa-kieng-thanh-tan",
+    "name": "Làng nghề hoa kiểng Thanh Tân",
+    "key_facts_count": 3
+  },
+  {
+    "id": "mieu-ba-chua-xu-tan-quy",
+    "name": "Miếu Bà Chúa Xứ Tân Quy",
+    "key_facts_count": 3
+  },
+  {
+    "id": "nha-tho-duc-my-cho-cua",
+    "name": "Nhà Thờ Đức Mỹ Chợ Cua",
+    "key_facts_count": 3
+  },
+  {
+    "id": "bao-tang-tinh-ben-tre",
+    "name": "Bảo tàng tỉnh Bến Tre",
+    "key_facts_count": 3
+  },
+  {
+    "id": "bia-chien-thang-loc-thuan",
+    "name": "Bia chiến thắng Lộc Thuận",
+    "key_facts_count": 3
+  },
+  {
+    "id": "cang-thi-ba-vat-di-chi-khao-co",
+    "name": "Cảng thị Ba Vát (Di chỉ khảo cổ)",
+    "key_facts_count": 3
+  },
+  {
+    "id": "chua-an-linh",
+    "name": "Chùa An Linh",
+    "key_facts_count": 3
+  },
+  {
+    "id": "chua-can-snom-can-nom",
+    "name": "Chùa Can Snom (Căn Nom)",
+    "key_facts_count": 3
+  },
+  {
+    "id": "chua-giac-linh-chua-doi",
+    "name": "Chùa Giác Linh (Chùa Dơi)",
+    "key_facts_count": 3
+  },
+  {
+    "id": "chua-sa-leng-kompong-chray",
+    "name": "Chùa Sa Leng (Kompong Chrây)",
+    "key_facts_count": 3
+  },
+  {
+    "id": "chua-sam-pua",
+    "name": "Chùa Săm Pua",
+    "key_facts_count": 3
+  },
+  {
+    "id": "chua-troprasbat-chua-chong-bat",
+    "name": "Chùa Trôprasbat (Chùa Chông Bát)",
+    "key_facts_count": 3
+  },
+  {
+    "id": "den-tho-trung-tuong-dong-van-cong",
+    "name": "Đền thờ Trung tướng Đồng Văn Cống",
+    "key_facts_count": 3
+  },
+  {
+    "id": "khu-luu-niem-thu-tuong-chinh-phu-vo-van-kiet",
+    "name": "Khu lưu niệm Thủ tướng Chính phủ Võ Văn Kiệt",
+    "key_facts_count": 3
+  },
+  {
+    "id": "khu-di-tich-dong-khoi",
+    "name": "Khu di tích Đồng Khởi",
+    "key_facts_count": 3
+  },
+  {
+    "id": "dinh-long-ho",
+    "name": "Đình Long Hồ",
+    "key_facts_count": 3
+  },
+  {
+    "id": "chua-hang-wat-kompong-chray",
+    "name": "Chùa Hang (Wat Kompong Chray)",
+    "key_facts_count": 3
+  },
+  {
+    "id": "le-gio-phan-thanh-gian-tai-van-thanh-mieu",
+    "name": "Lễ giỗ Phan Thanh Giản tại Văn Thánh Miếu",
+    "key_facts_count": 3
+  },
+  {
+    "id": "khu-di-tich-cach-mang-cai-ngang",
+    "name": "Khu di tích Cách mạng Cái Ngang",
+    "key_facts_count": 3
+  },
+  {
+    "id": "chua-tien-chau-tien-chau-tu",
+    "name": "Chùa Tiên Châu (Tiên Châu Tự)",
+    "key_facts_count": 3
+  },
+  {
+    "id": "khu-di-tich-dong-khoi-ben-tre",
+    "name": "Khu di tích Đồng Khởi Bến Tre (Khu di tích lịch sử Đồng Khởi)",
+    "key_facts_count": 3
+  }
+]
