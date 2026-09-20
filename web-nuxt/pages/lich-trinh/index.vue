@@ -415,10 +415,10 @@ useHead(() => ({
    theme, nên ở Nocturne nền thành --night-leaf và chữ trắng chỉ đạt
    2.80:1. Đây cũng là hợp đồng mà tri-region-color.css áp cho mọi control
    nền-đặc; .pace-chip đặt tên khác nên đã lọt khỏi rule đó. */
-.pace-chip.active { background: var(--secondary); border-color: var(--secondary); color: var(--color-on-action); }
+.pace-chip.active { background: var(--color-action); border-color: var(--color-action); color: var(--color-on-action); }
 .pace-chip.active .pace-chip-count { color: inherit; opacity: .8; }
 .dark .pace-chip { background: var(--card); border-color: var(--line); }
-.dark .pace-chip.active { background: var(--secondary); border-color: var(--secondary); }
+.dark .pace-chip.active { background: var(--color-action); border-color: var(--color-action); }
 
 /* ── Pace shelves — "shelves of days" grouping when browsing all paces ── */
 .pace-shelves { display: flex; flex-direction: column; gap: var(--space-8); }
@@ -448,21 +448,21 @@ useHead(() => ({
 .js-item:active { transform: scale(.97); transition-duration: .08s; }
 .js-emoji { font-size: var(--text-lg); }
 
-/* Premium hero stat-items: brand-tinted surface + accent border */
+/* Editorial hero stat-items: brand-tinted surface + accent border */
 .catalog-hero .stat-item {
-  background: rgba(var(--secondary-rgb), .04);
-  border: 1px solid rgba(var(--secondary-rgb), .16);
-  box-shadow: inset 3px 0 0 var(--secondary);
+  background: rgba(var(--color-brand-rgb), .04);
+  border: 1px solid rgba(var(--color-brand-rgb), .16);
+  box-shadow: inset 3px 0 0 var(--color-brand);
   border-radius: var(--radius-control);
   transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo);
 }
 .catalog-hero .stat-item:hover {
-  background: rgba(var(--secondary-rgb), .08);
+  background: rgba(var(--color-brand-rgb), .08);
   transform: translateY(-2px);
 }
 .catalog-hero .stat-item:hover .stat-num { letter-spacing: .02em; }
-.dark .catalog-hero .stat-item { background: rgba(var(--secondary-rgb), .08); }
-.dark .catalog-hero .stat-item:hover { background: rgba(var(--secondary-rgb), .14); }
+.dark .catalog-hero .stat-item { background: rgba(var(--color-brand-rgb), .08); }
+.dark .catalog-hero .stat-item:hover { background: rgba(var(--color-brand-rgb), .14); }
 
 /* Itinerary empty-state wrapper rhythm */
 .itin-empty { margin-top: var(--space-2); }
