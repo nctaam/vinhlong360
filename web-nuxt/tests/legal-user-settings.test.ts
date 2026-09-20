@@ -76,6 +76,12 @@ describe('Legal & User Account Utilities (Moc 133)', () => {
       expect(src).toContain('role="progressbar"')
     })
 
+    it('verifies traveler profile tab navigation in tai-khoan.vue', () => {
+      const src = readPage('pages/tai-khoan.vue')
+      expect(src).toContain('traveler-hub-tabs')
+      expect(src).toContain('tab-journeys')
+    })
+
     it('pages/cai-dat.vue provides keyboard navigable settings tabs', () => {
       const src = readPage('pages/cai-dat.vue')
       expect(src).toContain('role="tablist"')

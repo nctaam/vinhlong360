@@ -48,6 +48,28 @@
         </div>
       </section>
 
+      <!-- Traveler Hub Navigation Tabs -->
+      <nav class="traveler-hub-tabs" aria-label="Điều hướng trung tâm lữ khách">
+        <NuxtLink to="/lich-trinh" class="th-tab tab-journeys" aria-label="Chuyến đi & Lịch trình">
+          <IconLine name="map" aria-hidden="true" />
+          <span>Hành trình</span>
+        </NuxtLink>
+        <NuxtLink to="/da-luu" class="th-tab tab-saved" aria-label="Điểm đến đã lưu">
+          <IconLine name="bookmark" aria-hidden="true" />
+          <span>Đã lưu</span>
+          <span v-if="counts.bookmarks" class="th-badge">{{ counts.bookmarks }}</span>
+        </NuxtLink>
+        <NuxtLink to="/cong-dong" class="th-tab tab-contributions" aria-label="Đóng góp cộng đồng">
+          <IconLine name="edit" aria-hidden="true" />
+          <span>Đóng góp</span>
+          <span v-if="counts.drafts" class="th-badge">{{ counts.drafts }}</span>
+        </NuxtLink>
+        <NuxtLink to="/cai-dat" class="th-tab tab-settings" aria-label="Cài đặt tài khoản & Riêng tư">
+          <IconLine name="settings" aria-hidden="true" />
+          <span>Cài đặt &amp; Riêng tư</span>
+        </NuxtLink>
+      </nav>
+
       <div v-if="fetchIssue" class="cp-alert" role="status">
         <span>Chưa tải đủ dữ liệu tài khoản. Một vài chỉ số có thể đang tạm thời chưa chính xác.</span>
         <button type="button" class="btn btn-ghost btn-sm" :disabled="accountRefreshing" @click="loadAccountData">
@@ -647,5 +669,50 @@ useHead(() => ({
     transition: none !important;
     transform: none !important;
   }
+}
+
+.traveler-hub-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin: var(--space-4) 0;
+  padding: var(--space-1);
+  background: var(--bg-alt);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-surface);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.th-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--muted);
+  text-decoration: none;
+  border-radius: var(--radius-control);
+  white-space: nowrap;
+  min-height: 44px;
+  transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
+}
+.th-tab:hover {
+  color: var(--ink);
+  background: color-mix(in oklab, var(--accent) 8%, var(--bg-alt));
+}
+.th-tab:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.th-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  padding: 2px 6px;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--accent);
+  color: var(--text-on-dark, var(--white));
+  font-variant-numeric: tabular-nums;
 }
 </style>
