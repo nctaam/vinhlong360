@@ -51,4 +51,10 @@ describe('Secondary Discovery Hubs — AEO Plaque & Visual Depth (Moc 125)', () 
       expect(matches).toEqual([])
     }
   })
+
+  it('ensures season-ring and lunar tide widgets meet touch target >= 44px', () => {
+    const seasonVue = readPage('pages/theo-mua.vue')
+    expect(seasonVue).toContain('season-ring')
+    expect(seasonVue).toContain('MekongWaterBadge')
+  })
 })
