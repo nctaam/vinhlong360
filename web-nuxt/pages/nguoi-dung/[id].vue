@@ -696,7 +696,7 @@ useHead(() => {
 
 <style scoped>
 .profile-reputation { display: flex; flex-wrap: wrap; gap: .4rem; margin: .25rem 0 .75rem; }
-.rep-level { display: inline-flex; align-items: center; gap: var(--space-1); min-height: 44px; font-weight: var(--weight-semibold); font-size: var(--text-sm); padding: .2rem .75rem; border-radius: var(--radius-pill, 999px); background: color-mix(in srgb, var(--accent) 16%, var(--bg-alt)); color: var(--accent-text, var(--ink)); text-decoration: none; transition: filter .2s var(--ease-out), transform .15s var(--ease-out); }
+.rep-level { display: inline-flex; align-items: center; gap: var(--space-1); min-height: 44px; font-weight: var(--weight-semibold); font-size: var(--text-sm); padding: .2rem .75rem; border-radius: var(--radius-pill, 999px); background: var(--color-action-surface); color: var(--color-action); text-decoration: none; transition: filter .2s var(--ease-out), transform .15s var(--ease-out); }
 .rep-level:hover { filter: brightness(1.1); }
 .rep-level:active { transform: scale(.96); }
 .rep-level:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
@@ -706,7 +706,7 @@ useHead(() => {
 .rep-badge-icon { width: 13px; height: 13px; flex-shrink: 0; }
 .xp-bar-wrap { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1); }
 .xp-bar { flex: 1; height: 6px; background: var(--line); border-radius: var(--radius-pill, 999px); overflow: hidden; }
-.xp-fill { height: 100%; background: linear-gradient(90deg, var(--color-brand), var(--accent)); border-radius: var(--radius-pill, 999px); }
+.xp-fill { height: 100%; background: linear-gradient(90deg, var(--color-brand), var(--color-action)); border-radius: var(--radius-pill, 999px); }
 .xp-label { font-size: var(--text-2xs); color: var(--muted); white-space: nowrap; }
 .streak-chip { display: inline-flex; align-items: center; gap: var(--space-1); margin-top: var(--space-1); padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--warning) 12%, transparent); border-radius: var(--radius-pill, 999px); font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--ink); }
 /* Mốc tuần (bội số của 7 ngày) — một nhấp nháy nhẹ DUY NHẤT lúc mount, không loop. */
@@ -933,8 +933,8 @@ useHead(() => {
 /* Saved tab (self profile) */
 .tab-count {
   margin-left: var(--space-2); padding: 0 var(--space-2);
-  border-radius: var(--radius-pill, 999px); background: rgba(var(--accent-rgb), .16);
-  color: var(--accent-dark); font-size: var(--text-xs); font-weight: var(--weight-bold);
+  border-radius: var(--radius-pill, 999px); background: var(--color-action-surface);
+  color: var(--color-action); font-size: var(--text-xs); font-weight: var(--weight-bold);
   font-variant-numeric: tabular-nums; line-height: 1.6;
 }
 .saved-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4); margin-top: var(--space-2); }
@@ -948,7 +948,7 @@ useHead(() => {
 @keyframes savedEnter { from { opacity: 0; transform: translateY(8px); } }
 .saved-cta { text-align: center; margin-top: var(--space-5); }
 .saved-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
-.dark .tab-count { background: rgba(var(--accent-rgb),.2); color: var(--accent); }
+.dark .tab-count { background: var(--color-action-surface); color: var(--color-action); }
 
 /* Danh sách (collections) tab */
 .collections-header { display: flex; justify-content: flex-end; margin-bottom: var(--space-4); }
@@ -1012,7 +1012,7 @@ useHead(() => {
 .pc-label { font-size: var(--text-sm); font-weight: 600; color: var(--muted); }
 .pc-link { font-size: var(--text-sm); color: var(--color-action); text-decoration: none; }
 .pc-bar { height: 6px; background: var(--bg-alt); border-radius: var(--radius-pill, 999px); overflow: hidden; }
-.pc-fill { height: 100%; background: var(--accent); border-radius: var(--radius-pill, 999px); transform-origin: left; animation: pc-grow .6s var(--ease-out) .3s backwards; }
+.pc-fill { height: 100%; background: var(--color-action); border-radius: var(--radius-pill, 999px); transform-origin: left; animation: pc-grow .6s var(--ease-out) .3s backwards; }
 @keyframes pc-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .pc-hints { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); }
 .pc-hint { font-size: .72rem; color: var(--muted); padding: var(--space-half) var(--space-2); border: 1px solid var(--border-input); border-radius: var(--radius-pill, 999px); }

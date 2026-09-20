@@ -193,7 +193,7 @@ useHead(() => ({
   text-transform: uppercase; letter-spacing: var(--tracking-caps);
   color: var(--color-brand); margin: 0 0 var(--space-3);
 }
-.bm-tick { width: 14px; height: 1.5px; background: var(--accent, var(--amber-500)); flex-shrink: 0; }
+.bm-tick { width: 14px; height: 1.5px; background: var(--color-material-amber); flex-shrink: 0; }
 .brand-masthead h1 {
   font-family: var(--font-editorial); font-weight: 600;
   font-size: clamp(1.9rem, 1.55rem + 1.8vw, 2.7rem);
@@ -210,7 +210,7 @@ useHead(() => ({
 .bm-sla {
   display: inline-flex; align-items: center; gap: var(--space-2);
   font-family: var(--font-sans); font-size: var(--text-xs); font-weight: var(--weight-semibold);
-  color: var(--secondary-fg); margin: 0;
+  color: var(--color-action); margin: 0;
 }
 .bm-sla span { color: var(--leaf-600); font-size: var(--text-2xs); }
 .bm-motif { width: clamp(80px, 8vw + 40px, 128px); height: auto; flex-shrink: 0; color: var(--clay-400); opacity: .85; }
@@ -314,9 +314,9 @@ useHead(() => ({
 }
 
 .card-claim {
-  border-color: var(--accent);
+  border-color: var(--color-action);
   border-width: 2px;
-  background: color-mix(in srgb, var(--accent) 4%, var(--card));
+  background: var(--color-action-surface);
 }
 
 .card-correction--prominent {
@@ -406,10 +406,10 @@ useHead(() => ({
 .dark .contact-card { background: var(--bg-alt); border-color: var(--line); }
 .dark .contact-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb),.1); }
 .dark .card-report:hover, .dark .card-privacy:hover { box-shadow: var(--shadow-xs); border-color: var(--line); }
-.dark .card-claim { background: color-mix(in srgb, var(--accent) 10%, var(--bg-alt)); border-color: rgba(var(--accent-rgb), .35); }
+.dark .card-claim { background: var(--color-action-surface); border-color: var(--color-action-border); }
 .dark .card-correction--prominent {
   background: color-mix(in srgb, var(--mangthit-500) 10%, var(--bg-alt));
-  border-color: rgba(var(--secondary-rgb), .45);
+  border-color: color-mix(in srgb, var(--color-brand) 45%, transparent);
 }
 .dark .ombudsman-tag {
   color: var(--clay-400);
@@ -420,7 +420,7 @@ useHead(() => ({
 .dark .contact-card h2 { color: var(--ink); }
 .dark .card-icon { background: rgba(var(--white-rgb),.04); border-color: var(--line); }
 .dark .contact-card:hover .card-icon { border-color: rgba(var(--white-rgb),.16); }
-.dark .card-claim .card-icon { background: rgba(var(--accent-rgb), .08); }
+.dark .card-claim .card-icon { background: var(--color-action-surface); }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

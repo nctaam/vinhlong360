@@ -680,8 +680,8 @@ useHead(() => ({
 .saved-load-more { margin-top: .75rem; width: 100%; min-height: 44px; }
 .saved-inline-warning {
   margin-bottom: .75rem; padding: .65rem .75rem; border-radius: var(--radius-surface);
-  background: color-mix(in oklab, var(--accent-container) 72%, var(--card));
-  color: var(--muted); font-size: .85rem; line-height: 1.4;
+  background: var(--color-action-surface);
+  color: var(--color-text-muted); border: 1px solid var(--color-border); font-size: .85rem; line-height: 1.4;
 }
 
 /* Quiet loading & empty */

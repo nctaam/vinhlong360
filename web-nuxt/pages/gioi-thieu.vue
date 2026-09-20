@@ -216,7 +216,7 @@ useHead(() => ({
   text-transform: uppercase; letter-spacing: var(--tracking-caps);
   color: var(--color-brand); margin: 0 0 var(--space-3);
 }
-.bm-tick { width: 14px; height: 1.5px; background: var(--accent, var(--amber-500)); flex-shrink: 0; }
+.bm-tick { width: 14px; height: 1.5px; background: var(--color-material-amber); flex-shrink: 0; }
 .brand-masthead h1 {
   font-family: var(--font-editorial); font-weight: 600;
   font-size: clamp(2rem, 1.6rem + 2vw, 3rem);
@@ -289,10 +289,10 @@ useHead(() => ({
 
 /* Section 1 — Mission emphasis (pull-quote spread lives inside). */
 .mission-section {
-  border: 1px solid rgba(var(--secondary-rgb), .2);
-  box-shadow: inset 3px 0 0 var(--secondary-fg);
+  border: 1px solid var(--color-action-border);
+  box-shadow: inset 3px 0 0 var(--color-action);
   border-radius: var(--radius-sheet);
-  background: rgba(var(--secondary-rgb), .08);
+  background: var(--color-action-surface);
 }
 .about-mission-quote { margin: var(--space-4) 0 var(--space-5); }
 .about-mission-quote :deep(cite) { font-style: normal; }
@@ -308,7 +308,7 @@ useHead(() => ({
   top: 0.42em;
   width: 0.3em;
   height: 0.58em;
-  border: 0 solid var(--secondary-fg);
+  border: 0 solid var(--color-action);
   border-inline-end-width: 2px;
   border-block-end-width: 2px;
   transform: rotate(45deg);
@@ -412,7 +412,7 @@ useHead(() => ({
 .dark .bm-motif { color: var(--clay-400); opacity: .7; }
 .dark .highlight-badge { background: var(--bg-alt); border-color: var(--line); }
 .dark .about-section.tint-alt { background: rgba(var(--white-rgb),.025); }
-.dark .mission-section { border-color: var(--secondary-fg); background: rgba(var(--secondary-rgb), .12); }
+.dark .mission-section { border-color: var(--color-action-border); background: var(--color-action-surface); }
 .dark .legal-page :deep(a) { text-decoration-color: transparent; }
 .dark .legal-page :deep(a:hover) { text-decoration-color: var(--color-action); }
 

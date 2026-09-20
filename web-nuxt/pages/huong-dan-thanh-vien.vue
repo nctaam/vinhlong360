@@ -188,7 +188,7 @@ useHead(() => ({
 .guide-hero {
   display: flex; align-items: center; gap: var(--space-4);
   padding: var(--space-6); margin-bottom: var(--space-8);
-  background: linear-gradient(135deg, rgba(var(--secondary-rgb), .1) 0%, var(--bg-warm) 100%);
+  background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, var(--bg-warm) 100%);
   border-radius: var(--radius-sheet); border: .5px solid var(--line);
 }
 .guide-hero-icon { font-size: 2.5rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--color-brand); }
@@ -261,7 +261,7 @@ useHead(() => ({
 }
 .badge-card:hover { transform: translateY(-1px); }
 .badge-card:active { transform: scale(.985); }
-.badge-icon { font-size: 1.5rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--secondary-fg, var(--color-brand)); }
+.badge-icon { font-size: 1.5rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--color-brand); }
 .badge-info { flex: 1; min-width: 0; }
 .badge-info strong { display: block; font-size: var(--text-sm); }
 .badge-req { font-size: var(--text-xs); color: var(--muted); }
@@ -285,9 +285,9 @@ useHead(() => ({
 /* Dark */
 .dark .guide-hero { background: linear-gradient(135deg, rgba(var(--white-rgb),.03) 0%, rgba(var(--white-rgb),.01) 100%); }
 .dark .guide-note { background: var(--bg-alt); }
-.dark .level-1 { --level-color: var(--secondary-fg); border-left-color: var(--level-color); }
-.dark .level-2 { --level-color: var(--tertiary-fg); border-left-color: var(--level-color); }
-.dark .level-3 { --level-color: var(--accent-text); border-left-color: var(--level-color); }
+.dark .level-1 { --level-color: var(--color-material-leaf); border-left-color: var(--level-color); }
+.dark .level-2 { --level-color: var(--color-material-amber); border-left-color: var(--level-color); }
+.dark .level-3 { --level-color: var(--color-material-river); border-left-color: var(--level-color); }
 .dark .level-4 { --level-color: color-mix(in oklab, var(--amber-700) 70%, white); border-left-color: var(--level-color); }
 
 /* Reduced motion */

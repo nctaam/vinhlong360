@@ -411,9 +411,7 @@ useHead(() => ({
 .pace-chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); border-color: var(--border); }
 .pace-chip:active { transform: scale(.96); transition-duration: .08s; }
 .pace-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-/* --color-on-action thay cho chữ trắng cứng: --secondary đảo sáng-tối theo
-   theme, nên ở Nocturne nền thành --night-leaf và chữ trắng chỉ đạt
-   2.80:1. Đây cũng là hợp đồng mà tri-region-color.css áp cho mọi control
+/* --color-on-action thay cho chữ trắng cứng: hợp đồng mà tri-region-color.css áp cho mọi control
    nền-đặc; .pace-chip đặt tên khác nên đã lọt khỏi rule đó. */
 .pace-chip.active { background: var(--color-action); border-color: var(--color-action); color: var(--color-on-action); }
 .pace-chip.active .pace-chip-count { color: inherit; opacity: .8; }

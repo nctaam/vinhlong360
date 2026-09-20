@@ -763,12 +763,12 @@ onUnmounted(() => {
 .privacy-cert-header { margin-bottom: var(--space-4); }
 .privacy-cert-title-group { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-1); }
 .privacy-cert-title-group h2 { margin: 0; }
-.privacy-cert-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: var(--radius-control); background: color-mix(in oklab, var(--accent) 12%, var(--bg)); color: var(--accent); font-size: var(--text-xs); font-weight: 600; border: 1px solid var(--border-liquid-glass, var(--line)); }
+.privacy-cert-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: var(--radius-control); background: var(--color-action-surface); color: var(--color-action); font-size: var(--text-xs); font-weight: 600; border: 1px solid var(--border-liquid-glass, var(--line)); }
 .privacy-cert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-3); margin-bottom: var(--space-5); }
 .privacy-cert-card { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3); border: 1px solid var(--border-liquid-glass, var(--line)); border-radius: var(--radius-surface); background: var(--bg-warm); box-shadow: var(--shadow-xs); }
 .pcc-head { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
 .pcc-icon { color: var(--color-brand); font-size: 1.1rem; flex-shrink: 0; }
-.pcc-status { display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-xs); font-weight: 600; color: var(--accent); margin-top: auto; }
+.pcc-status { display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-xs); font-weight: 600; color: var(--color-action); margin-top: auto; }
 .privacy-controls-divider { border-top: 1px solid var(--line); padding-top: var(--space-4); margin-bottom: var(--space-3); }
 .privacy-controls-divider h3 { font-size: var(--text-base); margin: 0; font-weight: 600; }
 
@@ -843,10 +843,10 @@ onUnmounted(() => {
 .settings-card + .settings-card { margin-top: 1.25rem; }
 .sessions-list { display: flex; flex-direction: column; gap: .5rem; }
 .session-item { display: flex; align-items: center; gap: .75rem; padding: .6rem .8rem; border: 1px solid var(--border-input); border-radius: var(--radius-surface); }
-.session-item.current { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 5%, transparent); }
+.session-item.current { border-color: var(--color-action); background: var(--color-action-surface); }
 .session-info { flex: 1; display: flex; flex-direction: column; gap: .15rem; }
 .session-ua { font-weight: 600; font-size: var(--text-sm); }
-.session-badge { font-size: .75rem; font-weight: 600; color: var(--accent); background: color-mix(in oklab, var(--accent) 12%, transparent); padding: .15rem .5rem; border-radius: var(--radius-pill, 999px); }
+.session-badge { font-size: .75rem; font-weight: 600; color: var(--color-action); background: var(--color-action-surface); padding: .15rem .5rem; border-radius: var(--radius-pill, 999px); }
 .session-system-note { margin: .75rem 0 0; padding: .65rem .75rem; border-radius: var(--radius-surface); background: var(--bg-alt); }
 .recovery-list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-1); margin: var(--space-2) 0; }
 .recovery-list code { font-size: var(--text-sm); letter-spacing: 0.05em; }
@@ -910,7 +910,7 @@ onUnmounted(() => {
 .account-status { margin: var(--space-3) 0 0; padding: .75rem .85rem; border: 1px solid var(--border); box-shadow: inset 3px 0 0 var(--color-brand); border-radius: var(--radius-control); background: var(--bg-alt); color: var(--ink-700); font-size: var(--text-sm); }
 
 .login-fail { border-color: rgba(var(--danger-rgb), .3) !important; }
-.login-ok { color: var(--accent); font-weight: 600; font-size: var(--text-base); }
+.login-ok { color: var(--color-success); font-weight: 600; font-size: var(--text-base); }
 .login-bad { color: var(--danger); font-weight: 600; font-size: var(--text-base); }
 
 /* ── Theme toggle ── */
@@ -930,7 +930,7 @@ onUnmounted(() => {
 /* ── Dark mode ── */
 .dark .sf-input { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
 .dark .session-item { border-color: var(--line); background: var(--bg-alt); }
-.dark .session-item.current { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 8%, var(--bg-alt)); }
+.dark .session-item.current { border-color: var(--color-action); background: var(--color-action-surface); }
 .dark .settings-danger { border-color: rgba(var(--danger-rgb), .3); }
 .dark .sf-avatar-preview { border-color: var(--line); }
 .dark .sf-username-row { border-color: var(--line); }

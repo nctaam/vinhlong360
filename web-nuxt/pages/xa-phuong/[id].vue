@@ -938,7 +938,7 @@ useHead({
 .wp-contact { display: flex; flex-direction: column; gap: var(--space-3); }
 .wp-contact-item { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2) 0; border-bottom: .5px solid var(--line); }
 .wp-contact-item:last-child { border-bottom: none; padding-bottom: 0; }
-.wp-contact-main { background: linear-gradient(90deg, rgba(var(--color-action-rgb), .07) 0%, rgba(var(--accent-rgb), .07) 100%); border-radius: var(--radius-surface); padding: var(--space-3); border-bottom: none; margin-bottom: 2px; }
+.wp-contact-main { background: linear-gradient(90deg, rgba(var(--color-action-rgb), .07) 0%, rgba(var(--color-brand-rgb), .07) 100%); border-radius: var(--radius-surface); padding: var(--space-3); border-bottom: none; margin-bottom: 2px; }
 .wp-contact-label { font-size: var(--text-xs); color: var(--muted); }
 .wp-phone { font-size: var(--text-base); font-weight: var(--weight-bold); color: var(--color-action); min-height: 44px; padding: var(--space-2) var(--space-3); margin-inline-start: calc(var(--space-3) * -1); display: inline-flex; align-items: center; border-radius: var(--radius-control); }
 .wp-phone:hover { text-decoration: underline; }
@@ -984,7 +984,7 @@ useHead({
 /* Dark mode */
 .dark .wp-card { background: var(--card); border-color: var(--line); }
 .dark .wp-card:hover { box-shadow: 0 0 0 1px rgba(var(--color-action-rgb), .22), 0 18px 40px -18px rgba(var(--black-rgb),.6); }
-.dark .wp-contact-main { background: linear-gradient(90deg, rgba(var(--color-action-rgb), .12) 0%, rgba(var(--accent-rgb), .10) 100%); }
+.dark .wp-contact-main { background: linear-gradient(90deg, rgba(var(--color-action-rgb), .12) 0%, rgba(var(--color-brand-rgb), .10) 100%); }
 .dark .wp-phone { color: var(--color-action); }
 .dark .wp-fac:hover { background: var(--glass-subtle); }
 .dark .wp-fac-kind { color: var(--color-action); }

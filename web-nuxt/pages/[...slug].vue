@@ -76,7 +76,7 @@ const discoveryLinks = [
 .nf-code {
   font-size: clamp(3rem, 10vw, 5rem);
   font-weight: var(--weight-bold);
-  color: var(--accent);
+  color: var(--color-brand);
   letter-spacing: var(--tracking-tight);
   line-height: 1;
   margin: 0 0 var(--space-3);
@@ -109,14 +109,14 @@ const discoveryLinks = [
 .nf-search input:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 1px;
-  border-color: var(--accent);
+  border-color: var(--color-action);
   box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .1);
 }
 
 .nf-search button {
   padding: var(--space-3) var(--space-5);
-  background: var(--accent);
-  color: var(--text-on-dark, var(--white));
+  background: var(--color-action);
+  color: var(--color-on-action, var(--white));
   border: none;
   border-radius: var(--radius-pill, 999px);
   font-size: var(--text-sm);
@@ -126,7 +126,7 @@ const discoveryLinks = [
   transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out);
 }
 
-.nf-search button:hover { background: var(--accent-dark); }
+.nf-search button:hover { background: var(--color-action-hover); }
 .nf-search button:active { transform: scale(.95); transition-duration: .08s; }
 .nf-search button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
@@ -214,13 +214,13 @@ const discoveryLinks = [
 
 .nf-pill__icon {
   font-size: 1.05em;
-  color: var(--accent);
+  color: var(--color-brand);
 }
 
 .nf-pill:hover {
   transform: translateY(-1px);
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--color-action);
+  color: var(--color-action);
   box-shadow: var(--shadow-sm);
 }
 

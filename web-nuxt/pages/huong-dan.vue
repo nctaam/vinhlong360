@@ -403,7 +403,7 @@ useHead({
   text-transform: uppercase; letter-spacing: var(--tracking-caps);
   color: var(--color-brand); margin: 0 0 var(--space-2);
 }
-.bm-tick { width: 14px; height: 1.5px; background: var(--accent, var(--amber-500)); flex-shrink: 0; }
+.bm-tick { width: 14px; height: 1.5px; background: var(--color-material-amber); flex-shrink: 0; }
 .guide-hero h1 {
   font-family: var(--font-editorial); font-weight: 600;
   margin: 0 0 var(--space-1); font-size: var(--text-2xl); letter-spacing: var(--tracking-tight);

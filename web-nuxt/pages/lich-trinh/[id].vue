@@ -932,8 +932,8 @@ if (itinerary.value && !itinerary.value.error) {
 }
 /* Error variant: warm, designed messaging */
 .route-total[role="status"] {
-  color: var(--accent-text);
-  border-color: rgba(var(--accent-rgb), .35);
+  color: var(--color-brand);
+  border-color: var(--color-brand-surface);
   font-weight: var(--weight-semibold);
   display: inline-flex;
   align-items: center;

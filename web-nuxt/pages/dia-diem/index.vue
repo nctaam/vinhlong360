@@ -204,9 +204,9 @@ const COMPASS_SVG = `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"
 // Province-stamp tint per area — reuses existing brand RGB tokens (no new colours).
 const STAMP_RGB: Record<string, string> = {
   'vinh-long': 'var(--color-brand-rgb)',
-  'ben-tre': 'var(--secondary-rgb)',
-  'tra-vinh': 'var(--river-rgb)',
-  'lien-vung': 'var(--accent-rgb)',
+  'ben-tre': 'var(--color-success-rgb)',
+  'tra-vinh': 'var(--color-action-rgb)',
+  'lien-vung': 'var(--color-warning-rgb)',
 }
 
 const route = useRoute()

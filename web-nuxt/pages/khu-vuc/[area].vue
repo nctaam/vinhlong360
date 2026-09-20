@@ -468,7 +468,7 @@ if (areaMeta) {
 }
 .area-hero .area-eyebrow::before {
   content: ""; width: clamp(22px, 5vw, 46px); height: 1.5px;
-  background: var(--accent, var(--amber-500));
+  background: var(--color-material-amber);
 }
 /* Intro article: serif lede + a drop-cap on the opening paragraph — an editorial "cover essay". */
 .ce-area .page-article h2 { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; }

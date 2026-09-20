@@ -204,11 +204,11 @@ const interestCrossLinks = computed(() => [
 // intro card and cross-link ribbon so each interest feels like its own
 // curated space. Maps to existing brand RGB tokens (no new colours).
 const INTEREST_TINT: Record<string, string> = {
-  'am-thuc': 'var(--accent-rgb)',
-  'thien-nhien': 'var(--secondary-rgb)',
+  'am-thuc': 'var(--color-brand-rgb)',
+  'thien-nhien': 'var(--color-success-rgb)',
   'van-hoa': 'var(--color-brand-rgb)',
-  'lang-nghe': 'var(--accent-rgb)',
-  'mua-sam': 'var(--color-brand-rgb)',
+  'lang-nghe': 'var(--color-warning-rgb)',
+  'mua-sam': 'var(--color-action-rgb)',
 }
 const interestTintRgb = computed(() => INTEREST_TINT[interest] || 'var(--color-brand-rgb)')
 
@@ -544,7 +544,7 @@ useHead(() => ({
   /* lift the local hero with a soft brand wash keyed to the interest tone */
   background:
     radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--color-brand-rgb)), .12), transparent 62%),
-    linear-gradient(135deg, rgba(var(--int-rgb, var(--color-brand-rgb)), .07) 0%, rgba(var(--secondary-rgb), .04) 100%);
+    linear-gradient(135deg, rgba(var(--int-rgb, var(--color-brand-rgb)), .07) 0%, rgba(var(--color-action-rgb), .04) 100%);
 }
 
 /* animated interest icon: gentle scale + fade reveal on mount, with a soft
@@ -679,7 +679,7 @@ useHead(() => ({
 .dark .catalog-hero.cat-interest {
   background:
     radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--color-brand-rgb)), .16), transparent 62%),
-    linear-gradient(135deg, rgba(var(--int-rgb, var(--color-brand-rgb)), .1) 0%, rgba(var(--secondary-rgb), .05) 100%);
+    linear-gradient(135deg, rgba(var(--int-rgb, var(--color-brand-rgb)), .1) 0%, rgba(var(--color-action-rgb), .05) 100%);
 }
 .dark .int-byline { color: var(--ink-tertiary) !important; border-top-color: var(--line); }
 .dark .interest-nav .chip { background: var(--bg-alt); border-color: var(--line); }

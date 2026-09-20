@@ -407,7 +407,7 @@ useHead(() => {
   transition: background .25s cubic-bezier(0.16, 1, 0.3, 1), transform .25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .type-pill:hover { transform: translateY(-1px); background: rgba(var(--color-action-rgb), .16); }
-.type-count { font-weight: var(--weight-bold); color: var(--tertiary, var(--color-brand)); }
+.type-count { font-weight: var(--weight-bold); color: var(--color-brand); }
 .type-name { color: var(--muted); font-weight: var(--weight-medium); }
 /* dark overrides for .type-pill in dark-overrides.css */
 
@@ -502,8 +502,8 @@ useHead(() => {
   width: 96px; height: 96px; opacity: .1; color: var(--color-brand);
   pointer-events: none;
 }
-.stay-tile.stay-resort .stay-tile-motif { color: var(--secondary); }
-.stay-tile.stay-hotel .stay-tile-motif { color: var(--tertiary); }
+.stay-tile.stay-resort .stay-tile-motif { color: var(--color-material-leaf); }
+.stay-tile.stay-hotel .stay-tile-motif { color: var(--color-material-amber); }
 .stay-tile-motif :deep(svg) { width: 100%; height: 100%; display: block; }
 .stay-tile-kicker {
   position: relative; z-index: 1; margin: 0 0 var(--space-2);
@@ -584,10 +584,10 @@ useHead(() => {
   color: var(--color-brand);
   transition: transform .35s var(--ease-out-expo);
 }
-.rw-vinh-long { color: var(--clay-600, var(--color-brand)); }
-.rw-ben-tre { color: var(--leaf-600, var(--secondary-fg)); }
-.rw-tra-vinh { color: var(--amber-600, var(--tertiary-fg)); }
-.rw-lien-vung { color: var(--river-600, var(--accent-text)); }
+.rw-vinh-long { color: var(--color-material-clay); }
+.rw-ben-tre { color: var(--color-material-leaf); }
+.rw-tra-vinh { color: var(--color-material-amber); }
+.rw-lien-vung { color: var(--color-material-river); }
 .region-window:hover .rw-motif { transform: scale(1.12); }
 .rw-name {
   font-family: var(--font-editorial); font-weight: 600;
@@ -595,7 +595,7 @@ useHead(() => {
 }
 .rw-count {
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
-  color: var(--tertiary, var(--color-brand));
+  color: var(--color-brand);
   font-variant-numeric: tabular-nums;
 }
 .rw-blurb {
