@@ -291,9 +291,9 @@ onUnmounted(() => {
     top: 0;
     width: 220px;
     padding: 12px 16px;
-    border-left: 2px solid var(--alluvial-gold);
+    border: 1px solid color-mix(in srgb, var(--color-material-amber) 22%, var(--color-border));
     border-radius: var(--radius-control);
-    background: color-mix(in srgb, var(--alluvial-gold) 4%, var(--color-surface));
+    background: color-mix(in srgb, var(--color-material-amber) 4%, var(--color-surface));
     font-family: var(--font-editorial);
     font-style: italic;
     font-size: 13px;

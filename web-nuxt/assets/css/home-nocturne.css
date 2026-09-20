@@ -1819,8 +1819,6 @@ html.js .home .hero-feature { opacity: 0; animation: hero-rise .7s var(--ease-ou
   background-repeat: no-repeat; background-position: right -30px center;
   background-size: auto 92%; opacity: .1;
   background-image: var(--hero-motif-waves);
-  animation: hero-motif-sway 8s var(--ease-out) infinite;
-  will-change: transform;
 }
 .dark .home .hero::before { opacity: .08; }
 
@@ -1835,12 +1833,6 @@ html.js .home .hero-feature { opacity: 0; animation: hero-rise .7s var(--ease-ou
   content: ""; flex: 0 0 auto;
   width: clamp(26px, 6vw, 54px); height: 1.5px;
   background: var(--color-brand);
-}
-.home .hero-kicker-dot { display: none; }
-@keyframes hero-dot-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(var(--color-brand-rgb), .55); }
-  70% { box-shadow: 0 0 0 7px rgba(var(--color-brand-rgb), 0); }
-  100% { box-shadow: 0 0 0 0 rgba(var(--color-brand-rgb), 0); }
 }
 
 /* Cinematic entrance — CLS resilient: translation strictly encapsulated in keyframe */

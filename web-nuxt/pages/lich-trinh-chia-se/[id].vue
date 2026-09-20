@@ -217,7 +217,6 @@ useHead({
   padding: var(--space-6);
   border-radius: var(--radius-surface, 12px);
   border: 1px solid var(--line);
-  border-top: 4px solid var(--mangthit-500, var(--color-material-clay));
   background: var(--card);
   box-shadow: var(--shadow-sm);
 }

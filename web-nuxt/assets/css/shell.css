@@ -199,9 +199,6 @@
 
 .public-shell .brand .logo .dot {
   color: var(--color-brand);
-  background: var(--sediment-tick);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 .public-shell .brand .tld {

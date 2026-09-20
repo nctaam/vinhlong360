@@ -96,13 +96,12 @@ const transitTips = computed(() => {
   padding: var(--space-4);
   border-radius: var(--radius-sheet);
   background: var(--color-canvas);
-  border: 1px solid var(--color-border);
-  border-left: 4px solid var(--color-material-river);
+  border: 1px solid color-mix(in srgb, var(--color-material-river) 28%, var(--color-border));
   box-shadow: var(--shadow-sm);
 }
 
 .dark .planner-river-transit {
-  box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.2), 0 0 0 1px rgba(var(--white-rgb), 0.08);
+  box-shadow: var(--shadow-sm);
 }
 
 .planner-river-transit__head {

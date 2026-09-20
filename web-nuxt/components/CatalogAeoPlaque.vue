@@ -75,21 +75,16 @@ const titleId = `catalog-aeo-title-${instanceId}`
   max-inline-size: var(--maxw);
   margin-inline: auto;
   padding: var(--space-6) var(--space-6);
-  border: 1px solid var(--border-liquid-glass, var(--color-border));
-  border-left: 4px solid var(--tri-region-material-accent, var(--alluvial-gold, var(--color-material-amber)));
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sheet);
   background: var(--color-canvas);
-  box-shadow:
-    0 2px 8px -2px rgba(var(--black-rgb), 0.05),
-    0 0 0 1px var(--border-liquid-glass, rgba(var(--white-rgb), 0.5));
+  box-shadow: var(--shadow-sm);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   contain: layout style paint;
 }
 
 .dark .catalog-aeo-plaque__frame {
-  box-shadow:
-    0 4px 14px -4px rgba(var(--black-rgb), 0.25),
-    0 0 0 1px rgba(var(--white-rgb), 0.08);
+  box-shadow: var(--shadow-sm);
 }
 
 .catalog-aeo-plaque__head {

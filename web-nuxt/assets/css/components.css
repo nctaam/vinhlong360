@@ -473,9 +473,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
   /* badge floats over the trigger button; ignore pointer so it never
      swallows hover/click on the bell beneath it */
   pointer-events: none;
-  animation: notifPulse 2s var(--ease-out) infinite;
 }
-@keyframes notifPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
 .notif-dropdown {
   position: absolute; top: 100%; right: 0; z-index: var(--z-overlay);
   width: 320px; max-width: calc(100vw - 24px); max-height: 400px;
@@ -781,8 +779,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .empty-state::before { content: ""; position: absolute; top: 50%; left: 50%; width: 280px; height: 280px; transform: translate(-50%, -55%); border-radius: 50%; background: radial-gradient(circle, rgba(var(--color-action-rgb), .06) 0%, transparent 70%); pointer-events: none; z-index: 0; }
 .empty-state > * { position: relative; z-index: 1; }
 .empty-icon { font-size: 3rem; display: block; margin-bottom: var(--space-4); line-height: 1; }
-.empty-illust { width: 160px; height: auto; margin: 0 auto var(--space-4); display: block; animation: emptyFloat 4s var(--ease-out) infinite; }
-@keyframes emptyFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.empty-illust { width: 160px; height: auto; margin: 0 auto var(--space-4); display: block; }
 .empty-title { font-size: var(--text-xl); color: var(--ink); margin: 0 0 var(--space-2); font-weight: var(--weight-semibold); }
 .empty-text { color: var(--muted); font-size: var(--text-base); margin: 0 auto; line-height: var(--leading-relaxed); max-width: 400px; }
 .empty-actions { display: flex; gap: var(--space-3); justify-content: center; margin-top: var(--space-5); flex-wrap: wrap; }

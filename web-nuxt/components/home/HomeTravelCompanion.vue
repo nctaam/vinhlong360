@@ -532,15 +532,8 @@ const HOTLINES: readonly EmergencyContact[] = [
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--orchard-600);
-  box-shadow: 0 0 8px rgba(var(--white-rgb), 0.4);
-  animation: companion-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  background: var(--color-success);
   flex-shrink: 0;
-}
-
-@keyframes companion-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.9); }
 }
 
 .home-companion-utility-pill__text strong {
@@ -550,7 +543,7 @@ const HOTLINES: readonly EmergencyContact[] = [
 
 .home-companion-utility-pill__text em {
   font-style: normal;
-  color: var(--orchard-600);
+  color: var(--color-success);
   font-weight: var(--weight-semibold);
 }
 

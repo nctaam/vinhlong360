@@ -799,7 +799,6 @@ if (itinerary.value && !itinerary.value.error) {
   padding: var(--space-4);
   background: var(--card);
   border: 1px solid var(--line);
-  border-left: 3px solid var(--mangthit-500, var(--color-material-clay));
   border-radius: var(--radius-surface, 12px);
   box-shadow: var(--shadow-xs);
   transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
@@ -865,13 +864,12 @@ if (itinerary.value && !itinerary.value.error) {
   margin: var(--space-2) 0 0; padding: var(--space-2) var(--space-3);
   background: color-mix(in srgb, var(--color-material-amber) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-material-amber) 25%, transparent);
-  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--color-material-amber) 55%, transparent);
   border-radius: var(--radius-control); font-size: var(--text-sm); line-height: var(--leading-normal);
   color: var(--ink);
 }
 .tnc-icon { flex-shrink: 0; color: var(--color-material-amber); font-size: 1.1em; line-height: 1.4; }
-.dark .step-note-callout { background: color-mix(in srgb, var(--amber-500) 14%, transparent); border-color: color-mix(in srgb, var(--amber-500) 25%, transparent); box-shadow: inset 2px 0 0 color-mix(in srgb, var(--amber-500) 55%, transparent); }
-.dark .tnc-icon { color: var(--amber-500); }
+.dark .step-note-callout { background: color-mix(in srgb, var(--color-material-amber) 14%, transparent); border-color: color-mix(in srgb, var(--color-material-amber) 25%, transparent); }
+.dark .tnc-icon { color: var(--color-material-amber); }
 
 .transport-mode-spaced .chip { display: inline-flex; align-items: center; gap: var(--space-1); }
 .transport-mode-spaced .chip .line-icon { font-size: 1.05em; }

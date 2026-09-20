@@ -63,12 +63,6 @@
   opacity: .1;
   /* default motif = Mekong river waves (also covers heroes with no specific cat-*) */
   background-image: var(--hero-motif-waves);
-  animation: hero-motif-sway 8s var(--ease-out) infinite;
-  will-change: transform;
-}
-@keyframes hero-motif-sway {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(-10px, 4px, 0); }
 }
 /* keep h1/subtitle/stats above the motif */
 .catalog-hero-inner,
