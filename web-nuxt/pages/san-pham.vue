@@ -37,7 +37,7 @@
       icon="fruit"
       :entries="catalogAeoEntries"
       cta-to="/ocop"
-      cta-label="Xem sổ vàng sản phẩm OCOP đạt sao"
+      cta-label="Danh mục sản phẩm OCOP đạt sao"
     />
 
     <!-- declutter-3 T10: CatalogSpotlight đã bỏ — market-shelf mùa vụ thay vai khối tease

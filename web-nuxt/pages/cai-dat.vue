@@ -3,16 +3,16 @@
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cài đặt' }]" :json-ld="true" />
 
     <div v-if="!isLoggedIn" class="settings-guest card">
-      <p class="dateline-eyebrow">QUẦY TIẾP TÂN</p>
-      <h1 class="settings-title">Cài đặt</h1>
+      <p class="dateline-eyebrow">TÀI KHOẢN</p>
+      <h1 class="settings-title">Cài đặt tài khoản</h1>
       <p>Bạn cần đăng nhập để chỉnh sửa hồ sơ.</p>
       <button type="button" class="btn btn-primary" @click="openAuth()">Đăng nhập</button>
     </div>
 
     <template v-else>
-    <p class="dateline-eyebrow">QUẦY TIẾP TÂN</p>
-    <h1 class="settings-title">Cài đặt</h1>
-    <p class="settings-dek">Nơi giữ chìa khoá cho hồ sơ của bạn — đổi mật khẩu, bật bảo mật hai lớp, hoặc chọn ai được xem những gì bạn chia sẻ.</p>
+    <p class="dateline-eyebrow">TÀI KHOẢN</p>
+    <h1 class="settings-title">Cài đặt tài khoản</h1>
+    <p class="settings-dek">Quản lý thông tin cá nhân, bảo mật tài khoản và tùy chọn giao diện hiển thị.</p>
 
     <div class="settings-hash-anchors" aria-hidden="true">
       <span v-for="t in tabsForNavigation.filter(tab => tab.key !== 'khu-vuc-de-xuat')" :id="t.key" :key="`anchor-${t.key}`"></span>

@@ -16,7 +16,7 @@
       <div class="atlas-hero-inner">
         <p class="atlas-hero-eyebrow dateline-eyebrow">Chỉ mục khám phá · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)</p>
         <h1 class="atlas-hero-title">
-          <span class="atlas-hero-line1">{{ pc('hero_title', 'Ba vùng đất, một nhịp sông.') }}</span>
+          <span class="atlas-hero-line1">{{ pc('hero_title', 'Khám phá Vĩnh Long') }}</span>
           <Transition name="mode-fade" mode="out-in">
             <span class="atlas-hero-line2" :key="activeModeKey">{{ activeMode.line }}</span>
           </Transition>
@@ -39,7 +39,7 @@
       icon="map-pin"
       :entries="catalogAeoEntries"
       cta-to="/ban-do"
-      cta-label="Mở tọa độ 3 vùng trên bản đồ số"
+      cta-label="Khám phá 3 vùng trên bản đồ số"
     />
 
     <section class="catalog-filter-ledger block reveal" data-catalog-section="filters" aria-labelledby="catalog-filter-title">

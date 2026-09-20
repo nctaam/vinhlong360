@@ -2,14 +2,12 @@
   <section class="page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lưu trú' }]" :json-ld="true" />
 
-    <!-- Hero — "wake-up" thesis: sell the morning, not the mattress -->
-    <section class="wake-hero cat-accommodation">
-      <span class="wake-hero-sweep" aria-hidden="true"></span>
-      <span class="wake-hero-grain" aria-hidden="true"></span>
+    <!-- Hero — Mekong Lodging Editorial -->
+    <section class="wake-hero cat-accommodation" aria-label="Lưu trú Vĩnh Long">
       <div class="wake-hero-inner">
-        <p class="wake-hero-eyebrow">TỈNH VĨNH LONG · MIỆT VƯỜN — XỨ DỪA — ĐẤT CHÙA KHMER</p>
-        <h1 class="wake-hero-title">{{ pc('hero_title', 'Thức dậy giữa vườn, nghe chim trước khi nghe chuông báo thức.') }}</h1>
-        <p class="wake-hero-sub">{{ pc('hero_subtitle', 'Homestay nhà vườn, resort ven sông, khách sạn phố — chọn nơi bạn muốn mở mắt vào buổi sáng ở Vĩnh Long.') }}</p>
+        <p class="wake-hero-eyebrow">TỈNH VĨNH LONG · LƯU TRÚ &amp; NGHỈ DƯỠNG VEN SÔNG</p>
+        <h1 class="wake-hero-title">{{ pc('hero_title', 'Nơi lưu trú & Homestay ven sông') }}</h1>
+        <p class="wake-hero-sub">{{ pc('hero_subtitle', 'Danh bạ 164 homestay nhà vườn, ecolodge ven sông và khách sạn tiện nghi dọc sông Tiền và sông Cổ Chiên.') }}</p>
       </div>
       <div v-if="allEntities.length" class="wake-hero-stats">
         <div class="stat-item">
@@ -426,92 +424,54 @@ useHead(() => {
 .wake-hero {
   position: relative;
   overflow: hidden;
-  isolation: isolate;
-  border-radius: var(--radius-sheet);
-  padding: clamp(var(--space-8), 4vw + var(--space-6), 4.5rem) var(--space-6) var(--space-6);
+  border-radius: var(--radius-surface);
+  padding: clamp(var(--space-8), 4vw + var(--space-6), 3.5rem) var(--space-6) var(--space-6);
   margin-bottom: var(--space-6);
-  border: .5px solid var(--line);
-  /* dawn-blue register — deliberately cooler than the site's clay/amber warmth
-     (lodging = rest/calm, per concept §2); no matching token exists yet, so
-     expressed as a neutral rgb-triplet token rather than a hardcoded brand hex substitute. */
-  background: linear-gradient(160deg, rgb(var(--wake-night-rgb)) 0%, rgb(var(--wake-dusk-rgb)) 55%, rgb(var(--wake-sand-rgb)) 130%);
-}
-.dark .wake-hero { background: linear-gradient(160deg, rgb(var(--wake-deepnight-rgb)) 0%, rgb(var(--wake-predawn-rgb)) 55%, rgb(var(--wake-darksand-rgb)) 130%); border-color: var(--line); }
-
-/* Grain overlay — antidote to the flat gradient (anti-slop §7) */
-.wake-hero-grain {
-  position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background-image: var(--grain); background-size: 140px 140px; opacity: .05;
-  mix-blend-mode: overlay;
-}
-.dark .wake-hero-grain { opacity: .08; }
-
-/* Signature moment: the sunrise sweep — a hairline horizon band shifting
-   night-blue → dawn-amber → day-sand once, then settling on day-state.
-   Pure CSS, respects reduced-motion (freezes on the day-state immediately). */
-.wake-hero-sweep {
-  position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: linear-gradient(180deg,
-    rgba(var(--wake-night-rgb), .6) 0%,
-    rgba(var(--wake-teal-rgb), .42) 38%,
-    rgba(var(--accent-rgb), .34) 66%,
-    rgba(var(--wake-sand-rgb), .26) 100%);
-  animation: wake-sunrise 18s var(--ease-cinematic) 1 both;
-}
-/* Night-blue → dawn-amber → day-sand: the band's own colour temperature shifts
-   via a filter hue/brightness ramp (cheap, no layout, single moving element). */
-@keyframes wake-sunrise {
-  0%   { opacity: .35; filter: brightness(.7) saturate(.7); }
-  50%  { opacity: .85; filter: brightness(1) saturate(1.15); }
-  100% { opacity: .6;  filter: brightness(.92) saturate(1); }
-}
-.dark .wake-hero-sweep {
-  background: linear-gradient(180deg,
-    rgba(var(--wake-abyss-rgb), .65) 0%,
-    rgba(var(--wake-teal-rgb), .36) 38%,
-    rgba(var(--wake-ember-rgb), .26) 66%,
-    rgba(var(--wake-dust-rgb), .18) 100%);
-}
-@media (prefers-reduced-motion: reduce) {
-  .wake-hero-sweep { animation: none; opacity: .6; filter: none; }
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
 }
 
-.wake-hero-inner { position: relative; z-index: 1; max-width: 62ch; }
+.wake-hero-inner { position: relative; z-index: 1; max-width: 65ch; }
 .wake-hero-eyebrow {
-  margin: 0 0 var(--space-4);
-  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: var(--weight-bold);
   text-transform: uppercase; letter-spacing: var(--tracking-caps);
-  color: rgba(var(--white-rgb),.8);
+  color: var(--color-brand);
 }
 .wake-hero-title {
-  margin: 0 0 var(--space-4);
-  font-family: var(--font-editorial); font-weight: 600;
-  font-size: clamp(1.9rem, 1.5rem + 2.4vw, var(--text-4xl));
-  line-height: 1.2; letter-spacing: var(--tracking-tight);
-  color: var(--text-on-dark, var(--white)); text-wrap: balance;
-  text-shadow: 0 2px 20px rgba(var(--black-rgb),.3);
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-editorial-display); font-weight: var(--weight-semibold);
+  font-size: clamp(var(--text-3xl), 4.5vw, var(--text-5xl));
+  line-height: 1.15; letter-spacing: var(--tracking-tight);
+  color: var(--color-text); text-wrap: balance;
 }
 .wake-hero-sub {
-  margin: 0; color: rgba(var(--white-rgb),.86);
+  margin: 0; color: var(--color-text-muted);
   font-size: var(--text-base); line-height: var(--leading-relaxed);
-  max-width: 56ch;
+  max-width: 60ch;
 }
 .wake-hero-stats {
   position: relative; z-index: 1;
   display: flex; gap: var(--space-6); margin-top: var(--space-6); padding-top: var(--space-4);
-  border-top: .5px solid rgba(var(--white-rgb),.22); flex-wrap: wrap;
+  border-top: 1px solid var(--color-border); flex-wrap: wrap;
 }
-.wake-hero-stats .stat-item { padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); }
-.wake-hero-stats .stat-item:hover { background: rgba(var(--white-rgb),.08); }
-.wake-hero-stats .stat-num { color: var(--text-on-dark, var(--white)); }
-.wake-hero-stats .stat-label { color: rgba(var(--white-rgb),.72); }
+.wake-hero-stats .stat-item {
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-control);
+  background: var(--color-surface); border: 1px solid var(--color-border-subtle);
+}
+.wake-hero-stats .stat-item:hover { background: var(--color-surface-hover, var(--color-surface)); }
+.wake-hero-stats .stat-num {
+  font-family: var(--font-mono); font-weight: var(--weight-bold);
+  color: var(--color-text); margin-right: var(--space-1);
+}
+.wake-hero-stats .stat-label { color: var(--color-text-muted); font-size: var(--text-sm); }
 .wake-hero .catalog-type-breakdown { position: relative; z-index: 1; }
 .wake-hero .type-pill {
-  background: rgba(var(--white-rgb),.1); border-color: rgba(var(--white-rgb),.2);
+  background: var(--color-surface); border-color: var(--color-border);
 }
-.wake-hero .type-pill:hover { background: rgba(var(--white-rgb),.16); }
-.wake-hero .type-count { color: var(--text-on-dark, var(--white)); }
-.wake-hero .type-name { color: rgba(var(--white-rgb),.72); }
+.wake-hero .type-pill:hover { background: var(--color-surface-hover, var(--color-surface)); border-color: var(--color-border-strong); }
+.wake-hero .type-count { color: var(--color-brand); }
+.wake-hero .type-name { color: var(--color-text-muted); }
 
 @media (max-width: 640px) {
   .wake-hero { padding: var(--space-6) var(--space-4); }

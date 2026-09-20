@@ -4,12 +4,10 @@
 
     <!-- Hero — Mekong Culinary Editorial -->
     <section class="wake-hero cat-dish" aria-label="Ẩm thực Mekong Vĩnh Long">
-      <span class="wake-hero-sweep" aria-hidden="true"></span>
-      <span class="wake-hero-grain" aria-hidden="true"></span>
       <div class="wake-hero-inner">
-        <p class="wake-hero-eyebrow">TỈNH VĨNH LONG · HƯƠNG VỊ PHÙ SA — TINH HOA MIỆT VƯỜN</p>
-        <h1 class="wake-hero-title">Ẩm thực sông nước Cửu Long: Cay nồng vị mắm, ngọt mát phù sa</h1>
-        <p class="wake-hero-sub">Từ tô bún nước lèo thơm lừng ngải bún, bánh xèo vịt xiêm củ hũ dừa giòn rụm đến nồi canh chua cá linh bông điên điển mùa nước nổi — những hương vị đậm đà không thể trộn lẫn của đất cù lao.</p>
+        <p class="wake-hero-eyebrow">TỈNH VĨNH LONG · ẨM THỰC BẢN ĐỊA &amp; ĐẶC SẢN MIỆT VƯỜN</p>
+        <h1 class="wake-hero-title">Ẩm thực sông nước Cửu Long</h1>
+        <p class="wake-hero-sub">Cẩm nang 120 món ngon và địa chỉ ẩm thực chọn lọc — từ bún nước lèo, bánh xèo vịt xiêm đến lẩu cá linh bông điên điển mùa nước nổi.</p>
       </div>
       <div v-if="allEntities.length" class="wake-hero-stats">
         <div class="stat-item">
@@ -375,6 +373,81 @@ watch([areaFilter, typeFilter, q], () => {
 </script>
 
 <style scoped>
+.wake-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-surface);
+  padding: clamp(var(--space-8), 4vw + var(--space-6), 3.5rem) var(--space-6) var(--space-6);
+  margin-bottom: var(--space-6);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+}
+
+.wake-hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 65ch;
+}
+
+.wake-hero-eyebrow {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--color-brand);
+}
+
+.wake-hero-title {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-editorial-display);
+  font-size: clamp(var(--text-3xl), 4.5vw, var(--text-5xl));
+  font-weight: var(--weight-semibold);
+  line-height: 1.15;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  text-wrap: balance;
+}
+
+.wake-hero-sub {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  max-width: 60ch;
+}
+
+.wake-hero-stats {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.wake-hero-stats .stat-item {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.wake-hero-stats .stat-num {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  margin-right: var(--space-1);
+}
+
+.wake-hero-stats .stat-label {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
 .tactile-pill {
   min-height: 44px;
   min-width: 44px;
