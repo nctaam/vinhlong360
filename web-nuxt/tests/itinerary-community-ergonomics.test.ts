@@ -84,6 +84,15 @@ describe('Itinerary, Community Ergonomics & Hall of Honor (Moc 130)', () => {
     })
   })
 
+  describe('Planner Wizard Ergonomics (pages/tao-lich-trinh.vue)', () => {
+    it('provides 3-step mobile wizard stepper in tao-lich-trinh.vue', () => {
+      const src = readPage('pages/tao-lich-trinh.vue')
+      expect(src).toContain('planner-wizard-step')
+      expect(src).toContain('activeStep')
+      expect(src).toContain('btn-wizard-next')
+    })
+  })
+
   describe('Design Token & Color Compliance', () => {
     it('has zero raw hex colors across all modified pages', () => {
       const rawHexPattern = /(?<![&w-])#[0-9a-fA-F]{3,8}\b/g

@@ -5,7 +5,7 @@
     <!-- Hero: chrome-only CE pass — masthead eyebrow + serif H1, builder/picker logic untouched -->
     <section class="catalog-hero cat-itinerary">
       <div class="catalog-hero-inner planner-hero-inner">
-        <span class="dateline-eyebrow">Sổ tay hành trình · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)</span>
+        <span class="dateline-eyebrow">Sổ tay hành trình · 124 xã, phường tỉnh Vĩnh Long</span>
         <h1>Tạo lịch trình</h1>
         <p>Lập kế hoạch chuyến đi của bạn — chọn điểm đến, sắp xếp thứ tự và lưu lại.</p>
         <div class="planner-hero-water">
@@ -15,9 +15,22 @@
     </section>
 
     <!-- Guided flow indicator -->
-    <PlannerSteps :stop-count="stops.length" />
+    <PlannerSteps :stop-count="stops.length" :active-step="activeStep" @select-step="step => activeStep = step" />
 
-    <div class="planner-layout">
+    <!-- Mobile Wizard Stepper Nav -->
+    <div class="planner-wizard-nav" role="tablist" aria-label="Các bước tạo lịch trình">
+      <button type="button" role="tab" :aria-selected="activeStep === 1" :class="['pw-tab', 'planner-wizard-step', { active: activeStep === 1 }]" @click="activeStep = 1">
+        1. Chọn điểm ({{ stops.length }})
+      </button>
+      <button type="button" role="tab" :aria-selected="activeStep === 2" :class="['pw-tab', 'planner-wizard-step', { active: activeStep === 2 }]" @click="activeStep = 2">
+        2. Sắp xếp &amp; Phương tiện
+      </button>
+      <button type="button" role="tab" :aria-selected="activeStep === 3" :class="['pw-tab', 'planner-wizard-step', { active: activeStep === 3 }]" @click="activeStep = 3">
+        3. Xem &amp; Lưu
+      </button>
+    </div>
+
+    <div class="planner-layout" :data-active-step="activeStep">
       <!-- Left: Entity picker -->
       <div class="planner-picker">
         <!-- Source tabs: All vs Favorites -->
@@ -68,6 +81,11 @@
               </template>
             </EmptyState>
           </div>
+        </div>
+        <div class="planner-wizard-step-action">
+          <button type="button" class="btn btn-primary btn-wizard-next" :disabled="!stops.length" @click="activeStep = 2">
+            Tiếp tục sang bước 2 ({{ stops.length }} điểm) →
+          </button>
         </div>
       </div>
 
@@ -335,14 +353,7 @@ import type { EntityListResponse } from '~/types/api'
 import { usePublicApi } from '~/composables/usePublicApi'
 import { TYPE_META, CARD_TYPES, getTypeMeta } from '~/composables/useConstants'
 import { formatDistance, formatDuration, type TransportMode, type RouteResult } from '~/composables/useRouting'
-import {
-  enrichPlannerStopFromDetail,
-  plannerMetadataForEntity,
-  plannerMetadataForLoadedStop,
-  plannerFreshnessEvidenceForEntity,
-  type PlannerInputState,
-  type PlannerScheduleMetadata,
-} from '~/composables/useItineraryOptimization'
+import { enrichPlannerStopFromDetail, plannerMetadataForEntity, plannerMetadataForLoadedStop, plannerFreshnessEvidenceForEntity, type PlannerInputState, type PlannerScheduleMetadata } from '~/composables/useItineraryOptimization'
 import PlannerFrictionNotice from '~/components/planner/PlannerFrictionNotice.vue'
 import PlannerOptimizationPreview from '~/components/planner/PlannerOptimizationPreview.vue'
 import PlannerSummary from '~/components/planner/PlannerSummary.vue'
@@ -361,6 +372,7 @@ import { usePlannerFrictions } from '~/composables/usePlannerFrictions'
 const route = useRoute()
 const router = useRouter()
 const showPassModal = ref(false)
+const activeStep = ref(1)
 const runtimeConfig = useRuntimeConfig()
 const itineraryScheduleV2 = runtimeConfig.public.itineraryScheduleV2 === true
 
@@ -372,17 +384,13 @@ const plannerSchema = computed(() => ({
   name: 'Tạo lịch trình khám phá — vinhlong360',
   applicationCategory: 'TravelApplication',
   operatingSystem: 'All',
-  description: 'Công cụ lập kế hoạch và tối ưu lộ trình du lịch tự túc tại tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
-  publisher: {
-    '@type': 'Organization',
-    name: 'vinhlong360',
-    url: 'https://vinhlong360.vn',
-  },
+  description: 'Công cụ lập kế hoạch và tối ưu lộ trình du lịch tự túc tại 124 xã, phường tỉnh Vĩnh Long.',
+  publisher: { '@type': 'Organization', name: 'vinhlong360', url: 'https://vinhlong360.vn' },
 }))
 
 useSeoMeta({
   title: 'Tạo lịch trình — vinhlong360',
-  description: 'Công cụ lập kế hoạch chuyến đi tự túc tại tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
+  description: 'Công cụ lập kế hoạch chuyến đi tự túc tại 124 xã, phường tỉnh Vĩnh Long.',
   robots: 'noindex, nofollow',
   ogTitle: 'Tạo lịch trình — vinhlong360',
   ogDescription: 'Lập kế hoạch chuyến đi của bạn — chọn điểm đến, sắp xếp thứ tự và lưu lại.',
@@ -392,10 +400,7 @@ useSeoMeta({
 
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/tao-lich-trinh') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: safeJsonLd(plannerSchema.value),
-  }],
+  script: [{ type: 'application/ld+json', innerHTML: safeJsonLd(plannerSchema.value) }],
 }))
 
 const { favorites: favList, count: favCount } = useFavorites()
@@ -931,12 +936,7 @@ await plannerAsyncData
 .title-counter { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: var(--text-xs); color: var(--muted); pointer-events: none; }
 .title-counter.warn { color: var(--error); font-weight: var(--weight-semibold); }
 .max-stops-warn { font-size: var(--text-sm); color: var(--warning); margin: var(--space-2) 0; }
-.optimization-status {
-  margin: calc(var(--space-2) * -1) 0 var(--space-4);
-  color: var(--muted);
-  font-size: var(--text-sm);
-  line-height: 1.55;
-}
+.optimization-status { margin: calc(var(--space-2) * -1) 0 var(--space-4); color: var(--muted); font-size: var(--text-sm); line-height: 1.55; }
 .optimize-route-btn { white-space: nowrap; }
 .stop-card-actions .btn-icon-sm { min-width: 44px; min-height: 44px; }
 @media (pointer: coarse) { .stop-card-actions .btn-icon-sm { min-width: 44px; min-height: 44px; } }
@@ -1000,10 +1000,20 @@ await plannerAsyncData
 .dark .stop-connector { background: var(--mangthit-500, var(--color-material-clay)); opacity: .45; }
 .dark .picker-list::-webkit-scrollbar-thumb { background: var(--glass-medium); }
 .dark .picker-list::-webkit-scrollbar-thumb:hover { background: rgba(var(--white-rgb),.2); }
-.dark .route-leg-info { background: rgba(var(--white-rgb),.04); }
-.dark .route-total { background: rgba(var(--white-rgb),.04); }
-.dark .builder-title { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
-.dark .stop-time-input, .dark .stop-note-input { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
+.dark .route-leg-info, .dark .route-total { background: rgba(var(--white-rgb),.04); }
+.dark .builder-title, .dark .stop-time-input, .dark .stop-note-input { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
+
+/* ── Mobile-first 3-step wizard stepper ── */
+.planner-wizard-nav { display: none; }
+@media (max-width: 900px) {
+  .planner-wizard-nav { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); overflow-x: auto; }
+  .pw-tab { flex: 1; min-height: 44px; padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); border: 1px solid var(--line); background: var(--card); color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-medium); white-space: nowrap; cursor: pointer; }
+  .pw-tab.active { background: var(--color-action); color: var(--color-on-action); border-color: var(--color-action); font-weight: var(--weight-bold); }
+  .planner-wizard-step-action { padding: var(--space-3) 0; }
+  .planner-wizard-step-action .btn-wizard-next { width: 100%; min-height: 44px; }
+  .planner-layout[data-active-step="1"] .planner-builder { display: none; }
+  .planner-layout[data-active-step="2"] .planner-picker, .planner-layout[data-active-step="3"] .planner-picker { display: none; }
+}
 
 /* ── Premium picker empty state surface ───────────────────── */
 .premium-empty-state { background: radial-gradient(120% 90% at 50% -10%, rgba(var(--color-brand-rgb), .06), transparent 60%), var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-8) var(--space-4); position: relative; overflow: hidden; }

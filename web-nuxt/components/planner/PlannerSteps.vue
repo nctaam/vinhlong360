@@ -1,23 +1,32 @@
 <template>
   <ol class="planner-steps" aria-label="Các bước tạo lịch trình">
-    <li :class="['planner-step', { active: !stopCount, done: stopCount > 0 }]">
+    <li :class="['planner-step', 'planner-wizard-step', { active: currentStep === 1, done: currentStep > 1 || stopCount > 0 }]" role="button" tabindex="0" @click="$emit('select-step', 1)" @keydown.enter="$emit('select-step', 1)">
       <span class="step-dot">1</span><span class="step-label">Chọn điểm</span>
     </li>
     <li class="planner-step-sep" aria-hidden="true"></li>
-    <li :class="['planner-step', { active: stopCount > 0 && stopCount < 2, done: stopCount >= 2 }]">
+    <li :class="['planner-step', 'planner-wizard-step', { active: currentStep === 2, done: currentStep > 2 || stopCount >= 2 }]" role="button" tabindex="0" @click="$emit('select-step', 2)" @keydown.enter="$emit('select-step', 2)">
       <span class="step-dot">2</span><span class="step-label">Sắp xếp</span>
     </li>
     <li class="planner-step-sep" aria-hidden="true"></li>
-    <li :class="['planner-step', { active: stopCount >= 2 }]">
+    <li :class="['planner-step', 'planner-wizard-step', { active: currentStep === 3, done: currentStep === 3 && stopCount >= 2 }]" role="button" tabindex="0" @click="$emit('select-step', 3)" @keydown.enter="$emit('select-step', 3)">
       <span class="step-dot">3</span><span class="step-label">Xem & lưu</span>
     </li>
   </ol>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const props = withDefaults(defineProps<{
   stopCount: number
+  activeStep?: number
+}>(), {
+  activeStep: 1
+})
+
+defineEmits<{
+  (e: 'select-step', step: number): void
 }>()
+
+const currentStep = computed(() => props.activeStep || (props.stopCount >= 2 ? 3 : (props.stopCount > 0 ? 2 : 1)))
 </script>
 
 <style scoped>
