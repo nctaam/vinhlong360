@@ -205,6 +205,28 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(staysVue).toContain('Liên hệ & Đặt phòng')
     expect(staysVue).not.toContain('Liên hệ lưu trú & Trải nghiệm')
   })
+
+  it('Task 26: Folios II-IV and Closing decluttered: removed redundant balcony highlight pill, modernized culinary button hover, streamlined AEO and continuation labels', () => {
+    const staysVue = readFileSync(resolve(__dirname, '../components/home/HomeRiversideStays.vue'), 'utf8')
+    const culinaryVue = readFileSync(resolve(__dirname, '../components/home/HomeCulinaryTrail.vue'), 'utf8')
+    const indexVue = readFileSync(resolve(__dirname, '../pages/index.vue'), 'utf8')
+    const contVue = readFileSync(resolve(__dirname, '../components/home/HomeContinuation.vue'), 'utf8')
+
+    // 1. Folio III: balcony-pill removed for photo breathing room
+    expect(staysVue).not.toContain('home-stay-card__balcony-pill')
+    expect(staysVue).not.toContain('stay.balconyHighlight')
+
+    // 2. Folio II: culinary button hover has no underline for modern app feel
+    expect(culinaryVue).not.toMatch(/\.home-culinary-card__btn:hover\s*\{[^}]*text-decoration:\s*underline/)
+
+    // 3. Folio IV: AEO plaque cta label streamlined
+    expect(indexVue).toContain('cta-label="Lịch trình theo mùa"')
+    expect(indexVue).not.toContain('cta-label="Khám phá lịch trình theo mùa"')
+
+    // 4. Closing: Continuation link 3 streamlined
+    expect(contVue).toContain('16 lịch trình thong dong')
+    expect(contVue).not.toContain('Xem 16 lịch trình thong dong')
+  })
 })
 
 

@@ -36,7 +36,7 @@
       <NuxtLink to="/lich-trinh" class="home-continuation__link">
         <IconLine name="calendar" aria-hidden="true" />
         <span class="home-continuation__link-text">
-          <strong class="home-continuation__link-title">Xem 16 lịch trình thong dong</strong>
+          <strong class="home-continuation__link-title">16 lịch trình thong dong</strong>
           <span class="home-continuation__link-sub">Gợi ý 1 ngày, 2N1Đ và 3N2Đ từ người địa phương</span>
         </span>
         <IconLine name="arrow-right" class="home-continuation__arrow" aria-hidden="true" />

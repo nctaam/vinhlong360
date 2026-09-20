@@ -107,7 +107,7 @@
       icon="bulb"
       :entries="homeAeoEntries"
       cta-to="/theo-mua"
-      cta-label="Khám phá lịch trình theo mùa"
+      cta-label="Lịch trình theo mùa"
     />
     <HomeFieldworkFaq class="sr-only" />
 
@@ -518,7 +518,7 @@ const itineraries = computed(() => homeData.value?.itineraries || [])
 const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
 const heroSubtitle = computed(() => {
-  const val = ss('homepage.hero_subtitle', '')
+  const val = ss<string>('homepage.hero_subtitle', '')
   if (!val || val.includes('Tìm điểm đến, món ngon')) {
     return 'Hành trình di sản cù lao, làng gốm trăm năm và vị ngọt cây trái giữa đôi bờ Cổ Chiên.'
   }

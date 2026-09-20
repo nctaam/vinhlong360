@@ -76,11 +76,6 @@
           </h3>
           <p class="home-stay-card__desc">{{ stay.desc }}</p>
 
-          <div v-if="stay.balconyHighlight" class="home-stay-card__balcony-pill">
-            <IconLine name="eye" aria-hidden="true" />
-            <span>{{ stay.balconyHighlight }}</span>
-          </div>
-
           <div class="home-stay-card__perks">
             <span v-for="perk in stay.perks" :key="perk" class="home-stay-card__perk">
               <IconLine name="check" aria-hidden="true" />
@@ -459,24 +454,6 @@ function onImgFallback(e: Event) {
   font-size: var(--text-xs);
   color: var(--alluvial-gold);
   font-weight: var(--weight-bold);
-}
-
-.home-stay-card__balcony-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  background: rgba(var(--black-rgb), 0.65);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid var(--border-liquid-glass);
-  border-radius: var(--radius-pill, 9999px);
-  font-size: 11px;
-  color: var(--surface-white);
-  width: fit-content;
-}
-
-.home-stay-card__balcony-pill .line-icon {
-  color: var(--alluvial-gold);
 }
 
 .home-stay-card__title {

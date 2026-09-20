@@ -462,8 +462,8 @@ function onImgFallback(e: Event) {
 }
 
 .home-culinary-card__btn:hover {
-  text-decoration: underline;
   transform: translateX(2px);
+  opacity: 0.92;
 }
 
 .home-culinary-card__btn:active {
