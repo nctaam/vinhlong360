@@ -98,6 +98,30 @@
 .article-sourcemark-bar { display: inline-flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4); padding: var(--space-1) var(--space-3); background: var(--bg-alt); border: 1px solid var(--border-liquid-glass, var(--line)); border-radius: var(--radius-full); font-size: var(--text-xs); color: var(--ink-secondary, var(--color-text-muted)); line-height: var(--leading-normal); }
 .article-sourcemark-bar strong { color: var(--ink); font-weight: var(--weight-semibold); }
 
+/* Editorial Dossier: Dải tóm lược thực địa nhanh */
+.detail-at-a-glance {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  margin-bottom: var(--space-5);
+  max-width: var(--measure-read);
+}
+.dc-field-fact {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+.dc-field-fact strong {
+  color: var(--color-text-muted);
+  font-weight: var(--weight-medium);
+}
+
 .entity-description, .detail-main > :nth-child(n+4) { content-visibility: auto; contain-intrinsic-size: auto 300px; }
 .entity-description { margin: var(--space-5) 0 var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); max-width: var(--measure-read); }
 .entity-description p { margin: 0 0 var(--space-4); font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--ink); }
