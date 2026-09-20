@@ -1057,7 +1057,8 @@
 }
 
 [data-home-pilot="nocturne-b1"] .home-continuation__link--featured {
-  border-left: 3px solid var(--alluvial-gold, var(--color-brand));
+  background: var(--color-surface-raised);
+  border-color: color-mix(in srgb, var(--color-brand) 40%, var(--color-border));
 }
 
 [data-home-pilot="nocturne-b1"] .home-continuation__links a .line-icon:first-child {

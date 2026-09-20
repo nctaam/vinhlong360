@@ -53,9 +53,9 @@
   display: block;
 }
 .lunar-ribbon-moon circle.moon-base { fill: var(--bg-alt); }
-.lunar-ribbon-moon path.moon-lit { fill: var(--accent-dark); }
+.lunar-ribbon-moon path.moon-lit { fill: var(--color-material-amber); }
 .dark .lunar-ribbon-moon circle.moon-base { fill: rgba(var(--white-rgb), .08); }
-.dark .lunar-ribbon-moon path.moon-lit { fill: var(--amber-500); }
+.dark .lunar-ribbon-moon path.moon-lit { fill: var(--color-material-amber); }
 
 .lunar-ribbon-label {
   flex-shrink: 0;
@@ -172,8 +172,8 @@
   gap: var(--space-3);
   margin-top: var(--space-4);
   padding: var(--space-3) var(--space-4);
-  background: rgba(var(--secondary-rgb), .1);
-  border: .5px solid rgba(var(--secondary-rgb), .3);
+  background: color-mix(in srgb, var(--color-success) 10%, transparent);
+  border: .5px solid color-mix(in srgb, var(--color-success) 30%, transparent);
   border-radius: var(--radius-surface);
   color: var(--ink);
   text-decoration: none;
@@ -181,31 +181,21 @@
 }
 .now-banner:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
 .register-su-kien .now-banner {
-  background: rgba(var(--accent-rgb), .12);
-  border-color: rgba(var(--accent-rgb), .32);
+  background: color-mix(in srgb, var(--color-material-amber) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-material-amber) 32%, transparent);
 }
-.dark .now-banner { background: rgba(var(--secondary-rgb), .16); border-color: rgba(var(--secondary-rgb), .4); }
-.dark .register-su-kien .now-banner { background: rgba(var(--accent-rgb), .16); border-color: rgba(var(--accent-rgb), .4); }
+.dark .now-banner { background: color-mix(in srgb, var(--color-success) 16%, transparent); border-color: color-mix(in srgb, var(--color-success) 40%, transparent); }
+.dark .register-su-kien .now-banner { background: color-mix(in srgb, var(--color-material-amber) 16%, transparent); border-color: color-mix(in srgb, var(--color-material-amber) 40%, transparent); }
 
 .now-banner-dot {
   flex-shrink: 0;
   width: 9px;
   height: 9px;
   border-radius: var(--radius-pill, 999px);
-  background: var(--secondary-fg, var(--secondary));
-  animation: now-banner-pulse 2.2s var(--ease-out-expo) infinite;
+  background: var(--color-success);
 }
 .register-su-kien .now-banner-dot {
-  background: var(--accent-dark);
-  animation-name: now-banner-pulse-amber;
-}
-@keyframes now-banner-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--secondary-rgb), .4); }
-  50% { box-shadow: 0 0 0 6px rgba(var(--secondary-rgb), 0); }
-}
-@keyframes now-banner-pulse-amber {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), .4); }
-  50% { box-shadow: 0 0 0 6px rgba(var(--accent-rgb), 0); }
+  background: var(--color-material-amber);
 }
 .now-banner-text { flex: 1; min-width: 0; font-size: var(--text-sm); }
 .now-banner-text strong { font-family: var(--font-editorial); font-weight: 600; }
@@ -215,10 +205,10 @@
   font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: var(--tracking-caps);
-  color: var(--secondary-fg, var(--secondary));
+  color: var(--color-success);
   white-space: nowrap;
 }
-.register-su-kien .now-banner-countdown { color: var(--accent-dark); }
+.register-su-kien .now-banner-countdown { color: var(--color-material-amber); }
 
 @media (prefers-reduced-motion: reduce) {
   .now-banner-dot { animation: none; }
@@ -262,9 +252,9 @@
   letter-spacing: var(--tracking-caps);
   color: var(--muted);
 }
-.ledger-status.is-now { color: var(--secondary-fg, var(--secondary)); }
-.ledger-status.is-soon { color: var(--accent-dark); }
-.register-su-kien .ledger-status.is-now { color: var(--accent-dark); }
+.ledger-status.is-now { color: var(--color-success); }
+.ledger-status.is-soon { color: var(--color-material-amber); }
+.register-su-kien .ledger-status.is-now { color: var(--color-material-amber); }
 .ledger-name {
   flex: 2;
   min-width: 0;
@@ -325,11 +315,8 @@
   color: var(--ink);
   box-shadow: var(--shadow-xs);
 }
-.register-toggle-tab.is-active.tone-leaf { color: var(--secondary-fg, var(--secondary)); }
-/* --accent-text chứ không phải --accent-dark: --accent-dark (amber-600) chỉ đạt
-   2.62:1 trên nền sáng vì nó là biến thể ĐẬM CỦA NỀN, không phải màu chữ.
-   --accent-text mới là token dành cho chữ và có bản riêng mỗi chế độ. */
-.register-toggle-tab.is-active.tone-amber { color: var(--accent-text); }
+.register-toggle-tab.is-active.tone-leaf { color: var(--color-success); }
+.register-toggle-tab.is-active.tone-amber { color: var(--color-material-amber); }
 .register-toggle-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dark .register-toggle { background: rgba(var(--white-rgb), .05); }
 .dark .register-toggle-tab.is-active { background: var(--card); }
@@ -338,13 +325,13 @@
 .etiquette-box {
   margin: var(--space-4) 0 0;
   padding: var(--space-4) var(--space-5);
-  background: rgba(var(--secondary-rgb), .07);
-  border: 1px solid rgba(var(--secondary-rgb), .2);
+  background: color-mix(in srgb, var(--color-success) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-success) 22%, transparent);
   border-radius: var(--radius-surface, 12px);
 }
 .etiquette-box p { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); color: var(--ink-secondary); }
 .etiquette-box strong { color: var(--ink); }
-.dark .etiquette-box { background: rgba(var(--secondary-rgb), .12); border-color: rgba(var(--secondary-rgb), .3); }
+.dark .etiquette-box { background: color-mix(in srgb, var(--color-success) 14%, transparent); border-color: color-mix(in srgb, var(--color-success) 32%, transparent); }
 
 /* ── ical bulk-subscribe button ── */
 .ical-bulk-btn {
@@ -414,11 +401,11 @@
   font-family: var(--font-editorial);
   font-style: italic;
   font-size: var(--text-2xs);
-  color: var(--secondary-fg, var(--secondary));
+  color: var(--color-success);
 }
-.register-su-kien .lunar-label { color: var(--accent-dark); }
-.dark .lunar-label { color: var(--secondary); }
-.dark .register-su-kien .lunar-label { color: var(--accent); }
+.register-su-kien .lunar-label { color: var(--color-material-amber); }
+.dark .lunar-label { color: var(--color-success); }
+.dark .register-su-kien .lunar-label { color: var(--color-material-amber); }
 
 /* ── Event list ── */
 .event-list {
@@ -493,8 +480,8 @@
   margin-bottom: var(--space-1);
 }
 .cat-mua {
-  background: rgba(var(--secondary-rgb), .1);
-  color: var(--secondary);
+  background: color-mix(in srgb, var(--color-success) 10%, transparent);
+  color: var(--color-success);
 }
 
 .event-info { flex: 1; min-width: 0; }
@@ -710,8 +697,8 @@
   background: var(--date-badge-bg);
   color: var(--date-badge-ink);
   border-radius: 3px;
-  border: 1px solid color-mix(in srgb, var(--secondary-fg, var(--secondary)) 35%, transparent);
-  box-shadow: inset 2px 0 0 var(--secondary-fg, var(--secondary)), var(--shadow-xs);
+  border: 1px solid color-mix(in srgb, var(--color-success) 35%, transparent);
+  box-shadow: inset 2px 0 0 var(--color-success), var(--shadow-xs);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -743,8 +730,8 @@
   opacity: .85;
   transition: color .2s var(--ease-out), opacity .2s var(--ease-out);
 }
-.cal-cell:not(.cal-empty):hover .cal-lunar { color: var(--secondary-fg, var(--secondary)); opacity: 1; }
-.register-su-kien .cal-cell:not(.cal-empty):hover .cal-lunar { color: var(--accent-dark); }
+.cal-cell:not(.cal-empty):hover .cal-lunar { color: var(--color-success); opacity: 1; }
+.register-su-kien .cal-cell:not(.cal-empty):hover .cal-lunar { color: var(--color-material-amber); }
 .cal-lunar.lunar-first {
   font-size: var(--text-xs);
   color: var(--error);
@@ -753,7 +740,7 @@
 }
 .cal-lunar.lunar-mid {
   font-size: var(--text-xs);
-  color: var(--accent-dark);
+  color: var(--color-material-amber);
   font-weight: var(--weight-semibold);
   opacity: 1;
 }
@@ -774,7 +761,7 @@
 .dark .calendar { border-color: var(--line); }
 .dark .cal-nav { border-color: var(--line); background: var(--bg-alt); }
 .dark .cal-nav:hover { background: rgba(var(--white-rgb), .08); }
-.dark .cat-mua { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg); }
+.dark .cat-mua { background: color-mix(in srgb, var(--color-success) 18%, transparent); color: var(--color-success); }
 /* Calendar has-events cells need a stronger tint to stay visible on the dark card. */
 .dark .cal-cell.cal-has-events {
   background:

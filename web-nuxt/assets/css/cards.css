@@ -80,38 +80,31 @@
    contrast over the light gradient (not --primary-fg, which is clay-red
    and dips below AA on amber). */
 .itinerary-duration-badge {
-  background: linear-gradient(135deg, rgba(var(--accent-rgb), .9), rgba(var(--accent-rgb), .65));
-  color: var(--ink);
-  box-shadow: 0 1px 2px rgba(var(--accent-rgb), .3);
+  background: color-mix(in srgb, var(--color-material-amber) 16%, var(--color-surface));
+  color: var(--color-text);
+  border: 1px solid color-mix(in srgb, var(--color-material-amber) 30%, transparent);
 }
-/* Stops: cool leaf-green tint. secondary-dark text holds AA over the
-   light .14 tint. */
+/* Stops: cool leaf-green tint. */
 .itinerary-stops-badge {
-  background: rgba(var(--secondary-rgb), .14);
-  color: var(--secondary-dark);
-  border: .5px solid rgba(var(--secondary-rgb), .22);
+  background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
+  color: var(--color-success);
+  border: 1px solid color-mix(in srgb, var(--color-success) 22%, transparent);
 }
-/* Hover: duration badge lifts + gains a soft warm breathing glow, echoing
-   the .peak badge signature. Stops badge lifts subtly in sympathy. */
+/* Hover: subtle lift */
 .card:hover .itinerary-duration-badge {
   transform: translateY(-1px);
-  animation: itin-duration-glow 2.4s var(--ease-out) infinite;
 }
 .card:hover .itinerary-stops-badge { transform: translateY(-1px); }
-@keyframes itin-duration-glow {
-  0%, 100% { box-shadow: 0 1px 2px rgba(var(--accent-rgb), .3), 0 0 0 0 rgba(var(--accent-rgb), 0); }
-  50%      { box-shadow: 0 1px 2px rgba(var(--accent-rgb), .3), 0 0 0 4px rgba(var(--accent-rgb), .16); }
-}
-/* Dark mode parity: keep contrast on dark cards. Duration text stays dark
-   over the bright amber; stops badge gains a lighter green text + tint. */
+/* Dark mode parity: keep contrast on dark cards. */
 .dark .itinerary-duration-badge {
-  background: linear-gradient(135deg, rgba(var(--accent-rgb), .95), rgba(var(--accent-rgb), .72));
-  color: var(--on-accent);
+  background: color-mix(in srgb, var(--color-material-amber) 22%, var(--color-surface));
+  color: var(--color-text);
+  border-color: color-mix(in srgb, var(--color-material-amber) 40%, transparent);
 }
 .dark .itinerary-stops-badge {
-  background: rgba(var(--secondary-rgb), .22);
-  color: var(--secondary-fg);
-  border-color: rgba(var(--secondary-rgb), .4);
+  background: color-mix(in srgb, var(--color-success) 20%, var(--color-surface));
+  color: var(--color-success);
+  border-color: color-mix(in srgb, var(--color-success) 36%, transparent);
 }
 .card-meta {
   display: flex;
@@ -139,22 +132,30 @@
 .badge { font-size: var(--text-2xs); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-weight: var(--weight-medium); transition: transform .3s var(--ease-out-expo), opacity .3s var(--ease-out); }
 .card:hover .badge { transform: translateY(-1px); }
 .badge.season { background: var(--badge-season-bg); color: var(--color-brand); }
-.badge.peak { background: var(--accent); color: var(--ink); }
-.badge.ocop { background: var(--badge-ocop-bg); color: var(--secondary-dark); border: .5px solid var(--leaf-100); }
+.badge.peak {
+  background: color-mix(in srgb, var(--color-material-amber) 20%, var(--color-surface));
+  color: var(--color-text);
+  border: 1px solid color-mix(in srgb, var(--color-material-amber) 36%, transparent);
+}
+.badge.ocop {
+  background: var(--badge-ocop-bg);
+  color: var(--color-success);
+  border: .5px solid color-mix(in srgb, var(--color-success) 25%, transparent);
+}
 /* star-tier colour coding for OCOP badges (opt-in via .ocop-5/4/3).
    Falls back to the plain .ocop style above when no tier class is set. */
 .badge.ocop-5 {
-  background: linear-gradient(135deg, var(--secondary-dark), var(--color-success), var(--color-material-amber));
+  background: linear-gradient(135deg, var(--color-success), var(--color-material-amber));
   color: var(--text-on-dark);
   border: 1px solid color-mix(in srgb, var(--color-material-amber) 75%, transparent);
   box-shadow: 0 0 0 1px var(--color-material-amber), 0 2px 8px color-mix(in srgb, var(--color-material-amber) 28%, transparent);
 }
 .badge.ocop-4 {
-  background: rgba(var(--secondary-rgb), .15);
-  color: var(--secondary-dark);
-  border: 1px solid color-mix(in srgb, var(--color-material-amber) 55%, var(--secondary));
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+  color: var(--color-success);
+  border: 1px solid color-mix(in srgb, var(--color-material-amber) 55%, var(--color-success));
 }
-.badge.ocop-3 { background: var(--badge-ocop-bg); color: var(--secondary-dark); }
+.badge.ocop-3 { background: var(--badge-ocop-bg); color: var(--color-success); }
 .badge.year { background: var(--badge-year-bg); color: var(--muted); }
 .badge.heritage {
   display: inline-flex;
@@ -196,18 +197,18 @@
 .dark .card-type { color: var(--color-action); }
 .dark .cover-img { background: linear-gradient(110deg, var(--bg-alt) 30%, rgba(var(--white-rgb), .04) 50%, var(--bg-alt) 70%); background-size: 200% 100%; }
 .dark .cover-tag { background: rgba(var(--black-rgb), .6); border-color: rgba(var(--white-rgb), .1); color: var(--ink); }
-.dark .badge { color: var(--ink); }
+.dark .badge { color: var(--color-text); }
 .dark .badge.season { background: var(--badge-season-bg); color: var(--color-brand); }
-.dark .badge.peak { color: var(--on-accent); }
-.dark .badge.ocop { color: var(--secondary-fg); border-color: color-mix(in srgb, var(--secondary) 30%, transparent); }
+.dark .badge.peak { color: var(--color-text); }
+.dark .badge.ocop { color: var(--color-success); border-color: color-mix(in srgb, var(--color-success) 30%, transparent); }
 .dark .badge.ocop-5 {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--night-surface) 80%, var(--secondary-dark)), var(--color-surface-raised));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--night-surface) 80%, var(--color-success)), var(--color-surface-raised));
   color: var(--night-amber);
   border-color: var(--night-amber);
   box-shadow: 0 0 0 1px var(--night-amber), 0 2px 8px color-mix(in srgb, var(--night-amber) 30%, transparent);
 }
-.dark .badge.ocop-4 { background: rgba(var(--secondary-rgb), .22); color: var(--secondary-fg); border-color: color-mix(in srgb, var(--night-amber) 35%, var(--secondary)); }
-.dark .badge.ocop-3 { color: var(--secondary-fg); border-color: color-mix(in srgb, var(--secondary) 30%, transparent); }
+.dark .badge.ocop-4 { background: color-mix(in srgb, var(--color-success) 22%, transparent); color: var(--color-success); border-color: color-mix(in srgb, var(--night-amber) 35%, var(--color-success)); }
+.dark .badge.ocop-3 { color: var(--color-success); border-color: color-mix(in srgb, var(--color-success) 30%, transparent); }
 .dark .badge.year { background: rgba(var(--white-rgb), .08); color: var(--muted); }
 
 /* ============================================================
@@ -271,21 +272,17 @@
 /* 3 ── Stronger cover image zoom for clear "alive" feel on hover */
 .card:hover .cover-img img.loaded { transform: scale(var(--img-hover-scale)); }
 
-/* 4 ── Refined badges: clearer hierarchy + the peak badge becomes
-   a warm gradient pill with a calm breathing glow (not flashy). */
+/* 4 ── Refined badges: clearer hierarchy */
 .badge.peak {
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: var(--ink);
+  background: color-mix(in srgb, var(--color-material-amber) 20%, var(--color-surface));
+  color: var(--color-text);
   font-weight: var(--weight-semibold);
-  box-shadow: 0 1px 2px rgba(var(--accent-rgb), .35);
+  border: 1px solid color-mix(in srgb, var(--color-material-amber) 36%, transparent);
   position: relative;
+  transition: transform .25s var(--ease-out);
 }
 .card:hover .badge.peak {
-  animation: badge-pulse 2.4s var(--ease-out) infinite;
-}
-@keyframes badge-pulse {
-  0%, 100% { box-shadow: 0 1px 2px rgba(var(--accent-rgb), .35), 0 0 0 0 rgba(var(--accent-rgb), .0); }
-  50%      { box-shadow: 0 1px 2px rgba(var(--accent-rgb), .35), 0 0 0 4px rgba(var(--accent-rgb), .14); }
+  transform: translateY(-1px);
 }
 .badge.season, .badge.ocop, .badge.year { box-shadow: var(--shadow-xs); }
 /* re-assert the 5-star tier glow over the shared .badge.ocop shadow above */
@@ -357,13 +354,13 @@
   transform: translateY(-8px);
   box-shadow:
     var(--shadow-lg),
-    0 0 0 1px rgba(var(--secondary-rgb), .2),
-    0 18px 40px -18px rgba(var(--secondary-rgb), .35);
+    0 0 0 1px color-mix(in srgb, var(--color-success) 20%, transparent),
+    0 18px 40px -18px color-mix(in srgb, var(--color-success) 35%, transparent);
 }
 .dark .scroll-row.honor-roll .card:hover {
   box-shadow:
     var(--shadow-lg),
-    0 0 0 1px rgba(var(--secondary-rgb), .3),
+    0 0 0 1px color-mix(in srgb, var(--color-success) 30%, transparent),
     0 18px 44px -18px rgba(var(--black-rgb), .7);
 }
 
@@ -395,12 +392,6 @@
   .card:hover .cover-tag { transform: none; }
   .card:hover .badge.peak { animation: none; }
   .grid > .card { animation: none; }
-  /* itinerary badges: no pulse, no lift — but keep the glow as a static
-     highlight so the duration badge still reads as the "primary" pill. */
-  .card:hover .itinerary-duration-badge {
-    transform: none;
-    animation: none;
-    box-shadow: 0 1px 2px rgba(var(--accent-rgb), .3), 0 0 0 4px rgba(var(--accent-rgb), .16);
-  }
+  .card:hover .itinerary-duration-badge { transform: none; }
   .card:hover .itinerary-stops-badge { transform: none; }
 }

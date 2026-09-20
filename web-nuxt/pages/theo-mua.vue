@@ -141,7 +141,7 @@
             <span v-if="isPeak(e)" class="season-badge peak">Cao điểm</span>
             <span v-else class="season-badge">Đang mùa</span>
             <EntityCard :entity="e" />
-            <small class="season-when"><span aria-hidden="true">📅</span>{{ seasonText(e.season) }}</small>
+            <small class="season-when"><IconLine name="calendar" class="season-when-icon" aria-hidden="true" />{{ seasonText(e.season) }}</small>
           </div>
         </div>
       </section>
@@ -696,12 +696,9 @@ useHead(() => {
   background: var(--color-action);
   color: var(--color-on-action); font-weight: var(--weight-semibold);
   box-shadow: 0 1px 3px rgba(var(--color-action-rgb), .4), inset 0 1px 0 rgba(var(--white-rgb), .25);
+  transition: transform .25s var(--ease-out);
 }
-.season-item:hover .season-badge.peak { animation: season-badge-pulse 2.4s var(--ease-out) infinite; }
-@keyframes season-badge-pulse {
-  0%, 100% { box-shadow: 0 1px 3px rgba(var(--color-action-rgb), .4), 0 0 0 0 rgba(var(--color-action-rgb), 0); }
-  50%      { box-shadow: 0 1px 3px rgba(var(--color-action-rgb), .4), 0 0 0 4px rgba(var(--color-action-rgb), .14); }
-}
+.season-item:hover .season-badge.peak { transform: translateY(-1px); }
 
 .season-when {
   color: var(--muted); margin-top: var(--space-1); font-size: var(--text-xs);
@@ -875,7 +872,7 @@ useHead(() => {
   .peak-banner .seasonal-banner-icon { animation: none; }
   .scroll-row > .season-item,
   .grid > .season-item { animation: none; }
-  .season-item:hover .season-badge.peak { animation: none; }
+  .season-item:hover .season-badge.peak { transform: none; }
   .b2b-callout-link { transition: none; }
   .b2b-callout-link:hover { transform: none; }
   .catalog-hero.cat-season { transition: none; }

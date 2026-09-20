@@ -18,7 +18,7 @@
 .chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 /* when a chip is both active (filled brand bg) AND focused, swap the focus
    ring to accent so it stays visible against the primary-coloured fill */
-.chip.active:focus-visible { outline-color: var(--accent); outline-offset: 4px; }
+.chip.active:focus-visible { outline-color: var(--color-action); outline-offset: 4px; }
 .chip.active { background: var(--color-action); color: var(--color-on-action); border-color: var(--color-action); box-shadow: 0 2px 8px rgba(var(--color-action-rgb), .3); }
 .chip.season.active { background: rgba(var(--color-action-rgb), .88); color: var(--color-on-action); border-color: var(--color-action); }
 .dark .chip.season.active { background: rgba(var(--color-action-rgb), .75); }
@@ -733,13 +733,12 @@
 .seasonal-banner {
   display: flex; align-items: center; gap: var(--space-4);
   padding: var(--space-4) var(--space-5); border-radius: var(--radius-sheet);
-  background: linear-gradient(90deg, rgba(var(--accent-rgb), .12), transparent);
-  border: .5px solid rgba(var(--accent-rgb), .25);
-  border-bottom: 1px solid rgba(var(--accent-rgb), .25);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-material-amber) 12%, transparent), transparent);
+  border: 1px solid color-mix(in srgb, var(--color-material-amber) 25%, transparent);
   margin-bottom: var(--space-4);
   transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo);
 }
-.seasonal-banner:hover { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .08); }
+.seasonal-banner:hover { border-color: var(--color-material-amber); box-shadow: var(--shadow-sm); }
 .seasonal-banner-icon { font-size: 1.8rem; position: relative; display: inline-flex; align-items: center; justify-content: center; }
 /* soft radial halo behind the emoji so it reads as illustrated, not flat */
 .seasonal-banner-icon::before {
@@ -808,21 +807,21 @@
 
 /* ── Hero variants ── */
 .catalog-hero.cat-experience { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, var(--bg-warm) 100%); }
-.catalog-hero.cat-product { background: linear-gradient(135deg, rgba(var(--accent-rgb), .1) 0%, var(--bg-warm) 100%); }
-.catalog-hero.cat-accommodation { background: linear-gradient(135deg, rgba(var(--river-rgb),.08) 0%, var(--bg-warm) 100%); }
-.catalog-hero.cat-ocop { background: linear-gradient(135deg, rgba(var(--secondary-rgb), .08) 0%, var(--bg-warm) 100%); }
-.catalog-hero.cat-season { background: linear-gradient(135deg, rgba(var(--accent-rgb), .08) 0%, rgba(var(--secondary-rgb), .06) 100%); }
-.catalog-hero.cat-directory { background: linear-gradient(135deg, rgba(var(--river-rgb),.06) 0%, rgba(var(--color-brand-rgb), .04) 100%); }
-.catalog-hero.cat-itinerary { background: linear-gradient(135deg, rgba(var(--secondary-rgb), .06) 0%, rgba(var(--river-rgb),.04) 100%); }
-.catalog-hero.cat-community { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .06) 0%, rgba(var(--accent-rgb), .04) 100%); }
-.catalog-hero.cat-area-vinh-long { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, rgba(var(--accent-rgb), .04) 100%); }
-.catalog-hero.cat-area-ben-tre { background: linear-gradient(135deg, rgba(var(--secondary-rgb), .08) 0%, rgba(var(--bg-warm), .6) 100%); }
-.catalog-hero.cat-area-tra-vinh { background: linear-gradient(135deg, rgba(var(--river-rgb),.08) 0%, rgba(var(--color-brand-rgb), .04) 100%); }
-.catalog-hero.cat-search { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .05) 0%, rgba(var(--river-rgb),.04) 100%); }
-.catalog-hero.cat-contact { background: linear-gradient(135deg, rgba(var(--accent-rgb), .06) 0%, rgba(var(--color-brand-rgb), .04) 100%); }
-.catalog-hero.cat-map { background: linear-gradient(135deg, rgba(var(--secondary-rgb), .06) 0%, rgba(var(--river-rgb),.04) 100%); }
-.catalog-hero.cat-interest { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .06) 0%, rgba(var(--secondary-rgb), .04) 100%); }
-.catalog-hero.cat-route { background: linear-gradient(135deg, rgba(var(--accent-rgb), .08) 0%, rgba(var(--secondary-rgb), .04) 100%); }
+.catalog-hero.cat-product { background: linear-gradient(135deg, rgba(var(--alluvial-gold-rgb), .1) 0%, var(--bg-warm) 100%); }
+.catalog-hero.cat-accommodation { background: linear-gradient(135deg, rgba(var(--color-action-rgb), .08) 0%, var(--bg-warm) 100%); }
+.catalog-hero.cat-ocop { background: linear-gradient(135deg, rgba(var(--color-success-rgb), .08) 0%, var(--bg-warm) 100%); }
+.catalog-hero.cat-season { background: linear-gradient(135deg, rgba(var(--alluvial-gold-rgb), .08) 0%, rgba(var(--color-success-rgb), .06) 100%); }
+.catalog-hero.cat-directory { background: linear-gradient(135deg, rgba(var(--color-action-rgb), .06) 0%, rgba(var(--color-brand-rgb), .04) 100%); }
+.catalog-hero.cat-itinerary { background: linear-gradient(135deg, rgba(var(--color-success-rgb), .06) 0%, rgba(var(--color-action-rgb), .04) 100%); }
+.catalog-hero.cat-community { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .06) 0%, rgba(var(--alluvial-gold-rgb), .04) 100%); }
+.catalog-hero.cat-area-vinh-long { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, rgba(var(--alluvial-gold-rgb), .04) 100%); }
+.catalog-hero.cat-area-ben-tre { background: linear-gradient(135deg, rgba(var(--color-success-rgb), .08) 0%, rgba(var(--bg-warm), .6) 100%); }
+.catalog-hero.cat-area-tra-vinh { background: linear-gradient(135deg, rgba(var(--color-action-rgb), .08) 0%, rgba(var(--color-brand-rgb), .04) 100%); }
+.catalog-hero.cat-search { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .05) 0%, rgba(var(--color-action-rgb), .04) 100%); }
+.catalog-hero.cat-contact { background: linear-gradient(135deg, rgba(var(--alluvial-gold-rgb), .06) 0%, rgba(var(--color-brand-rgb), .04) 100%); }
+.catalog-hero.cat-map { background: linear-gradient(135deg, rgba(var(--color-success-rgb), .06) 0%, rgba(var(--color-action-rgb), .04) 100%); }
+.catalog-hero.cat-interest { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .06) 0%, rgba(var(--color-success-rgb), .04) 100%); }
+.catalog-hero.cat-route { background: linear-gradient(135deg, rgba(var(--alluvial-gold-rgb), .08) 0%, rgba(var(--color-success-rgb), .04) 100%); }
 
 /* ── Dark mode (catalog) ── */
 .dark .catalog-hero { background: linear-gradient(135deg, rgba(var(--white-rgb), .03) 0%, rgba(var(--white-rgb), .01) 100%); border-color: var(--line); }
@@ -845,7 +844,7 @@
 .dark .cross-card:hover { box-shadow: var(--shadow-md); border-color: rgba(var(--white-rgb), .08); }
 .dark .quick-pick { background: var(--card); }
 .dark .catalog-hero.cat-season, .dark .catalog-hero.cat-directory, .dark .catalog-hero.cat-itinerary, .dark .catalog-hero.cat-community { background: linear-gradient(135deg, rgba(var(--white-rgb), .03) 0%, rgba(var(--white-rgb), .01) 100%); }
-.dark .seasonal-banner { background: linear-gradient(90deg, rgba(var(--accent-rgb), .06), transparent); border-color: rgba(var(--accent-rgb), .15); }
+.dark .seasonal-banner { background: linear-gradient(90deg, color-mix(in srgb, var(--color-material-amber) 6%, transparent), transparent); border-color: color-mix(in srgb, var(--color-material-amber) 15%, transparent); }
 .dark .search-row { background: var(--bg-alt); border-color: var(--line); }
 .dark .search-row:focus-within { box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .18); }
 
@@ -1125,7 +1124,7 @@
 }
 .dark .chip { background: var(--bg-alt); border-color: var(--line); }
 .dark .chip:hover { background: rgba(var(--white-rgb), .06); }
-.dark .step-note { color: var(--accent); }
+.dark .step-note { color: var(--color-material-amber); }
 .dark .route-leg-info { background: rgba(var(--white-rgb), .06); }
 .dark .transport-mode { background: var(--card); border-color: var(--line); }
 
@@ -1172,7 +1171,7 @@
 .step-card { display: flex; gap: var(--space-3); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-surface); padding: var(--space-4); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-out-expo), box-shadow .3s; }
 .step-card:hover { transform: translateX(3px); box-shadow: var(--shadow-md); border-color: var(--step-accent, var(--border)); }
 .step-card:active { transform: translateX(1px) scale(.98); transition-duration: .1s; }
-.step-card.cat-product { --step-accent: var(--accent); }
+.step-card.cat-product { --step-accent: var(--color-material-amber); }
 .step-card.cat-attraction { --step-accent: var(--cat-attraction-accent); }
 .step-card.cat-dish { --step-accent: var(--cat-dish-accent); }
 .step-card.cat-craft { --step-accent: var(--cat-craft-accent); }
@@ -1181,7 +1180,7 @@
 .step-card h3 { margin: 2px 0; font-size: var(--text-base); }
 .stop-link { color: inherit; }
 .step-card .summary { margin: 0; color: var(--muted); font-size: var(--text-sm); }
-.step-note { margin: var(--space-1) 0 0; font-size: var(--text-xs); color: var(--accent-text); font-weight: var(--weight-semibold); }
+.step-note { margin: var(--space-1) 0 0; font-size: var(--text-xs); color: var(--color-material-amber); font-weight: var(--weight-semibold); }
 .step-content { flex: 1; min-width: 0; }
 .step-type-label { display: inline-block; font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; color: var(--muted); letter-spacing: .03em; margin-bottom: 2px; }
 .itin-actions { display: flex; gap: var(--space-3); align-items: center; margin-bottom: var(--space-4); flex-wrap: wrap; }
@@ -1273,8 +1272,8 @@
 .result-meta::before {
   content: "";
   width: 7px; height: 7px; border-radius: 50%;
-  background: var(--secondary-fg);
-  box-shadow: 0 0 0 3px rgba(var(--secondary-rgb), .15);
+  background: var(--color-success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-success) 15%, transparent);
   flex: 0 0 auto;
 }
 /* gentle fade-in on (re)render so a filter change reads as fresh status,
@@ -1827,9 +1826,8 @@
 
 .catalog-aeo-plaque__frame {
   border-radius: var(--radius-surface-refined, 14px);
-  border: 1px solid var(--border-liquid-glass, var(--color-border));
-  border-left: 4px solid var(--alluvial-gold, var(--color-material-amber));
-  box-shadow: var(--shadow-card-ambient), 0 0 0 1px var(--border-liquid-glass);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
 }
 
 /* ── Cinematic & Quiet Luxury Hub Polish ── */
