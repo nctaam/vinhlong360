@@ -474,15 +474,10 @@ function onImgFallback(e: Event) {
 }
 
 .home-culinary-card__coords {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 0.72rem;
-  opacity: 0.88;
+  display: none !important;
 }
 
 .home-culinary-card__coords-sep {
-  margin: 0 4px;
-  opacity: 0.45;
+  display: none !important;
 }
 </style>

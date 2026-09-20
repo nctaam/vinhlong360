@@ -493,12 +493,7 @@ function onImgFallback(e: Event) {
 }
 
 .home-curated-lead__coords {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: var(--font-mono, monospace);
-  color: var(--alluvial-gold);
-  font-weight: var(--weight-medium);
+  display: none !important;
 }
 
 .home-curated-lead__title {
@@ -720,13 +715,7 @@ function onImgFallback(e: Event) {
 }
 
 .home-curated-satellite__coords {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.72rem;
-  color: var(--alluvial-gold);
-  font-weight: var(--weight-medium);
+  display: none !important;
 }
 
 .home-curated-satellite__area {

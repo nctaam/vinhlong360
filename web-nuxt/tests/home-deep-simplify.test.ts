@@ -285,6 +285,26 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(plannerVue).not.toContain('import SourceMark')
     expect(plannerVue).not.toContain('import FreshnessLine')
   })
+
+  it('Task 29: All field coordinates across homepage hidden to prevent visual clutter', () => {
+    const nocturneFresh = readFileSync(resolve(__dirname, '../assets/css/home-nocturne.css'), 'utf8')
+    // 1. Nocturne CSS suppresses all coordinate badges on homepage
+    expect(nocturneFresh).toMatch(/\[data-home-pilot="nocturne-b1"\]\s*\.home-feature-dossier__coords[\s\S]*?display:\s*none\s*!important/)
+    expect(nocturneFresh).toMatch(/\.home-curated-lead__coords[\s\S]*?display:\s*none\s*!important/)
+    expect(nocturneFresh).toMatch(/\.home-curated-satellite__coords[\s\S]*?display:\s*none\s*!important/)
+    expect(nocturneFresh).toMatch(/\.home-culinary-card__coords[\s\S]*?display:\s*none\s*!important/)
+    expect(nocturneFresh).toMatch(/\.home-stay-card__coords[\s\S]*?display:\s*none\s*!important/)
+
+    // 2. Scoped component styles also suppress coords
+    const showcaseVue = readFileSync(resolve(__dirname, '../components/home/HomeCuratedShowcase.vue'), 'utf8')
+    const culinaryVue = readFileSync(resolve(__dirname, '../components/home/HomeCulinaryTrail.vue'), 'utf8')
+    const staysVue = readFileSync(resolve(__dirname, '../components/home/HomeRiversideStays.vue'), 'utf8')
+
+    expect(showcaseVue).toMatch(/\.home-curated-lead__coords\s*\{[^}]*display:\s*none\s*!important/)
+    expect(showcaseVue).toMatch(/\.home-curated-satellite__coords\s*\{[^}]*display:\s*none\s*!important/)
+    expect(culinaryVue).toMatch(/\.home-culinary-card__coords\s*\{[^}]*display:\s*none\s*!important/)
+    expect(staysVue).toMatch(/\.home-stay-card__coords\s*\{[^}]*display:\s*none\s*!important/)
+  })
 })
 
 

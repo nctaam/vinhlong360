@@ -431,18 +431,11 @@ function onImgFallback(e: Event) {
 }
 
 .home-stay-card__coords {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 0.72rem;
-  opacity: 0.88;
-  color: var(--surface-white);
-  font-variant-numeric: tabular-nums;
+  display: none !important;
 }
 
 .home-stay-card__coords-sep {
-  margin: 0 4px;
-  opacity: 0.45;
+  display: none !important;
 }
 
 .home-stay-card__price {

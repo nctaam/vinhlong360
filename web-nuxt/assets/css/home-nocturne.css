@@ -385,17 +385,12 @@
   border-radius: var(--radius-control);
 }
 
-[data-home-pilot="nocturne-b1"] .home-feature-dossier__coords {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding-inline: var(--space-2);
-  padding-block: 2px;
-  font-size: var(--text-xs);
-  font-family: var(--font-mono, monospace);
-  color: var(--alluvial-gold);
-  border: 1px solid var(--border-liquid-glass, var(--color-border));
-  border-radius: var(--radius-control);
+[data-home-pilot="nocturne-b1"] .home-feature-dossier__coords,
+[data-home-pilot="nocturne-b1"] .home-curated-lead__coords,
+[data-home-pilot="nocturne-b1"] .home-curated-satellite__coords,
+[data-home-pilot="nocturne-b1"] .home-culinary-card__coords,
+[data-home-pilot="nocturne-b1"] .home-stay-card__coords {
+  display: none !important;
 }
 
 [data-home-pilot="nocturne-b1"] .home-feature-dossier__coords--link {
