@@ -855,7 +855,7 @@ useHead(() => ({
 .lvn-num { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); }
 .lvn-lunar { font-size: var(--text-2xs); color: var(--ink-tertiary); }
 .lvn-cell.is-first .lvn-lunar { color: var(--error); font-weight: var(--weight-semibold); }
-.lvn-cell.is-full .lvn-lunar { color: var(--accent-dark); font-weight: var(--weight-semibold); }
+.lvn-cell.is-full .lvn-lunar { color: var(--color-material-amber); font-weight: var(--weight-semibold); }
 .lvn-cell.is-first .lvn-lunar::before { content: '•'; margin-inline-end: 1px; }
 .lvn-cell.is-full .lvn-lunar::before { content: '◯'; margin-inline-end: var(--space-half, 2px); font-size: var(--text-2xs, 11px); }
 
@@ -864,7 +864,7 @@ useHead(() => ({
   margin: var(--space-2) 0 0; font-size: var(--text-2xs); color: var(--ink-tertiary);
 }
 .lvn-key-first { color: var(--error); }
-.lvn-key-full { color: var(--accent-dark); }
+.lvn-key-full { color: var(--color-material-amber); }
 .lvn-key-today {
   display: inline-block; width: 10px; height: 10px; vertical-align: -1px;
   background: rgba(var(--color-action-rgb), .35);
@@ -886,7 +886,7 @@ useHead(() => ({
   font-size: var(--text-2xs); color: var(--ink-secondary);
 }
 .lvn-tag-first { color: var(--error); border-color: currentColor; }
-.lvn-tag-full { color: var(--accent-dark); border-color: currentColor; }
+.lvn-tag-full { color: var(--color-material-amber); border-color: currentColor; }
 
 .lvn-hours {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));

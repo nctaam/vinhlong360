@@ -355,9 +355,9 @@ const heroSubtitle = computed(() =>
 
 /* Month color tone for the picker accent (green growing / blue water). */
 function monthTone(m: number) {
-  if (m >= 1 && m <= 3) return 'var(--secondary)'        // mát mẻ / sinh trưởng
-  if (m >= 4 && m <= 8) return 'var(--accent)'           // nắng / chính vụ
-  return 'var(--tertiary)'                                // nước nổi
+  if (m >= 1 && m <= 3) return 'var(--color-material-leaf)'        // mát mẻ / sinh trưởng
+  if (m >= 4 && m <= 8) return 'var(--color-material-amber)'       // nắng / chính vụ
+  return 'var(--color-material-river)'                             // nước nổi
 }
 
 const { data, error: fetchError } = await useAsyncData('season-entities', () =>
@@ -493,8 +493,8 @@ useHead(() => {
 
 .season-item { position: relative; display: flex; flex-direction: column; }
 /* Peak items in the honor row read a touch more premium */
-.season-item.is-peak :deep(.card) { box-shadow: 0 0 0 1px rgba(var(--accent-rgb), .18), var(--shadow-sm); }
-.season-item.is-peak:hover :deep(.card) { box-shadow: 0 0 0 1px rgba(var(--accent-rgb), .3), 0 14px 32px -16px rgba(var(--accent-rgb), .4); }
+.season-item.is-peak :deep(.card) { box-shadow: 0 0 0 1px rgba(var(--color-action-rgb), .18), var(--shadow-sm); }
+.season-item.is-peak:hover :deep(.card) { box-shadow: 0 0 0 1px rgba(var(--color-action-rgb), .3), 0 14px 32px -16px rgba(var(--color-action-rgb), .4); }
 
 /* Signature: season moment indicator in hero */
 .season-moment {
@@ -519,16 +519,16 @@ useHead(() => {
   background: var(--card);
 }
 .season-ring-emoji { position: relative; z-index: 1; font-size: 2.2rem; line-height: 1; }
-.season-ring.q-spring  { background: conic-gradient(var(--secondary), color-mix(in srgb, var(--secondary) 35%, transparent), var(--secondary)); }
-.season-ring.q-bloom   { background: conic-gradient(var(--accent), var(--secondary), var(--accent)); }
-.season-ring.q-summer  { background: conic-gradient(var(--accent), color-mix(in srgb, var(--accent) 35%, transparent), var(--accent)); }
-.season-ring.q-harvest { background: conic-gradient(var(--accent), var(--tertiary), var(--accent)); }
-.season-ring.q-flood   { background: conic-gradient(var(--tertiary), color-mix(in srgb, var(--tertiary) 35%, transparent), var(--tertiary)); }
+.season-ring.q-spring  { background: conic-gradient(var(--color-material-leaf), color-mix(in srgb, var(--color-material-leaf) 35%, transparent), var(--color-material-leaf)); }
+.season-ring.q-bloom   { background: conic-gradient(var(--color-material-amber), var(--color-material-leaf), var(--color-material-amber)); }
+.season-ring.q-summer  { background: conic-gradient(var(--color-material-amber), color-mix(in srgb, var(--color-material-amber) 35%, transparent), var(--color-material-amber)); }
+.season-ring.q-harvest { background: conic-gradient(var(--color-material-amber), var(--color-material-river), var(--color-material-amber)); }
+.season-ring.q-flood   { background: conic-gradient(var(--color-material-river), color-mix(in srgb, var(--color-material-river) 35%, transparent), var(--color-material-river)); }
 /* Water quarter reads as water, not a flat gradient: a faint wave-line
    texture rides on top of the flood conic-gradient (§1.8 cultural cue). */
 .season-ring.q-flood {
   background-image:
-    conic-gradient(var(--tertiary), color-mix(in srgb, var(--tertiary) 35%, transparent), var(--tertiary)),
+    conic-gradient(var(--color-material-river), color-mix(in srgb, var(--color-material-river) 35%, transparent), var(--color-material-river)),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M0 10 Q10 6 20 10 T40 10' stroke='white' stroke-opacity='.35' fill='none'/%3E%3Cpath d='M0 26 Q10 22 20 26 T40 26' stroke='white' stroke-opacity='.25' fill='none'/%3E%3C/svg%3E");
   background-size: cover, 24px 24px;
 }
@@ -648,15 +648,15 @@ useHead(() => {
    collision in variables.css; using it here would send the wrong cultural
    signal for "mùa nước nổi"). */
 .catalog-hero.cat-season { --sediment-teal-rgb: 51, 100, 110; }
-.catalog-hero.cat-season.q-spring  { background: linear-gradient(135deg, rgba(var(--secondary-rgb), .1) 0%, var(--bg-warm) 100%); }
-.catalog-hero.cat-season.q-bloom   { background: linear-gradient(135deg, rgba(var(--accent-rgb), .1) 0%, rgba(var(--secondary-rgb), .05) 100%); }
-.catalog-hero.cat-season.q-summer  { background: linear-gradient(135deg, rgba(var(--accent-rgb), .14) 0%, var(--bg-warm) 100%); }
-.catalog-hero.cat-season.q-harvest { background: linear-gradient(135deg, rgba(var(--accent-rgb), .1) 0%, rgba(var(--sediment-teal-rgb), .06) 100%); }
+.catalog-hero.cat-season.q-spring  { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, var(--bg-warm) 100%); }
+.catalog-hero.cat-season.q-bloom   { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, rgba(var(--color-action-rgb), .05) 100%); }
+.catalog-hero.cat-season.q-summer  { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .12) 0%, var(--bg-warm) 100%); }
+.catalog-hero.cat-season.q-harvest { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, rgba(var(--sediment-teal-rgb), .06) 100%); }
 .catalog-hero.cat-season.q-flood   { background: linear-gradient(135deg, rgba(var(--sediment-teal-rgb), .14) 0%, var(--bg-warm) 100%); }
-.dark .catalog-hero.cat-season.q-spring  { background: linear-gradient(135deg, rgba(var(--secondary-rgb), .1) 0%, rgba(var(--white-rgb),.02) 100%); }
-.dark .catalog-hero.cat-season.q-bloom   { background: linear-gradient(135deg, rgba(var(--accent-rgb), .1) 0%, rgba(var(--secondary-rgb), .06) 100%); }
-.dark .catalog-hero.cat-season.q-summer  { background: linear-gradient(135deg, rgba(var(--accent-rgb), .14) 0%, rgba(var(--white-rgb),.02) 100%); }
-.dark .catalog-hero.cat-season.q-harvest { background: linear-gradient(135deg, rgba(var(--accent-rgb), .1) 0%, rgba(var(--sediment-teal-rgb), .08) 100%); }
+.dark .catalog-hero.cat-season.q-spring  { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, rgba(var(--white-rgb),.02) 100%); }
+.dark .catalog-hero.cat-season.q-bloom   { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, rgba(var(--color-action-rgb), .06) 100%); }
+.dark .catalog-hero.cat-season.q-summer  { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .12) 0%, rgba(var(--white-rgb),.02) 100%); }
+.dark .catalog-hero.cat-season.q-harvest { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, rgba(var(--sediment-teal-rgb), .08) 100%); }
 .dark .catalog-hero.cat-season.q-flood   { background: linear-gradient(135deg, rgba(var(--sediment-teal-rgb), .18) 0%, rgba(var(--white-rgb),.02) 100%); }
 
 /* Section eyebrow + dividers */
@@ -674,7 +674,7 @@ useHead(() => {
 .peak-banner { position: relative; }
 .peak-banner::after {
   content: ''; position: absolute; inset: -1px; border-radius: inherit;
-  background: radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb), .08), transparent 80%);
+  background: radial-gradient(circle at 50% 0%, rgba(var(--color-brand-rgb), .08), transparent 80%);
   z-index: -1; pointer-events: none;
 }
 /* Stagger on month change / reveal */
@@ -693,14 +693,14 @@ useHead(() => {
   box-shadow: 0 1px 3px rgba(var(--black-rgb), .35), inset 0 1px 0 rgba(var(--white-rgb), .08);
 }
 .season-badge.peak {
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: var(--ink); font-weight: var(--weight-semibold);
-  box-shadow: 0 1px 3px rgba(var(--accent-rgb), .4), inset 0 1px 0 rgba(var(--white-rgb), .25);
+  background: var(--color-action);
+  color: var(--color-on-action); font-weight: var(--weight-semibold);
+  box-shadow: 0 1px 3px rgba(var(--color-action-rgb), .4), inset 0 1px 0 rgba(var(--white-rgb), .25);
 }
 .season-item:hover .season-badge.peak { animation: season-badge-pulse 2.4s var(--ease-out) infinite; }
 @keyframes season-badge-pulse {
-  0%, 100% { box-shadow: 0 1px 3px rgba(var(--accent-rgb), .4), 0 0 0 0 rgba(var(--accent-rgb), 0); }
-  50%      { box-shadow: 0 1px 3px rgba(var(--accent-rgb), .4), 0 0 0 4px rgba(var(--accent-rgb), .14); }
+  0%, 100% { box-shadow: 0 1px 3px rgba(var(--color-action-rgb), .4), 0 0 0 0 rgba(var(--color-action-rgb), 0); }
+  50%      { box-shadow: 0 1px 3px rgba(var(--color-action-rgb), .4), 0 0 0 4px rgba(var(--color-action-rgb), .14); }
 }
 
 .season-when {
@@ -713,8 +713,8 @@ useHead(() => {
 .empty-type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); }
 .empty-type-card {
   text-align: center; padding: var(--space-6) var(--space-4);
-  background: rgba(var(--secondary-rgb), .04);
-  border: .5px dashed rgba(var(--secondary-rgb), .25);
+  background: var(--color-surface-subtle);
+  border: .5px dashed var(--color-border);
   border-radius: var(--radius-sheet);
 }
 .empty-type-icon { display: block; font-size: 2rem; margin-bottom: var(--space-2); opacity: .85; }
@@ -725,27 +725,27 @@ useHead(() => {
 .b2b-callout {
   display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-4);
   align-items: center; position: relative; overflow: hidden;
-  background: linear-gradient(135deg, rgba(var(--secondary-rgb), .06), transparent);
-  border: .5px solid rgba(var(--secondary-rgb), .2);
+  background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .06), transparent);
+  border: .5px solid var(--color-border);
   border-radius: var(--radius-sheet); padding: var(--space-4) var(--space-5);
   margin: var(--space-6) 0;
 }
 .b2b-callout::before {
   content: ''; position: absolute; inset: -1px; z-index: -1;
-  background: radial-gradient(circle at 100% 0%, rgba(var(--secondary-rgb), .08), transparent 70%);
+  background: radial-gradient(circle at 100% 0%, rgba(var(--color-brand-rgb), .08), transparent 70%);
 }
 .b2b-callout-icon { font-size: 1.6rem; flex-shrink: 0; }
 .b2b-callout-text { font-size: var(--text-sm); line-height: var(--leading-relaxed); }
-.b2b-callout-text strong { color: var(--secondary-fg); }
+.b2b-callout-text strong { color: var(--color-brand); }
 .b2b-callout-link {
   display: inline-flex; align-items: center; gap: var(--space-1);
   padding: var(--space-2) var(--space-3); border-radius: var(--radius-control);
-  background: var(--secondary); color: var(--text-on-dark, var(--white));
+  background: var(--color-action); color: var(--color-on-action);
   font-weight: var(--weight-semibold); font-size: var(--text-sm); white-space: nowrap;
   min-height: 44px; transition: background .3s var(--ease-out), transform .3s var(--ease-out);
 }
-.b2b-callout-link:hover { background: var(--secondary-dark); transform: translateX(2px); }
-.b2b-callout-link:focus-visible { outline: 2px solid var(--secondary); outline-offset: 3px; }
+.b2b-callout-link:hover { background: var(--color-action-hover); transform: translateX(2px); }
+.b2b-callout-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .b2b-arrow {
   display: inline-block;
   margin-left: var(--space-1);
@@ -799,33 +799,28 @@ useHead(() => {
   transform: translate(-50%, -50%);
   pointer-events: auto;
 }
-.stl-cell.q-spring  { background: var(--secondary); }
-.stl-cell.q-bloom   { background: color-mix(in srgb, var(--accent) 60%, var(--secondary)); }
-.stl-cell.q-summer  { background: var(--accent); }
-.stl-cell.q-harvest { background: color-mix(in srgb, var(--accent) 55%, var(--tertiary)); }
-.stl-cell.q-flood   { background: var(--tertiary); }
+.stl-cell.q-spring  { background: var(--color-material-leaf); }
+.stl-cell.q-bloom   { background: color-mix(in srgb, var(--color-material-amber) 60%, var(--color-material-leaf)); }
+.stl-cell.q-summer  { background: var(--color-material-amber); }
+.stl-cell.q-harvest { background: color-mix(in srgb, var(--color-material-amber) 55%, var(--color-material-river)); }
+.stl-cell.q-flood   { background: var(--color-material-river); }
 .stl-cell:hover { filter: brightness(1.12); transform: translateY(-2px); }
 .stl-cell:focus-visible { outline: 2px solid var(--card); outline-offset: -3px; z-index: 1; }
 /* Current-month marker: a static ring, not a pulsing glow (one ambient/
    viewport is already spent on the hero ring — this stays calm, per the
    §3 golden rule). */
 .stl-cell.is-now { box-shadow: inset 0 0 0 2px var(--card), inset 0 0 0 4px rgba(var(--black-rgb), .25); }
-/* Nhãn tháng có NỀN RIÊNG thay vì nằm thẳng trên màu quý. Lý do: --accent
-   không có bản .dark trong khi --secondary/--tertiary đảo sáng-tối
-   theo theme, nên ở Nocturne mọi nền quý đều sáng và chữ trắng chết cả 5/5
-   (axe đo 1.83–2.29). Riêng q-summer thì chữ trắng ĐẶC cũng chỉ đạt 2.16:1 —
-   không màu chữ sáng nào cứu được. Cặp --card/--ink tự đảo theo theme nên
-   đạt ngưỡng ở CẢ hai chế độ, và giữ nguyên 5 màu quý làm mã hoá ngữ nghĩa. */
+/* Nhãn tháng có NỀN RIÊNG thay vì nằm thẳng trên màu quý. */
 .stl-m { background: var(--card); color: var(--ink); border-radius: var(--radius-control); padding: 0 var(--space-1); }
 .stl-cell.is-now .stl-m { font-weight: var(--weight-extrabold); }
 .stl-legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin-top: var(--space-3); }
 .stl-legend-item { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-xs); color: var(--muted); }
 .stl-swatch { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
-.stl-swatch.q-spring  { background: var(--secondary); }
-.stl-swatch.q-bloom   { background: color-mix(in srgb, var(--accent) 60%, var(--secondary)); }
-.stl-swatch.q-summer  { background: var(--accent); }
-.stl-swatch.q-harvest { background: color-mix(in srgb, var(--accent) 55%, var(--tertiary)); }
-.stl-swatch.q-flood   { background: var(--tertiary); }
+.stl-swatch.q-spring  { background: var(--color-material-leaf); }
+.stl-swatch.q-bloom   { background: color-mix(in srgb, var(--color-material-amber) 60%, var(--color-material-leaf)); }
+.stl-swatch.q-summer  { background: var(--color-material-amber); }
+.stl-swatch.q-harvest { background: color-mix(in srgb, var(--color-material-amber) 55%, var(--color-material-river)); }
+.stl-swatch.q-flood   { background: var(--color-material-river); }
 
 /* ── Dark mode ─────────────────────────────── */
 .dark .season-moment { border-top-color: rgba(var(--white-rgb), .1); }
@@ -836,12 +831,12 @@ useHead(() => {
   box-shadow: 0 1px 3px rgba(var(--black-rgb), .5), inset 0 1px 0 rgba(var(--white-rgb), .06);
 }
 .dark .season-badge.peak {
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: var(--on-accent);
-  box-shadow: 0 1px 3px rgba(var(--accent-rgb), .6), 0 0 12px rgba(var(--accent-rgb), .25);
+  background: var(--color-action);
+  color: var(--color-on-action);
+  box-shadow: 0 1px 3px rgba(var(--color-action-rgb), .6), 0 0 12px rgba(var(--color-action-rgb), .25);
 }
-.dark .empty-type-card { background: rgba(var(--secondary-rgb), .07); border-color: rgba(var(--secondary-rgb), .22); }
-.dark .b2b-callout { background: linear-gradient(135deg, rgba(var(--secondary-rgb), .1), transparent); border-color: rgba(var(--secondary-rgb), .25); }
+.dark .empty-type-card { background: var(--color-surface-subtle); border-color: var(--color-border); }
+.dark .b2b-callout { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .1), transparent); border-color: var(--color-border); }
 .dark .month-grid .quick-pick { background: var(--bg-alt); border-color: var(--line); }
 .dark .month-grid .quick-pick:hover { border-color: rgba(var(--white-rgb), .15); }
 .dark .ring-notch-tick { background: rgba(var(--white-rgb), .4); }

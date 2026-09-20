@@ -689,12 +689,12 @@ useHead(() => {
 .catalog-hero.cat-festival {
   position: relative;
   background:
-    radial-gradient(120% 90% at 12% 0%, rgba(var(--accent-rgb), .07) 0%, transparent 55%),
-    linear-gradient(135deg, rgba(var(--color-brand-rgb), .06) 0%, rgba(var(--accent-rgb), .08) 100%);
+    radial-gradient(120% 90% at 12% 0%, rgba(var(--color-brand-rgb), .06) 0%, transparent 55%),
+    linear-gradient(135deg, rgba(var(--color-brand-rgb), .04) 0%, rgba(var(--color-action-rgb), .06) 100%);
 }
 .dark .catalog-hero.cat-festival {
   background:
-    radial-gradient(120% 90% at 12% 0%, rgba(var(--accent-rgb), .05) 0%, transparent 55%),
+    radial-gradient(120% 90% at 12% 0%, rgba(var(--color-brand-rgb), .08) 0%, transparent 55%),
     linear-gradient(135deg, rgba(var(--white-rgb),.03) 0%, rgba(var(--white-rgb),.01) 100%);
 }
 
@@ -709,12 +709,12 @@ useHead(() => {
   margin-bottom: var(--space-1);
 }
 .lehoi-status.status-soon {
-  background: rgba(var(--accent-rgb), .14);
-  color: var(--accent-dark);
+  background: var(--color-action-surface);
+  color: var(--color-action);
 }
 .lehoi-status.status-now {
-  background: rgba(var(--secondary-rgb), .14);
-  color: var(--secondary-dark);
+  background: var(--color-action);
+  color: var(--color-on-action);
   /* Settle-then-still: a multi-day festival can stay "Đang diễn ra" for days —
      pulsing the whole time would blow the motion budget. Play the attention-cue
      3× (~8.4s) on first paint, then rest still like every other settled badge. */
@@ -724,12 +724,12 @@ useHead(() => {
   background: var(--bg-alt);
   color: var(--text-muted);
 }
-.dark .lehoi-status.status-soon { background: rgba(var(--accent-rgb), .22); color: var(--accent); }
-.dark .lehoi-status.status-now { background: rgba(var(--secondary-rgb), .22); color: var(--secondary); }
+.dark .lehoi-status.status-soon { background: var(--color-action-surface); color: var(--color-action); }
+.dark .lehoi-status.status-now { background: var(--color-action); color: var(--color-on-action); }
 .dark .lehoi-status.status-concluded { background: var(--bg-alt); color: var(--text-muted); }
 @keyframes lehoi-status-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--secondary-rgb), .0); }
-  50% { box-shadow: 0 0 0 4px rgba(var(--secondary-rgb), .12); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--color-action-rgb), .0); }
+  50% { box-shadow: 0 0 0 4px rgba(var(--color-action-rgb), .12); }
 }
 
 /* Off-season note when there are no upcoming festivals */
@@ -737,13 +737,13 @@ useHead(() => {
   margin: 0;
   padding: var(--space-4) var(--space-5);
   font-size: var(--text-sm);
-  color: var(--ink-tertiary, var(--muted));
-  background: rgba(var(--accent-rgb), .08);
+  color: var(--color-text-muted);
+  background: var(--color-surface-subtle);
   border-radius: var(--radius-surface, 12px);
-  border: 1px solid rgba(var(--accent-rgb), .2);
+  border: 1px solid var(--color-border);
 }
 
-.dark .lehoi-offseason { background: rgba(var(--accent-rgb), .12); border-color: rgba(var(--accent-rgb), .3); }
+.dark .lehoi-offseason { background: var(--color-surface-subtle); border-color: var(--color-border); }
 
 /* Thumbnail placeholder colour if image fails / while loading */
 .event-thumb { background: var(--bg-alt); }
