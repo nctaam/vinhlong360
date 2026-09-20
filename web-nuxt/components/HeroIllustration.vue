@@ -58,9 +58,9 @@ onMounted(() => {
     <!-- Reusable gradient defs (additive — only referenced by the upgraded full scene) -->
     <defs>
       <radialGradient id="hero-sun-glow" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="rgba(var(--accent-rgb),.55)" />
-        <stop offset="45%" stop-color="rgba(var(--accent-rgb),.18)" />
-        <stop offset="100%" stop-color="rgba(var(--accent-rgb),0)" />
+        <stop offset="0%" stop-color="rgba(var(--color-warning-rgb), .55)" />
+        <stop offset="45%" stop-color="rgba(var(--color-warning-rgb), .18)" />
+        <stop offset="100%" stop-color="rgba(var(--color-warning-rgb), 0)" />
       </radialGradient>
       <linearGradient id="hero-river-sheen" x1="0" y1="0" x2="1" y2="0">
         <stop offset="0%" stop-color="rgba(var(--white-rgb), 0)" />
@@ -103,14 +103,14 @@ onMounted(() => {
       </g>
       <!-- Fruits cluster -->
       <g opacity=".1" transform="translate(480, 60)">
-        <circle cx="0" cy="0" r="12" fill="var(--accent)" />
-        <circle cx="22" cy="5" r="10" fill="var(--accent)" />
-        <circle cx="8" cy="20" r="11" fill="var(--accent)" />
-        <path d="M5 -14 Q8 -22 15 -18" stroke="rgb(var(--sys-green-rgb))" stroke-width="2" fill="none" />
+        <circle cx="0" cy="0" r="12" fill="var(--color-material-amber)" />
+        <circle cx="22" cy="5" r="10" fill="var(--color-material-amber)" />
+        <circle cx="8" cy="20" r="11" fill="var(--color-material-amber)" />
+        <path d="M5 -14 Q8 -22 15 -18" stroke="var(--color-success)" stroke-width="2" fill="none" />
       </g>
       <!-- Sun/moon -->
-      <circle cx="530" cy="60" r="30" fill="rgba(var(--accent-rgb),.12)" />
-      <circle cx="530" cy="60" r="22" fill="rgba(var(--accent-rgb),.08)" />
+      <circle cx="530" cy="60" r="30" fill="rgba(var(--color-warning-rgb), .12)" />
+      <circle cx="530" cy="60" r="22" fill="rgba(var(--color-warning-rgb), .08)" />
       <!-- Small waves -->
       <path d="M50 310 Q70 305 90 310 Q110 315 130 310" stroke="rgba(var(--white-rgb), .08)" stroke-width="2" fill="none" />
       <path d="M200 320 Q220 315 240 320 Q260 325 280 320" stroke="rgba(var(--white-rgb), .06)" stroke-width="2" fill="none" />

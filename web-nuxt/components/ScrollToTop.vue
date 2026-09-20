@@ -49,7 +49,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 /* Quiet at rest; on interaction only, the icon warms from clay toward amber —
    a one-pixel nod to the river→amber→clay motif, not a loud rebrand of a
    utility control that lives on every page. */
-.scroll-top:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); color: var(--accent-dark); }
+.scroll-top:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); color: var(--color-material-amber); }
 .scroll-top:active { transform: scale(.9); transition-duration: .08s; }
 .scroll-top:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .fade-enter-active, .fade-leave-active { transition: opacity .3s var(--ease-out-expo), transform .3s var(--ease-out-expo); }

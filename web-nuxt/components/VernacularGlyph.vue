@@ -205,9 +205,9 @@ const ariaLabelText = computed(() => {
   transform: scale(1.1);
 }
 
-.glyph--accent-clay { color: var(--mangthit-500); }
-.glyph--accent-silt { color: var(--harvest-600); }
-.glyph--accent-culao { color: var(--orchard-600); }
-.glyph--accent-cochien { color: var(--river-600); }
-.glyph--accent-ink { color: var(--mekong-ink); }
+.glyph--accent-clay { color: var(--color-material-clay); }
+.glyph--accent-silt { color: var(--color-material-amber); }
+.glyph--accent-culao { color: var(--color-material-leaf); }
+.glyph--accent-cochien { color: var(--color-material-river); }
+.glyph--accent-ink { color: var(--color-text); }
 </style>

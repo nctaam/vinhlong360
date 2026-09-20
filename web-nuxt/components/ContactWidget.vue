@@ -129,7 +129,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   align-items: baseline;
   gap: var(--space-1h);
 }
-.cw-stars { display: inline-flex; gap: 1px; color: var(--accent); font-size: var(--text-lg); }
+.cw-stars { display: inline-flex; gap: 1px; color: var(--color-material-amber); font-size: var(--text-lg); }
 .cw-score { font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); font-variant-numeric: tabular-nums; }
 .cw-count { font-size: var(--text-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
 

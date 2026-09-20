@@ -235,12 +235,12 @@ useModalA11y(openState, drawerEl, { onClose: () => emit('close') })
 .trust-header p { margin: 0; color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-relaxed); }
 .tier-panel { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: var(--space-3); margin: var(--space-6) 0 var(--space-3); padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-surface); background: var(--bg-warm); }
 .tier-mark { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: var(--radius-control); color: var(--color-action); background: var(--surface); font-size: 1.25rem; }
-.tier-community .tier-mark { color: var(--accent-dark); }
+.tier-community .tier-mark { color: var(--color-brand); }
 .tier-unsupported-verified .tier-mark { color: var(--warning); }
 .tier-panel strong { display: block; margin-bottom: var(--space-1); font-family: var(--font-editorial); font-size: var(--text-lg); }
 .tier-panel p { margin: 0; color: var(--muted); font-size: var(--text-xs); line-height: var(--leading-relaxed); }
-.community-context { display: flex; align-items: flex-start; gap: var(--space-2); margin: 0 0 var(--space-4); padding: var(--space-3); border: 1px solid color-mix(in srgb, var(--accent-dark) 30%, var(--line)); border-radius: var(--radius-surface); color: var(--ink-700); background: color-mix(in srgb, var(--accent-dark) 8%, var(--bg-warm)); font-size: var(--text-xs); line-height: var(--leading-relaxed); }
-.community-context .line-icon { margin-top: .15rem; color: var(--accent-dark); }
+.community-context { display: flex; align-items: flex-start; gap: var(--space-2); margin: 0 0 var(--space-4); padding: var(--space-3); border: 1px solid color-mix(in srgb, var(--color-brand) 30%, var(--line)); border-radius: var(--radius-surface); color: var(--ink-700); background: color-mix(in srgb, var(--color-brand) 8%, var(--bg-warm)); font-size: var(--text-xs); line-height: var(--leading-relaxed); }
+.community-context .line-icon { margin-top: .15rem; color: var(--color-brand); }
 .trust-evidence { display: grid; gap: 0; margin: 0; border-top: .5px solid var(--line); }
 .trust-evidence > div { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--space-3); padding: var(--space-3) 0; border-bottom: .5px solid var(--line); }
 .trust-evidence dt { color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: .04em; }

@@ -56,9 +56,9 @@ function iconNameFor(type?: string) {
   -webkit-backdrop-filter: var(--glass);
   pointer-events: auto;
 }
-.toast.success { --toast-accent: var(--secondary); }
+.toast.success { --toast-accent: var(--color-success); }
 .toast.error { --toast-accent: var(--error); }
-.toast.warning { --toast-accent: var(--accent-dark); }
+.toast.warning { --toast-accent: var(--color-warning); }
 .toast.info { --toast-accent: var(--color-action); }
 
 .toast-icon {
@@ -72,9 +72,9 @@ function iconNameFor(type?: string) {
   font-size: var(--text-sm, 14px);
 }
 @keyframes toastIconPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.toast.success .toast-icon { background: rgba(var(--secondary-rgb), .12); color: var(--secondary); }
+.toast.success .toast-icon { background: rgba(var(--color-success-rgb), .12); color: var(--color-success); }
 .toast.error .toast-icon { background: rgba(var(--color-error-rgb), .12); color: var(--error); }
-.toast.warning .toast-icon { background: rgba(var(--accent-rgb), .12); color: var(--accent-dark); }
+.toast.warning .toast-icon { background: rgba(var(--color-warning-rgb), .12); color: var(--color-warning); }
 .toast.info .toast-icon { background: rgba(var(--color-action-rgb), .1); color: var(--color-action); }
 
 .toast-msg { flex: 1; font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); line-height: var(--leading-snug); }
