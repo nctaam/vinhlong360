@@ -221,9 +221,8 @@ function selectMode(id: AtmosphereMode) {
 }
 
 .home-atmosphere-control__mode-btn.is-active .home-atmosphere-control__mode-dot {
-  background: var(--mangthit-600);
-  transform: scale(1.3);
-  box-shadow: 0 0 6px var(--mangthit-500);
+  background: var(--color-brand);
+  transform: scale(1.25);
 }
 
 .home-atmosphere-control__mode-time {

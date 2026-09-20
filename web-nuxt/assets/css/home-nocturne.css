@@ -3083,7 +3083,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 [data-home-pilot="nocturne-b1"][data-atmosphere="dawn"] .hero-cinematic__scrim {
   background-image: radial-gradient(
     circle at 80% 20%,
-    rgba(var(--accent-rgb), 0.22) 0%,
+    rgba(var(--color-brand-rgb), 0.22) 0%,
     transparent 55%
   ),
   linear-gradient(

@@ -107,12 +107,12 @@
 /* ── Directory (danh-ba) ── */
 .dark .fac { border-color: rgba(var(--white-rgb), .08); }
 .dark .fac:hover { border-color: rgba(var(--white-rgb), .15); box-shadow: var(--shadow-md); }
-.dark .dir-disclaimer { background: rgba(var(--accent-rgb), .08); border-color: rgba(var(--accent-rgb), .25); }
+.dark .dir-disclaimer { background: color-mix(in srgb, var(--color-material-amber) 8%, transparent); border-color: color-mix(in srgb, var(--color-material-amber) 25%, transparent); }
 
 /* ── Contact (lien-he) ── */
 .dark .contact-card { border-color: rgba(var(--white-rgb), .08); }
 .dark .contact-card:hover { border-color: rgba(var(--white-rgb), .15); box-shadow: var(--shadow-lg); }
-.dark .card-claim { background: color-mix(in srgb, var(--accent) 6%, var(--card)); border-color: rgba(var(--white-rgb), .12); }
+.dark .card-claim { background: color-mix(in srgb, var(--color-brand) 6%, var(--card)); border-color: rgba(var(--white-rgb), .12); }
 .dark .card-note { color: rgba(var(--white-rgb), .6) !important; }
 
 /* ── Profile (nguoi-dung/[id]) ── */
@@ -125,7 +125,7 @@
 .dark .interest-nav .chip.active { box-shadow: var(--shadow-sm); }
 
 /* ── Admin: users ── */
-.dark .status-active { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg); }
+.dark .status-active { background: color-mix(in srgb, var(--color-success) 18%, transparent); color: var(--color-success); }
 .dark .status-banned { background: rgba(var(--color-error-rgb), .16); color: var(--error); }
 .dark .admin-select-inline { background: rgba(var(--white-rgb), .05); border-color: rgba(var(--white-rgb), .1); color: var(--ink); }
 
@@ -134,8 +134,8 @@
 .dark .stat-panel:hover { box-shadow: var(--shadow-md); }
 
 /* ── Admin: reports (bao-cao) ── */
-.dark .status-pending { background: rgba(var(--accent-rgb), .18); color: var(--color-warning); }
-.dark .status-resolved { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg); }
+.dark .status-pending { background: color-mix(in srgb, var(--color-material-amber) 18%, transparent); color: var(--color-warning); }
+.dark .status-resolved { background: color-mix(in srgb, var(--color-success) 18%, transparent); color: var(--color-success); }
 .dark .status-dismissed { background: rgba(var(--white-rgb), .06); color: rgba(var(--white-rgb), .4); }
 
 /* ── Homepage hero + category grid ── */
@@ -194,7 +194,7 @@
 .dark .notif-retry:hover { border-color: rgba(var(--white-rgb), .2); }
 
 /* ── ReviewCard ── */
-.dark .review-featured { background: rgba(var(--accent-rgb),.06); }
+.dark .review-featured { background: color-mix(in srgb, var(--color-material-amber) 6%, transparent); }
 
 /* ── CommandPalette ── */
 .dark .cmd-palette { background: var(--card); }

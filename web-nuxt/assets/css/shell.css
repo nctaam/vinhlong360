@@ -32,8 +32,7 @@
   max-height: 24px;
   opacity: 1;
   overflow: visible;
-  transition: max-height var(--duration-normal) var(--ease-out),
-              opacity var(--duration-fast) var(--ease-out),
+  transition: opacity var(--duration-fast) var(--ease-out),
               border-bottom-color var(--duration-fast) var(--ease-out);
 }
 

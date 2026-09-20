@@ -450,12 +450,11 @@ onMounted(() => fetchAll())
   content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
 }
 .status-pending { background: rgba(var(--warning-rgb),.08); color: var(--warning); }
-.status-pending::before { background: var(--warning); animation: rpt-pulse 2s var(--ease-in-out) infinite; }
+.status-pending::before { background: var(--warning); }
 .status-resolved { background: rgba(var(--color-success-rgb),.08); color: var(--success); }
 .status-resolved::before { background: var(--success); }
 .status-dismissed { background: rgba(var(--gray-rgb),.08); color: var(--muted); }
 .status-dismissed::before { background: var(--muted); opacity: .4; }
-@keyframes rpt-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 
 /* ── Filter chips ── */
 .rpt-filters {
@@ -555,7 +554,6 @@ onMounted(() => fetchAll())
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .status-pending::before { animation: none; }
   .rpt-chip, .rpt-loadmore { transition: none; }
   .rpt-chip:active, .rpt-loadmore:active { transform: none; }
   .rpt-bulkbar { animation: none; }
