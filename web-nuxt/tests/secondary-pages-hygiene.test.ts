@@ -40,6 +40,13 @@ describe('Moc 146: Secondary & Account Pages Radius Hygiene & Integrity', () => 
     expect(dq).toContain('quality-diff-inspector')
   })
 
+  it('ensures all 17 admin settings subpages share unified sidebar navigation shell', () => {
+    const rootDir = resolve(__dirname, '..')
+    const settingsShell = readFileSync(resolve(rootDir, 'pages/admin/cai-dat/index.vue'), 'utf-8')
+    expect(settingsShell).toContain('admin-settings-shell')
+    expect(settingsShell).toContain('settings-nav-rail')
+  })
+
   it('strictly protects line count ceilings for the 4 critical pages', () => {
     const rootDir = resolve(__dirname, '..')
     const ceilings: Record<string, number> = {

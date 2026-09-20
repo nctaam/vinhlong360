@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="admin-settings-shell">
     <div class="admin-head-row">
       <div>
         <h1>Cài đặt trang</h1>
@@ -8,7 +8,7 @@
     </div>
 
     <!-- Quick links: tác vụ hay dùng -->
-    <div class="cs-quick-links" aria-label="Lối tắt tác vụ thường dùng">
+    <div class="cs-quick-links settings-nav-rail" aria-label="Lối tắt tác vụ thường dùng">
       <NuxtLink v-for="q in quickLinks" :key="q.slug" :to="`/admin/cai-dat/${q.slug}`" class="cs-chip">
         <span aria-hidden="true">{{ q.icon }}</span> {{ q.label }}
       </NuxtLink>
