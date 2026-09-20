@@ -34,6 +34,12 @@ describe('Moc 146: Secondary & Account Pages Radius Hygiene & Integrity', () => 
     expect(adminHome).toContain('metric-trend-indicator')
   })
 
+  it('provides side-by-side data quality diff inspector in admin/data-quality.vue', () => {
+    const rootDir = resolve(__dirname, '..')
+    const dq = readFileSync(resolve(rootDir, 'pages/admin/data-quality.vue'), 'utf-8')
+    expect(dq).toContain('quality-diff-inspector')
+  })
+
   it('strictly protects line count ceilings for the 4 critical pages', () => {
     const rootDir = resolve(__dirname, '..')
     const ceilings: Record<string, number> = {
