@@ -768,7 +768,7 @@ useHead(() => ({
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-color: color-mix(in srgb, var(--color-brand) 36%, var(--line));
+  border-left: 3px solid var(--mangthit-500);
 }
 .sugg-top {
   display: flex;

@@ -1058,6 +1058,7 @@
 
 [data-home-pilot="nocturne-b1"] .home-continuation__link--featured {
   background: var(--color-surface-raised);
+  border-left: 3px solid var(--alluvial-gold);
   border-color: color-mix(in srgb, var(--color-brand) 40%, var(--color-border));
 }
 

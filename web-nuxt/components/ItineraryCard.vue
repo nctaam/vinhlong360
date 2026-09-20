@@ -109,7 +109,7 @@ const isMangThitHeritage = computed(() => {
 }
 .card-rule {
   display: block; width: 26px; height: 2px; border-radius: 2px; margin: 5px 0 6px;
-  background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
+  background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay, var(--clay-600)) 100%);
 }
 .dark .card-rule { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .card-teaser { color: var(--muted); }

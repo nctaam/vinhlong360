@@ -181,7 +181,7 @@ const customStyle = computed(() => {
   if (c === 'clay' || c === 'mangthit') return { color: 'var(--mangthit-500)' }
   if (c === 'silt' || c === 'harvest') return { color: 'var(--harvest-600)' }
   if (c === 'culao' || c === 'orchard' || c === 'leaf') return { color: 'var(--orchard-600)' }
-  if (c === 'cochien' || c === 'river') return { color: 'var(--color-material-river)' }
+  if (c === 'cochien' || c === 'river') return { color: 'var(--river-600)' }
   if (c === 'ink') return { color: 'var(--mekong-ink)' }
   if (c === 'gold') return { color: 'var(--alluvial-gold)' }
   return { color: props.color }
