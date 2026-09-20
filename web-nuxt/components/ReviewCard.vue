@@ -77,10 +77,10 @@ const { timeAgo } = useTimeAgo()
   font-family: var(--font-editorial);
   font-size: var(--text-2xl);
   line-height: 1;
-  color: var(--river-600);
+  color: var(--color-action);
   opacity: .5;
 }
-.dark .ri-content-testimony::before { color: var(--river-legacy-dark); opacity: .55; }
+.dark .ri-content-testimony::before { color: var(--color-action); opacity: .55; }
 
 .ri-helpful { margin-top: var(--space-2); display: inline-flex; align-items: center; gap: .3rem; font-size: var(--text-sm); padding: .3rem .7rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 44px; }
 .ri-helpful.active { background: var(--color-action-surface); border-color: var(--color-action); color: var(--color-action); }
@@ -99,12 +99,12 @@ const { timeAgo } = useTimeAgo()
 /* Sediment accent replaces the generic --accent rail — river→amber→clay wash, echoing the section tick at card scale. */
 .review-featured {
   border-left: 3px solid transparent;
-  border-image: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 55%, var(--clay-600) 100%) 1;
-  background: rgba(var(--accent-rgb), .04);
+  border-image: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 55%, var(--color-material-clay) 100%) 1;
+  background: rgba(var(--color-warning-rgb), .04);
   border-radius: var(--radius-surface);
 }
 .dark .review-featured {
-  border-image: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 55%, var(--clay-400) 100%) 1;
+  border-image: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 55%, var(--color-material-clay) 100%) 1;
 }
 /* background tint for .review-featured in dark stays in dark-overrides.css */
 </style>

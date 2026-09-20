@@ -317,7 +317,7 @@ const ratingDisplay = computed(() => {
 .ca-icon { font-size: .7rem; opacity: .7; cursor: default; }
 .ca-more { font-size: var(--text-2xs); color: var(--muted); font-weight: 600; margin-left: 1px; }
 .card-rating { display: flex; align-items: center; gap: .25rem; font-size: .8rem; margin-top: .25rem; }
-.cr-stars { color: var(--secondary); letter-spacing: -1px; }
+.cr-stars { color: var(--color-material-amber); letter-spacing: -1px; }
 .cr-score { font-weight: 600; color: var(--ink); }
 .cr-count { color: var(--muted); font-size: .75rem; }
 .badge.new-badge {

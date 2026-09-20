@@ -79,12 +79,12 @@ const effectiveIconName = computed(() => {
   background: linear-gradient(90deg, var(--catalog-legacy-rule-river-dark) 0%, var(--catalog-legacy-rule-amber-dark) 52%, var(--catalog-legacy-rule-clay-dark) 100%);
 }
 .interstitial.warm {
-  background: linear-gradient(135deg, rgba(var(--secondary-rgb), .06), rgba(var(--accent-rgb), .03));
-  border-color: rgba(var(--secondary-rgb), .15);
+  background: linear-gradient(135deg, rgba(var(--color-warning-rgb), .06), rgba(var(--color-brand-rgb), .03));
+  border-color: rgba(var(--color-warning-rgb), .15);
 }
 .interstitial.accent {
-  background: linear-gradient(135deg, rgba(var(--accent-rgb), .06), transparent);
-  border-color: rgba(var(--accent-rgb), .15);
+  background: linear-gradient(135deg, rgba(var(--color-warning-rgb), .06), transparent);
+  border-color: rgba(var(--color-warning-rgb), .15);
 }
 /* icon sits in its own quiet chip rather than bare beside the text — keeps the emoji from
    reading as a slapped-on heading-marker next to the now-serif fact copy */
@@ -146,12 +146,12 @@ const effectiveIconName = computed(() => {
   border-color: rgba(var(--white-rgb), .08);
 }
 .dark .interstitial.warm {
-  background: linear-gradient(135deg, rgba(var(--secondary-rgb), .08), rgba(var(--accent-rgb), .04));
-  border-color: rgba(var(--secondary-rgb), .18);
+  background: linear-gradient(135deg, rgba(var(--color-warning-rgb), .08), rgba(var(--color-brand-rgb), .04));
+  border-color: rgba(var(--color-warning-rgb), .18);
 }
 .dark .interstitial.accent {
-  background: linear-gradient(135deg, rgba(var(--accent-rgb), .08), transparent);
-  border-color: rgba(var(--accent-rgb), .18);
+  background: linear-gradient(135deg, rgba(var(--color-warning-rgb), .08), transparent);
+  border-color: rgba(var(--color-warning-rgb), .18);
 }
 .dark .interstitial-link { background: rgba(var(--catalog-legacy-primary-rgb), .1); }
 .dark .interstitial-link:hover { background: rgba(var(--catalog-legacy-primary-rgb), .18); }

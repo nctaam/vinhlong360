@@ -175,7 +175,7 @@ function goToSlide(idx: number) {
   width: 100%;
   border-radius: var(--radius-sheet);
   overflow: hidden;
-  background: linear-gradient(135deg, rgba(var(--color-action-rgb), 0.08), rgba(var(--secondary-rgb), 0.08));
+  background: linear-gradient(135deg, rgba(var(--color-action-rgb), 0.08), rgba(var(--color-brand-rgb), 0.08));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -279,7 +279,7 @@ function goToSlide(idx: number) {
   display: grid;
   place-items: center;
   color: var(--muted);
-  background: linear-gradient(135deg, rgba(var(--color-action-rgb), .08), rgba(var(--secondary-rgb), .08));
+  background: linear-gradient(135deg, rgba(var(--color-action-rgb), .08), rgba(var(--color-brand-rgb), .08));
   font-size: 2rem;
 }
 .pg-disclosure {
