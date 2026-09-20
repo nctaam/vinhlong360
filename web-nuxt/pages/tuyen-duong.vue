@@ -549,14 +549,14 @@ useHead(() => {
 /* ── Season cross-tag → /theo-mua (§2.5 highest-leverage cross-link) ── */
 .route-season-tag {
   display: inline-flex; align-items: center; gap: var(--space-1);
-  font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--secondary-fg);
-  background: rgba(var(--secondary-rgb), .1); border: .5px solid rgba(var(--secondary-rgb), .22);
+  font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--color-action);
+  background: rgba(var(--color-action-rgb), .1); border: .5px solid rgba(var(--color-action-rgb), .22);
   padding: var(--space-2) var(--space-3); border-radius: var(--radius-pill, 999px);
   margin-bottom: var(--space-4); min-height: 44px;
   transition: background .25s var(--ease-out), border-color .25s var(--ease-out);
 }
-.route-season-tag:hover { background: rgba(var(--secondary-rgb), .18); border-color: rgba(var(--secondary-rgb), .35); }
-.route-season-tag:focus-visible { outline: 2px solid var(--secondary); outline-offset: 2px; }
+.route-season-tag:hover { background: rgba(var(--color-action-rgb), .18); border-color: rgba(var(--color-action-rgb), .35); }
+.route-season-tag:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Signature: day-strip rail — the path drawing itself, dot by dot ──
    Replaces the plain <ol> bullet list. Vertical hairline + numbered dots,
@@ -568,9 +568,9 @@ useHead(() => {
   background: linear-gradient(180deg, var(--rail-tone, var(--color-action)) 0%, color-mix(in srgb, var(--rail-tone, var(--color-action)) 35%, transparent) 100%);
   border-radius: var(--radius-pill, 999px);
 }
-.route-card.area-vinh-long .route-rail { --rail-tone: var(--secondary); }
-.route-card.area-ben-tre .route-rail { --rail-tone: var(--accent); }
-.route-card.area-tra-vinh .route-rail { --rail-tone: var(--tertiary); }
+.route-card.area-vinh-long .route-rail { --rail-tone: var(--color-material-clay); }
+.route-card.area-ben-tre .route-rail { --rail-tone: var(--color-material-leaf); }
+.route-card.area-tra-vinh .route-rail { --rail-tone: var(--color-material-river); }
 /* Cross-province tour: rail literally uses the sediment river→amber→clay
    gradient — visually saying "this crosses all 3 areas" with no legend. */
 .route-card.area-lien-vung .route-rail::before {
@@ -647,8 +647,8 @@ useHead(() => {
 .dark .rail-dot { background: var(--card); box-shadow: 0 0 0 2px var(--rail-tone, var(--color-action)) inset, 0 1px 3px rgba(var(--black-rgb),.4); }
 .dark .route-stat-trio { border-color: var(--line); }
 .dark .rstat-num { color: var(--color-action); }
-.dark .route-season-tag { background: rgba(var(--secondary-rgb), .16); border-color: rgba(var(--secondary-rgb), .3); }
-.dark .route-season-tag:hover { background: rgba(var(--secondary-rgb), .24); }
+.dark .route-season-tag { background: rgba(var(--color-action-rgb), .16); border-color: rgba(var(--color-action-rgb), .3); }
+.dark .route-season-tag:hover { background: rgba(var(--color-action-rgb), .24); }
 .dark .route-header.area-lien-vung { background: linear-gradient(135deg, var(--river-legacy-dark), var(--amber-500) 55%, var(--clay-400)); }
 .dark .route-card.area-lien-vung .route-rail::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 50%, var(--clay-400) 100%); }
 
@@ -682,19 +682,19 @@ useHead(() => {
 
 /* ── Area-tinted filter chips — chips preview the route palette they filter,
    so filter and content read as one system before you even click (§2.3). ── */
-.chip-area.area-vinh-long { border-left: 2px solid color-mix(in srgb, var(--secondary) 55%, transparent); }
-.chip-area.area-ben-tre { border-left: 2px solid color-mix(in srgb, var(--accent) 55%, transparent); }
-.chip-area.area-tra-vinh { border-left: 2px solid color-mix(in srgb, var(--tertiary) 55%, transparent); }
+.chip-area.area-vinh-long { border-left: 2px solid color-mix(in srgb, var(--color-material-clay) 55%, transparent); }
+.chip-area.area-ben-tre { border-left: 2px solid color-mix(in srgb, var(--color-material-leaf) 55%, transparent); }
+.chip-area.area-tra-vinh { border-left: 2px solid color-mix(in srgb, var(--color-material-river) 55%, transparent); }
 .chip-area.area-lien-vung { border-left: 2px solid color-mix(in srgb, var(--clay-600) 55%, transparent); }
-.chip-area.active.area-vinh-long { background: var(--secondary); border-color: var(--secondary); }
-.chip-area.active.area-ben-tre { background: var(--accent); border-color: var(--accent); color: var(--ink); }
-.chip-area.active.area-tra-vinh { background: var(--tertiary); border-color: var(--tertiary); }
+.chip-area.active.area-vinh-long { background: var(--color-material-clay); border-color: var(--color-material-clay); color: var(--white); }
+.chip-area.active.area-ben-tre { background: var(--color-material-leaf); border-color: var(--color-material-leaf); color: var(--white); }
+.chip-area.active.area-tra-vinh { background: var(--color-material-river); border-color: var(--color-material-river); color: var(--white); }
 
 /* ── Contact CTA — visually distinct from the neutral map/area exits, since
    it's the page's one path from "read about a trip" to "ask a real person"
    (§2.6). Reuses the existing .btn.btn-ghost system, just a warmer tint. ── */
-.route-contact-cta { color: var(--secondary-fg); }
-.route-contact-cta:hover { background: rgba(var(--secondary-rgb), .1); }
+.route-contact-cta { color: var(--color-action); }
+.route-contact-cta:hover { background: var(--color-action-surface); }
 
 /* ── Signature: map-vignette strip (§2.2) — spatial orientation before the
    list. Tri-province line-art with a pin per route positioned by area, so
@@ -712,11 +712,11 @@ useHead(() => {
 }
 .rv-pin-dot {
   width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 0 2px var(--card), var(--shadow-xs);
-  background: var(--secondary);
+  background: var(--color-action);
 }
-.rv-pin.area-vinh-long .rv-pin-dot { background: var(--secondary); }
-.rv-pin.area-ben-tre .rv-pin-dot { background: var(--accent); }
-.rv-pin.area-tra-vinh .rv-pin-dot { background: var(--tertiary); }
+.rv-pin.area-vinh-long .rv-pin-dot { background: var(--color-material-clay); }
+.rv-pin.area-ben-tre .rv-pin-dot { background: var(--color-material-leaf); }
+.rv-pin.area-tra-vinh .rv-pin-dot { background: var(--color-material-river); }
 .rv-pin.area-lien-vung .rv-pin-dot { background: var(--clay-600); }
 .rv-labels {
   position: absolute; inset: auto 0 0 0; display: flex; justify-content: space-between;

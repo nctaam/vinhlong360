@@ -758,6 +758,13 @@ if (itinerary.value && !itinerary.value.error) {
   gap: var(--space-2);
   margin-bottom: var(--space-1);
 }
+.step-time-val {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
 .step-index {
   display: inline-flex;
   align-items: center;
@@ -765,6 +772,7 @@ if (itinerary.value && !itinerary.value.error) {
   font-family: var(--font-sans);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
   background: var(--mangthit-500, var(--color-material-clay));
   color: var(--white);
   padding: 1px var(--space-2);
