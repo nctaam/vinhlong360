@@ -433,7 +433,7 @@ watch([areaFilter, typeFilter, q], () => {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-control);
   background: var(--color-surface);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--color-border);
 }
 
 .wake-hero-stats .stat-num {

@@ -457,9 +457,9 @@ useHead(() => {
 }
 .wake-hero-stats .stat-item {
   padding: var(--space-2) var(--space-3); border-radius: var(--radius-control);
-  background: var(--color-surface); border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface); border: 1px solid var(--color-border);
 }
-.wake-hero-stats .stat-item:hover { background: var(--color-surface-hover, var(--color-surface)); }
+.wake-hero-stats .stat-item:hover { background: var(--color-surface-raised); }
 .wake-hero-stats .stat-num {
   font-family: var(--font-mono); font-weight: var(--weight-bold);
   color: var(--color-text); margin-right: var(--space-1);
@@ -469,7 +469,7 @@ useHead(() => {
 .wake-hero .type-pill {
   background: var(--color-surface); border-color: var(--color-border);
 }
-.wake-hero .type-pill:hover { background: var(--color-surface-hover, var(--color-surface)); border-color: var(--color-border-strong); }
+.wake-hero .type-pill:hover { background: var(--color-surface-raised); border-color: var(--color-border-strong); }
 .wake-hero .type-count { color: var(--color-brand); }
 .wake-hero .type-name { color: var(--color-text-muted); }
 
