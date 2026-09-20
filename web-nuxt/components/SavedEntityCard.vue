@@ -102,7 +102,7 @@ const dateline = computed(() => {
 }
 .saved-card-rule {
   display: block; width: 22px; height: 2px; border-radius: 2px; margin: 3px 0 3px;
-  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+  background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
 }
 .dark .saved-card-rule { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .saved-entity-place { display: block; font-size: .78rem; color: var(--ink-700); }

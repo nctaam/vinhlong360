@@ -541,7 +541,7 @@ onMounted(() => fetchUsers())
   width: 6px; height: 6px; border-radius: 50%;
 }
 .usr-active { background: rgba(var(--color-success-rgb),.08); color: var(--success); }
-.usr-active .usr-status-dot { background: var(--secondary); animation: usr-pulse 2s var(--ease-in-out) infinite; }
+.usr-active .usr-status-dot { background: var(--color-success); animation: usr-pulse 2s var(--ease-in-out) infinite; }
 .usr-banned { background: rgba(var(--danger-rgb),.08); color: var(--error); }
 .usr-banned .usr-status-dot { background: var(--error); }
 @keyframes usr-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }

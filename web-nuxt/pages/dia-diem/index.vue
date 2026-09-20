@@ -428,7 +428,7 @@ useHead(() => ({
   opacity: .14;
   background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='900'%20height='220'%20viewBox='0%200%20900%20220'%20fill='none'%3E%3Cpath%20d='M-20%20150%20Q120%2060%20260%20120%20T520%2090%20T780%20140%20T1000%2080'%20stroke='%23D98A6F'%20stroke-width='2'%20stroke-dasharray='2%2010'%20stroke-linecap='round'/%3E%3C/svg%3E");
 }
-.almanac-compass { color: var(--clay-600); display: inline-flex; }
+.almanac-compass { color: var(--color-material-clay); display: inline-flex; }
 .almanac-compass :deep(svg) { width: 2.2rem; height: 2.2rem; }
 .dark .almanac-compass { color: var(--color-brand); }
 @media (max-width: 640px) { .almanac-compass :deep(svg) { width: 1.7rem; height: 1.7rem; } }
@@ -546,7 +546,7 @@ useHead(() => ({
 .dd-type-card::after {
   content: ""; position: absolute; left: var(--space-4); right: var(--space-4); bottom: 6px;
   height: 2px; border-radius: 2px;
-  background: linear-gradient(90deg, var(--river-600), var(--amber-600), var(--clay-600));
+  background: linear-gradient(90deg, var(--color-material-river), var(--color-material-amber), var(--color-material-clay));
   transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease-out-expo);
 }
 .dd-type-card:hover::after, .dd-type-card:focus-visible::after, .dd-type-card.active::after { transform: scaleX(1); }
@@ -680,7 +680,7 @@ useHead(() => ({
 }
 .almanac-progress-fill {
   position: absolute; inset: 0; transform-origin: top; transform: scaleY(0);
-  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+  background: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
   transition: transform .1s linear;
 }
 .dark .almanac-progress-fill { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }

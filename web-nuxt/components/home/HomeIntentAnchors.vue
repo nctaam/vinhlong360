@@ -498,9 +498,9 @@ function onAvatarFallback(e: Event) {
 
 .home-intent-anchor__icon-badge--orchard { color: var(--orchard-600); }
 .home-intent-anchor__icon-badge--mangthit { color: var(--mangthit-600); }
-.home-intent-anchor__icon-badge--clay { color: var(--clay-600); }
+.home-intent-anchor__icon-badge--clay { color: var(--color-material-clay); }
 .home-intent-anchor__icon-badge--amber { color: var(--harvest-700); }
-.home-intent-anchor__icon-badge--river { color: var(--river-600); }
+.home-intent-anchor__icon-badge--river { color: var(--color-material-river); }
 
 .home-intent-anchor__content {
   display: flex;

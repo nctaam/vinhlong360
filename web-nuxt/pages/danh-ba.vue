@@ -1111,11 +1111,11 @@ useHead(() => ({
   border-radius: var(--radius-control);
 }
 .entry-tag--orchard {
-  color: var(--leaf-600, var(--color-brand));
+  color: var(--color-material-leaf, var(--color-brand));
   background: rgba(var(--leaf-rgb), 0.1);
 }
 .entry-tag--pier {
-  color: var(--river-600);
+  color: var(--color-material-river);
   background: rgba(var(--river-rgb), 0.1);
 }
 .entry-title {

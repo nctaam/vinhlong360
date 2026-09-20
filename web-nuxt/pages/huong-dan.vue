@@ -392,7 +392,7 @@ useHead({
   padding: var(--space-7) var(--space-6); margin-bottom: var(--space-6);
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--color-brand-rgb), .14) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--color-material-river) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--color-brand-rgb), .14) 120%);
   background-blend-mode: overlay, normal;
   border-radius: var(--radius-sheet); border: .5px solid var(--line);
 }

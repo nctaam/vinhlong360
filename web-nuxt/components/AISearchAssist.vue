@@ -136,7 +136,7 @@ watch(() => props.query, () => {
   content: "";
   position: absolute; left: 0; top: 50%; transform: translateY(-50%);
   width: 2px; height: 1.05em; border-radius: var(--radius-full);
-  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+  background: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
 }
 .dark .ai-search-h3::before {
   background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);

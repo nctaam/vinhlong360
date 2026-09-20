@@ -227,7 +227,7 @@
                 >
                   <defs>
                     <linearGradient id="routeWaterGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stop-color="var(--river-600)" stop-opacity="0.1" />
+                      <stop offset="0%" stop-color="var(--color-material-river)" stop-opacity="0.1" />
                       <stop offset="100%" stop-color="var(--color-material-river, var(--color-action))" stop-opacity="0.22" />
                     </linearGradient>
                   </defs>
@@ -529,7 +529,7 @@ useHead(() => {
   text-shadow: none;
 }
 .route-header.area-tra-vinh { background: var(--cat-attraction); }
-.route-header.area-lien-vung { background: linear-gradient(135deg, var(--river-600), var(--amber-600) 55%, var(--clay-600)); }
+.route-header.area-lien-vung { background: linear-gradient(135deg, var(--color-material-river), var(--color-material-amber) 55%, var(--color-material-clay)); }
 /* Route name — editorial italic for the poetic ones, small but distinctive
    (matches CE mastheads elsewhere on site). Wayfinding stop-names stay sans. */
 .route-name { font-family: var(--font-editorial); font-style: italic; }
@@ -574,7 +574,7 @@ useHead(() => {
 /* Cross-province tour: rail literally uses the sediment river→amber→clay
    gradient — visually saying "this crosses all 3 areas" with no legend. */
 .route-card.area-lien-vung .route-rail::before {
-  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 50%, var(--clay-600) 100%);
+  background: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 50%, var(--color-material-clay) 100%);
 }
 .rail-stop {
   position: relative; display: flex; align-items: baseline; gap: var(--space-3);
@@ -685,7 +685,7 @@ useHead(() => {
 .chip-area.area-vinh-long { border-left: 2px solid color-mix(in srgb, var(--color-material-clay) 55%, transparent); }
 .chip-area.area-ben-tre { border-left: 2px solid color-mix(in srgb, var(--color-material-leaf) 55%, transparent); }
 .chip-area.area-tra-vinh { border-left: 2px solid color-mix(in srgb, var(--color-material-river) 55%, transparent); }
-.chip-area.area-lien-vung { border-left: 2px solid color-mix(in srgb, var(--clay-600) 55%, transparent); }
+.chip-area.area-lien-vung { border-left: 2px solid color-mix(in srgb, var(--color-material-clay) 55%, transparent); }
 .chip-area.active.area-vinh-long { background: var(--color-material-clay); border-color: var(--color-material-clay); color: var(--white); }
 .chip-area.active.area-ben-tre { background: var(--color-material-leaf); border-color: var(--color-material-leaf); color: var(--white); }
 .chip-area.active.area-tra-vinh { background: var(--color-material-river); border-color: var(--color-material-river); color: var(--white); }
@@ -704,8 +704,8 @@ useHead(() => {
   padding-top: var(--space-2);
 }
 .route-vignette-svg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .5; }
-.rv-river { fill: none; stroke: var(--river-600); stroke-width: 2; stroke-linecap: round; }
-.rv-road { fill: none; stroke: var(--clay-600); stroke-width: 1.5; stroke-dasharray: 1 6; stroke-linecap: round; opacity: .7; }
+.rv-river { fill: none; stroke: var(--color-material-river); stroke-width: 2; stroke-linecap: round; }
+.rv-road { fill: none; stroke: var(--color-material-clay); stroke-width: 1.5; stroke-dasharray: 1 6; stroke-linecap: round; opacity: .7; }
 .rv-pin {
   position: absolute; top: 14px; width: 14px; height: 14px; transform: translateX(-50%);
   display: flex; align-items: center; justify-content: center; cursor: default;
@@ -717,7 +717,7 @@ useHead(() => {
 .rv-pin.area-vinh-long .rv-pin-dot { background: var(--color-material-clay); }
 .rv-pin.area-ben-tre .rv-pin-dot { background: var(--color-material-leaf); }
 .rv-pin.area-tra-vinh .rv-pin-dot { background: var(--color-material-river); }
-.rv-pin.area-lien-vung .rv-pin-dot { background: var(--clay-600); }
+.rv-pin.area-lien-vung .rv-pin-dot { background: var(--color-material-clay); }
 .rv-labels {
   position: absolute; inset: auto 0 0 0; display: flex; justify-content: space-between;
   font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps);
@@ -793,7 +793,7 @@ useHead(() => {
   color: var(--mekong-ink);
 }
 .route-preview-header.area-tra-vinh { background: var(--cat-attraction); }
-.route-preview-header.area-lien-vung { background: linear-gradient(135deg, var(--river-600), var(--amber-600) 55%, var(--clay-600)); }
+.route-preview-header.area-lien-vung { background: linear-gradient(135deg, var(--color-material-river), var(--color-material-amber) 55%, var(--color-material-clay)); }
 .route-preview-kicker {
   display: block;
   font-size: var(--text-xs);

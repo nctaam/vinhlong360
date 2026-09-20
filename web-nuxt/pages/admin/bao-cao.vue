@@ -564,10 +564,10 @@ onMounted(() => fetchAll())
 }
 
 /* ── Dark ── */
-.dark .status-pending { background: rgba(var(--warning-rgb),.12); color: var(--accent-text); }
+.dark .status-pending { background: rgba(var(--warning-rgb),.12); color: var(--color-warning); }
 .dark .status-resolved { background: rgba(var(--color-success-rgb),.12); }
 .dark .status-dismissed { background: rgba(var(--white-rgb),.06); }
-.dark .rpt-open-badge { background: rgba(var(--warning-rgb),.12); color: var(--accent-text); }
+.dark .rpt-open-badge { background: rgba(var(--warning-rgb),.12); color: var(--color-warning); }
 .dark .rpt-chip { background: rgba(var(--white-rgb),.04); }
 .dark .rpt-chip-count { background: rgba(var(--white-rgb),.1); }
 .dark .rpt-chip.active .rpt-chip-count { background: rgba(var(--white-rgb),.25); }

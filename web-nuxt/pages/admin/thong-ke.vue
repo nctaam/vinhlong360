@@ -375,7 +375,7 @@ onMounted(fetchData)
   pointer-events: none;
 }
 .tk-bar-warn { background: var(--warning); }
-.tk-bar-green { background: var(--secondary-fg); }
+.tk-bar-green { background: var(--color-success); }
 @keyframes tk-bar-grow { from { width: 0 !important; } }
 
 .tk-rank { position: relative; }
@@ -407,12 +407,12 @@ onMounted(fetchData)
 .dark .tk-rank { background: rgba(var(--white-rgb),.06); }
 .dark .tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank { border-color: rgba(var(--color-brand-rgb),.5); color: var(--color-brand); }
 .dark .tk-count-badge { background: rgba(var(--blue-rgb),.15); }
-.dark .tk-count-warn { background: rgba(var(--warning-rgb),.15); color: var(--accent); }
+.dark .tk-count-warn { background: rgba(var(--warning-rgb),.15); color: var(--color-warning); }
 .dark .tk-panel:hover .tk-count-badge { background: rgba(var(--blue-rgb),.3); }
 .dark .tk-panel:hover .tk-count-warn { background: rgba(var(--warning-rgb),.28); }
 .dark .stat-card .stat-value { color: var(--ink); }
 .dark .tk-cost-scope { background: rgba(var(--color-brand-rgb),.22); color: var(--color-brand); }
-.dark .stat-card.status-warn { background: rgba(var(--accent-rgb),.08); border-color: var(--warning); }
+.dark .stat-card.status-warn { background: rgba(var(--color-warning-rgb),.08); border-color: var(--warning); }
 .dark .tk-sk-card, .dark .tk-sk-panel { background: rgba(var(--white-rgb),.06); }
 
 /* ── Loading skeleton ── */

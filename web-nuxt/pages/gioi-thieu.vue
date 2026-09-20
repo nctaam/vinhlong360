@@ -197,7 +197,7 @@ useHead(() => ({
   gap: var(--space-6);
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--color-brand-rgb), .16) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--color-material-river) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--color-brand-rgb), .16) 120%);
   background-blend-mode: overlay, normal;
 }
 .bm-inner { flex: 1 1 auto; min-width: 0; max-width: var(--measure-read); }
@@ -320,9 +320,9 @@ useHead(() => ({
 .sediment-divider {
   position: relative; margin-top: var(--space-8); height: 7px;
   background:
-    linear-gradient(90deg, transparent, var(--river-600) 26%, var(--river-600) 74%, transparent) top/100% 1px no-repeat,
-    linear-gradient(90deg, transparent, var(--amber-600) 30%, var(--amber-600) 70%, transparent) center/100% 1px no-repeat,
-    linear-gradient(90deg, transparent, var(--clay-600) 26%, var(--clay-600) 74%, transparent) bottom/100% 1.5px no-repeat;
+    linear-gradient(90deg, transparent, var(--color-material-river) 26%, var(--color-material-river) 74%, transparent) top/100% 1px no-repeat,
+    linear-gradient(90deg, transparent, var(--color-material-amber) 30%, var(--color-material-amber) 70%, transparent) center/100% 1px no-repeat,
+    linear-gradient(90deg, transparent, var(--color-material-clay) 26%, var(--color-material-clay) 74%, transparent) bottom/100% 1.5px no-repeat;
   opacity: .5;
 }
 .dark .sediment-divider { opacity: .62; }

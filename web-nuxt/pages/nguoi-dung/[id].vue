@@ -765,7 +765,7 @@ useHead(() => {
 .profile-meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
 .profile-handle { color: var(--muted); font-size: var(--text-sm); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
 .profile-chip { display: inline-flex; align-items: center; min-height: 28px; padding: 0 var(--space-3); border-radius: var(--radius-pill, 999px); border: 1px solid var(--line); background: var(--card); color: var(--ink-700); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
-.profile-chip.is-public { border-color: color-mix(in srgb, var(--success, var(--leaf-600)) 28%, var(--line)); color: var(--success, var(--leaf-600)); }
+.profile-chip.is-public { border-color: color-mix(in srgb, var(--success, var(--color-material-leaf)) 28%, var(--line)); color: var(--success, var(--color-material-leaf)); }
 .profile-chip.is-private { border-color: color-mix(in srgb, var(--warning) 28%, var(--line)); color: var(--warning); }
 .profile-chip.is-self,
 .profile-chip.is-following { background: color-mix(in srgb, var(--color-brand) 10%, var(--card)); border-color: color-mix(in srgb, var(--color-brand) 30%, var(--line)); color: var(--color-brand); }
@@ -788,7 +788,7 @@ useHead(() => {
    hoá (sediment-head/tc-label), không tự chế biến thể mới. */
 .hairline-phusa {
   height: 2px; margin: var(--space-4) 0 0; border-radius: var(--radius-pill, 999px);
-  background: linear-gradient(90deg, transparent 0%, var(--river-600) 15%, var(--amber-600) 50%, var(--clay-600) 85%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--color-material-river) 15%, var(--color-material-amber) 50%, var(--color-material-clay) 85%, transparent 100%);
   opacity: .55;
 }
 .dark .hairline-phusa { background: linear-gradient(90deg, transparent 0%, var(--river-legacy-dark) 15%, var(--amber-500) 50%, var(--clay-400) 85%, transparent 100%); }

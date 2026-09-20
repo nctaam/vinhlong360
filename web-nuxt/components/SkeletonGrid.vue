@@ -51,7 +51,7 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
 /* Static tri-province rule — mirrors .card-rule exactly (river→amber→clay,
    26×2px). This is the card's constant design signature, not unknown data,
    so it doesn't shimmer like the text placeholders around it. */
-.sk-rule { width: 26px; height: 2px; border-radius: 2px; margin: 3px 0 4px; background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%); }
+.sk-rule { width: 26px; height: 2px; border-radius: 2px; margin: 3px 0 4px; background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%); }
 .dark .sk-rule { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .sk-text { width: 100%; height: 12px; }
 .sk-text.short { width: 50%; }

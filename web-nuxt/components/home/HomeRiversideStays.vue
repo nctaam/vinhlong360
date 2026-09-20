@@ -590,7 +590,7 @@ function onImgFallback(e: Event) {
 
 .home-exp-card:hover {
   transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--river-600) 40%, var(--color-border));
+  border-color: color-mix(in srgb, var(--color-material-river) 40%, var(--color-border));
   box-shadow: 0 8px 20px rgba(var(--black-rgb), 0.08);
 }
 
@@ -606,15 +606,15 @@ function onImgFallback(e: Event) {
   height: 38px;
   flex-shrink: 0;
   border-radius: var(--radius-control);
-  background: color-mix(in srgb, var(--river-600) 12%, transparent);
-  color: var(--river-600);
+  background: color-mix(in srgb, var(--color-material-river) 12%, transparent);
+  color: var(--color-material-river);
   font-size: 1.15rem;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
 }
 
 .home-exp-card:hover .home-exp-card__icon {
   transform: scale(1.08);
-  background: color-mix(in srgb, var(--river-600) 20%, transparent);
+  background: color-mix(in srgb, var(--color-material-river) 20%, transparent);
 }
 
 .home-exp-card__content {

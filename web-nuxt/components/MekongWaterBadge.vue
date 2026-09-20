@@ -324,22 +324,22 @@ const ariaLabelText = computed(() => {
 
 /* 1. Con nước rong · Triều cường (River Blue / Deep Silt) */
 .mekong-water-badge.tide-rong {
-  background: color-mix(in srgb, var(--river-600) 12%, var(--card));
+  background: color-mix(in srgb, var(--color-material-river) 12%, var(--card));
   color: var(--river-700);
-  border-color: color-mix(in srgb, var(--river-600) 32%, transparent);
+  border-color: color-mix(in srgb, var(--color-material-river) 32%, transparent);
 }
 .mekong-water-badge.tide-rong .mwb-indicator {
-  color: var(--river-600);
+  color: var(--color-material-river);
 }
 
 /* 2. Con nước kém · Sông êm (Clay / Alluvial Warmth) */
 .mekong-water-badge.tide-kem {
-  background: color-mix(in srgb, var(--clay-600) 10%, var(--card));
+  background: color-mix(in srgb, var(--color-material-clay) 10%, var(--card));
   color: var(--clay-700);
-  border-color: color-mix(in srgb, var(--clay-600) 30%, transparent);
+  border-color: color-mix(in srgb, var(--color-material-clay) 30%, transparent);
 }
 .mekong-water-badge.tide-kem .mwb-indicator {
-  color: var(--clay-600);
+  color: var(--color-material-clay);
 }
 
 /* 3. Nước lớn · Triều dâng (Orchard Green) */
@@ -364,7 +364,7 @@ const ariaLabelText = computed(() => {
 
 /* 5. Con nước chuyển · Dòng điều hòa */
 .mekong-water-badge.tide-chuyen {
-  background: color-mix(in srgb, var(--river-600) 8%, var(--card));
+  background: color-mix(in srgb, var(--color-material-river) 8%, var(--card));
   color: var(--ink);
   border-color: color-mix(in srgb, var(--line) 80%, transparent);
 }

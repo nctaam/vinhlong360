@@ -69,7 +69,7 @@
           <svg class="ai-ring" viewBox="0 0 80 80" aria-hidden="true">
             <circle cx="40" cy="40" r="32" fill="none" stroke="var(--line)" stroke-width="8" opacity=".15" />
             <circle cx="40" cy="40" r="32" fill="none"
-              :stroke="hitRate >= 70 ? 'rgb(var(--success-rgb))' : hitRate >= 40 ? 'rgb(var(--accent-rgb))' : 'var(--cat-dish-accent)'"
+              :stroke="hitRate >= 70 ? 'rgb(var(--success-rgb))' : hitRate >= 40 ? 'rgb(var(--color-warning-rgb))' : 'var(--cat-dish-accent)'"
               stroke-width="8" stroke-linecap="round"
               :stroke-dasharray="`${hitRate * 2.01} 201`"
               stroke-dashoffset="50.3"
@@ -274,7 +274,7 @@ const triggerResult = ref('')
 const statusColor = computed(() => {
   if (!health.value) return 'var(--muted)'
   if (health.value.status === 'ok') return 'rgb(var(--success-rgb))'
-  if (health.value.status === 'degraded') return 'rgb(var(--accent-rgb))'
+  if (health.value.status === 'degraded') return 'rgb(var(--color-warning-rgb))'
   return 'var(--cat-dish-accent)'
 })
 const statusBg = computed(() => {
@@ -496,7 +496,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   width: 6px; height: 6px; border-radius: 50%;
 }
 .ai-subsys-on { background: rgba(var(--color-success-rgb),.06); color: var(--success); }
-.ai-subsys-on .ai-subsys-dot { background: var(--secondary); animation: ai-sub-pulse 2.5s var(--ease-in-out) infinite; }
+.ai-subsys-on .ai-subsys-dot { background: var(--color-success); animation: ai-sub-pulse 2.5s var(--ease-in-out) infinite; }
 .ai-subsys-off { background: rgba(var(--danger-rgb),.06); color: var(--error); }
 .ai-subsys-off .ai-subsys-dot { background: var(--error); opacity: .5; }
 @keyframes ai-sub-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
@@ -546,7 +546,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   margin-top: var(--space-3); padding: var(--space-3) var(--space-4);
   border-radius: 10px; font-size: .85rem;
   background: rgba(var(--color-action-rgb),.06); border: .5px solid rgba(var(--color-action-rgb),.15);
-  color: var(--secondary);
+  color: var(--color-success);
 }
 .ai-trigger-result.ai-result-error {
   background: rgba(var(--danger-rgb),.08); border-color: var(--error); color: var(--error);
@@ -554,12 +554,12 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-triage-box {
   display: flex; align-items: flex-start; gap: var(--space-2);
   margin-top: var(--space-3); padding: var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--secondary) 30%, var(--line)); border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--color-success) 30%, var(--line)); border-radius: 12px;
   font-size: .85rem; line-height: 1.6;
   background: rgba(var(--color-action-rgb),.05);
 }
 .ai-triage-box .ai-triage-text { white-space: pre-wrap; flex: 1; min-width: 0; }
-.ai-triage-icon { font-weight: 800; color: var(--secondary); flex-shrink: 0; line-height: 1.6; }
+.ai-triage-icon { font-weight: 800; color: var(--color-success); flex-shrink: 0; line-height: 1.6; }
 .ai-triage-box.ai-triage-error {
   background: rgba(var(--danger-rgb),.08); border-color: var(--error);
 }

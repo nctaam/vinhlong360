@@ -336,8 +336,8 @@ const activeItinerary = computed(() => {
   gap: var(--space-2);
   width: fit-content;
   padding: 3px 10px;
-  background: color-mix(in srgb, var(--river-600) 12%, transparent);
-  color: var(--river-600);
+  background: color-mix(in srgb, var(--color-material-river) 12%, transparent);
+  color: var(--color-material-river);
   border-radius: var(--radius-pill, 9999px);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);

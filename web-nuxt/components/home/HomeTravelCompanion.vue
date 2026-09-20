@@ -284,7 +284,7 @@ const HOTLINES: readonly EmergencyContact[] = [
 
 .home-companion-card:hover {
   transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--river-600) 45%, var(--color-border));
+  border-color: color-mix(in srgb, var(--color-material-river) 45%, var(--color-border));
   box-shadow: 0 8px 20px rgba(var(--black-rgb), 0.08);
 }
 
@@ -306,8 +306,8 @@ const HOTLINES: readonly EmergencyContact[] = [
   height: 44px;
   flex-shrink: 0;
   border-radius: var(--radius-control);
-  background: color-mix(in srgb, var(--river-600) 12%, transparent);
-  color: var(--river-600);
+  background: color-mix(in srgb, var(--color-material-river) 12%, transparent);
+  color: var(--color-material-river);
   font-size: 1.25rem;
 }
 
@@ -337,8 +337,8 @@ const HOTLINES: readonly EmergencyContact[] = [
 }
 
 .home-companion-card__badge--info {
-  background: color-mix(in srgb, var(--river-600) 14%, transparent);
-  color: var(--river-600);
+  background: color-mix(in srgb, var(--color-material-river) 14%, transparent);
+  color: var(--color-material-river);
 }
 
 .home-companion-card__badge--alert {
@@ -478,8 +478,8 @@ const HOTLINES: readonly EmergencyContact[] = [
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  background: color-mix(in srgb, var(--river-600) 12%, transparent);
-  color: var(--river-600);
+  background: color-mix(in srgb, var(--color-material-river) 12%, transparent);
+  color: var(--color-material-river);
   border-radius: var(--radius-pill, 9999px);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);

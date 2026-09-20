@@ -800,7 +800,7 @@ onMounted(() => refreshAll())
 .dark .dq-apply-result--warn { background: rgba(var(--warning-rgb),.12); }
 .dark .dq-apply-result-stat b { color: var(--ink); }
 .dark .dq-page-info { color: var(--ink); }
-.dark .dq-sev-warning { color: var(--accent-text); }
+.dark .dq-sev-warning { color: var(--color-warning); }
 .dark .dq-copy-btn { border-color: rgba(var(--white-rgb),.12); }
 
 @media (max-width: 780px) {

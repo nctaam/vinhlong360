@@ -13,17 +13,17 @@
     <svg v-else viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="empty-illust">
       <defs>
         <linearGradient id="empty-sediment" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" :stop-color="recipeDecorationColor || 'var(--river-600)'" />
-          <stop offset="52%" :stop-color="recipeDecorationColor || 'var(--amber-600)'" />
-          <stop offset="100%" :stop-color="recipeDecorationColor || 'var(--clay-600)'" />
+          <stop offset="0%" :stop-color="recipeDecorationColor || 'var(--color-material-river)'" />
+          <stop offset="52%" :stop-color="recipeDecorationColor || 'var(--color-material-amber)'" />
+          <stop offset="100%" :stop-color="recipeDecorationColor || 'var(--color-material-clay)'" />
         </linearGradient>
       </defs>
       <circle cx="100" cy="70" r="50" fill="var(--bg-warm)" />
       <rect class="empty-illust-grain" x="50" y="20" width="100" height="100" />
       <circle cx="100" cy="70" r="35" fill="var(--bg)" />
       <circle cx="90" cy="65" r="20" stroke="url(#empty-sediment)" stroke-width="3.5" fill="none" />
-      <line x1="105" y1="80" x2="125" y2="100" :stroke="recipeDecorationColor || 'var(--clay-600)'" stroke-width="5" stroke-linecap="round" />
-      <g :fill="recipeDecorationColor || 'var(--amber-600)'" opacity=".65">
+      <line x1="105" y1="80" x2="125" y2="100" :stroke="recipeDecorationColor || 'var(--color-material-clay)'" stroke-width="5" stroke-linecap="round" />
+      <g :fill="recipeDecorationColor || 'var(--color-material-amber)'" opacity=".65">
         <path d="M140 35 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3z" />
         <path d="M55 30 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2z" />
         <path d="M150 75 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" />
@@ -77,7 +77,7 @@ const recipeDecorationColor = computed(() => props.colorRecipe === 'tri-region-v
   display: block;
   width: 30px; height: 2px; border-radius: 2px;
   margin: var(--space-4) auto var(--space-3);
-  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+  background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
 }
 .dark .empty-rule { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 
@@ -104,7 +104,7 @@ const recipeDecorationColor = computed(() => props.colorRecipe === 'tri-region-v
 
 /* Error tone keeps the same editorial chrome but nudges the rule toward clay —
    a quieter cue than a red icon, consistent with "no hardcoded brand hex". */
-.is-error .empty-rule { background: linear-gradient(90deg, var(--amber-600) 0%, var(--clay-600) 100%); }
+.is-error .empty-rule { background: linear-gradient(90deg, var(--color-material-amber) 0%, var(--color-material-clay) 100%); }
 .dark .is-error .empty-rule { background: linear-gradient(90deg, var(--amber-500) 0%, var(--clay-400) 100%); }
 .empty-state[data-color-recipe='tri-region-v1'] .empty-rule {
   background-image: none;

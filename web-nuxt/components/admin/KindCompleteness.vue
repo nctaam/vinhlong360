@@ -73,12 +73,12 @@ watch(() => props.kind, load, { immediate: true })
 .kc-scope { font-style: normal; opacity: .6; font-size: .72rem; margin-left: 4px; }
 .kc-pct { font-weight: 700; font-variant-numeric: tabular-nums; }
 .kc-pct.kc-low { color: rgb(var(--danger-rgb)); }
-.kc-pct.kc-mid { color: rgb(var(--accent-rgb)); }
+.kc-pct.kc-mid { color: var(--color-warning); }
 .kc-pct.kc-high { color: rgb(var(--success-rgb)); }
 .kc-bar { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--line) 60%, transparent); overflow: hidden; }
 .kc-bar i { display: block; height: 100%; border-radius: 2px; }
 .kc-bar i.kc-low { background: rgb(var(--danger-rgb)); }
-.kc-bar i.kc-mid { background: rgb(var(--accent-rgb)); }
+.kc-bar i.kc-mid { background: var(--color-warning); }
 .kc-bar i.kc-high { background: rgb(var(--sys-green-rgb)); }
 .kc-worst { border-top: 1px dashed var(--line); padding-top: var(--space-2); }
 .kc-worst h4 { margin: 0 0 var(--space-2); font-size: .84rem; }

@@ -467,9 +467,9 @@ onMounted(loadProvisional)
 .dark .dth-tool-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .dth-tool-card:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(var(--black-rgb),.4); }
 .dark .dth-conf-high { background: rgba(var(--color-action-rgb),.18); color: rgb(var(--success-rgb)); }
-.dark .dth-conf-low { background: rgba(var(--warning-rgb),.14); color: var(--accent-text); }
+.dark .dth-conf-low { background: rgba(var(--warning-rgb),.14); color: var(--color-warning); }
 .dark .dth-tool-label { color: var(--ink); }
-.dark .dth-count-warn { background: rgba(var(--warning-rgb),.12); color: var(--accent-text); }
+.dark .dth-count-warn { background: rgba(var(--warning-rgb),.12); color: var(--color-warning); }
 .dark .dth-type-badge { background: rgba(var(--white-rgb),.06); }
 
 @media (max-width: 720px) {

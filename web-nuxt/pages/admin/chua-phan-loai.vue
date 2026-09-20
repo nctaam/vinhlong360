@@ -186,7 +186,7 @@ const loadPct = computed(() => filtered.value.length ? Math.round((pageItems.val
 const TYPE_COLORS: Record<string, string> = {
   'Điểm đến': 'rgb(var(--blue-rgb))', 'Du lịch': 'rgb(var(--blue-rgb))',
   'Dịch vụ': 'rgb(var(--purple-rgb))',
-  'Ẩm thực': 'rgb(var(--accent-rgb))', 'Món ăn': 'rgb(var(--accent-rgb))', 'Đặc sản': 'rgb(var(--accent-rgb))',
+  'Ẩm thực': 'rgb(var(--color-warning-rgb))', 'Món ăn': 'rgb(var(--color-warning-rgb))', 'Đặc sản': 'rgb(var(--color-warning-rgb))',
   'Sản phẩm': 'rgb(var(--sys-green-rgb))', 'OCOP': 'rgb(var(--sys-green-rgb))',
   'Lưu trú': 'rgb(var(--blue-rgb))',
   'Sự kiện': 'rgb(var(--sys-pink-rgb))', 'Lễ hội': 'rgb(var(--sys-pink-rgb))',
@@ -409,7 +409,7 @@ await placesAsyncData
 
 /* ── Dark ── */
 .dark .cpl-progress-pill { background: rgba(var(--white-rgb),.08); }
-.dark .cpl-total-badge { background: rgba(var(--warning-rgb),.12); color: var(--accent); }
+.dark .cpl-total-badge { background: rgba(var(--warning-rgb),.12); color: var(--color-warning); }
 .dark .cpl-filter-badge { background: rgba(var(--color-action-rgb),.14); color: var(--color-action); }
 .dark .cpl-type-badge { background: rgba(var(--white-rgb),.06); }
 .dark .cpl-place-select { background: var(--card); border-color: rgba(var(--white-rgb),.08); }

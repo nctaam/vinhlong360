@@ -126,9 +126,9 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 /* hairline outline badges (spec-tag idiom) instead of solid-fill pills — quieter, reads as
    editorial metadata rather than app-notification chips */
 .cspot-badge { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); background: transparent; border: 1px solid currentColor; }
-.cspot-badge-peak { color: var(--clay-600); }
-.cspot-badge-year { color: var(--river-600); }
-.cspot-badge-pop { color: var(--amber-600); }
+.cspot-badge-peak { color: var(--color-material-clay); }
+.cspot-badge-year { color: var(--color-material-river); }
+.cspot-badge-pop { color: var(--color-material-amber); }
 .dark .cspot-badge-peak { color: var(--clay-400); }
 .dark .cspot-badge-year { color: var(--catalog-legacy-rule-river-dark); }
 .dark .cspot-badge-pop { color: var(--amber-500); }

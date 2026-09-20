@@ -174,7 +174,7 @@ useHead(() => ({
   gap: var(--space-6);
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--color-brand-rgb), .16) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--color-material-river) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--color-brand-rgb), .16) 120%);
   background-blend-mode: overlay, normal;
 }
 .bm-inner { flex: 1 1 auto; min-width: 0; max-width: var(--measure-read); }
@@ -212,7 +212,7 @@ useHead(() => ({
   font-family: var(--font-sans); font-size: var(--text-xs); font-weight: var(--weight-semibold);
   color: var(--color-action); margin: 0;
 }
-.bm-sla span { color: var(--leaf-600); font-size: var(--text-2xs); }
+.bm-sla span { color: var(--color-material-leaf); font-size: var(--text-2xs); }
 .bm-motif { width: clamp(80px, 8vw + 40px, 128px); height: auto; flex-shrink: 0; color: var(--clay-400); opacity: .85; }
 .bm-motif path, .bm-motif rect, .bm-motif line, .bm-motif circle { stroke: currentColor; fill: none; }
 
@@ -273,7 +273,7 @@ useHead(() => ({
   content: "";
   position: absolute; top: 0; right: 0;
   width: 3px; height: 15px;
-  background: linear-gradient(180deg, var(--river-600), var(--clay-600));
+  background: linear-gradient(180deg, var(--color-material-river), var(--color-material-clay));
   opacity: .7;
 }
 .card-icon-vector {

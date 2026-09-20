@@ -459,7 +459,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   font-family: var(--font-mono); font-weight: 600;
 }
 .mod-session-stats { margin-left: auto; font-size: .72rem; }
-.mod-session-ok { color: var(--secondary-fg); }
+.mod-session-ok { color: var(--color-success); }
 .mod-session-rej { color: var(--error); }
 .mod-focused td { background: rgba(var(--color-action-rgb),.06) !important; }
 .mod-focused td:first-child { box-shadow: inset 3px 0 0 var(--color-action); }

@@ -325,14 +325,14 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   padding: 2px 8px; border-radius: 100px; color: var(--text-on-dark); backdrop-filter: blur(4px);
 }
 .conf-high { background: rgba(var(--color-action-rgb),.9); }
-.conf-mid { background: rgba(var(--accent-rgb), .9); }
+.conf-mid { background: rgba(var(--color-warning-rgb), .9); }
 .conf-low { background: rgba(var(--danger-rgb),.9); }
 
 .img-meta { padding: var(--space-3) var(--space-3) 0; display: flex; flex-direction: column; gap: 6px; }
 .img-entity { font-weight: 600; font-size: .9rem; color: var(--ink); line-height: 1.3; }
 .img-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .img-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 600; background: rgba(var(--ink-rgb),.06); color: var(--muted); }
-.img-lic-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 700; background: rgba(var(--color-action-rgb),.12); color: var(--secondary-fg); }
+.img-lic-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 700; background: rgba(var(--color-action-rgb),.12); color: var(--color-success); }
 .img-lic-badge.lic-warn { background: rgba(var(--danger-rgb),.13); color: var(--error); }
 .img-detail { font-size: .76rem; color: var(--muted); line-height: 1.4; }
 .img-detail-k { font-weight: 600; color: var(--ink); }
@@ -345,7 +345,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-status-final { padding: var(--space-3); margin-top: auto; }
 .img-badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: .72rem; font-weight: 700; }
 .ib-pending { background: rgba(var(--warning-rgb),.12); color: var(--warning); }
-.ib-approved { background: rgba(var(--color-action-rgb),.12); color: var(--secondary-fg); }
+.ib-approved { background: rgba(var(--color-action-rgb),.12); color: var(--color-success); }
 .ib-rejected { background: rgba(var(--gray-rgb),.15); color: var(--muted); }
 
 .img-reject { padding: 0 var(--space-3) var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
@@ -364,13 +364,13 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-legend { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-4); font-size: .76rem; color: var(--muted); }
 .img-legend-item { display: inline-flex; align-items: center; gap: 6px; }
 .img-legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 3px; }
-.img-legend-ok { background: var(--secondary-fg); }
+.img-legend-ok { background: var(--color-success); }
 .img-legend-warn { background: var(--error); }
 
 /* ── Confidence bar (additive visual of match_confidence) ── */
 .img-conf-bar { height: 4px; border-radius: 100px; background: rgba(var(--gray-rgb),.18); overflow: hidden; }
 .img-conf-fill { display: block; height: 100%; border-radius: 100px; background: var(--muted); }
-.img-conf-bar.conf-high .img-conf-fill { background: var(--secondary-fg); }
+.img-conf-bar.conf-high .img-conf-fill { background: var(--color-success); }
 .img-conf-bar.conf-mid .img-conf-fill { background: var(--warning); }
 .img-conf-bar.conf-low .img-conf-fill { background: var(--error); }
 

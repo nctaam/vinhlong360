@@ -383,7 +383,7 @@ useHead(() => ({
    tc-label), không tự chế biến thể mới. ── */
 .hairline-phusa {
   height: 2px; margin: 0 0 var(--space-5); border-radius: var(--radius-pill, 999px);
-  background: linear-gradient(90deg, transparent 0%, var(--river-600) 15%, var(--amber-600) 50%, var(--clay-600) 85%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--color-material-river) 15%, var(--color-material-amber) 50%, var(--color-material-clay) 85%, transparent 100%);
   opacity: .55;
 }
 .dark .hairline-phusa { background: linear-gradient(90deg, transparent 0%, var(--river-legacy-dark) 15%, var(--amber-500) 50%, var(--clay-400) 85%, transparent 100%); }

@@ -644,7 +644,7 @@ useHead(() => ({
 .int-filmstrip-chip::after {
   content: ""; position: absolute; left: var(--space-4); right: var(--space-4); bottom: 5px;
   height: 2px; border-radius: 2px;
-  background: linear-gradient(90deg, var(--river-600), var(--amber-600), var(--clay-600));
+  background: linear-gradient(90deg, var(--color-material-river), var(--color-material-amber), var(--color-material-clay));
   transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease-out-expo);
 }
 .int-filmstrip-chip:hover::after, .int-filmstrip-chip:focus-visible::after, .int-filmstrip-chip.active::after { transform: scaleX(1); }

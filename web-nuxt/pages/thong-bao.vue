@@ -301,7 +301,7 @@ useHead(() => ({
 .tb-item::before {
   content: ""; position: absolute; left: 3px; top: 50%; transform: translateY(-50%);
   width: 3px; height: 22px; border-radius: var(--radius-pill, 999px);
-  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+  background: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
 }
 .tb-item-link {
   display: flex; align-items: flex-start; gap: var(--space-3); flex: 1; min-width: 0;

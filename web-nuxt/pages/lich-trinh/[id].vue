@@ -615,11 +615,11 @@ if (itinerary.value && !itinerary.value.error) {
 .day-arc-track {
   position: absolute; left: 0; right: 0; top: 22px; height: 3px; border-radius: var(--radius-pill, 999px);
   background: linear-gradient(90deg,
-    var(--river-600) 0%,
-    color-mix(in srgb, var(--river-600) 40%, var(--amber-600) 60%) 30%,
-    var(--amber-600) 50%,
-    color-mix(in srgb, var(--amber-600) 45%, var(--clay-600) 55%) 72%,
-    var(--clay-600) 100%);
+    var(--color-material-river) 0%,
+    color-mix(in srgb, var(--color-material-river) 40%, var(--color-material-amber) 60%) 30%,
+    var(--color-material-amber) 50%,
+    color-mix(in srgb, var(--color-material-amber) 45%, var(--color-material-clay) 55%) 72%,
+    var(--color-material-clay) 100%);
   /* one-time left-to-right draw-on, "a day unfolding" */
   transform-origin: left center;
   animation: dayArcDraw .6s var(--ease-out-expo) both;
@@ -747,7 +747,7 @@ if (itinerary.value && !itinerary.value.error) {
 .tc-label::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
   width: 3px; height: .95em; border-radius: var(--radius-pill, 999px);
-  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+  background: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
 }
 .dark .tc-label::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 
@@ -863,13 +863,13 @@ if (itinerary.value && !itinerary.value.error) {
 .step-note-callout {
   display: flex; align-items: flex-start; gap: var(--space-2);
   margin: var(--space-2) 0 0; padding: var(--space-2) var(--space-3);
-  background: color-mix(in srgb, var(--amber-600) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--amber-600) 25%, transparent);
-  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--amber-600) 55%, transparent);
+  background: color-mix(in srgb, var(--color-material-amber) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-material-amber) 25%, transparent);
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--color-material-amber) 55%, transparent);
   border-radius: var(--radius-control); font-size: var(--text-sm); line-height: var(--leading-normal);
   color: var(--ink);
 }
-.tnc-icon { flex-shrink: 0; color: var(--amber-600); font-size: 1.1em; line-height: 1.4; }
+.tnc-icon { flex-shrink: 0; color: var(--color-material-amber); font-size: 1.1em; line-height: 1.4; }
 .dark .step-note-callout { background: color-mix(in srgb, var(--amber-500) 14%, transparent); border-color: color-mix(in srgb, var(--amber-500) 25%, transparent); box-shadow: inset 2px 0 0 color-mix(in srgb, var(--amber-500) 55%, transparent); }
 .dark .tnc-icon { color: var(--amber-500); }
 

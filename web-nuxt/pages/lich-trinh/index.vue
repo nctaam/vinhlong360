@@ -376,11 +376,11 @@ useHead(() => ({
 .day-arc-track {
   position: absolute; left: 0; right: 0; top: 18px; height: 3px; border-radius: var(--radius-pill, 999px);
   background: linear-gradient(90deg,
-    var(--river-600) 0%,
-    color-mix(in srgb, var(--river-600) 40%, var(--amber-600) 60%) 30%,
-    var(--amber-600) 50%,
-    color-mix(in srgb, var(--amber-600) 45%, var(--clay-600) 55%) 72%,
-    var(--clay-600) 100%);
+    var(--color-material-river) 0%,
+    color-mix(in srgb, var(--color-material-river) 40%, var(--color-material-amber) 60%) 30%,
+    var(--color-material-amber) 50%,
+    color-mix(in srgb, var(--color-material-amber) 45%, var(--color-material-clay) 55%) 72%,
+    var(--color-material-clay) 100%);
   /* one-time left-to-right draw-on, "a day unfolding" (§5) */
   transform-origin: left center;
   animation: dayArcDraw .6s var(--ease-out-expo) both;
@@ -427,7 +427,7 @@ useHead(() => ({
 .pace-shelf-kicker::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
   width: 4px; height: 1.05em; border-radius: var(--radius-pill, 999px);
-  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+  background: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
 }
 .dark .pace-shelf-kicker::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 

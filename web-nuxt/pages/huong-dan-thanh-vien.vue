@@ -228,8 +228,8 @@ useHead(() => ({
 .lv-req { font-size: var(--text-xs); color: var(--muted); }
 .lv-tag { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--color-action); background: rgba(var(--color-action-rgb), .1); padding: .15rem .5rem; border-radius: var(--radius-full); white-space: nowrap; }
 
-.level-1 { --level-color: var(--leaf-600); box-shadow: inset 3px 0 0 var(--level-color); }
-.level-2 { --level-color: var(--river-600); box-shadow: inset 3px 0 0 var(--level-color); }
+.level-1 { --level-color: var(--color-material-leaf); box-shadow: inset 3px 0 0 var(--level-color); }
+.level-2 { --level-color: var(--color-material-river); box-shadow: inset 3px 0 0 var(--level-color); }
 .level-3 { --level-color: var(--amber-500); box-shadow: inset 3px 0 0 var(--level-color); }
 .level-4 { --level-color: var(--amber-700); box-shadow: inset 3px 0 0 var(--level-color); }
 
