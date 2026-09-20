@@ -133,7 +133,6 @@ interface CuratedHomestay {
   readonly terroir: string
   readonly badge: string
   readonly ecoBadge: string
-  readonly balconyHighlight: string
   readonly price: string
   readonly area: string
   readonly typeLabel: string
@@ -157,7 +156,6 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
     terroir: 'Xanh Cù Lao',
     badge: 'Chuẩn Homestay ASEAN',
     ecoBadge: 'Chứng nhận Sinh Thái ASEAN',
-    balconyHighlight: 'Ban công gỗ hướng sông Cổ Chiên lộng gió',
     price: 'Từ 650.000đ/đêm',
     area: 'Xã Hòa Ninh, Cù Lao An Bình',
     typeLabel: 'Nhà Rường Nam Bộ',
@@ -173,7 +171,6 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
     terroir: 'Phù Sa Cổ Chiên',
     badge: 'View Sông Hậu Lộng Gió',
     ecoBadge: 'Vườn sinh thái không rác thải',
-    balconyHighlight: 'Hiên tre ngắm lục bình trôi và cano lướt sóng',
     price: 'Từ 450.000đ/đêm',
     area: 'Thị xã Bình Minh, Vĩnh Long',
     typeLabel: 'Eco-Lodge Ven Sông',
@@ -189,7 +186,6 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
     terroir: 'Xanh Cù Lao',
     badge: 'Không Gian Vườn Cây Xưa',
     ecoBadge: 'Nông nghiệp hữu cơ tuần hoàn',
-    balconyHighlight: 'Võng nằm sát mé nước, ngắm hoàng hôn đỏ ối',
     price: 'Từ 380.000đ/đêm',
     area: 'Xã An Bình, Long Hồ',
     typeLabel: 'Vườn Trái Cây Gia Đình',

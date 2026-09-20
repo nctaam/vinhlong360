@@ -179,8 +179,6 @@ interface CuratedLead {
   readonly location: string
   readonly coordinates: string
   readonly desc: string
-  readonly bestTime: string
-  readonly highlight: string
   readonly coverSrc: string
   readonly to: string
   readonly mapTo: string
@@ -222,8 +220,6 @@ const leadItem: CuratedLead = {
   location: 'Huyện Mang Thít, Vĩnh Long',
   coordinates: "10°15'N · 105°58'E",
   desc: 'Quần thể gần 900 vòm gốm tháp chuông đỏ rực dọc kênh Thầy Cai, di sản đương đại sống bên bờ Cổ Chiên.',
-  bestTime: '16:30 – 17:45 hoàng hôn vòm gốm',
-  highlight: 'Thử tài nặn gốm & thăm Nhà Gốm Tư Buôi',
   coverSrc: '/img/entities/de-an-di-san-duong-dai-mang-thit.webp',
   to: '/dia-diem/de-an-di-san-duong-dai-mang-thit',
   mapTo: '/ban-do?selected=de-an-di-san-duong-dai-mang-thit',
@@ -784,7 +780,7 @@ function onImgFallback(e: Event) {
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
   color: var(--surface-white);
-  text-decoration: underline;
+  text-decoration: none;
   text-shadow: 0 1px 2px rgba(var(--black-rgb), 0.4);
   margin-top: auto;
   min-height: var(--touch-min, 44px);

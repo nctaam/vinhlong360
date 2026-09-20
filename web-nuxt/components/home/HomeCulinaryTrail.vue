@@ -63,7 +63,7 @@
           <!-- Reputable Venue Pill Badge with Field Coordinates -->
           <div class="home-culinary-card__venue-pill">
             <IconLine name="pin" aria-hidden="true" />
-            <span>{{ dish.reputableVenue || dish.venues }}</span>
+            <span>{{ dish.reputableVenue }}</span>
             <span v-if="dish.coordinates" class="home-culinary-card__coords" :title="`Tọa độ thực địa: ${dish.coordinates}`">
               <span class="home-culinary-card__coords-sep" aria-hidden="true">·</span>
               <IconLine name="compass" aria-hidden="true" />
@@ -95,9 +95,7 @@ interface CulinaryDish {
   readonly terroir: string
   readonly badge: string
   readonly origin: string
-  readonly guide: string
   readonly reputableVenue: string
-  readonly venues: string
   readonly priceRange: string
   readonly coverSrc: string
   readonly to: string
@@ -112,9 +110,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     terroir: 'Phù Sa Cổ Chiên',
     badge: 'Cá tai tượng sông Tiền',
     origin: 'Cá tai tượng sông Tiền',
-    guide: 'Đệ nhất mỹ vị sông Tiền vảy giòn rụm màu cánh gián, cuốn bánh tráng nem cù lao và rau thơm miệt vườn.',
     reputableVenue: 'Quán Chín Thảo · KDL Vinh Sang · Homestay Út Trinh',
-    venues: 'Quán Cá Tai Tượng Chín Thảo · KDL Vinh Sang · Homestay Út Trinh',
     priceRange: '150.000đ – 250.000đ/con',
     coverSrc: '/img/entities/ca-tai-tuong-chien-xu.webp',
     to: '/dia-diem/ca-tai-tuong-chien-xu',
@@ -127,9 +123,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     terroir: 'Phù Sa Cổ Chiên',
     badge: 'Hến cào Vũng Liêm',
     origin: 'Hến cào Vũng Liêm',
-    guide: 'Vỏ bánh giòn rụm tráng mỏng, nhân hến ngọt xào củ hủ dừa sông Cổ Chiên cuốn cùng 15 loại rau rừng.',
     reputableVenue: 'Quán Bánh Xèo Hến Ba Năm · Các nhà vườn Cù Lao Dài',
-    venues: 'Quán Bánh Xèo Hến Ba Năm · Các nhà vườn sông Cổ Chiên',
     priceRange: '45.000đ – 70.000đ/cái',
     coverSrc: '/img/entities/banh-xeo-hen-cu-lao-dai.webp',
     to: '/dia-diem/banh-xeo-hen-cu-lao-dai',
@@ -142,9 +136,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     terroir: 'Đất nung Mang Thít',
     badge: 'Khoai lang tím Bình Tân OCOP 4 sao',
     origin: 'Khoai lang tím Bình Tân OCOP 4 sao',
-    guide: 'Khoai lang tím Bình Tân bùi ngọt hòa quyện mắm cá linh đậm đà, gói trong lá cách thơm cay độc đáo.',
     reputableVenue: 'Điểm dừng chân Bình Tân · Nhà Dừa Cocohome Cù Lao',
-    venues: 'Điểm dừng chân Bình Tân · Nhà hàng miệt vườn Cù Lao An Bình',
     priceRange: '30.000đ – 50.000đ/phần',
     coverSrc: '/img/entities/khoai-lang-mam-song-cuon-la-cach.webp',
     to: '/dia-diem/khoai-lang-mam-song-cuon-la-cach',
@@ -157,9 +149,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     terroir: 'Xanh Cù Lao',
     badge: 'Cua đồng Tam Bình',
     origin: 'Cua đồng Tam Bình',
-    guide: 'Nồi lẩu riêu cua đồng ngọt thanh tự nhiên, nhúng kèm rau đay mồng tơi tươi non thanh mát miệt vườn.',
     reputableVenue: 'Phố ẩm thực Bờ kè Phường 1 · Quán cá đồng Long Hồ',
-    venues: 'Phố ẩm thực bờ kè Phường 1 (TP Vĩnh Long) · Quán cá đồng Long Hồ',
     priceRange: '120.000đ – 180.000đ/nồi',
     coverSrc: '/img/entities/chao-cua-dong.webp',
     to: '/dia-diem/chao-cua-dong',
@@ -172,9 +162,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     terroir: 'Phù Sa Cổ Chiên',
     badge: 'Ốc lác bến sông Cổ Chiên',
     origin: 'Bờ kè sông Cổ Chiên',
-    guide: 'Ốc mương vườn béo giòn sần sật, nướng tiêu cay nồng hoặc hấp gừng thơm lừng bên bến sông Cổ Chiên.',
     reputableVenue: 'Phố ăn vặt bờ kè sông Cổ Chiên · Bến phà Đình Khao',
-    venues: 'Phố ăn vặt bờ kè sông Cổ Chiên · Bến phà Đình Khao',
     priceRange: '50.000đ – 80.000đ/dĩa',
     coverSrc: '/img/entities/oc-lac-hap-la-gung.webp',
     to: '/dia-diem/oc-lac-hap-la-gung',

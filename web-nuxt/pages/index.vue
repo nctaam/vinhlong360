@@ -51,7 +51,7 @@
             </div>
           </div>
           <div class="hero-terroir-chips" role="region" aria-label="Gợi ý thực địa Vĩnh Long">
-            <span class="hero-terroir-chips__label">Rẽ lối lẹ:</span>
+            <span class="hero-terroir-chips__label">Rẽ lối lẹ</span>
             <NuxtLink
               v-for="chip in HERO_TERROIR_CHIPS"
               :key="chip.label"

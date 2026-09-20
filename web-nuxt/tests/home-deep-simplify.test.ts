@@ -227,6 +227,32 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(contVue).toContain('16 lịch trình thong dong')
     expect(contVue).not.toContain('Xem 16 lịch trình thong dong')
   })
+
+  it('Task 27: Folios I-III and Hero decluttered: modernized satellite link, removed orphaned/redundant data fields, streamlined terroir chips label', () => {
+    const showcaseVue = readFileSync(resolve(__dirname, '../components/home/HomeCuratedShowcase.vue'), 'utf8')
+    const culinaryVue = readFileSync(resolve(__dirname, '../components/home/HomeCulinaryTrail.vue'), 'utf8')
+    const staysVue = readFileSync(resolve(__dirname, '../components/home/HomeRiversideStays.vue'), 'utf8')
+    const freshIndexVue = readFileSync(resolve(__dirname, '../pages/index.vue'), 'utf8')
+
+    // 1. Folio I: satellite link modern (no underline) and dead data fields pruned
+    expect(showcaseVue).not.toMatch(/\.home-curated-satellite__link\s*\{[^}]*text-decoration:\s*underline/)
+    expect(showcaseVue).not.toContain('readonly bestTime: string')
+    expect(showcaseVue).not.toContain('bestTime:')
+    expect(showcaseVue).not.toContain('highlight:')
+
+    // 2. Folio II: dead guide field and redundant venues field pruned
+    expect(culinaryVue).not.toContain('readonly guide: string')
+    expect(culinaryVue).not.toContain('readonly venues: string')
+    expect(culinaryVue).not.toContain('dish.venues')
+
+    // 3. Folio III: dead balconyHighlight field pruned
+    expect(staysVue).not.toContain('readonly balconyHighlight: string')
+    expect(staysVue).not.toContain('balconyHighlight:')
+
+    // 4. Hero Gateway: terroir chips label streamlined without trailing colon
+    expect(freshIndexVue).toContain('Rẽ lối lẹ</span>')
+    expect(freshIndexVue).not.toContain('Rẽ lối lẹ:</span>')
+  })
 })
 
 
