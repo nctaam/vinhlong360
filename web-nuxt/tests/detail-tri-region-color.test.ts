@@ -1,5 +1,5 @@
 import { clearNuxtData, clearNuxtState, useState } from '#app'
-import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
+import { mockNuxtImport, mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineComponent, h, nextTick } from 'vue'
@@ -423,51 +423,63 @@ describe('entity detail tri-region behavior', () => {
 
   it('keeps hero actions labelled, ordered and independently clickable through follow state changes', async () => {
     useState('auth-user').value = { id: 'user-1', has_password: true }
-    vi.stubGlobal('$fetch', vi.fn(async (input: unknown) => {
-      const path = String(input)
-      if (path.includes('/api/me/visits/check/')) return { status: null }
-      if (path === '/api/following') return { following: [] }
-      if (path === '/auth/csrf') return { csrf_token: 'test-csrf' }
-      return {}
-    }))
+    const cleanups: Array<() => void> = [
+      registerEndpoint('/api/me/visits/check/cong-vien-an-hoi', () => ({ status: null })),
+      registerEndpoint('/api/following', () => ({ following: [] })),
+      registerEndpoint('/api/follow/entity/cong-vien-an-hoi', () => ({ ok: true })),
+      registerEndpoint('/auth/csrf', () => ({ csrf_token: 'test-csrf' })),
+    ]
 
-    const wrapper = await mountDetailHero()
-    const actions = wrapper.findAll('.detail-cover button').filter(button =>
-      button.classes().includes('trip-btn') || button.classes().includes('dc-photo-btn'))
+    try {
+      const fetchStub = vi.fn(async (input: unknown) => {
+        const path = String(input)
+        if (path.includes('/api/me/visits/check/')) return { status: null }
+        if (path === '/api/following') return { following: [] }
+        if (path === '/auth/csrf') return { csrf_token: 'test-csrf' }
+        return {}
+      })
+      vi.stubGlobal('$fetch', fetchStub)
 
-    expect(actions.map(action => action.text())).toEqual([
-      'Đã đến',
-      'Muốn đến',
-      'Theo dõi',
-      'Xem ảnh',
-    ])
-    expect(actions.map(action => action.get('[data-icon]').attributes('data-icon'))).toEqual([
-      'check',
-      'heart',
-      'bell',
-      'camera',
-    ])
+      const wrapper = await mountDetailHero()
+      const actions = wrapper.findAll('.detail-cover button').filter(button =>
+        button.classes().includes('trip-btn') || button.classes().includes('dc-photo-btn'))
 
-    const follow = wrapper.findAll('.trip-btn').find(button => button.text().includes('Theo dõi'))!
-    expect(follow.attributes('aria-pressed')).toBe('false')
-    expect(document.body.querySelector('[role="dialog"][aria-label="Xem ảnh"]')).toBeNull()
+      expect(actions.map(action => action.text())).toEqual([
+        'Đã đến',
+        'Muốn đến',
+        'Theo dõi',
+        'Xem ảnh',
+      ])
+      expect(actions.map(action => action.get('[data-icon]').attributes('data-icon'))).toEqual([
+        'check',
+        'heart',
+        'bell',
+        'camera',
+      ])
 
-    await follow.trigger('click')
-    await flushUi()
+      const follow = wrapper.findAll('.trip-btn').find(button => button.text().includes('Theo dõi'))!
+      expect(follow.attributes('aria-pressed')).toBe('false')
+      expect(document.body.querySelector('[role="dialog"][aria-label="Xem ảnh"]')).toBeNull()
 
-    expect(follow.attributes('aria-pressed')).toBe('true')
-    expect(follow.text()).toBe('Đang theo dõi')
-    expect(follow.get('[data-icon]').attributes('data-icon')).toBe('bell')
-    expect(document.body.querySelector('[role="dialog"][aria-label="Xem ảnh"]')).toBeNull()
+      await follow.trigger('click')
+      await flushUi()
 
-    await wrapper.get('.dc-photo-btn').trigger('click')
-    await flushUi()
+      expect(follow.attributes('aria-pressed')).toBe('true')
+      expect(follow.text()).toBe('Đang theo dõi')
+      expect(follow.get('[data-icon]').attributes('data-icon')).toBe('bell')
+      expect(document.body.querySelector('[role="dialog"][aria-label="Xem ảnh"]')).toBeNull()
 
-    const dialog = document.body.querySelector('[role="dialog"][aria-label="Xem ảnh"]')
-    expect(dialog).not.toBeNull()
-    expect(dialog?.querySelector('[data-active-media]')?.getAttribute('alt')).toBe(heroDescriptor.alt)
-    expect(follow.attributes('aria-pressed')).toBe('true')
-    expect(follow.text()).toBe('Đang theo dõi')
+      await wrapper.get('.dc-photo-btn').trigger('click')
+      await flushUi()
+
+      const dialog = document.body.querySelector('[role="dialog"][aria-label="Xem ảnh"]')
+      expect(dialog).not.toBeNull()
+      expect(dialog?.querySelector('[data-active-media]')?.getAttribute('alt')).toBe(heroDescriptor.alt)
+      expect(follow.attributes('aria-pressed')).toBe('true')
+      expect(follow.text()).toBe('Đang theo dõi')
+    } finally {
+      cleanups.forEach(fn => fn())
+    }
   })
 
   it('clears seeded auth-user and guest auth-modal state without wiping unrelated Nuxt state', async () => {

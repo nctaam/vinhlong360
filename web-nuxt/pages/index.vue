@@ -518,8 +518,8 @@ const itineraries = computed(() => homeData.value?.itineraries || [])
 const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
 const heroSubtitle = computed(() => {
-  const val = ss<string>('homepage.hero_subtitle', '')
-  if (!val || val.includes('Tìm điểm đến, món ngon')) {
+  const val = ss<string>('homepage.hero_subtitle', 'Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp')
+  if (!val || val === 'Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp') {
     return 'Hành trình di sản cù lao, làng gốm trăm năm và vị ngọt cây trái giữa đôi bờ Cổ Chiên.'
   }
   return val

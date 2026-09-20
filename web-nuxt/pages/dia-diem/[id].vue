@@ -341,6 +341,15 @@
           <span class="article-sourcemark-label">SourceMark: <strong>Ban biên tập vinhlong360</strong></span>
         </div>
 
+        <!-- Highlights quét nhanh (Baymard: 78% site thiếu; chống info bị chôn dưới fold) -->
+        <div v-if="hasHighlights" class="highlights">
+          <a v-if="zaloLink" class="hl hl-action" data-color-role="action-secondary" data-contact-action="zalo" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`" @click="trackContact('zalo')"><IconLine name="message" aria-hidden="true" /> Zalo</a>
+          <a v-if="entity.attributes?.phone" class="hl hl-action" data-color-role="action-secondary" data-contact-action="phone" :href="telHref(entity.attributes.phone)" :aria-label="`Gọi ${entity.name}`" @click="trackContact('phone')"><IconLine name="phone" aria-hidden="true" /> Gọi</a>
+          <NuxtLink v-if="hasCoords" class="hl hl-action" data-color-role="action-secondary" data-contact-action="map" :to="mapUrl" :aria-label="`Xem ${entity.name} trên bản đồ`" @click="trackContact('map')"><IconLine name="map" aria-hidden="true" /> Bản đồ</NuxtLink>
+          <span v-if="entity.attributes?.hours" class="hl"><IconLine name="clock" aria-hidden="true" /> {{ entity.attributes.hours }}</span>
+          <span v-if="addressText" class="hl"><IconLine name="pin" aria-hidden="true" /> {{ addressText }}</span>
+        </div>
+
         <!-- Editorial Dossier: Dải tóm lược thực địa nhanh -->
         <div class="detail-at-a-glance" role="region" aria-label="Tóm lược thực địa">
           <div class="dc-field-fact">
