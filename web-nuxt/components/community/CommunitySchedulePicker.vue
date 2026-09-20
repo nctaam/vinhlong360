@@ -49,7 +49,7 @@ defineEmits<{
   padding: var(--space-2) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-surface);
   background: var(--bg-alt); color: var(--ink); font-size: var(--text-sm); font-family: inherit; min-height: 44px;
 }
-.cd-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; border-color: var(--color-focus); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .15); }
+.cd-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; border-color: var(--color-focus); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .15); }
 .cd-hint { font-size: var(--text-xs); color: var(--muted); }
 
 @media (max-width: 820px) {

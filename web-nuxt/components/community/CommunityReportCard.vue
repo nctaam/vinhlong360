@@ -110,18 +110,18 @@ onMounted(() => {
 .report-entity-card {
   display: flex; flex-direction: column; gap: var(--space-3);
   padding: var(--space-4); margin-bottom: var(--space-4);
-  background: var(--bg-alt); border: 1.5px solid var(--accent);
+  background: var(--bg-alt); border: 1.5px solid var(--color-material-amber);
   border-radius: var(--radius-sheet);
   animation: slide-up .3s var(--ease-out);
 }
-.report-entity-card:focus-within { border-color: var(--accent-dark); box-shadow: 0 0 0 4px rgba(var(--accent-rgb),.15); }
+.report-entity-card:focus-within { border-color: var(--color-material-amber); box-shadow: 0 0 0 4px rgba(var(--color-warning-rgb), .15); }
 .report-entity-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.report-kicker { margin: 0; font-size: var(--text-2xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--accent); }
+.report-kicker { margin: 0; font-size: var(--text-2xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--color-material-amber); }
 .report-entity-card h2 { margin: 2px 0 var(--space-1); font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); }
 .report-entity-card p { margin: 0; color: var(--muted); font-size: var(--text-sm); }
 .report-form-inline { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-2); }
 .report-reasons { display: flex; flex-wrap: wrap; gap: var(--space-1); }
-.dark .report-entity-card { background: rgba(var(--accent-rgb),.08); border-color: rgba(var(--accent-rgb),.3); }
+.dark .report-entity-card { background: rgba(var(--color-warning-rgb), .08); border-color: rgba(var(--color-warning-rgb), .3); }
 
 @media (prefers-reduced-motion: reduce) {
   .report-entity-card { animation: none; }

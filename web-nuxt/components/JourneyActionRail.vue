@@ -113,8 +113,8 @@ withDefaults(defineProps<{
 }
 .tone-primary .journey-action-icon { background: rgba(var(--color-action-rgb), .1); }
 .tone-map .journey-action-icon { background: rgba(var(--river-rgb), .1); }
-.tone-planner .journey-action-icon { background: rgba(var(--accent-rgb), .12); }
-.tone-community .journey-action-icon { background: rgba(var(--secondary-rgb), .12); }
+.tone-planner .journey-action-icon { background: rgba(var(--color-warning-rgb), .12); }
+.tone-community .journey-action-icon { background: rgba(var(--color-brand-rgb), .12); }
 .tone-saved .journey-action-icon { background: color-mix(in srgb, var(--save-red) 8%, transparent); }
 .tone-warning .journey-action-icon { background: rgba(var(--warning-rgb), .12); }
 .tone-danger .journey-action-icon { background: rgba(var(--danger-rgb), .1); }

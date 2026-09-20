@@ -292,10 +292,10 @@ const { timeAgo } = useTimeAgo()
   height: 2px;
   border-radius: 2px;
   margin: var(--space-1) 0 var(--space-05);
-  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+  background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
 }
 .dark .thread-rule {
-  background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+  background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
 }
 
 /* Type badge — hairline top-border eyebrow (museum spec-tag) instead of a
@@ -311,10 +311,10 @@ const { timeAgo } = useTimeAgo()
   text-transform: uppercase;
   color: var(--muted);
 }
-.thread-type-badge.type-review { color: var(--accent-text); }
+.thread-type-badge.type-review { color: var(--color-material-amber); }
 .thread-type-badge.type-question { color: var(--color-action); }
-.thread-type-badge.type-recommend { color: var(--secondary); }
-.thread-type-badge.type-share { color: var(--tertiary-fg); }
+.thread-type-badge.type-recommend { color: var(--color-material-leaf); }
+.thread-type-badge.type-share { color: var(--color-material-clay); }
 
 /* Emoji-in-chip — never a bare emoji floating next to text; a small
    rounded token keeps it decorative rather than reading as a stray glyph.

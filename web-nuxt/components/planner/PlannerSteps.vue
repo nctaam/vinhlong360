@@ -46,7 +46,7 @@ const currentStep = computed(() => props.activeStep || (props.stopCount >= 2 ? 3
 }
 .planner-step.active { color: var(--ink); font-weight: var(--weight-semibold); }
 .planner-step.active .step-dot { background: var(--color-action); color: var(--color-on-action); border-color: var(--color-action); box-shadow: 0 0 0 4px rgba(var(--color-action-rgb), .18); transform: scale(1.05); }
-.planner-step.done .step-dot { background: rgba(var(--secondary-rgb), .14); color: var(--secondary-fg); border-color: rgba(var(--secondary-rgb), .3); }
+.planner-step.done .step-dot { background: rgba(var(--color-success-rgb), .14); color: var(--color-success); border-color: rgba(var(--color-success-rgb), .3); }
 .planner-step.done .step-label { color: var(--ink); }
 .planner-step-sep { flex: 1 1 18px; min-width: 18px; max-width: 48px; height: 2px; border-radius: 1px; background: var(--line); }
 .dark .planner-step .step-dot { background: var(--bg-alt); border-color: var(--line); }

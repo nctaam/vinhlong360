@@ -406,7 +406,7 @@ onBeforeUnmount(() => {
 .preference-heading h2 { margin: 0; padding: 0; border: 0; font-family: var(--font-editorial); font-size: var(--text-lg); }
 .preference-revision { flex-shrink: 0; padding: .25rem .55rem; border: 1px solid var(--line); border-radius: var(--radius-full); color: var(--ink-700); font-size: var(--text-xs); }
 .preference-intro { max-width: 68ch; margin: .55rem 0 var(--space-4); line-height: var(--leading-relaxed); }
-.preference-banner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); padding: .8rem .9rem; border: 1px solid color-mix(in srgb, var(--amber-600) 30%, var(--line)); border-radius: var(--radius-surface); background: color-mix(in srgb, var(--amber-600) 6%, var(--bg-warm)); }
+.preference-banner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); padding: .8rem .9rem; border: 1px solid color-mix(in srgb, var(--color-material-amber) 30%, var(--line)); border-radius: var(--radius-surface); background: color-mix(in srgb, var(--color-material-amber) 6%, var(--bg-warm)); }
 .preference-banner .btn { min-height: 44px; }
 .preference-banner p { margin: .15rem 0 0; color: var(--ink-700); font-size: var(--text-xs); line-height: 1.45; }
 .preference-conflict { border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); background: color-mix(in srgb, var(--danger) 6%, var(--bg-warm)); }
@@ -425,7 +425,7 @@ onBeforeUnmount(() => {
 .preference-option { min-height: 44px; padding: .55rem .85rem; border: 1px solid var(--border-input); border-radius: var(--radius-full); background: var(--bg); color: var(--ink-700); font: inherit; font-size: var(--text-sm); cursor: pointer; transition: border-color .2s, background .2s, color .2s; }
 .preference-option:hover:not(:disabled) { border-color: var(--muted); color: var(--ink); }
 .preference-option.selected { border-color: var(--color-action); background: var(--color-action-surface); color: var(--ink); font-weight: 650; }
-.preference-option:focus-visible, .preference-banner .btn:focus-visible, .preference-reset .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.preference-option:focus-visible, .preference-banner .btn:focus-visible, .preference-reset .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .preference-option:disabled { cursor: not-allowed; opacity: .55; }
 .preference-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
 .preference-chip { padding: .35rem .65rem; border-radius: var(--radius-full); background: var(--bg-alt); color: var(--ink-700); font-size: .82rem; font-weight: 600; }

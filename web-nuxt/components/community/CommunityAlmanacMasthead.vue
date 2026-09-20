@@ -36,15 +36,15 @@ defineProps<{
 }
 .almanac-pulse {
   width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-  background: var(--leaf-600);
+  background: var(--color-material-leaf);
   animation: almanac-pulse-once 1.6s var(--ease-out-expo) 1;
 }
 @keyframes almanac-pulse-once {
-  0% { box-shadow: 0 0 0 0 rgba(var(--secondary-rgb), .5); }
-  70% { box-shadow: 0 0 0 6px rgba(var(--secondary-rgb), 0); }
-  100% { box-shadow: 0 0 0 0 rgba(var(--secondary-rgb), 0); }
+  0% { box-shadow: 0 0 0 0 rgba(var(--color-success-rgb), .5); }
+  70% { box-shadow: 0 0 0 6px rgba(var(--color-success-rgb), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--color-success-rgb), 0); }
 }
-.dark .almanac-pulse { background: var(--secondary); }
+.dark .almanac-pulse { background: var(--color-material-leaf); }
 .almanac-title {
   font-family: var(--font-editorial); font-weight: 600;
   font-size: var(--text-3xl); line-height: var(--leading-tight);
@@ -62,14 +62,14 @@ defineProps<{
   font-size: var(--text-lg); font-weight: 600; letter-spacing: 0; text-transform: none;
   color: var(--ink);
 }
-.almanac-dot { color: var(--clay-600); font-weight: 700; }
-.dark .almanac-dot { color: var(--clay-400); }
+.almanac-dot { color: var(--color-material-clay); font-weight: 700; }
+.dark .almanac-dot { color: var(--color-material-clay); }
 .sediment-divider {
   position: relative; margin-top: var(--space-5); height: 7px;
   background:
-    linear-gradient(90deg, transparent, var(--river-600) 26%, var(--river-600) 74%, transparent) top/100% 1px no-repeat,
-    linear-gradient(90deg, transparent, var(--amber-600) 30%, var(--amber-600) 70%, transparent) center/100% 1px no-repeat,
-    linear-gradient(90deg, transparent, var(--clay-600) 26%, var(--clay-600) 74%, transparent) bottom/100% 1.5px no-repeat;
+    linear-gradient(90deg, transparent, var(--color-material-river) 26%, var(--color-material-river) 74%, transparent) top/100% 1px no-repeat,
+    linear-gradient(90deg, transparent, var(--color-material-amber) 30%, var(--color-material-amber) 70%, transparent) center/100% 1px no-repeat,
+    linear-gradient(90deg, transparent, var(--color-material-clay) 26%, var(--color-material-clay) 74%, transparent) bottom/100% 1.5px no-repeat;
   opacity: .5;
 }
 .dark .sediment-divider { opacity: .62; }

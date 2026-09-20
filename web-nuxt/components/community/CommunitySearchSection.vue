@@ -78,7 +78,7 @@ defineEmits<{
 .cs-clear:hover { color: var(--ink); }
 .cs-go { flex-shrink: 0; }
 
-.tag-banner { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .5rem .75rem; margin-bottom: var(--space-3); background: color-mix(in srgb, var(--accent) 10%, var(--bg-alt)); border-radius: var(--radius-surface); font-size: var(--text-sm); }
+.tag-banner { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .5rem .75rem; margin-bottom: var(--space-3); background: color-mix(in srgb, var(--color-action) 10%, var(--bg-alt)); border-radius: var(--radius-surface); font-size: var(--text-sm); }
 .tag-clear { border: none; background: none; color: var(--color-action); cursor: pointer; font-size: var(--text-sm); min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
 
 .search-users-section { margin-bottom: var(--space-4); }
