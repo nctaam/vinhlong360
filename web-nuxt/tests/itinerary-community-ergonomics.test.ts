@@ -47,6 +47,12 @@ describe('Itinerary, Community Ergonomics & Hall of Honor (Moc 130)', () => {
       const lineCount = src.split('\n').length
       expect(lineCount).toBeLessThan(1500)
     })
+
+    it('provides pocket travel pass view in lich-trinh/[id].vue', () => {
+      const src = readPage('pages/lich-trinh/[id].vue')
+      expect(src).toContain('pocket-pass-card')
+      expect(src).toContain('pocket-pass-qr')
+    })
   })
 
   describe('Shared Itinerary Hub (pages/lich-trinh-chia-se/[id].vue)', () => {

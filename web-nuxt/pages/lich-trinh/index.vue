@@ -7,7 +7,7 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="calendar" /></span>
         <div>
-          <span class="itin-eyebrow dateline-eyebrow">Lịch trình gợi ý · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)</span>
+          <span class="itin-eyebrow dateline-eyebrow">Lịch trình gợi ý · 124 xã, phường tỉnh Vĩnh Long</span>
           <h1 class="day-arc-title">Chọn một ngày ở Vĩnh Long</h1>
           <p>Có ngày chỉ cần nửa buổi ở miệt vườn, có ngày cần trọn ba hôm để đi hết một khúc sông. Chọn nhịp ngày phù hợp — phần còn lại, tụi mình đã sắp sẵn.</p>
         </div>

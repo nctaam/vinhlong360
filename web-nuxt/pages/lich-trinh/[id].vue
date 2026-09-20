@@ -56,6 +56,36 @@
       <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline btn-sm"><IconLine name="plus" aria-hidden="true" /> Tự tạo lịch trình</NuxtLink>
     </div>
 
+    <!-- Pocket Travel Pass: Offline Field Companion Card -->
+    <div class="pocket-pass-section" role="region" aria-label="Thẻ hành trình bỏ túi ngoại tuyến">
+      <div class="pocket-pass-card" data-pocket-pass-inline>
+        <div class="pocket-pass-head">
+          <div class="pocket-pass-meta-top">
+            <span class="pocket-pass-badge"><IconLine name="ticket" aria-hidden="true" /> Thẻ Hành Trình Bỏ Túi</span>
+            <span class="pocket-pass-offline-tag"><IconLine name="wifi" aria-hidden="true" /> Hoạt động ngoại tuyến</span>
+          </div>
+          <h3 class="pocket-pass-title">{{ itineraryTitle }}</h3>
+          <p class="pocket-pass-subtitle">{{ itinerary.stops?.length || 0 }} chặng dừng chân · Tỉnh Vĩnh Long</p>
+        </div>
+        <div class="pocket-pass-qr-wrap">
+          <div class="pocket-pass-qr" role="img" aria-label="Mã QR tra cứu hành trình ngoại tuyến">
+            <svg viewBox="0 0 80 80" class="qr-svg" aria-hidden="true">
+              <rect x="4" y="4" width="24" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="4" />
+              <rect x="10" y="10" width="12" height="12" fill="currentColor" />
+              <rect x="52" y="4" width="24" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="4" />
+              <rect x="58" y="10" width="12" height="12" fill="currentColor" />
+              <rect x="4" y="52" width="24" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="4" />
+              <rect x="10" y="58" width="12" height="12" fill="currentColor" />
+              <rect x="34" y="34" width="12" height="12" fill="currentColor" />
+            </svg>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm btn-open-pass" @click="showPassModal = true">
+            <IconLine name="maximize-2" aria-hidden="true" /> Mở toàn màn hình
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- AEO Plaque: Field Trip Digest & Terroir Highlights -->
     <CatalogAeoPlaque
       title="Cẩm Nang Trải Nghiệm Thực Địa &amp; Điểm Nhấn Bản Địa"
@@ -638,6 +668,26 @@ if (itinerary.value && !itinerary.value.error) {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+}
+
+.pocket-pass-section { margin: var(--space-4) 0 var(--space-6); }
+.pocket-pass-card {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+}
+.pocket-pass-badge { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--color-action); }
+.pocket-pass-offline-tag { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-2xs); color: var(--color-text-muted); margin-left: var(--space-3); }
+.pocket-pass-title { font-family: var(--font-editorial); font-size: var(--text-base); margin: var(--space-1) 0; }
+.pocket-pass-subtitle { font-size: var(--text-xs); color: var(--color-text-muted); margin: 0; }
+.pocket-pass-qr-wrap { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
+.pocket-pass-qr { width: 48px; height: 48px; color: var(--color-text); }
+.pocket-pass-qr .qr-svg { width: 100%; height: 100%; }
+@media (max-width: 640px) {
+  .pocket-pass-card { flex-direction: column; align-items: flex-start; }
+  .pocket-pass-qr-wrap { width: 100%; justify-content: space-between; margin-top: var(--space-2); }
 }
 
 /* Mode selector panel: snug card-like container */
