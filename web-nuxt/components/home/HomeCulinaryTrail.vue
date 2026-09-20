@@ -10,7 +10,7 @@
         <p class="sh-sub">Năm thức ngon nức tiếng miệt Cửu Long, đượm vị tôm cá sông Cổ Chiên cùng mớ rau vườn tươi rói bến phù sa.</p>
       </div>
       <NuxtLink to="/am-thuc" class="see-all">
-        <span>Xem trọn 120 món ngon di sản</span>
+        <span>120 món ngon di sản</span>
         <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" />
       </NuxtLink>
     </div>

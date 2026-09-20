@@ -253,6 +253,38 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(freshIndexVue).toContain('Rẽ lối lẹ</span>')
     expect(freshIndexVue).not.toContain('Rẽ lối lẹ:</span>')
   })
+
+  it('Task 28: Folios II & III see-all links streamlined and HomeTravelPlanner decluttered', () => {
+    const culinaryVue = readFileSync(resolve(__dirname, '../components/home/HomeCulinaryTrail.vue'), 'utf8')
+    const staysVue = readFileSync(resolve(__dirname, '../components/home/HomeRiversideStays.vue'), 'utf8')
+    const plannerVue = readFileSync(resolve(__dirname, '../components/home/HomeTravelPlanner.vue'), 'utf8')
+
+    // 1. Folio II see-all: streamlined
+    expect(culinaryVue).toContain('120 món ngon di sản')
+    expect(culinaryVue).not.toContain('Xem trọn 120 món ngon di sản')
+
+    // 2. Folio III stays see-all: streamlined
+    expect(staysVue).toContain('164 nơi lưu trú')
+    expect(staysVue).not.toContain('Xem toàn bộ 164 nơi lưu trú')
+
+    // 3. Folio III planner: see-all matches HomeContinuation exactly
+    expect(plannerVue).toContain('16 lịch trình thong dong')
+    expect(plannerVue).not.toContain('Xem trọn 16 lịch trình')
+
+    // 4. Folio III planner: stops heading without trailing colon
+    expect(plannerVue).toContain('Các chặng dừng chân nổi bật</h4>')
+    expect(plannerVue).not.toContain('Các chặng dừng chân nổi bật:</h4>')
+
+    // 5. Folio III planner: action buttons streamlined
+    expect(plannerVue).toContain('Chi tiết lộ trình')
+    expect(plannerVue).not.toContain('Xem chi tiết lộ trình')
+    expect(plannerVue).toContain('Tùy chỉnh lịch trình')
+    expect(plannerVue).not.toContain('Tùy chỉnh lịch trình riêng')
+
+    // 6. Folio III planner: dead imports pruned
+    expect(plannerVue).not.toContain('import SourceMark')
+    expect(plannerVue).not.toContain('import FreshnessLine')
+  })
 })
 
 

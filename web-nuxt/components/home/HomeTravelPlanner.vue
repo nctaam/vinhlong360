@@ -10,7 +10,7 @@
         <p class="sh-sub">Ba chặng đường thong dong đúc kết từ lối đi của người địa phương, vừa vặn cho chuyến đi ngắn ngày hay kỳ nghỉ thảnh thơi.</p>
       </div>
       <NuxtLink to="/lich-trinh" class="see-all">
-        <span>Xem trọn 16 lịch trình</span>
+        <span>16 lịch trình thong dong</span>
         <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" />
       </NuxtLink>
     </div>
@@ -49,18 +49,18 @@
         </div>
         <div class="home-planner-card__actions">
           <NuxtLink :to="activeItinerary.to" class="btn btn-primary" data-color-role="action-primary">
-            <span>Xem chi tiết lộ trình</span>
+            <span>Chi tiết lộ trình</span>
             <IconLine name="arrow-right" aria-hidden="true" />
           </NuxtLink>
           <NuxtLink to="/tao-lich-trinh" class="btn btn-outline" data-color-role="action-secondary">
             <IconLine name="pencil" aria-hidden="true" />
-            <span>Tùy chỉnh lịch trình riêng</span>
+            <span>Tùy chỉnh lịch trình</span>
           </NuxtLink>
         </div>
       </div>
 
       <div class="home-planner-card__stops">
-        <h4 class="home-planner-card__stops-heading">Các chặng dừng chân nổi bật:</h4>
+        <h4 class="home-planner-card__stops-heading">Các chặng dừng chân nổi bật</h4>
         <div class="home-planner-card__timeline">
           <div
             v-for="(stop, idx) in activeItinerary.stops"
@@ -85,8 +85,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import IconLine from '~/components/IconLine.vue'
-import SourceMark from '~/components/SourceMark.vue'
-import FreshnessLine from '~/components/FreshnessLine.vue'
 
 interface ItineraryStop {
   readonly time: string

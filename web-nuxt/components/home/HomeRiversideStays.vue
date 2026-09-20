@@ -10,7 +10,7 @@
         <p class="sh-sub">Thức giấc giữa tiếng chim hót miệt vườn, cùng chủ nhà bơi xuồng hái trái cây và lắng nghe tiếng đàn kìm réo rắt bên bến sông Cổ Chiên.</p>
       </div>
       <NuxtLink to="/luu-tru" class="see-all">
-        <span>Xem toàn bộ 164 nơi lưu trú</span>
+        <span>164 nơi lưu trú</span>
         <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" />
       </NuxtLink>
     </div>
