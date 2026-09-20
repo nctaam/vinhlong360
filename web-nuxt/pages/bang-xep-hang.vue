@@ -98,11 +98,13 @@
 
     <template v-else>
       <!-- Bục vinh danh — top 3, biên tập chứ không phải leaderboard game hoá -->
-      <ol v-if="podium.length" class="bxh-podium" :style="{ '--podium-count': podium.length }" aria-label="Top 3 thành viên tích cực nhất">
+      <ol v-if="podium.length" class="bxh-podium podium-pedestal" :style="{ '--podium-count': podium.length }" aria-label="Top 3 thành viên tích cực nhất">
         <li v-for="m in podium" :key="m.id" class="podium-card reveal" :class="`podium-${m.rank}`">
           <NuxtLink :to="userPath(m.username || m.id)" class="podium-link">
             <span class="podium-rank" aria-hidden="true">{{ m.rank }}</span>
-            <span class="avatar podium-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
+            <div class="podium-avatar-ring">
+              <span class="avatar podium-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
+            </div>
             <span class="podium-name">{{ m.display_name }}</span>
             <span class="podium-level"><IconLine :name="levelIcon(m.level)" aria-hidden="true" /> {{ m.level_label }}</span>
             <span class="podium-points">{{ m.points }}<small>điểm</small></span>
@@ -358,6 +360,12 @@ useHead(() => ({
 .podium-1 .podium-rank { background: var(--medal-gold); width: 46px; height: 46px; font-size: var(--text-2xl); }
 .podium-2 .podium-rank { background: var(--medal-silver); }
 .podium-3 .podium-rank { background: var(--medal-bronze); }
+.podium-avatar-ring {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--alluvial-gold), var(--clay-500));
+}
 .podium-avatar { width: 56px; height: 56px; font-size: var(--text-lg); }
 .podium-1 .podium-avatar { width: 68px; height: 68px; font-size: var(--text-xl); }
 .podium-name { font-family: var(--font-editorial); font-size: var(--text-base); font-weight: 600; overflow-wrap: anywhere; }

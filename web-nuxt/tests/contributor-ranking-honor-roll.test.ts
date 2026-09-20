@@ -39,6 +39,12 @@ describe('R2: Contributor Ranking & Honor Roll Journal Craft (Moc 134)', () => {
       expect(src).toContain('.bxh-rank-3')
     })
 
+    it('renders contemporary podium top 3 with alluvial gold and terracotta laurels', () => {
+      const src = doc('pages/bang-xep-hang.vue')
+      expect(src).toContain('podium-pedestal')
+      expect(src).toContain('podium-avatar-ring')
+    })
+
     it('F3-3: computes anti-inflation scores based on verified field contributions without vanity gaming', () => {
       const src = doc('pages/bang-xep-hang.vue')
       expect(src).toContain('podiumQuote')
