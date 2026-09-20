@@ -645,7 +645,7 @@ useHead({
 .post-edit-form .textarea { width: 100%; resize: vertical; }
 .pef-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-3); }
 .pef-count { margin-right: auto; font-size: var(--text-xs); color: var(--muted); }
-.qa-badge { display: inline-flex; align-items: center; gap: .25rem; font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .2rem .55rem; border-radius: 999px; background: var(--success-bg); color: var(--secondary-fg); }
+.qa-badge { display: inline-flex; align-items: center; gap: .25rem; font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .2rem .55rem; border-radius: 999px; background: color-mix(in srgb, var(--color-success) 12%, transparent); color: var(--color-success); border: 1px solid color-mix(in srgb, var(--color-success) 24%, transparent); }
 .qa-pick { font-size: var(--text-xs); padding: .2rem .55rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; transition: border-color .2s, color .2s, transform .2s var(--ease-out-expo); }
 .qa-pick:hover { border-color: var(--color-action); color: var(--color-action); }
 .qa-pick:active { transform: scale(.95); transition-duration: .08s; }
@@ -758,7 +758,7 @@ useHead({
 .comment-empty-halo {
   display: inline-flex; align-items: center; justify-content: center;
   width: 64px; height: 64px; border-radius: var(--radius-full);
-  background: rgba(var(--accent-rgb), .08); margin-bottom: var(--space-1);
+  background: var(--color-action-surface); margin-bottom: var(--space-1);
 }
 .comment-empty-icon { font-size: var(--text-2xl); opacity: .8; }
 .comment-empty p { margin: 0; color: var(--ink); font-size: var(--text-sm); font-weight: var(--weight-medium); }

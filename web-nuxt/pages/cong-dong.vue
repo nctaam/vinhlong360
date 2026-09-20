@@ -869,11 +869,18 @@ useHead({
   display: flex; gap: var(--space-3); border-radius: var(--radius-surface);
   margin: 0 calc(var(--space-2) * -1) var(--space-2);
   padding: var(--space-5) var(--space-3) var(--space-4);
-  background: rgba(var(--accent-rgb), .04); box-shadow: var(--shadow-xs);
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xs);
   transition: background .3s var(--ease-out), border-color .3s var(--ease-out), border-radius .3s var(--ease-out), box-shadow .3s var(--ease-out-expo);
 }
 .threads-compose:focus-within,
-.chronicle-compose-panel:focus-within { background: rgba(var(--accent-rgb), .07); border-radius: var(--radius-sheet); box-shadow: var(--shadow-sm); }
+.chronicle-compose-panel:focus-within {
+  background: var(--color-surface);
+  border-color: var(--color-brand);
+  border-radius: var(--radius-sheet);
+  box-shadow: var(--shadow-sm);
+}
 .compose-left { width: 40px; flex-shrink: 0; display: flex; justify-content: center; }
 .compose-right { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
 .compose-input {
@@ -899,7 +906,7 @@ useHead({
 .compose-attach:active { transform: scale(.88); transition-duration: .08s; }
 .compose-attach:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .char-count { font-size: var(--text-xs); color: var(--muted); font-variant-numeric: tabular-nums; transition: color .2s; }
-.char-count.warn { color: var(--accent-dark); }
+.char-count.warn { color: var(--color-warning); }
 .char-count.full { color: var(--error); font-weight: var(--weight-semibold); }
 .chip-sm { font-size: var(--text-xs); padding: var(--space-2) var(--space-2h); min-height: 44px; display: inline-flex; align-items: center; gap: var(--space-1); }
 
@@ -936,8 +943,8 @@ useHead({
 
 /* ── Dark mode & Responsive ── */
 .dark .compose-attach:hover { background: rgba(var(--white-rgb),.08); }
-.dark .threads-compose { background: rgba(var(--accent-rgb),.06); }
-.dark .threads-compose:focus-within { background: rgba(var(--accent-rgb),.1); }
+.dark .threads-compose { background: var(--color-surface-subtle); border-color: var(--color-border); }
+.dark .threads-compose:focus-within { background: var(--color-surface); border-color: var(--color-brand); }
 @media (max-width: 820px) {
   .threads-layout { grid-template-columns: 1fr; }
   .threads-sidebar { display: none; }
