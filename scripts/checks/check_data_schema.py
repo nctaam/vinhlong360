@@ -193,4 +193,68 @@ class DataRichSourceCheck(_DataJsonCheck):
         return violations
 
 
-CHECKS = [DataSchemaCheck(), DataTypedRequiredCheck(), DataRichSourceCheck()]
+CANONICAL_JSON_HASHES = {
+    "8ac327de6c4f273c96efe99004f6a1858ba41af43799ebcdae5cd7f31316d92f",
+}
+CANONICAL_DB_HASH = "20ac61bf7d247d8df35bd20bfe11140cf6eebae0980de4af5720d5ed73add742"
+
+
+class DataStoreHashGuard:
+    """R10.hash — Bất biến mã băm mật mã của data.json và DB (CLAUDE.md §2 B1, B7).
+
+    Chặn đứng mọi script ngầm sửa data.json hoặc DB mà không có cờ ALLOW_DATA_MUTATION=1.
+    """
+
+    name, level, rule = "data_store_hash", "hard", "R10.hash"
+
+    def __init__(self, root: Path | None = None):
+        self._root = root
+
+    @property
+    def root(self) -> Path:
+        return self._root or repo_root()
+
+    def run(self, files: list[str] | None = None) -> dict:
+        import hashlib
+        import os
+
+        if os.environ.get("ALLOW_DATA_MUTATION") == "1":
+            return {"check": self.name, "level": self.level, "rule": self.rule, "count": 0, "violations": []}
+
+        violations = []
+        if files is None or DATA_REL in [f.replace("\\", "/") for f in files]:
+            data_file = self.root / DATA_REL
+            if data_file.exists():
+                h = hashlib.sha256(data_file.read_bytes()).hexdigest().lower()
+                if h not in CANONICAL_JSON_HASHES:
+                    violations.append({
+                        "file": DATA_REL,
+                        "line": 0,
+                        "rule": self.rule,
+                        "msg": f"data.json có mã băm SHA-256 {h} không khớp baseline ({list(CANONICAL_JSON_HASHES)[0]}). Nghiêm cấm sửa trực tiếp data.json!",
+                    })
+
+        db_rel = "agent/data/vinhlong360.db"
+        if files is None or db_rel in [f.replace("\\", "/") for f in files]:
+            db_file = self.root / db_rel
+            if db_file.exists():
+                db_h = hashlib.sha256(db_file.read_bytes()).hexdigest().lower()
+                if db_h != CANONICAL_DB_HASH:
+                    violations.append({
+                        "file": db_rel,
+                        "line": 0,
+                        "rule": self.rule,
+                        "msg": f"{db_rel} có mã băm {db_h} lệch chuẩn ({CANONICAL_DB_HASH})!",
+                    })
+
+        return {
+            "check": self.name,
+            "level": self.level,
+            "rule": self.rule,
+            "count": len(violations),
+            "violations": violations,
+        }
+
+
+CHECKS = [DataSchemaCheck(), DataTypedRequiredCheck(), DataRichSourceCheck(), DataStoreHashGuard()]
+
