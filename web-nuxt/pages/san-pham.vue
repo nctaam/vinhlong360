@@ -393,19 +393,19 @@ useHead(() => {
   align-self: center;
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
-  color: var(--accent-fg, var(--muted));
+  color: var(--color-brand);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill, 999px);
-  background: rgba(var(--accent-rgb), .12);
+  background: rgba(var(--color-brand-rgb), .12);
   white-space: nowrap;
 }
 
 @keyframes season-fire-pulse {
-  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(var(--accent-rgb), 0)); }
-  50% { transform: scale(1.08); filter: drop-shadow(0 0 4px rgba(var(--accent-rgb), .45)); }
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(var(--color-brand-rgb), 0)); }
+  50% { transform: scale(1.08); filter: drop-shadow(0 0 4px rgba(var(--color-brand-rgb), .45)); }
 }
 
-.dark .seasonal-banner-month { background: rgba(var(--accent-rgb), .18); }
+.dark .seasonal-banner-month { background: rgba(var(--color-brand-rgb), .18); }
 
 @media (prefers-reduced-motion: reduce) {
   .seasonal-banner-live .seasonal-banner-icon { animation: none; }
@@ -452,10 +452,10 @@ useHead(() => {
   font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: var(--tracking-caps);
-  color: var(--accent-dark, var(--amber-600));
+  color: var(--color-brand);
   margin: 0 0 var(--space-2);
 }
-.dark .catalog-hero-inner p.market-kicker { color: var(--amber-500); }
+.dark .catalog-hero-inner p.market-kicker { color: var(--color-brand); }
 .catalog-hero-inner p.market-dek {
   font-family: var(--font-editorial);
   font-size: clamp(1rem, .94rem + .3vw, 1.1rem);
@@ -494,7 +494,7 @@ useHead(() => {
    market-stall backdrop band, CSS gradient only, not an image. */
 .market-shelf {
   background-image:
-    linear-gradient(180deg, rgba(var(--accent-rgb), .05) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(var(--color-brand-rgb), .05) 0%, transparent 60%),
     var(--season-hero-gradient);
 }
 
@@ -502,7 +502,7 @@ useHead(() => {
    global) — evokes sông nước without literal water GIFs. Colour-only under RM. */
 .market-card :deep(.card) { transition: box-shadow .4s var(--ease-out-expo); }
 .market-card:hover :deep(.card) {
-  box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--river-rgb), .18), 0 14px 28px -16px rgba(var(--river-rgb), .3);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--color-brand-rgb), .18), 0 14px 28px -16px rgba(var(--color-brand-rgb), .3);
 }
 
 /* Month-filter quick-reset chip — turns the filter UI into a curiosity loop:
@@ -515,18 +515,18 @@ useHead(() => {
   gap: var(--space-1);
   font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
-  color: var(--accent-dark, var(--amber-600));
-  background: rgba(var(--accent-rgb), .1);
-  border: 1px solid rgba(var(--accent-rgb), .4);
+  color: var(--color-brand);
+  background: rgba(var(--color-brand-rgb), .1);
+  border: 1px solid rgba(var(--color-brand-rgb), .35);
   border-radius: var(--radius-pill, 999px);
   padding: var(--space-1) var(--space-3);
   min-height: 44px;
   cursor: pointer;
   transition: background .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .25s var(--ease-out);
 }
-.season-reset-chip:hover { background: rgba(var(--accent-rgb), .18); box-shadow: var(--shadow-xs); transform: translateY(-1px); }
+.season-reset-chip:hover { background: rgba(var(--color-brand-rgb), .18); box-shadow: var(--shadow-xs); transform: translateY(-1px); }
 .season-reset-chip:active { transform: scale(.95); }
-.dark .season-reset-chip { color: var(--amber-500); background: rgba(var(--accent-rgb), .14); border-color: rgba(var(--accent-rgb), .5); }
+.dark .season-reset-chip { color: var(--color-brand); background: rgba(var(--color-brand-rgb), .14); border-color: rgba(var(--color-brand-rgb), .4); }
 
 /* OCOP teaser strip — slim signpost outward to /ocop (not a competing
    deep-dive rail); information-scent card, contact-only site, no CTA verb. */
@@ -538,13 +538,13 @@ useHead(() => {
   padding: var(--space-4) var(--space-5);
   border: .5px solid var(--line);
   border-radius: var(--radius-sheet);
-  background: linear-gradient(90deg, rgba(var(--secondary-rgb), .06), transparent);
+  background: linear-gradient(90deg, rgba(var(--color-brand-rgb), .06), transparent);
   text-decoration: none;
   color: var(--ink);
   transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .ocop-teaser-link:hover {
-  border-color: rgba(var(--secondary-rgb), .5);
+  border-color: rgba(var(--color-brand-rgb), .5);
   box-shadow: var(--shadow-sm);
   transform: translateY(-2px);
 }
@@ -552,7 +552,7 @@ useHead(() => {
 .ocop-teaser-copy { flex: 1; font-size: var(--text-sm); color: var(--muted); }
 .ocop-teaser-copy strong { color: var(--ink); font-weight: var(--weight-semibold); }
 .ocop-teaser-arrow {
-  color: var(--secondary-fg, var(--secondary));
+  color: var(--color-brand);
   flex-shrink: 0;
   width: 18px;
   height: 18px;
@@ -561,7 +561,7 @@ useHead(() => {
 .ocop-teaser-link:hover .ocop-teaser-arrow {
   transform: translateX(3px);
 }
-.dark .ocop-teaser-link { background: linear-gradient(90deg, rgba(var(--secondary-rgb), .1), transparent); }
+.dark .ocop-teaser-link { background: linear-gradient(90deg, rgba(var(--color-brand-rgb), .1), transparent); }
 
 @media (prefers-reduced-motion: reduce) {
   .seasonal-banner-live .seasonal-banner-icon { animation: none; }

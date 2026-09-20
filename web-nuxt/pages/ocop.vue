@@ -510,22 +510,22 @@ useHead(() => {
   gap: var(--space-2);
   padding: var(--space-4);
   margin-bottom: var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--secondary) 25%, transparent);
-  box-shadow: inset 3px 0 0 var(--secondary);
+  border: 1px solid color-mix(in srgb, var(--color-brand) 25%, transparent);
+  box-shadow: inset 3px 0 0 var(--color-brand);
   border-radius: var(--radius-control);
-  background: linear-gradient(90deg, rgba(var(--secondary-rgb), .08), transparent);
+  background: linear-gradient(90deg, rgba(var(--color-brand-rgb), .08), transparent);
 }
 .honor-banner-icon { font-size: 1.25rem; }
 .honor-banner-text {
   font-weight: var(--weight-semibold);
   font-size: var(--text-sm);
-  color: var(--secondary-fg, var(--secondary));
+  color: var(--color-brand);
   letter-spacing: var(--tracking-tight);
 }
 /* Curated-collection lift + glow for honor-roll cards */
 .honor-roll :deep(.card:hover) {
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--secondary-rgb), .2), 0 18px 40px -18px rgba(var(--secondary-rgb), .35);
-  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--color-brand-rgb), .2);
+  transform: translateY(-4px);
 }
 
 /* Filter panel labeled sections — clearer scannable groups (OCOP page only) */
@@ -547,7 +547,7 @@ useHead(() => {
 }
 
 .dark .hero-cred-seal { color: var(--color-brand); }
-.dark .honor-banner { background: linear-gradient(90deg, rgba(var(--secondary-rgb), .12), transparent); }
+.dark .honor-banner { background: linear-gradient(90deg, rgba(var(--color-brand-rgb), .12), transparent); }
 
 @media (prefers-reduced-motion: reduce) {
   .honor-roll :deep(.card:hover) { transform: none; }
@@ -637,10 +637,10 @@ useHead(() => {
   font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: var(--tracking-caps);
-  color: var(--secondary-fg, var(--secondary));
+  color: var(--color-brand);
   margin: 0 0 var(--space-2);
 }
-.dark .catalog-hero-inner p.ledger-kicker { color: var(--secondary-fg); }
+.dark .catalog-hero-inner p.ledger-kicker { color: var(--color-brand); }
 .catalog-hero-inner p.ledger-dek {
   font-family: var(--font-editorial);
   font-size: clamp(1rem, .94rem + .3vw, 1.1rem);
@@ -692,16 +692,16 @@ useHead(() => {
    read (signature moment, concept §10). Reuses EntityCard unchanged. */
 .ocop-band { border-radius: var(--radius-sheet); padding: var(--space-6); margin-bottom: var(--space-6); }
 .ocop-band--5 {
-  border: 1px solid rgba(var(--accent-rgb), .35);
-  background: linear-gradient(180deg, rgba(var(--accent-rgb), .07), transparent 65%);
-  box-shadow: 0 0 0 1px rgba(var(--accent-rgb), .08), var(--shadow-sm);
+  border: 1px solid color-mix(in srgb, var(--color-material-amber) 35%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-material-amber) 7%, transparent), transparent 65%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-material-amber) 8%, transparent), var(--shadow-sm);
 }
 .ocop-band--5 .section-head h2 {
   font-size: clamp(1.6rem, 1.3rem + 1vw, 2.1rem);
 }
 .ocop-band--4 {
-  border: .5px solid rgba(var(--accent-rgb), .2);
-  background: linear-gradient(180deg, rgba(var(--accent-rgb), .035), transparent 65%);
+  border: .5px solid color-mix(in srgb, var(--color-material-amber) 20%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-material-amber) 3.5%, transparent), transparent 65%);
   padding: var(--space-5);
 }
 .ocop-band--4 .section-head h2 { font-size: var(--text-xl); }
@@ -712,8 +712,8 @@ useHead(() => {
   box-shadow: none;
 }
 .ocop-band--3 .section-head h2 { font-size: var(--text-lg); }
-.dark .ocop-band--5 { background: linear-gradient(180deg, rgba(var(--accent-rgb), .1), transparent 65%); }
-.dark .ocop-band--4 { background: linear-gradient(180deg, rgba(var(--accent-rgb), .05), transparent 65%); }
+.dark .ocop-band--5 { background: linear-gradient(180deg, color-mix(in srgb, var(--color-material-amber) 10%, transparent), transparent 65%); }
+.dark .ocop-band--4 { background: linear-gradient(180deg, color-mix(in srgb, var(--color-material-amber) 5%, transparent), transparent 65%); }
 
 /* Explicit top-down stagger reinforcement (5 settles first, 3 last) — modest
    nudge on top of each band's own independent scroll-triggered reveal. */
@@ -726,17 +726,17 @@ useHead(() => {
 /* Star-filter chip highlight-flash — closes the loop between "I clicked
    5-star" and "I see why the grid changed" (concept §5). */
 .star-filter-wrap { border-radius: var(--radius-sheet); transition: box-shadow .3s var(--ease-out); }
-.star-filter-flash { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .35); animation: star-filter-glow .9s var(--ease-out) both; }
+.star-filter-flash { box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .35); animation: star-filter-glow .9s var(--ease-out) both; }
 @keyframes star-filter-glow {
-  0% { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .5); }
-  100% { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0); }
+  0% { box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .5); }
+  100% { box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), 0); }
 }
-.dark .star-filter-flash { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .4); }
+.dark .star-filter-flash { box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .4); }
 
 @media (prefers-reduced-motion: reduce) {
   .wax-seal { animation: none; }
   .ocop-band[data-stagger].reveal.revealed { animation-delay: 0s; }
-  .star-filter-flash { animation: none; box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .3); }
+  .star-filter-flash { animation: none; box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .3); }
 }
 
 @media (max-width: 640px) {
