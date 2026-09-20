@@ -20,6 +20,13 @@ describe('Moc 146: Secondary & Account Pages Radius Hygiene & Integrity', () => 
     }
   })
 
+  it('features 24/7 emergency rescue hotline strip and district tabs in danh-ba.vue', () => {
+    const rootDir = resolve(__dirname, '..')
+    const src = readFileSync(resolve(rootDir, 'pages/danh-ba.vue'), 'utf-8')
+    expect(src).toContain('emergency-hotline-strip')
+    expect(src).toContain('district-filter-tabs')
+  })
+
   it('strictly protects line count ceilings for the 4 critical pages', () => {
     const rootDir = resolve(__dirname, '..')
     const ceilings: Record<string, number> = {

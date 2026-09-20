@@ -24,7 +24,7 @@
     </section>
 
     <!-- 24/7 Emergency Tourism Rescue Hotlines (Authoritative Priority Layout) -->
-    <section class="block dir-emergency reveal" aria-labelledby="dir-emergency-title" data-dir-emergency>
+    <section class="block dir-emergency emergency-hotline-strip reveal" aria-labelledby="dir-emergency-title" data-dir-emergency>
       <div class="section-head dir-emergency-head">
         <div class="dir-emergency-badge">
           <IconLine name="shield" aria-hidden="true" />
@@ -293,7 +293,7 @@
         <div class="section-head">
           <h3 class="sediment-head">Chọn khu vực</h3>
         </div>
-        <div class="quick-picks region-quick-picks" role="group" aria-label="Chọn khu vực">
+        <div class="quick-picks region-quick-picks district-filter-tabs" role="group" aria-label="Chọn khu vực">
           <button type="button"
             v-for="g in wardGroups" :key="g.area"
             :class="['quick-pick', { active: selectedArea === g.area }]"
