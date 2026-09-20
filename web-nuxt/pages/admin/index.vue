@@ -32,45 +32,45 @@
 
     <!-- Primary stats -->
     <div class="dash-stats" role="group" aria-label="Thống kê tổng quan">
-      <div class="dash-stat-card" role="group" aria-label="Entities">
+      <div class="dash-stat-card admin-metric-card" role="group" aria-label="Entities">
         <div class="dash-stat-icon si-green" aria-hidden="true"><IconLine name="database" /></div>
         <div class="dash-stat-body">
-          <div class="dash-stat-value">{{ stats.total_entities || 0 }}<span v-if="stats.entities_week" class="dash-delta">+{{ stats.entities_week }}</span></div>
+          <div class="dash-stat-value">{{ stats.total_entities || 0 }}<span v-if="stats.entities_week" class="dash-delta metric-trend-indicator">+{{ stats.entities_week }}</span></div>
           <div class="dash-stat-label">Entities</div>
         </div>
       </div>
-      <div class="dash-stat-card">
+      <div class="dash-stat-card admin-metric-card">
         <div class="dash-stat-icon si-blue" aria-hidden="true"><IconLine name="landmark" /></div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ stats.total_places || 0 }}</div>
           <div class="dash-stat-label">Địa điểm HC</div>
         </div>
       </div>
-      <div class="dash-stat-card">
+      <div class="dash-stat-card admin-metric-card">
         <div class="dash-stat-icon si-purple" aria-hidden="true"><IconLine name="share" /></div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ formatNum(stats.total_relationships) }}</div>
           <div class="dash-stat-label">Quan hệ</div>
         </div>
       </div>
-      <div class="dash-stat-card">
+      <div class="dash-stat-card admin-metric-card">
         <div class="dash-stat-icon si-orange" aria-hidden="true"><IconLine name="map" /></div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ stats.total_itineraries || 0 }}</div>
           <div class="dash-stat-label">Lịch trình</div>
         </div>
       </div>
-      <div v-if="stats.total_users" class="dash-stat-card">
+      <div v-if="stats.total_users" class="dash-stat-card admin-metric-card">
         <div class="dash-stat-icon si-indigo" aria-hidden="true"><IconLine name="users" /></div>
         <div class="dash-stat-body">
-          <div class="dash-stat-value">{{ formatNum(stats.total_users) }}<span v-if="stats.users_week" class="dash-delta">+{{ stats.users_week }}</span></div>
+          <div class="dash-stat-value">{{ formatNum(stats.total_users) }}<span v-if="stats.users_week" class="dash-delta metric-trend-indicator">+{{ stats.users_week }}</span></div>
           <div class="dash-stat-label">Users</div>
         </div>
       </div>
-      <div v-if="stats.total_posts" class="dash-stat-card">
+      <div v-if="stats.total_posts" class="dash-stat-card admin-metric-card">
         <div class="dash-stat-icon si-red" aria-hidden="true"><IconLine name="file-text" /></div>
         <div class="dash-stat-body">
-          <div class="dash-stat-value">{{ formatNum(stats.total_posts) }}<span v-if="stats.posts_week" class="dash-delta">+{{ stats.posts_week }}</span></div>
+          <div class="dash-stat-value">{{ formatNum(stats.total_posts) }}<span v-if="stats.posts_week" class="dash-delta metric-trend-indicator">+{{ stats.posts_week }}</span></div>
           <div class="dash-stat-label">Bài viết</div>
         </div>
       </div>

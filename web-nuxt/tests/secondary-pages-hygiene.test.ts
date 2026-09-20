@@ -27,6 +27,13 @@ describe('Moc 146: Secondary & Account Pages Radius Hygiene & Integrity', () => 
     expect(src).toContain('district-filter-tabs')
   })
 
+  it('verifies admin dashboard contains modernized KPI card grids', () => {
+    const rootDir = resolve(__dirname, '..')
+    const adminHome = readFileSync(resolve(rootDir, 'pages/admin/index.vue'), 'utf-8')
+    expect(adminHome).toContain('admin-metric-card')
+    expect(adminHome).toContain('metric-trend-indicator')
+  })
+
   it('strictly protects line count ceilings for the 4 critical pages', () => {
     const rootDir = resolve(__dirname, '..')
     const ceilings: Record<string, number> = {
