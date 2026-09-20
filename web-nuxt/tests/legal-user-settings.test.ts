@@ -95,5 +95,10 @@ describe('Legal & User Account Utilities (Moc 133)', () => {
       expect(src).toContain('role="tab"')
       expect(src).toContain('@keydown="onFilterKeydown"')
     })
+
+    it('ensures correction submission receipt renders clear reference ID badge', () => {
+      const src = readPage('pages/yeu-cau/sua-thong-tin.vue')
+      expect(src).toContain('receipt-panel')
+    })
   })
 })

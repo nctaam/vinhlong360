@@ -159,11 +159,12 @@ useHead(() => ({
         <span v-if="problem.field">Trường cần kiểm tra: {{ problem.field }}</span>
       </div>
 
-      <CaseReceiptCard
-        v-if="receipt"
-        :receipt="receipt"
-        @forget="cases.forgetCapability()"
-      />
+      <div v-if="receipt" class="receipt-panel">
+        <CaseReceiptCard
+          :receipt="receipt"
+          @forget="cases.forgetCapability()"
+        />
+      </div>
       <CorrectionIntakeForm
         v-else
         :entity-id="entity.id"
@@ -223,5 +224,13 @@ useHead(() => ({
   margin: 0;
   line-height: var(--leading-relaxed);
   color: var(--ink-secondary);
+}
+.receipt-panel {
+  display: grid;
+  gap: var(--space-4);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-surface);
+  padding: var(--space-4);
 }
 </style>
