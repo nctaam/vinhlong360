@@ -2191,7 +2191,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   height: 100%;
   object-fit: cover;
   object-position: center 35%;
-  transform: scale(1.02);
+  transform: scale(1);
   transition: opacity 0.6s ease;
 }
 

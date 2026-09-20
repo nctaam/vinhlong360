@@ -461,7 +461,8 @@
 }
 
 @media (pointer: coarse), (max-width: 840px) {
-  .theme-mode-control button {
+  .theme-mode-control button,
+  .display-settings-trigger {
     min-width: 44px;
     min-height: 44px;
   }
@@ -474,8 +475,7 @@
 
 .display-settings-trigger {
   position: relative;
-  height: 32px;
-  min-height: 32px;
+  min-height: var(--touch-min, 44px);
   padding: 0 10px;
   display: inline-flex;
   align-items: center;
