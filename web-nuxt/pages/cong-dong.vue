@@ -44,8 +44,8 @@
         <!-- Report entity (if from ?report=id) -->
         <CommunityReportCard />
 
-        <!-- Create post (Threads style) -->
-        <div v-if="isLoggedIn && !ugcUnavailable" id="compose" ref="composeEl" class="threads-compose" role="form" aria-label="Viết bài mới">
+        <!-- Create post (Chronicle compose panel) -->
+        <div v-if="isLoggedIn && !ugcUnavailable" id="compose" ref="composeEl" class="threads-compose chronicle-compose-panel" role="form" aria-label="Viết bài mới">
           <div class="compose-left">
             <span class="avatar thread-avatar">{{ userInitial }}</span>
           </div>
@@ -106,7 +106,7 @@
               :min-schedule-date="minScheduleDate"
             />
 
-            <div class="compose-footer">
+            <div class="compose-footer composer-toolbar">
               <div class="compose-footer-left">
                 <label class="compose-attach" title="Thêm ảnh">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
@@ -863,15 +863,17 @@ useHead({
 .threads-layout { display: grid; grid-template-columns: 1fr 280px; gap: var(--space-6); align-items: start; }
 .threads-feed { display: flex; flex-direction: column; min-width: 0; }
 
-/* ── Compose (Threads style) ── */
-.threads-compose {
+/* ── Compose (Chronicle Compose Panel) ── */
+.threads-compose,
+.chronicle-compose-panel {
   display: flex; gap: var(--space-3); border-radius: var(--radius-surface);
   margin: 0 calc(var(--space-2) * -1) var(--space-2);
   padding: var(--space-5) var(--space-3) var(--space-4);
   background: rgba(var(--accent-rgb), .04); box-shadow: var(--shadow-xs);
   transition: background .3s var(--ease-out), border-color .3s var(--ease-out), border-radius .3s var(--ease-out), box-shadow .3s var(--ease-out-expo);
 }
-.threads-compose:focus-within { background: rgba(var(--accent-rgb), .07); border-radius: var(--radius-sheet); box-shadow: var(--shadow-sm); }
+.threads-compose:focus-within,
+.chronicle-compose-panel:focus-within { background: rgba(var(--accent-rgb), .07); border-radius: var(--radius-sheet); box-shadow: var(--shadow-sm); }
 .compose-left { width: 40px; flex-shrink: 0; display: flex; justify-content: center; }
 .compose-right { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
 .compose-input {
@@ -885,7 +887,8 @@ useHead({
 .post-type-selector .chip-sm { transition: background .2s, color .2s, border-color .2s, transform .25s var(--ease-out-expo); }
 .post-type-selector .chip-sm.active { transform: scale(1.04); }
 .post-type-selector .chip-sm:active { transform: scale(.95); transition-duration: .08s; }
-.compose-footer { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); padding-top: var(--space-1); }
+.compose-footer,
+.composer-toolbar { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); padding-top: var(--space-1); }
 .compose-footer-left { display: flex; align-items: center; gap: var(--space-3); }
 .compose-attach {
   display: inline-flex; align-items: center; justify-content: center;

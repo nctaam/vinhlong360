@@ -10,7 +10,7 @@
     <h1 class="sr-only">{{ post?.display_name ? `Bài viết của ${post.display_name}` : 'Bài viết' }}</h1>
     <div
       v-if="post"
-      class="thread-detail reveal"
+      class="thread-detail chronicle-post-detail reveal"
       data-image-surface="post-detail-card"
       data-source-class="user-uploaded"
       data-entity-image-policy="no-image-invariant"

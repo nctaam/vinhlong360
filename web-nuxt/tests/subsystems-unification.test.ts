@@ -399,5 +399,11 @@ describe('Milestone M3: Unified Organic Heritage Entity Subsystems', () => {
       expect(detail).toContain('dc-field-fact')
       expect(detail).not.toMatch(/GPS:\s*\d+\.\d+/)
     })
+
+    it('verifies community feed implements modern chronicle composer', () => {
+      const src = readSource('pages/cong-dong.vue')
+      expect(src).toContain('chronicle-compose-panel')
+      expect(src).toContain('composer-toolbar')
+    })
   })
 })
