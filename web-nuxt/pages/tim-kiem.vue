@@ -9,7 +9,7 @@
 
     <!-- Hero: masthead + hero-scale input, with one Clay editorial tick. -->
     <section class="catalog-hero cat-search search-hero">
-      <span class="dateline-eyebrow">Tìm kiếm · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)</span>
+      <span class="dateline-eyebrow">Tìm kiếm đa thực thể · 124 xã, phường tỉnh Vĩnh Long</span>
       <h1>{{ pc('hero_title') }}</h1>
       <p class="search-ticker-line" aria-live="off">
         <span class="search-ticker-word" :key="tickerIdx">{{ tickerPhrase }}<span class="search-ticker-q">?</span></span>
@@ -37,7 +37,7 @@
         <button type="button" class="btn btn-primary" data-color-role="action-primary" @click="doSearch">Tìm</button>
       </div>
 
-      <div class="search-quick-culture" role="group" aria-label="Gợi ý tìm kiếm 3 vùng văn hóa">
+      <div class="search-quick-culture" role="group" aria-label="Gợi ý tìm kiếm nhanh">
         <span class="sqc-label">Gợi ý nhanh:</span>
         <div class="sqc-chips">
           <button

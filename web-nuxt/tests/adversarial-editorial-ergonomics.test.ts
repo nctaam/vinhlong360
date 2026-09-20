@@ -77,6 +77,11 @@ describe('Adversarial Verification: Editorial Design, Ergonomics & Terroir Archi
       expect(banDoVue).toContain(':aria-pressed="isFullBleed"')
       expect(banDoVue).toContain(':class="{ \'is-active\': isFullBleed }"')
     })
+
+    it('verifies ban-do.vue contains ergonomic bottom floating dock on mobile', () => {
+      const banDo = readFileSync(resolve(__dirname, '../pages/ban-do.vue'), 'utf8')
+      expect(banDo).toContain('map-floating-dock')
+    })
   })
 
   // ──────────────────────────────────────────────────────────────────────────

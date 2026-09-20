@@ -12,7 +12,7 @@
       <div class="catalog-hero-inner map-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="map" /></span>
         <div>
-          <span class="dateline-eyebrow">Bản đồ sống · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) · 10.254° N, 105.972° E</span>
+          <span class="dateline-eyebrow">Bản đồ thực địa · 124 xã, phường tỉnh Vĩnh Long · 10.254° N, 105.972° E</span>
           <h1>Bản đồ</h1>
           <p>So sánh vị trí bằng bản đồ, đối chiếu bằng danh sách và địa chỉ ngay cả khi tile không tải.</p>
         </div>
@@ -31,7 +31,7 @@
           aria-label="Lọc theo loại địa điểm"
           @update:model-value="onTypeFilterChange"
         />
-        <div class="map-field-dock map-floating-thumb-dock" role="toolbar" aria-label="Tiện ích thực địa & lọc chuyên đề">
+        <div class="map-field-dock map-floating-thumb-dock map-floating-dock" role="toolbar" aria-label="Tiện ích thực địa & lọc chuyên đề">
           <div class="map-quick-presets" role="group" aria-label="Lọc theo đặc trưng sông nước">
             <button
               v-for="preset in quickWaterPresets"
