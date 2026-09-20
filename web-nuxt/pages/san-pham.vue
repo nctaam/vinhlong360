@@ -58,7 +58,7 @@
         <span class="seasonal-banner-month" aria-hidden="true">Tháng {{ currentMonth }}</span>
       </div>
       <div class="scroll-row" role="region" aria-label="Đặc sản đang mùa" tabindex="0">
-        <EntityCard v-for="e in seasonalHighlights" :key="e.id" :entity="e" :season-filter="String(currentMonth)" class="market-card" />
+        <EntityCard v-for="e in seasonalHighlights" :key="e.id" :entity="e" :season-filter="String(currentMonth)" class="market-card" color-recipe="tri-region-v1" />
       </div>
     </section>
 
@@ -168,7 +168,7 @@
       </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
       <div v-else-if="filtered.length" :class="viewMode === 'list' ? 'list-view' : 'grid grid--asymmetric product-grid'">
-        <EntityCard v-for="e in visible" :key="e.id" :entity="e" :season-filter="seasonFilter" />
+        <EntityCard v-for="e in visible" :key="e.id" :entity="e" :season-filter="seasonFilter" color-recipe="tri-region-v1" />
       </div>
       <EmptyState v-else icon-name="fruit" title="Không tìm thấy sản phẩm" message="Thử chọn tháng khác hoặc bỏ bộ lọc OCOP.">
         <template #actions>

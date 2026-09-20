@@ -198,7 +198,7 @@
           <div v-if="i > 0 && i % 9 === 0" class="cuisine-divider reveal" role="presentation" aria-hidden="true">
             <span class="cuisine-divider-label">Hương vị tiếp nối · {{ dividerFact(i) }}</span>
           </div>
-          <EntityCard :entity="e" />
+          <EntityCard :entity="e" color-recipe="tri-region-v1" />
         </template>
       </div>
       <EmptyState v-else icon-name="search" title="Không tìm thấy món ăn phù hợp" message="Thử thay đổi từ khóa hoặc bộ lọc vùng xem sao nhé.">
