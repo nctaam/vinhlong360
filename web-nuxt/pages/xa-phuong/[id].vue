@@ -40,7 +40,7 @@
     </Breadcrumb>
 
     <!-- Hero -->
-    <header class="wp-hero" data-detail-region="identity" :class="`area-${data.place.area}`">
+    <header class="wp-hero ward-header" data-detail-region="identity" :class="`area-${data.place.area}`">
       <div class="wp-hero-motif" aria-hidden="true" v-html="heroMotif"></div>
       <div class="wp-hero-inner">
         <div class="wp-hero-eyebrow-row">

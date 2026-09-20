@@ -122,5 +122,11 @@ describe('R1: Catalog Magazine Layout & Asymmetric Editorial Architecture', () =
     it('rejects AI SaaS neon purple and cyan hues in catalog styling', () => {
       expect(catalogCss).not.toMatch(/#5b6cc4|#a855f7|#8b5cf6|#00f0ff/i)
     })
+
+    it('verifies commune dossiers adhere to standard surface radii and no raw GPS coordinates', () => {
+      const wardVue = readFileSync(resolve(__dirname, '../pages/xa-phuong/[id].vue'), 'utf8')
+      expect(wardVue).not.toMatch(/Tọa độ vệ tinh/i)
+      expect(wardVue).toContain('ward-header')
+    })
   })
 })
