@@ -81,7 +81,7 @@ const faqItems: FaqEntry[] = [
 .fieldwork-faq__header{margin-bottom:var(--space-6)}
 .fieldwork-faq__tagline{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-2)}
 .fieldwork-faq__badge{display:inline-flex;align-items:center;gap:6px;font-size:var(--text-xs);font-weight:var(--weight-bold);letter-spacing:.08em;color:var(--mangthit-600)}
-.fieldwork-faq__count{font-size:11px;font-family:var(--font-mono,monospace);padding:2px 8px;border-radius:var(--radius-pill,999px);border:1px solid color-mix(in srgb,var(--color-border) 80%,transparent);color:var(--color-text-muted)}
+.fieldwork-faq__count{font-size:11px;font-variant-numeric:tabular-nums;padding:2px 8px;border-radius:var(--radius-pill,999px);border:1px solid color-mix(in srgb,var(--color-border) 80%,transparent);color:var(--color-text-muted)}
 .fieldwork-faq__title{font-family:var(--font-serif,'Lora',Georgia,serif);font-size:clamp(1.5rem,2.5vw,2rem);font-weight:400;line-height:1.25;color:var(--color-text);margin:0 0 var(--space-2)}
 .fieldwork-faq__subtitle{font-size:var(--text-sm);color:var(--color-text-muted);max-width:640px;margin:0;line-height:1.6}
 .fieldwork-faq__accordion{display:flex;flex-direction:column;gap:var(--space-3)}

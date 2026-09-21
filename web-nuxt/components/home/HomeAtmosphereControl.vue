@@ -226,7 +226,7 @@ function selectMode(id: AtmosphereMode) {
 }
 
 .home-atmosphere-control__mode-time {
-  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   opacity: 0.75;
 }

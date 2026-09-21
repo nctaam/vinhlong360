@@ -483,7 +483,6 @@ const HOTLINES: readonly EmergencyContact[] = [
   border-radius: var(--radius-pill, 9999px);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
-  font-family: var(--font-mono, monospace);
   flex-shrink: 0;
 }
 
@@ -601,7 +600,7 @@ const HOTLINES: readonly EmergencyContact[] = [
 .home-hotline-btn--quick .home-hotline-btn__num {
   color: inherit;
   font-weight: var(--weight-bold);
-  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
   font-size: var(--text-sm);
   letter-spacing: 0.02em;
 }

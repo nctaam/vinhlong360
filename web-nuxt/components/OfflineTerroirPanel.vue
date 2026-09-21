@@ -353,7 +353,7 @@ function dismissModal() {
 
 .tide-flow-badge {
   font-size: var(--font-size-caption);
-  font-family: monospace;
+  font-variant-numeric: tabular-nums;
   font-weight: var(--weight-bold);
   color: var(--color-action);
 }
@@ -447,6 +447,6 @@ function dismissModal() {
 }
 
 .contact-phone-num {
-  font-family: monospace;
+  font-variant-numeric: tabular-nums;
 }
 </style>

@@ -334,7 +334,6 @@ function onAvatarFallback(e: Event) {
 }
 
 .editorial-folio-tag {
-  font-family: var(--font-mono, monospace);
   font-size: 11px;
   font-weight: var(--weight-bold);
   letter-spacing: 0.12em;

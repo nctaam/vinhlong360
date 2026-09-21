@@ -439,7 +439,7 @@ function onImgFallback(e: Event) {
 }
 
 .home-stay-card__price {
-  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
   font-size: var(--text-xs);
   color: var(--alluvial-gold);
   font-weight: var(--weight-bold);

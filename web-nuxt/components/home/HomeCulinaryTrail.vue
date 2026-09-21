@@ -309,7 +309,6 @@ function onImgFallback(e: Event) {
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
-  font-family: var(--font-mono, monospace);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
 }
@@ -356,7 +355,7 @@ function onImgFallback(e: Event) {
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
-  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   font-weight: var(--weight-bold);
   letter-spacing: 0.02em;

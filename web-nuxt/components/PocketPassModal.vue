@@ -584,7 +584,7 @@ onUnmounted(() => {
 
 .waypoint-time {
   font-size: var(--font-size-label);
-  font-family: monospace;
+  font-variant-numeric: tabular-nums;
   color: var(--alluvial-gold);
   white-space: nowrap;
 }
@@ -751,7 +751,6 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-family: monospace;
   font-size: var(--font-size-caption);
   font-weight: var(--weight-bold);
   color: var(--color-action);
