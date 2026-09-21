@@ -541,10 +541,9 @@ onMounted(() => fetchUsers())
   width: 6px; height: 6px; border-radius: 50%;
 }
 .usr-active { background: rgba(var(--color-success-rgb),.08); color: var(--success); }
-.usr-active .usr-status-dot { background: var(--color-success); animation: usr-pulse 2s var(--ease-in-out) infinite; }
+.usr-active .usr-status-dot { background: var(--color-success); }
 .usr-banned { background: rgba(var(--danger-rgb),.08); color: var(--error); }
 .usr-banned .usr-status-dot { background: var(--error); }
-@keyframes usr-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
 
 /* ── Head actions (refresh + export) ── */
 .usr-head-actions { display: flex; gap: var(--space-2); align-items: center; flex-shrink: 0; }

@@ -385,7 +385,6 @@ useHead(() => {
    Scoped to .seasonal-banner-live so other pages' banners are unaffected. */
 .seasonal-banner-live .seasonal-banner-icon {
   display: inline-block;
-  animation: season-fire-pulse 2.8s var(--ease-out-expo) infinite;
 }
 .seasonal-banner-month {
   margin-left: auto;
@@ -400,16 +399,7 @@ useHead(() => {
   white-space: nowrap;
 }
 
-@keyframes season-fire-pulse {
-  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(var(--color-brand-rgb), 0)); }
-  50% { transform: scale(1.08); filter: drop-shadow(0 0 4px rgba(var(--color-brand-rgb), .45)); }
-}
-
 .dark .seasonal-banner-month { background: rgba(var(--color-brand-rgb), .18); }
-
-@media (prefers-reduced-motion: reduce) {
-  .seasonal-banner-live .seasonal-banner-icon { animation: none; }
-}
 
 @media (max-width: 640px) {
   /* Keep the month chip from crowding the copy on small screens */

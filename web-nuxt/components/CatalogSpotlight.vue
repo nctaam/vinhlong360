@@ -90,10 +90,7 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 .cspot-visual::before {
   content: ""; position: absolute; inset: -18%; z-index: 0; pointer-events: none;
   background: radial-gradient(46% 46% at 34% 30%, rgba(var(--white-rgb),.22) 0%, transparent 68%);
-  animation: cspot-glow 13s var(--ease-in-out) infinite alternate;
-  will-change: transform;
 }
-@keyframes cspot-glow { 0% { transform: translate3d(0,0,0) scale(1); } 100% { transform: translate3d(7%,5%,0) scale(1.12); } }
 .cspot-region, .cspot-icon { position: relative; z-index: 1; }
 .cspot-icon { width: 112px; height: 112px; opacity: .86; color: var(--text-on-dark, var(--white)); filter: drop-shadow(0 4px 14px rgba(var(--black-rgb),.26)); }
 @media (max-width: 760px) { .cspot-icon { width: 84px; height: 84px; } }

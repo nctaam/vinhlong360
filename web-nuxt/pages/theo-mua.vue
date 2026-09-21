@@ -604,10 +604,10 @@ useHead(() => {
   font-size: clamp(1.25rem, 1rem + 1.2vw, 1.8rem);
   line-height: var(--leading-snug);
   color: var(--ink);
-  border-left: 1.5px solid var(--color-material-amber);
+  border-left: 3px solid var(--alluvial-gold);
   padding: var(--space-3) var(--space-4);
   margin: var(--space-editorial, 2rem) 0;
-  background: color-mix(in srgb, var(--color-material-amber) 4%, transparent);
+  background: color-mix(in srgb, var(--alluvial-gold) 4%, transparent);
   border-radius: var(--radius-control);
 }
 

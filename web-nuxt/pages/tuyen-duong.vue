@@ -619,12 +619,6 @@ useHead(() => {
   text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--color-brand);
   margin-bottom: 2px;
 }
-/* subtle breathing pulse when the card is hovered, to draw the eye to the tip */
-.route-card:hover .route-tips { animation: tips-pulse 2.4s var(--ease-out) infinite; }
-@keyframes tips-pulse {
-  0%, 100% { box-shadow: 0 1px 2px rgba(var(--color-action-rgb), .15); }
-  50%      { box-shadow: 0 1px 8px rgba(var(--color-action-rgb), .25); }
-}
 /* staggered entrance for route cards, tying into the batch signature rhythm */
 .route-grid > .route-card { animation: card-rise .55s var(--ease-out-expo) both; }
 .route-grid > .route-card:nth-child(1) { animation-delay: .02s; }

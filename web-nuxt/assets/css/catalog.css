@@ -712,16 +712,14 @@
 .cross-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .cross-card:active { transform: scale(.97); transition-duration: .08s; }
 .cross-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
-.cross-icon { font-size: 1.6rem; flex-shrink: 0; transition: transform .35s var(--ease-out-expo), text-shadow .35s var(--ease-out-expo); }
-.cross-card:hover .cross-icon { transform: scale(1.12); }
+.cross-icon { font-size: 1.6rem; flex-shrink: 0; transition: transform .35s var(--ease-out-expo); }
+.cross-card:hover .cross-icon { transform: scale(1.08); }
 .cross-card strong { display: block; font-size: var(--text-sm); }
 .cross-card p { margin: 0; font-size: var(--text-xs); color: var(--muted); }
 /* tablet: lock cross-links to a tidy 2-up before the mobile breakpoint */
 @media (max-width: 768px) {
   .cross-links { grid-template-columns: repeat(2, 1fr); }
 }
-/* dark mode: the cross-icon picks up a soft glow on hover */
-.dark .cross-card:hover .cross-icon { text-shadow: 0 0 12px rgba(var(--color-brand-rgb), .15); }
 
 /* ── Seasonal highlight (banner) ── */
 .seasonal-banner {
@@ -770,15 +768,6 @@
 @media (max-width: 640px) {
   .quick-pick { padding: var(--space-6) var(--space-2); min-height: 48px; }
 }
-/* optional star glyphs inside a quick-pick gently twinkle on hover
-   (opt-in via .quick-pick-stars; existing quick-picks unaffected) */
-.quick-pick-stars { font-size: 1rem; letter-spacing: .04em; line-height: 1; }
-.quick-pick:hover .quick-pick-stars { animation: star-twinkle 1.2s var(--ease-in-out) infinite; }
-@keyframes star-twinkle {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: .4; }
-}
-
 /* ── Premium region quick-picks (curated-collection feel) ──
    Opt-in variant on .quick-picks → .quick-pick. Region tint is supplied
    per-card via a --AREA-rgb custom property (page sets it inline). Falls
@@ -1273,16 +1262,9 @@
 /* gentle fade-in on (re)render so a filter change reads as fresh status,
    plus a calm breathing pulse on the status dot. CSS-only; safe fallback. */
 .result-meta { animation: result-pulse .5s var(--ease-out); }
-.result-meta::before { animation: result-dot-breathe 2.4s var(--ease-out) infinite; }
 @keyframes result-pulse {
   from { opacity: 0; transform: translateY(-2px); }
   to   { opacity: 1; transform: translateY(0); }
-}
-/* Cheaper repaint: breathe via transform+opacity (GPU) instead of box-shadow ring.
-   Static ring kept on ::before above; the pulse now scales the dot itself. */
-@keyframes result-dot-breathe {
-  0%, 100% { transform: scale(1); opacity: .9; }
-  50%      { transform: scale(1.18); opacity: 1; }
 }
 /* dark mode: keep the pill intentional (transparent fill, visible hairline) */
 .dark .result-meta { background: transparent; border-color: var(--line); }
@@ -1624,10 +1606,8 @@
   .controls .chip:not(.active):hover { transform: none; }
   /* batch-2 additions */
   .stat-item:hover .stat-stars { transform: none; }
-  .quick-pick:hover .quick-pick-stars { animation: none; }
   .region-quick-picks .quick-pick:hover { transform: none; }
   .result-meta { animation: none; }
-  .result-meta::before { animation: none; }
   .reveal .scroll-row > * { animation: none; opacity: 1; transform: none; }
 }
 

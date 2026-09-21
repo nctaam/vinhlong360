@@ -476,11 +476,6 @@ onMounted(() => { fetchHealth(); fetchCost() })
 }
 .ai-near-cap {
   border: 1px solid var(--warning); background: color-mix(in srgb, var(--warning) 8%, var(--card, var(--white)));
-  animation: ai-near-cap-pulse 2.5s var(--ease-out-expo) infinite alternate;
-}
-@keyframes ai-near-cap-pulse {
-  from { opacity: 1; }
-  to { opacity: .75; }
 }
 
 /* ── Subsystems grid ── */
@@ -496,10 +491,9 @@ onMounted(() => { fetchHealth(); fetchCost() })
   width: 6px; height: 6px; border-radius: 50%;
 }
 .ai-subsys-on { background: rgba(var(--color-success-rgb),.06); color: var(--success); }
-.ai-subsys-on .ai-subsys-dot { background: var(--color-success); animation: ai-sub-pulse 2.5s var(--ease-in-out) infinite; }
+.ai-subsys-on .ai-subsys-dot { background: var(--color-success); }
 .ai-subsys-off { background: rgba(var(--danger-rgb),.06); color: var(--error); }
 .ai-subsys-off .ai-subsys-dot { background: var(--error); opacity: .5; }
-@keyframes ai-sub-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 
 /* ── Actions grid ── */
 .ai-action-grid {

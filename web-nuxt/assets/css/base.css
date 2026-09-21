@@ -1173,16 +1173,6 @@ html[data-high-contrast="true"] :where(.card, .step-card, .route-card, .cross-ca
 .card, .page, .catalog-filter-ledger, .province-stamp {
   transition: background-color .35s var(--ease-out), color .35s var(--ease-out), border-color .35s var(--ease-out);
 }
-@keyframes clayPulse {
-  0% { transform: scale(1); }
-  45% { transform: scale(1.08); }
-  100% { transform: scale(1); }
-}
-@keyframes riverRipple {
-  0% { box-shadow: 0 0 0 0 rgba(var(--color-action-rgb), .3); }
-  70% { box-shadow: 0 0 0 8px rgba(var(--color-action-rgb), 0); }
-  100% { box-shadow: 0 0 0 0 rgba(var(--color-action-rgb), 0); }
-}
 
 /* The semantic theme marker mirrors the color-mode classes used by legacy CSS. */
 html:not([data-theme]), html[data-theme="nocturne"] { color-scheme: dark; }
