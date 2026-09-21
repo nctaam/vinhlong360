@@ -96,15 +96,14 @@ const { timeAgo } = useTimeAgo()
 .ri-action-btn:focus-visible { outline: 2px solid var(--error); outline-offset: 1px; }
 .ri-action-btn:disabled { opacity: .55; cursor: not-allowed; }
 .rf-error { font-size: var(--text-sm); color: var(--error); margin-top: var(--space-1); }
-/* Sediment accent replaces the generic --accent rail — river→amber→clay wash, echoing the section tick at card scale. */
+/* Sediment accent: warm amber-tinted surface and balanced hairline border. */
 .review-featured {
-  border-left: 3px solid transparent;
-  border-image: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 55%, var(--color-material-clay) 100%) 1;
-  background: rgba(var(--color-warning-rgb), .04);
+  border: 1px solid color-mix(in srgb, var(--color-material-amber) 35%, var(--line));
+  background: color-mix(in srgb, var(--color-material-amber) 5%, var(--card));
   border-radius: var(--radius-surface);
 }
 .dark .review-featured {
-  border-image: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 55%, var(--color-material-clay) 100%) 1;
+  border-color: color-mix(in srgb, var(--color-material-amber) 30%, var(--line));
 }
 /* background tint for .review-featured in dark stays in dark-overrides.css */
 </style>

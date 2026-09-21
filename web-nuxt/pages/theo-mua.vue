@@ -485,7 +485,7 @@ useHead(() => {
 
 <style scoped>
 .month-grid { position: relative; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: var(--space-2); }
-.month-grid .quick-pick { border-left: 2px solid color-mix(in srgb, var(--month-tone, var(--color-brand)) 55%, transparent); }
+.month-grid .quick-pick { border-color: color-mix(in srgb, var(--month-tone, var(--color-brand)) 40%, var(--line)); }
 .month-grid .quick-pick.active {
   box-shadow: 0 2px 8px rgba(var(--color-action-rgb), .22), inset 0 1px 0 rgba(var(--white-rgb), .15);
 }

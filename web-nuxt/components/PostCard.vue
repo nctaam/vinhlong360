@@ -302,7 +302,7 @@ const { timeAgo } = useTimeAgo()
    solid app-badge pill; small-caps wide tracking per narrative-system §2.2. */
 .thread-type-badge {
   background: none;
-  border-top: 2px solid currentColor;
+  border-top: 1px solid currentColor;
   border-radius: 0;
   padding: var(--space-1) 0 0;
   font-size: var(--text-2xs);

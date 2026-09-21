@@ -974,7 +974,7 @@ if (itinerary.value && !itinerary.value.error) {
   .timeline { padding-left: var(--space-4); }
   .timeline::before { background: var(--ink-tertiary); }
   .timeline-chapter { break-after: avoid; }
-  .step-note-callout { background: none; border-left: 2px solid var(--ink-tertiary); }
+  .step-note-callout { background: none; border-left: 1px solid var(--ink-tertiary); }
 }
 
 :deep(.route-marker .rm-num) {

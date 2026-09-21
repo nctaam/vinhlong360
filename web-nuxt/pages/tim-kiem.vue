@@ -717,12 +717,11 @@ useHead({
   min-height: 44px;
   padding: var(--space-2) var(--space-3); border-radius: var(--radius-surface);
   cursor: pointer; font-size: var(--text-sm); color: var(--ink);
-  border-left: 3px solid transparent;
-  transition: background .2s var(--ease-out), border-color .2s var(--ease-out);
+  transition: background .2s var(--ease-out), color .2s var(--ease-out);
 }
 .sug-item:hover, .sug-item.active { background: var(--bg-alt); }
-/* Keyboard selection stays explicit in structure and gains one restrained Clay marker. */
-.sug-item[aria-selected="true"] { border-left-color: var(--color-material-clay); background: var(--color-brand-surface); }
+/* Keyboard selection stays explicit in structure with brand surface highlight. */
+.sug-item[aria-selected="true"] { background: var(--color-brand-surface); color: var(--color-brand); }
 .sug-icon {
   display: inline-flex; align-items: center; justify-content: center;
   font-size: var(--text-base); color: var(--muted); flex-shrink: 0;

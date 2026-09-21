@@ -202,10 +202,11 @@
   padding: var(--space-4) var(--space-4);
   margin-bottom: var(--space-3);
   text-align: center;
-  transition: box-shadow .35s var(--ease-out-expo), transform .35s var(--ease-out-expo);
+  transition: border-color .2s var(--ease-out), box-shadow .35s var(--ease-out-expo), transform .35s var(--ease-out-expo);
 }
 .ocop-highlight:hover {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-material-amber) 16%, transparent), var(--shadow-sm);
+  border-color: var(--color-material-amber);
+  box-shadow: var(--shadow-sm);
   transform: translateY(-2px);
 }
 .ocop-stars {

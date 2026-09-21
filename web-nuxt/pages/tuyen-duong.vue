@@ -676,10 +676,10 @@ useHead(() => {
 
 /* ── Area-tinted filter chips — chips preview the route palette they filter,
    so filter and content read as one system before you even click (§2.3). ── */
-.chip-area.area-vinh-long { border-left: 2px solid color-mix(in srgb, var(--color-material-clay) 55%, transparent); }
-.chip-area.area-ben-tre { border-left: 2px solid color-mix(in srgb, var(--color-material-leaf) 55%, transparent); }
-.chip-area.area-tra-vinh { border-left: 2px solid color-mix(in srgb, var(--color-material-river) 55%, transparent); }
-.chip-area.area-lien-vung { border-left: 2px solid color-mix(in srgb, var(--color-material-clay) 55%, transparent); }
+.chip-area.area-vinh-long { border-color: color-mix(in srgb, var(--color-material-clay) 35%, var(--line)); }
+.chip-area.area-ben-tre { border-color: color-mix(in srgb, var(--color-material-leaf) 35%, var(--line)); }
+.chip-area.area-tra-vinh { border-color: color-mix(in srgb, var(--color-material-river) 35%, var(--line)); }
+.chip-area.area-lien-vung { border-color: color-mix(in srgb, var(--color-material-clay) 35%, var(--line)); }
 .chip-area.active.area-vinh-long { background: var(--color-material-clay); border-color: var(--color-material-clay); color: var(--white); }
 .chip-area.active.area-ben-tre { background: var(--color-material-leaf); border-color: var(--color-material-leaf); color: var(--white); }
 .chip-area.active.area-tra-vinh { background: var(--color-material-river); border-color: var(--color-material-river); color: var(--white); }
