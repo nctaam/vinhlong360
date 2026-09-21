@@ -1578,7 +1578,6 @@ html[data-reduced-motion="true"] .public-shell-catalog-button .line-icon {
 .admin-shell .admin-nav a.active {
   border-color: var(--color-admin-active-border);
   background: var(--color-admin-active);
-  box-shadow: inset 3px 0 0 var(--color-admin-action);
   color: var(--color-admin-text);
   font-weight: 600;
 }

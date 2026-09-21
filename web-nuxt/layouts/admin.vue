@@ -308,8 +308,8 @@ useSeoMeta({
 .admin-nav a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .admin-nav a.active {
   background: rgba(var(--white-rgb),.14); color: var(--text-on-dark); font-weight: 600;
-  box-shadow: inset 4px 0 0 var(--color-brand);
-  transition: box-shadow .2s, background .2s, color .25s;
+  border: 1px solid color-mix(in srgb, var(--color-brand) 30%, transparent);
+  transition: border-color .2s, background .2s, color .25s;
 }
 .admin-nav a.nav-sub { padding-left: calc(var(--space-4) + 14px); font-size: .86em; opacity: .92; }
 .collapsed .admin-nav a.nav-sub { padding-left: var(--space-2); }
@@ -596,7 +596,7 @@ useSeoMeta({
 .dark .admin-nav-group-label { color: rgba(var(--white-rgb),.35); }
 .dark .admin-nav a { color: rgba(var(--white-rgb),.65); }
 .dark .admin-nav a:hover { color: var(--ink); background: rgba(var(--white-rgb),.12); }
-.dark .admin-nav a.active { background: rgba(var(--white-rgb),.14); color: var(--ink); box-shadow: inset 4px 0 0 var(--color-brand); }
+.dark .admin-nav a.active { background: rgba(var(--white-rgb),.14); color: var(--ink); border: 1px solid color-mix(in srgb, var(--color-brand) 40%, transparent); }
 .dark .admin-table th { box-shadow: 0 2px 4px rgba(var(--black-rgb),.03); }
 .dark .admin-empty-state-hint { color: rgba(var(--white-rgb),.3); }
 .dark .admin-topbar { background: color-mix(in oklab, var(--bg) 85%, transparent); border-bottom-color: rgba(var(--white-rgb),.08); }

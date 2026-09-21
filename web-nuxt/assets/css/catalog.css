@@ -936,6 +936,7 @@
   min-height: 104px;
   padding: var(--space-4);
   border-bottom: 1px solid var(--line);
+  border-left: 3px solid transparent;
   background: color-mix(in srgb, var(--card) 96%, transparent);
   cursor: pointer;
   transition: background .2s var(--ease-out-expo), border-color .2s var(--ease-out-expo), box-shadow .2s var(--ease-out-expo);
@@ -954,7 +955,7 @@
 }
 .map-result-row.is-selected {
   background: color-mix(in srgb, var(--bg-warm) 82%, var(--card));
-  box-shadow: inset 4px 0 0 var(--color-action);
+  border-left-color: var(--color-action);
 }
 .map-result-row__copy { min-width: 0; }
 .search-map-entity-card { min-width: 0; width: 100%; }

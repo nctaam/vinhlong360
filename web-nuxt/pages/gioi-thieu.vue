@@ -232,9 +232,8 @@ useHead(() => ({
 .bm-motif { width: clamp(84px, 9vw + 40px, 140px); height: auto; flex-shrink: 0; color: var(--clay-400); opacity: .85; }
 .bm-motif path, .bm-motif circle { stroke: currentColor; fill: none; }
 .bm-motif circle { fill: currentColor; stroke: none; }
-.bm-river { stroke-dasharray: 6 5; animation: bm-ripple 12s linear infinite; }
-.bm-river--2 { animation-duration: 15s; animation-direction: reverse; opacity: .6; }
-@keyframes bm-ripple { to { stroke-dashoffset: -110; } }
+.bm-river { stroke-dasharray: 6 5; }
+.bm-river--2 { opacity: .6; }
 
 .legal-updated { color: var(--ink-tertiary); font-size: var(--text-sm); margin-bottom: var(--space-6); }
 .about-intro { margin-bottom: var(--space-8); }

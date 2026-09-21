@@ -370,7 +370,6 @@ if (import.meta.client) {
 .ac-dropdown :deep(.ac-item) { min-height: 44px; }
 .ac-dropdown :deep(.ac-item.highlighted) {
   background: var(--color-action-surface, var(--bg-alt));
-  box-shadow: inset 2px 0 0 var(--color-action);
 }
 .ac-recent-row {
   display: flex;
