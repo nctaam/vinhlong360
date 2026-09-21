@@ -23,10 +23,10 @@
       <circle cx="100" cy="70" r="35" fill="var(--bg)" />
       <circle cx="90" cy="65" r="20" stroke="url(#empty-sediment)" stroke-width="3.5" fill="none" />
       <line x1="105" y1="80" x2="125" y2="100" :stroke="recipeDecorationColor || 'var(--color-material-clay)'" stroke-width="5" stroke-linecap="round" />
-      <g :fill="recipeDecorationColor || 'var(--color-material-amber)'" opacity=".65">
-        <path d="M140 35 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3z" />
-        <path d="M55 30 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2z" />
-        <path d="M150 75 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" />
+      <g :fill="recipeDecorationColor || 'var(--color-material-amber)'" opacity=".4">
+        <circle cx="140" cy="40" r="2.5" />
+        <circle cx="55" cy="35" r="2" />
+        <circle cx="150" cy="80" r="2" />
       </g>
     </svg>
     <span class="empty-rule" aria-hidden="true"></span>

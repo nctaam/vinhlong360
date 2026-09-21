@@ -17,10 +17,8 @@
 
 /* Hero background image — blur-up fade-in */
 .dc-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; z-index: 0; cursor: pointer; transition: transform .6s var(--ease-out-expo), opacity .5s var(--ease-out-expo), filter .6s var(--ease-out-expo); opacity: 0; filter: blur(8px) saturate(1.2); transform-origin: 50% 42%; }
-.dc-bg.loaded { opacity: 1; filter: blur(0) saturate(1.04); animation: dcKenBurns 26s var(--ease-out) 1.2s both alternate infinite; }
-/* Slow cinematic drift gives the hero a living, premium focal moment. */
-@keyframes dcKenBurns { from { transform: scale(1.02); } to { transform: scale(1.09) translateY(-1.2%); } }
-.detail-cover:hover .dc-bg.loaded { animation-play-state: paused; transform: scale(1.05); }
+.dc-bg.loaded { opacity: 1; filter: blur(0) saturate(1.04); }
+.detail-cover:hover .dc-bg.loaded { transform: scale(1.03); }
 /* Cinematic dual-direction optical scrim: multi-stop exponential curve protects text contrast
    under direct 100,000 lux Mekong sunlight without muddying the upper photography frame. */
 .dc-overlay { position: absolute; inset: 0; z-index: 1; pointer-events: none; background:
@@ -82,7 +80,7 @@
 .dc-thumb-btn:focus-visible { outline: 2px solid var(--text-on-dark); outline-offset: 2px; }
 .dc-thumb { width: 56px; height: 44px; object-fit: cover; display: block; }
 .dc-thumb-more { width: 56px; height: 44px; border-radius: 8px; background: rgba(var(--black-rgb), .5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--text-on-dark); display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--weight-bold); cursor: pointer; border: 2px solid rgba(var(--white-rgb), .2); transition: transform .35s var(--ease-out-expo), background .3s var(--ease-out); }
-.dc-thumb-more:hover { background: rgba(var(--black-rgb), .7); transform: scale(1.05); will-change: transform; }
+.dc-thumb-more:hover { background: rgba(var(--black-rgb), .7); transform: scale(1.05); }
 .dc-thumb-more:active { transform: scale(.93); transition-duration: .08s; }
 .dc-thumb-more:focus-visible { outline: 2px solid var(--text-on-dark); outline-offset: 2px; }
 
@@ -275,13 +273,8 @@
   background: var(--color-material-amber);
   color: var(--ink-900);
   border-color: var(--color-material-amber);
-  /* Motion budget: settle after 3 pulses (~7.5s) instead of running for the page's
-     entire lifetime — still draws the eye to "rộ nhất" on scroll-into-view. */
-  animation: peakPulse 2.5s var(--ease-out) 3;
   font-weight: var(--weight-extrabold);
 }
-/* Cheaper repaint: pulse via transform+opacity (GPU) instead of box-shadow. */
-@keyframes peakPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.06); opacity: .9; } }
 .ms-legend { display: flex; gap: var(--space-2); align-items: center; color: var(--muted); font-size: var(--text-xs); margin-top: var(--space-2); }
 .ms-legend-swatch { width: 16px; height: 16px; }
 

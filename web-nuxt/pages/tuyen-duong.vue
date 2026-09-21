@@ -896,7 +896,7 @@ useHead(() => {
   fill: var(--color-action);
   stroke: var(--card);
   stroke-width: 4;
-  filter: drop-shadow(0 0 6px rgba(var(--color-action-rgb), 0.5));
+  filter: drop-shadow(0 2px 5px rgba(var(--black-rgb), 0.25));
 }
 .route-waypoint-pin.is-active .waypoint-num {
   fill: var(--color-on-action, var(--white));

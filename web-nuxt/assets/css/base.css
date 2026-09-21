@@ -213,7 +213,7 @@ h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var
 .region-tile::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(var(--black-rgb), .75) 0%, rgba(var(--black-rgb), .3) 50%, rgba(var(--black-rgb), .08) 100%); transition: background .35s var(--ease-out-expo); }
 .dark .region-tile::before { background: linear-gradient(to top, rgba(var(--black-rgb), .85) 0%, rgba(var(--black-rgb), .4) 50%, rgba(var(--black-rgb), .15) 100%); }
 .region-tile:hover::before { background: linear-gradient(to top, rgba(var(--black-rgb), .78) 0%, rgba(var(--black-rgb), .3) 50%, rgba(var(--black-rgb), .08) 100%); }
-.region-tile:hover { will-change: transform; transform: translateY(-6px); box-shadow: var(--shadow-xl); }
+.region-tile:hover { transform: translateY(-6px); box-shadow: var(--shadow-xl); }
 .region-tile:active { transform: translateY(-1px) scale(.97); transition-duration: .1s; }
 .region-tile:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .region-tile-in { position: relative; padding: var(--space-5); width: 100%; }
