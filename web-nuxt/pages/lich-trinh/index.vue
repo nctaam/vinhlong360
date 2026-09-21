@@ -449,8 +449,7 @@ useHead(() => ({
 /* Editorial hero stat-items: brand-tinted surface + accent border */
 .catalog-hero .stat-item {
   background: rgba(var(--color-brand-rgb), .04);
-  border: 1px solid rgba(var(--color-brand-rgb), .16);
-  box-shadow: inset 3px 0 0 var(--color-brand);
+  border: 1px solid rgba(var(--color-brand-rgb), .2);
   border-radius: var(--radius-control);
   transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo);
 }

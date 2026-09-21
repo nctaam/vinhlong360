@@ -108,7 +108,7 @@
   border-color: var(--color-brand);
   background: var(--color-brand-surface);
   color: var(--color-text);
-  box-shadow: inset 3px 0 0 var(--color-brand);
+  font-weight: var(--weight-semibold);
 }
 
 [data-color-system="tri-region-v1"][data-page-recipe="discovery"] :is(.card-rule, .cspot-rule, .catalog-interstitial-rule) {

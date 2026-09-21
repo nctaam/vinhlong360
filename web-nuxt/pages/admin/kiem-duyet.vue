@@ -462,7 +462,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-session-ok { color: var(--color-success); }
 .mod-session-rej { color: var(--error); }
 .mod-focused td { background: rgba(var(--color-action-rgb),.06) !important; }
-.mod-focused td:first-child { box-shadow: inset 3px 0 0 var(--color-action); }
+.mod-focused td:first-child { border-left: 3px solid var(--color-action); }
 
 /* ── Status tabs ── */
 .mod-tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-5); }
@@ -480,8 +480,14 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-tab.active .mod-tab-count { background: rgba(var(--white-rgb),.2); color: var(--text-on-dark); }
 
 /* Urgency accent for queue cards with pending/flagged items (dashboard-at-a-glance) */
-.stat-card.status-warn { box-shadow: inset 3px 0 0 var(--warning); }
-.stat-card.status-error { box-shadow: inset 3px 0 0 var(--error); }
+.stat-card.status-warn {
+  border-color: color-mix(in srgb, var(--warning) 40%, var(--line));
+  background: color-mix(in srgb, var(--warning) 4%, var(--bg));
+}
+.stat-card.status-error {
+  border-color: color-mix(in srgb, var(--error) 40%, var(--line));
+  background: color-mix(in srgb, var(--error) 4%, var(--bg));
+}
 .stat-card.status-warn .stat-icon,
 .stat-card.status-error .stat-icon { font-size: 1.3rem; font-weight: 700; }
 

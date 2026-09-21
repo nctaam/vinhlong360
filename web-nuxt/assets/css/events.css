@@ -115,7 +115,7 @@
 .lunar-ribbon-tick:hover,
 .lunar-ribbon-tick:focus-visible {
   transform: translate(-50%, -50%) scale(1.35);
-  box-shadow: 0 0 0 4px rgba(var(--color-brand-rgb), .16);
+  box-shadow: 0 2px 8px rgba(var(--black-rgb), 0.2);
 }
 .lunar-ribbon-tick:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .dark .lunar-ribbon-tick { background: var(--bg-alt); }
@@ -698,7 +698,7 @@
   color: var(--date-badge-ink);
   border-radius: 3px;
   border: 1px solid color-mix(in srgb, var(--color-success) 35%, transparent);
-  box-shadow: inset 2px 0 0 var(--color-success), var(--shadow-xs);
+  box-shadow: var(--shadow-xs);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

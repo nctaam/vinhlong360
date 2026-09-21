@@ -852,7 +852,7 @@ onUnmounted(() => {
 .recovery-list code { font-size: var(--text-sm); letter-spacing: 0.05em; }
 .rc-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .qr-img { display: block; margin: var(--space-2) 0; border-radius: var(--radius-control); background: var(--white); padding: var(--space-2); }
-.settings-danger { border: 1px solid rgba(var(--danger-rgb), .2); box-shadow: inset 3px 0 0 var(--error); }
+.settings-danger { border: 1px solid rgba(var(--danger-rgb), .35); background: color-mix(in srgb, var(--error) 4%, var(--card)); }
 .danger-actions { display: flex; flex-direction: column; gap: .75rem; }
 .danger-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .danger-item p { margin: 0; }
@@ -907,7 +907,7 @@ onUnmounted(() => {
 .delete-confirm p { margin: .2rem 0 0; color: var(--ink-700); font-size: var(--text-xs); }
 .delete-confirm-actions { display: flex; gap: var(--space-2); flex-shrink: 0; }
 .delete-confirm .btn { min-height: 44px; }
-.account-status { margin: var(--space-3) 0 0; padding: .75rem .85rem; border: 1px solid var(--border); box-shadow: inset 3px 0 0 var(--color-brand); border-radius: var(--radius-control); background: var(--bg-alt); color: var(--ink-700); font-size: var(--text-sm); }
+.account-status { margin: var(--space-3) 0 0; padding: .75rem .85rem; border: 1px solid color-mix(in srgb, var(--color-brand) 30%, var(--border)); border-radius: var(--radius-control); background: color-mix(in srgb, var(--color-brand) 4%, var(--bg-alt)); color: var(--ink-700); font-size: var(--text-sm); }
 
 .login-fail { border-color: rgba(var(--danger-rgb), .3) !important; }
 .login-ok { color: var(--color-success); font-weight: 600; font-size: var(--text-base); }

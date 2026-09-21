@@ -437,7 +437,7 @@ watch([areaFilter, typeFilter, q], () => {
 }
 
 .wake-hero-stats .stat-num {
-  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-weight: var(--weight-bold);
   color: var(--color-text);
   margin-right: var(--space-1);

@@ -461,7 +461,7 @@ useHead(() => {
 }
 .wake-hero-stats .stat-item:hover { background: var(--color-surface-raised); }
 .wake-hero-stats .stat-num {
-  font-family: var(--font-mono); font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums; font-weight: var(--weight-bold);
   color: var(--color-text); margin-right: var(--space-1);
 }
 .wake-hero-stats .stat-label { color: var(--color-text-muted); font-size: var(--text-sm); }

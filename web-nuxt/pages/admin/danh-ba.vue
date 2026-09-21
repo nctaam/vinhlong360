@@ -255,7 +255,6 @@ await placesAsyncData
   font-size: .74rem; font-weight: 500; color: var(--error);
   display: flex; align-items: center; gap: var(--space-1);
 }
-.db-field-error::before { content: "\26A0"; font-size: .8em; }
 .db-field-hint { font-size: .74rem; color: var(--muted); }
 .db-input-error { border-color: var(--error) !important; }
 .db-input-error:focus { box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.12); }

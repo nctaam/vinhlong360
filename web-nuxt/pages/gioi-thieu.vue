@@ -290,7 +290,6 @@ useHead(() => ({
 /* Section 1 — Mission emphasis (pull-quote spread lives inside). */
 .mission-section {
   border: 1px solid var(--color-action-border);
-  box-shadow: inset 3px 0 0 var(--color-action);
   border-radius: var(--radius-sheet);
   background: var(--color-action-surface);
 }

@@ -510,8 +510,7 @@ useHead(() => {
   gap: var(--space-2);
   padding: var(--space-4);
   margin-bottom: var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--color-brand) 25%, transparent);
-  box-shadow: inset 3px 0 0 var(--color-brand);
+  border: 1px solid color-mix(in srgb, var(--color-brand) 30%, transparent);
   border-radius: var(--radius-control);
   background: linear-gradient(90deg, rgba(var(--color-brand-rgb), .08), transparent);
 }
