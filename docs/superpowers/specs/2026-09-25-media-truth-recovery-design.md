@@ -34,7 +34,7 @@ The runtime also has a policy mismatch. Project policy allows rights-cleared pre
 ## Goals
 
 1. Remove `prov-1` and its production-coupled references without changing unrelated entity data.
-2. Correct the other 39 Batch 21 records: 38 generated placeholders and two AI-generated assets.
+2. Correct the other 39 Batch 21 records: 37 generated placeholders and two AI-generated assets.
 3. Remove unsupported press credits, licenses, captions, and verified-photo claims from those records.
 4. Represent rights-cleared sourced photographs explicitly in API and frontend descriptors.
 5. Fail closed when provenance is missing, malformed, private, generic, or contradictory.
@@ -110,7 +110,7 @@ Historical reports remain in Git as evidence. Current generated artifacts that r
 
 ### Remaining 39 records
 
-For the 38 placeholder records:
+For the 37 placeholder records that remain after deleting `prov-1`:
 
 - retain the existing local graphic when it is a safe, valid asset;
 - set `image_type=generated-placeholder` and `is_verified_photo=false`;
@@ -226,7 +226,7 @@ Implementation follows TDD and uses independent task review plus a final whole-b
 
 - Assert exactly one entity deletion and exactly six JSON relationship deletions.
 - Assert zero matching SQLite relationship deletions are expected.
-- Assert exactly 38 placeholders and two AI records remain.
+- Assert exactly 37 placeholders and two AI records remain.
 - Assert all 39 records have `is_verified_photo=false` and no unsupported press claims.
 - Assert only the two evidence-backed AI records receive generation provenance.
 - Assert unrelated entity and relationship canonical digests are unchanged.
@@ -256,7 +256,7 @@ Before a separate apply approval:
 
 1. The implementation and all candidate-data tests pass using fixture copies.
 2. The plan identifies exactly the approved 40-record scope and six JSON relationships.
-3. The candidate contains 38 placeholders and two AI records among the 39 retained Batch 21 entities.
+3. The candidate contains 37 placeholders and two AI records among the 39 retained Batch 21 entities.
 4. No retained Batch 21 record has an unsupported documentary/verified claim.
 5. Rights-cleared descriptors cannot be constructed without complete validated evidence.
 6. Repeated plan, candidate, and artifact generation is byte-identical.
