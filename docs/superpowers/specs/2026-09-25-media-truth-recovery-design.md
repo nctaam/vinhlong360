@@ -1,6 +1,6 @@
 # Media Truth Recovery Design
 
-> STATUS: design approved in chat on 2026-09-25; written-spec review pending. No protected-data mutation is authorized by this document.
+> STATUS: design and written spec approved in chat on 2026-09-25. No protected-data mutation is authorized by this document.
 
 **Date:** 2026-09-25
 **Scope:** Delete the `prov-1` ghost record, correct Batch 21 image provenance, add truthful rights-cleared media support, and establish the catalog-wide media recovery program.
