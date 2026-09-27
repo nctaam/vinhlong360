@@ -1,6 +1,6 @@
 {
-  "schema_version": 1,
-  "revision": "ai-disclosure-v1",
+  "schema_version": 2,
+  "revision": "media-disclosure-v2",
   "entity_ai": {
     "short_label": "Minh họa AI",
     "full_disclosure": "Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.",
@@ -15,6 +15,11 @@
     "short_label": "Ảnh người dùng",
     "full_disclosure": "Ảnh do người dùng cung cấp.",
     "accessible_description_key": "ugc-photo-full"
+  },
+  "sourced_photo": {
+    "short_label": "Ảnh có nguồn",
+    "full_disclosure": "Ảnh tư liệu có nguồn và căn cứ sử dụng — xem tác giả, cơ quan nguồn và liên kết gốc.",
+    "accessible_description_key": "entity-sourced-photo-full"
   },
   "forbidden_entity_image_claims": [
     "ảnh thật",

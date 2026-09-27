@@ -32,11 +32,12 @@ const DISCLOSURE_ROOT_KEYS = [
   'revision',
   'schema_version',
   'ugc_photo',
+  'sourced_photo',
 ]
 const DISCLOSURE_COPY_KEYS = ['accessible_description_key', 'full_disclosure', 'short_label']
 const CANONICAL_DISCLOSURE = Object.freeze({
-  schema_version: 1,
-  revision: 'ai-disclosure-v1',
+  schema_version: 2,
+  revision: 'media-disclosure-v2',
   entity_ai: Object.freeze({
     short_label: 'Minh h\u1ecda AI',
     full_disclosure: '\u1ea2nh minh h\u1ecda do AI d\u1ef1ng \u2014 kh\u00f4ng ph\u1ea3i \u1ea3nh ch\u1ee5p t\u1ea1i ch\u1ed7.',
@@ -51,6 +52,11 @@ const CANONICAL_DISCLOSURE = Object.freeze({
     short_label: '\u1ea2nh ng\u01b0\u1eddi d\u00f9ng',
     full_disclosure: '\u1ea2nh do ng\u01b0\u1eddi d\u00f9ng cung c\u1ea5p.',
     accessible_description_key: 'ugc-photo-full',
+  }),
+  sourced_photo: Object.freeze({
+    short_label: 'Ảnh có nguồn',
+    full_disclosure: 'Ảnh tư liệu có nguồn và căn cứ sử dụng — xem tác giả, cơ quan nguồn và liên kết gốc.',
+    accessible_description_key: 'entity-sourced-photo-full',
   }),
   forbidden_entity_image_claims: Object.freeze([
     '\u1ea3nh th\u1eadt',
@@ -294,6 +300,7 @@ export function parseAiDisclosureArtifact(value) {
   parseDisclosureCopy(disclosure.entity_ai, CANONICAL_DISCLOSURE.entity_ai, 'entity_ai')
   parseDisclosureCopy(disclosure.placeholder, CANONICAL_DISCLOSURE.placeholder, 'placeholder')
   parseDisclosureCopy(disclosure.ugc_photo, CANONICAL_DISCLOSURE.ugc_photo, 'ugc_photo')
+  parseDisclosureCopy(disclosure.sourced_photo, CANONICAL_DISCLOSURE.sourced_photo, 'sourced_photo')
   const claims = denseArray(disclosure.forbidden_entity_image_claims, 'forbidden claims', 'canonical AI disclosure')
   if (
     claims.length !== CANONICAL_DISCLOSURE.forbidden_entity_image_claims.length
@@ -301,11 +308,12 @@ export function parseAiDisclosureArtifact(value) {
   ) throw new Error('canonical AI disclosure forbidden claims mismatch')
 
   return deepFreeze({
-    schema_version: 1,
-    revision: 'ai-disclosure-v1',
+    schema_version: 2,
+    revision: 'media-disclosure-v2',
     entity_ai: { ...CANONICAL_DISCLOSURE.entity_ai },
     placeholder: { ...CANONICAL_DISCLOSURE.placeholder },
     ugc_photo: { ...CANONICAL_DISCLOSURE.ugc_photo },
+    sourced_photo: { ...CANONICAL_DISCLOSURE.sourced_photo },
     forbidden_entity_image_claims: [...CANONICAL_DISCLOSURE.forbidden_entity_image_claims],
   })
 }

@@ -24,6 +24,11 @@ from launch_artifacts import LoadedArtifact
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DISCLOSURE_PATH = REPO_ROOT / "config" / "ai-disclosure.json"
+
+def test_media_disclosure_exposes_sourced_photo_copy():
+    disclosure = load_ai_disclosure()
+    assert disclosure.revision == "media-disclosure-v2"
+    assert disclosure.sourced_photo.accessible_description_key == "entity-sourced-photo-full"
 CORPUS_PATH = REPO_ROOT / "tests" / "fixtures" / "ai-disclosure-validator-corpus.json"
 MUTATION_OPERATIONS = frozenset({"append", "delete", "reverse", "set"})
 DANGEROUS_POINTER_TOKENS = frozenset({"__proto__", "constructor", "prototype"})

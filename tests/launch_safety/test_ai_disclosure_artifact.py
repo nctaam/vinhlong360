@@ -20,6 +20,7 @@ EXPECTED_GIT_ATTRIBUTES_BYTES = (
     b"config/launch-indexing-policy.json text eol=lf\n"
     b"config/ai-disclosure.json text eol=lf\n"
     b"*.sh text eol=lf\n"
+    b"web-nuxt/nuxt.config.ts whitespace=cr-at-eol\n"
 )
 EXPECTED_DISCLOSURE_BYTES = (
     "{\n"

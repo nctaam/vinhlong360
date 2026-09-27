@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+def test_rights_cleared_source_family_is_exported():
+    from media_policy import ENTITY_RIGHTS_CLEARED_SOURCES
+    assert ("rights-cleared", "press", "entity-sourced-photo") in ENTITY_RIGHTS_CLEARED_SOURCES
+
 import asyncio
 import importlib
 import sys

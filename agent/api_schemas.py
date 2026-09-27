@@ -22,6 +22,7 @@ if __package__:
         CANONICAL_ENTITY_AI,
         CANONICAL_PLACEHOLDER,
         CANONICAL_UGC_PHOTO,
+        CANONICAL_SOURCED_PHOTO,
     )
     from .image_descriptor import normalize_renderable_image_url
 else:
@@ -29,6 +30,7 @@ else:
         CANONICAL_ENTITY_AI,
         CANONICAL_PLACEHOLDER,
         CANONICAL_UGC_PHOTO,
+        CANONICAL_SOURCED_PHOTO,
     )
     from image_descriptor import normalize_renderable_image_url
 
@@ -68,12 +70,37 @@ _GALLERY_COMBINATIONS = {
     ("placeholder", "generated-placeholder", "entity-placeholder"),
     ("user-uploaded", "review-ugc", "ugc-photo"),
     ("user-uploaded", "post-ugc", "ugc-photo"),
+    *{("rights-cleared", image_type, "entity-sourced-photo") for image_type in ("documentary", "journalistic", "official", "press")},
 }
 _GALLERY_DISCLOSURES = {
     "entity-ai": CANONICAL_ENTITY_AI,
     "entity-placeholder": CANONICAL_PLACEHOLDER,
     "ugc-photo": CANONICAL_UGC_PHOTO,
+    "entity-sourced-photo": CANONICAL_SOURCED_PHOTO,
 }
+
+def _validate_gallery_source(self: "GalleryImageDescriptor") -> None:
+    combination = (self.source_class, self.source_kind, self.disclosure_key)
+    if combination not in _GALLERY_COMBINATIONS:
+        raise ValueError("image source combination is not allowed")
+    canonical = _GALLERY_DISCLOSURES[self.disclosure_key]
+    if self.short_label != canonical.short_label or self.full_disclosure != canonical.full_disclosure:
+        raise ValueError("image disclosure copy is not canonical")
+
+def _validate_gallery_provenance(self: "GalleryImageDescriptor") -> None:
+    if self.source_class != "placeholder" and self.url is None:
+        raise ValueError("non-placeholder image must have a URL")
+    if self.source_class == "rights-cleared" and (not self.credit or not self.source_url):
+        raise ValueError("rights-cleared image requires credit and source_url")
+    if self.source_class != "rights-cleared" and self.source_url is not None:
+        raise ValueError("only rights-cleared images may have source_url")
+    if self.source_class not in {"rights-cleared", "user-uploaded"} and self.credit is not None:
+        raise ValueError("AI and placeholder images cannot have credit")
+
+def _validate_gallery_dimensions(self: "GalleryImageDescriptor") -> None:
+    dimensions = (self.width, self.height)
+    if (dimensions[0] is None) != (dimensions[1] is None) or any(d is not None and d <= 0 for d in dimensions):
+        raise ValueError("image dimensions must be null together and positive")
 
 
 class GalleryImageDescriptor(BaseModel):
@@ -83,17 +110,22 @@ class GalleryImageDescriptor(BaseModel):
 
     url: StrictStr | None
     alt: StrictStr
-    source_class: Literal["ai-generated", "placeholder", "user-uploaded"]
+    source_class: Literal["ai-generated", "placeholder", "user-uploaded", "rights-cleared"]
     source_kind: Literal[
         "entity-editorial",
         "generated-placeholder",
         "review-ugc",
         "post-ugc",
+        "documentary",
+        "journalistic",
+        "official",
+        "press",
     ]
-    disclosure_key: Literal["entity-ai", "entity-placeholder", "ugc-photo"]
+    disclosure_key: Literal["entity-ai", "entity-placeholder", "ugc-photo", "entity-sourced-photo"]
     short_label: StrictStr | None
     full_disclosure: StrictStr
     credit: StrictStr | None
+    source_url: StrictStr | None = None
     width: StrictInt | None
     height: StrictInt | None
 
@@ -123,27 +155,9 @@ class GalleryImageDescriptor(BaseModel):
 
     @model_validator(mode="after")
     def _validate_invariants(self) -> "GalleryImageDescriptor":
-        combination = (self.source_class, self.source_kind, self.disclosure_key)
-        if combination not in _GALLERY_COMBINATIONS:
-            raise ValueError("image source combination is not allowed")
-
-        canonical = _GALLERY_DISCLOSURES[self.disclosure_key]
-        if (
-            self.short_label != canonical.short_label
-            or self.full_disclosure != canonical.full_disclosure
-        ):
-            raise ValueError("image disclosure copy is not canonical")
-
-        if self.source_class != "placeholder" and self.url is None:
-            raise ValueError("non-placeholder image must have a URL")
-        if self.source_class != "user-uploaded" and self.credit is not None:
-            raise ValueError("AI and placeholder images cannot have credit")
-
-        dimensions = (self.width, self.height)
-        if (dimensions[0] is None) != (dimensions[1] is None):
-            raise ValueError("image dimensions must be null together")
-        if any(dimension is not None and dimension <= 0 for dimension in dimensions):
-            raise ValueError("image dimensions must be positive integers")
+        _validate_gallery_source(self)
+        _validate_gallery_provenance(self)
+        _validate_gallery_dimensions(self)
         return self
 
 

@@ -1,9 +1,14 @@
-"""Canonical AI-only media provenance policy shared by API boundaries."""
+"""Canonical upload-boundary policy; UGC remains disabled by project policy."""
 
 from __future__ import annotations
 
 from collections.abc import Mapping
 import re
+
+try:
+    from .media_provenance import DOCUMENTARY_IMAGE_TYPES
+except ImportError:
+    from media_provenance import DOCUMENTARY_IMAGE_TYPES
 
 
 ENTITY_AI_SOURCE = ("ai-generated", "entity-editorial", "entity-ai")
@@ -14,9 +19,13 @@ ENTITY_PLACEHOLDER_SOURCE = (
 )
 REVIEW_UGC_SOURCE = ("user-uploaded", "review-ugc", "ugc-photo")
 POST_UGC_SOURCE = ("user-uploaded", "post-ugc", "ugc-photo")
+ENTITY_RIGHTS_CLEARED_SOURCES = frozenset(
+    ("rights-cleared", image_type, "entity-sourced-photo")
+    for image_type in DOCUMENTARY_IMAGE_TYPES
+)
 
 RENDERABLE_ENTITY_SOURCES = frozenset(
-    {ENTITY_AI_SOURCE, ENTITY_PLACEHOLDER_SOURCE}
+    {ENTITY_AI_SOURCE, ENTITY_PLACEHOLDER_SOURCE} | ENTITY_RIGHTS_CLEARED_SOURCES
 )
 
 AI_ONLY_MEDIA_DETAIL = {

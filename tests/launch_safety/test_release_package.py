@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import shutil
 import tarfile
+import uuid
 
 import pytest
 
@@ -204,9 +205,15 @@ def test_docker_context_excludes_secrets_and_local_build_caches():
     assert "config/" not in ignored
 
 
-def test_unpacked_release_loaders_read_exact_packaged_bytes(tmp_path: Path):
-    archive = build_backend_archive(ROOT, tmp_path / "backend.tar.gz")
-    release_root = tmp_path / "release"
+def test_unpacked_release_loaders_read_exact_packaged_bytes(request):
+    # The repository-local pytest basetemp is intentionally inside ROOT, while
+    # the packager must refuse destinations inside its source tree.
+    external_root = ROOT.parent / f".release-package-test-{uuid.uuid4().hex}"
+    external_root.mkdir()
+    request.addfinalizer(lambda: shutil.rmtree(external_root, ignore_errors=True))
+
+    archive = build_backend_archive(ROOT, external_root / "backend.tar.gz")
+    release_root = external_root / "release"
     with tarfile.open(archive, "r:gz") as bundle:
         bundle.extractall(release_root, filter="data")
 

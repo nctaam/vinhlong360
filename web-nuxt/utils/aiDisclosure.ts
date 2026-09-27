@@ -2,8 +2,8 @@ import disclosureJson from '#launch-config/ai-disclosure.json'
 import { parseAiDisclosureArtifact } from '#launch-validators'
 
 export type AiDisclosureArtifact = {
-  readonly schema_version: 1
-  readonly revision: 'ai-disclosure-v1'
+  readonly schema_version: 2
+  readonly revision: 'media-disclosure-v2'
   readonly entity_ai: {
     readonly short_label: 'Minh h\u1ecda AI'
     readonly full_disclosure: '\u1ea2nh minh h\u1ecda do AI d\u1ef1ng \u2014 kh\u00f4ng ph\u1ea3i \u1ea3nh ch\u1ee5p t\u1ea1i ch\u1ed7.'
@@ -19,6 +19,11 @@ export type AiDisclosureArtifact = {
     readonly full_disclosure: '\u1ea2nh do ng\u01b0\u1eddi d\u00f9ng cung c\u1ea5p.'
     readonly accessible_description_key: 'ugc-photo-full'
   }
+  readonly sourced_photo: {
+    readonly short_label: 'Ảnh có nguồn'
+    readonly full_disclosure: 'Ảnh tư liệu có nguồn và căn cứ sử dụng — xem tác giả, cơ quan nguồn và liên kết gốc.'
+    readonly accessible_description_key: 'entity-sourced-photo-full'
+  }
   readonly forbidden_entity_image_claims: readonly [
     '\u1ea3nh th\u1eadt',
     'real photo',
@@ -33,3 +38,5 @@ export function parseAiDisclosure(value: unknown): AiDisclosureArtifact {
 }
 
 export const aiDisclosure = parseAiDisclosure(disclosureJson)
+export const mediaDisclosure = aiDisclosure
+export const load_media_disclosure = parseAiDisclosure

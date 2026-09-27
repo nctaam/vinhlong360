@@ -24,6 +24,10 @@ from api_schemas import GalleryImageDescriptor, GalleryResponse  # noqa: E402
 
 DISCLOSURE = load_ai_disclosure()
 
+def test_gallery_source_url_defaults_to_null_for_legacy_descriptors():
+    descriptor = describe_entity_image('/img/entities/test.webp', entity_name='Test', index=0, disclosure=DISCLOSURE)
+    assert descriptor is not None and descriptor.source_url is None
+
 
 @pytest.mark.parametrize(
     ("raw", "expected"),

@@ -39,6 +39,7 @@ class ImageDescriptor:
     credit: str | None
     width: int | None
     height: int | None
+    source_url: str | None = None
 
 
 _DNS_LABEL = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\Z")
@@ -47,6 +48,7 @@ _IMAGE_DESCRIPTOR_KEYS = frozenset(
     {
         "alt",
         "credit",
+        "source_url",
         "disclosure_key",
         "full_disclosure",
         "height",
@@ -206,6 +208,7 @@ def describe_entity_image(
         short_label=copy.short_label,
         full_disclosure=copy.full_disclosure,
         credit=None,
+        source_url=None,
         width=None,
         height=None,
     )
@@ -238,6 +241,7 @@ def describe_review_image(
         short_label=copy.short_label,
         full_disclosure=copy.full_disclosure,
         credit=normalized_credit,
+        source_url=None,
         width=None,
         height=None,
     )
@@ -281,6 +285,7 @@ def _parse_supplied_entity_descriptor(
     short_label = raw.get("short_label")
     full_disclosure = raw.get("full_disclosure")
     credit = raw.get("credit")
+    source_url = raw.get("source_url")
     width = raw.get("width")
     height = raw.get("height")
     if type(alt) is not str or not alt.strip():
@@ -295,7 +300,7 @@ def _parse_supplied_entity_descriptor(
         return None
     if full_disclosure != copy.full_disclosure:
         return None
-    if credit is not None or not _valid_descriptor_dimensions(width, height):
+    if credit is not None or source_url is not None or not _valid_descriptor_dimensions(width, height):
         return None
     source_class, source_kind, disclosure_key = source
     return ImageDescriptor(
@@ -307,6 +312,7 @@ def _parse_supplied_entity_descriptor(
         short_label=short_label,
         full_disclosure=full_disclosure,
         credit=None,
+        source_url=None,
         width=width,
         height=height,
     )

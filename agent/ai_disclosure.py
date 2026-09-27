@@ -12,8 +12,8 @@ else:
 
 
 ARTIFACT_NAME = "ai-disclosure.json"
-EXPECTED_SCHEMA_VERSION = 1
-EXPECTED_REVISION = "ai-disclosure-v1"
+EXPECTED_SCHEMA_VERSION = 2
+EXPECTED_REVISION = "media-disclosure-v2"
 ROOT_KEYS = frozenset(
     {
         "entity_ai",
@@ -22,6 +22,7 @@ ROOT_KEYS = frozenset(
         "revision",
         "schema_version",
         "ugc_photo",
+        "sourced_photo",
     }
 )
 COPY_KEYS = frozenset({"accessible_description_key", "full_disclosure", "short_label"})
@@ -55,6 +56,11 @@ CANONICAL_UGC_PHOTO = DisclosureCopy(
     full_disclosure="\u1ea2nh do ng\u01b0\u1eddi d\u00f9ng cung c\u1ea5p.",
     accessible_description_key="ugc-photo-full",
 )
+CANONICAL_SOURCED_PHOTO = DisclosureCopy(
+    short_label="Ảnh có nguồn",
+    full_disclosure="Ảnh tư liệu có nguồn và căn cứ sử dụng — xem tác giả, cơ quan nguồn và liên kết gốc.",
+    accessible_description_key="entity-sourced-photo-full",
+)
 CANONICAL_FORBIDDEN_CLAIMS = (
     "\u1ea3nh th\u1eadt",
     "real photo",
@@ -86,6 +92,11 @@ def canonical_disclosure_copy() -> dict[str, Any]:
             "accessible_description_key": (
                 CANONICAL_UGC_PHOTO.accessible_description_key
             ),
+        },
+        "sourced_photo": {
+            "short_label": CANONICAL_SOURCED_PHOTO.short_label,
+            "full_disclosure": CANONICAL_SOURCED_PHOTO.full_disclosure,
+            "accessible_description_key": CANONICAL_SOURCED_PHOTO.accessible_description_key,
         },
         "forbidden_entity_image_claims": list(CANONICAL_FORBIDDEN_CLAIMS),
     }
@@ -170,6 +181,7 @@ def _validated_components(
         _validated_copy(data["entity_ai"], CANONICAL_ENTITY_AI, "entity_ai"),
         _validated_copy(data["placeholder"], CANONICAL_PLACEHOLDER, "placeholder"),
         _validated_copy(data["ugc_photo"], CANONICAL_UGC_PHOTO, "ugc_photo"),
+        _validated_copy(data["sourced_photo"], CANONICAL_SOURCED_PHOTO, "sourced_photo"),
         _validated_claims(data["forbidden_entity_image_claims"]),
     )
 
@@ -211,6 +223,7 @@ class LoadedAiDisclosure:
     placeholder: DisclosureCopy
     ugc_photo: DisclosureCopy
     forbidden_entity_image_claims: tuple[str, ...]
+    sourced_photo: DisclosureCopy = CANONICAL_SOURCED_PHOTO
 
     def __post_init__(self) -> None:
         owned_artifact = _owned_artifact(self.artifact)
@@ -224,8 +237,9 @@ class LoadedAiDisclosure:
             or not _copy_matches(self.entity_ai, artifact_components[1])
             or not _copy_matches(self.placeholder, artifact_components[2])
             or not _copy_matches(self.ugc_photo, artifact_components[3])
+            or not _copy_matches(self.sourced_photo, artifact_components[4])
             or any(type(claim) is not str for claim in owned_claims)
-            or owned_claims != artifact_components[4]
+            or owned_claims != artifact_components[5]
         ):
             raise ValueError("loaded AI disclosure does not match artifact data")
         object.__setattr__(self, "artifact", owned_artifact)
@@ -233,8 +247,9 @@ class LoadedAiDisclosure:
         object.__setattr__(self, "entity_ai", artifact_components[1])
         object.__setattr__(self, "placeholder", artifact_components[2])
         object.__setattr__(self, "ugc_photo", artifact_components[3])
+        object.__setattr__(self, "sourced_photo", artifact_components[4])
         object.__setattr__(
-            self, "forbidden_entity_image_claims", artifact_components[4]
+            self, "forbidden_entity_image_claims", artifact_components[5]
         )
 
 
@@ -248,7 +263,7 @@ def load_ai_disclosure(
         release_root=release_root,
         fixture_path=fixture_path,
     )
-    revision, entity_ai, placeholder, ugc_photo, claims = _validated_components(
+    revision, entity_ai, placeholder, ugc_photo, sourced_photo, claims = _validated_components(
         artifact.data
     )
     return LoadedAiDisclosure(
@@ -257,5 +272,10 @@ def load_ai_disclosure(
         entity_ai=entity_ai,
         placeholder=placeholder,
         ugc_photo=ugc_photo,
+        sourced_photo=sourced_photo,
         forbidden_entity_image_claims=claims,
     )
+
+
+LoadedMediaDisclosure = LoadedAiDisclosure
+load_media_disclosure = load_ai_disclosure
