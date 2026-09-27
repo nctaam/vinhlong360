@@ -19,6 +19,7 @@ const apiEntityImage = {
   short_label: aiDisclosure.entity_ai.short_label,
   full_disclosure: aiDisclosure.entity_ai.full_disclosure,
   credit: null,
+  source_url: null,
   width: null,
   height: null,
 }
@@ -32,6 +33,7 @@ const apiReviewImage = {
   short_label: aiDisclosure.ugc_photo.short_label,
   full_disclosure: aiDisclosure.ugc_photo.full_disclosure,
   credit: 'Lan',
+  source_url: null,
   width: null,
   height: null,
 }
@@ -45,6 +47,7 @@ const apiPlaceholderImage = {
   short_label: aiDisclosure.placeholder.short_label,
   full_disclosure: aiDisclosure.placeholder.full_disclosure,
   credit: null,
+  source_url: null,
   width: null,
   height: null,
 }
@@ -95,6 +98,14 @@ describe('renderable image URL normalization', () => {
     'https://[2001:db8::1/image.webp',
   ])('rejects the same unsafe or malformed values as the backend: %s', (raw) => {
     expect(normalizeRenderableImageUrl(raw)).toBeNull()
+  })
+})
+
+describe('non-rights-cleared descriptor source URLs', () => {
+  it('requires factories to emit a null source_url exact key', () => {
+    expect(normalizeReviewPhoto({ url: '/img/review.jpg', alt: 'Review' })).not.toBeNull()
+    expect(describeEntityImages({ name: 'Entity', images: ['/img/entities/entity.webp'] })[0]?.source_url).toBeNull()
+    expect(describeEntityPlaceholder({ name: 'Entity' }).source_url).toBeNull()
   })
 })
 

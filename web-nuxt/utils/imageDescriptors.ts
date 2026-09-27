@@ -217,7 +217,8 @@ export function parseGalleryDescriptor(value: unknown): Readonly<ImageDescriptor
   if (descriptor.source_class === 'rights-cleared') {
     if (typeof descriptor.credit !== 'string' || !descriptor.credit.trim() || typeof descriptor.source_url !== 'string' || !/^https?:\/\//i.test(descriptor.source_url)) return null
   } else {
-    if (descriptor.credit !== null || descriptor.source_url !== null) return null
+    if (descriptor.source_url !== null) return null
+    if (descriptor.source_class !== 'user-uploaded' && descriptor.credit !== null) return null
   }
 
   const dimensions = [descriptor.width, descriptor.height]
@@ -289,6 +290,7 @@ export function normalizeReviewPhoto(input: {
     short_label: aiDisclosure.ugc_photo.short_label,
     full_disclosure: aiDisclosure.ugc_photo.full_disclosure,
     credit: (input.credit as string | null | undefined) ?? null,
+    source_url: null,
     width: null,
     height: null,
   }
@@ -329,6 +331,7 @@ function normalizeUgcPhoto(
     short_label: aiDisclosure.ugc_photo.short_label,
     full_disclosure: aiDisclosure.ugc_photo.full_disclosure,
     credit,
+    source_url: null,
     width: null,
     height: null,
   }
@@ -533,6 +536,7 @@ export function describeEntityImages(entity: EntityImageLike): ImageDescriptor[]
       short_label: aiDisclosure.entity_ai.short_label,
       full_disclosure: aiDisclosure.entity_ai.full_disclosure,
       credit: null,
+      source_url: null,
       width: null,
       height: null,
     } satisfies ImageDescriptor]
@@ -550,6 +554,7 @@ export function describeEntityPlaceholder(entity: EntityImageLike): ImageDescrip
     short_label: aiDisclosure.placeholder.short_label,
     full_disclosure: aiDisclosure.placeholder.full_disclosure,
     credit: null,
+    source_url: null,
     width: null,
     height: null,
   }
