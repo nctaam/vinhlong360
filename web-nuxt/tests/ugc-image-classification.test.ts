@@ -57,6 +57,7 @@ const postUgcDescriptor: ImageDescriptor = {
   short_label: aiDisclosure.ugc_photo.short_label,
   full_disclosure: aiDisclosure.ugc_photo.full_disclosure,
   credit: 'Lan',
+  source_url: null,
   width: null,
   height: null,
 }
