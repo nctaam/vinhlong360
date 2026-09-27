@@ -2835,7 +2835,8 @@
             "enum": [
               "entity-ai",
               "entity-placeholder",
-              "ugc-photo"
+              "ugc-photo",
+              "entity-sourced-photo"
             ],
             "title": "Disclosure Key",
             "type": "string"
@@ -2870,7 +2871,8 @@
             "enum": [
               "ai-generated",
               "placeholder",
-              "user-uploaded"
+              "user-uploaded",
+              "rights-cleared"
             ],
             "title": "Source Class",
             "type": "string"
@@ -2880,10 +2882,25 @@
               "entity-editorial",
               "generated-placeholder",
               "review-ugc",
-              "post-ugc"
+              "post-ugc",
+              "documentary",
+              "journalistic",
+              "official",
+              "press"
             ],
             "title": "Source Kind",
             "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
           },
           "url": {
             "anyOf": [
@@ -4923,7 +4940,10 @@
           "descriptor_revision": {
             "anyOf": [
               {
-                "const": "ai-disclosure-v1",
+                "enum": [
+                  "ai-disclosure-v1",
+                  "media-disclosure-v2"
+                ],
                 "type": "string"
               },
               {

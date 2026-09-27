@@ -287,7 +287,7 @@ describe('request-scoped launch decision middleware', () => {
     expect(launchBuildEvidence).toEqual({
       routeRevision: 'launch-indexing-policy-v1',
       routeDigest: createHash('sha256').update(route).digest('hex'),
-      disclosureRevision: 'ai-disclosure-v1',
+      disclosureRevision: 'media-disclosure-v2',
       disclosureDigest: createHash('sha256').update(disclosure).digest('hex'),
     })
     expect(Object.isFrozen(launchBuildEvidence)).toBe(true)

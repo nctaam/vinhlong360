@@ -41,7 +41,9 @@ class SavedItem(BaseModel):
     summary: Optional[str] = Field(None, max_length=1000)
     image: Optional[str] = Field(None, max_length=500)
     image_descriptor: Optional[GalleryImageDescriptor] = None
-    descriptor_revision: Optional[Literal["ai-disclosure-v1"]] = None
+    descriptor_revision: Optional[
+        Literal["ai-disclosure-v1", "media-disclosure-v2"]
+    ] = None
 
 
 class MergeBody(BaseModel):
