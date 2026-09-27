@@ -87,13 +87,13 @@ const validManifest: LaunchReadinessManifest = {
       sha256: routeDigest,
     },
     ai_disclosure: {
-      revision: 'ai-disclosure-v1',
+      revision: 'media-disclosure-v2',
       sha256: disclosureDigest,
     },
     policy_fingerprint: buildPolicyFingerprint({
       routeRevision: 'launch-indexing-policy-v1',
       routeDigest,
-      disclosureRevision: 'ai-disclosure-v1',
+      disclosureRevision: 'media-disclosure-v2',
       disclosureDigest,
     }),
   },
@@ -132,7 +132,7 @@ describe('launch readiness manifest', () => {
       schema_version: 1,
       artifacts: {
         route_manifest: { revision: 'launch-indexing-policy-v1', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) },
-        ai_disclosure: { revision: 'ai-disclosure-v1', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) },
+        ai_disclosure: { revision: 'media-disclosure-v2', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) },
       },
     })
   })
@@ -191,7 +191,7 @@ describe('launch readiness manifest', () => {
   it('requires both artifact revisions as well as digests', () => {
     expect(validateReadinessManifest(validManifest).artifacts).toMatchObject({
       route_manifest: { revision: 'launch-indexing-policy-v1', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) },
-      ai_disclosure: { revision: 'ai-disclosure-v1', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) },
+      ai_disclosure: { revision: 'media-disclosure-v2', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) },
     })
     expect(() => validateReadinessManifest({
       ...validManifest,
@@ -212,7 +212,7 @@ describe('launch readiness manifest', () => {
         policy_fingerprint: buildPolicyFingerprint({
           routeRevision: 'launch-indexing-policy-v1',
           routeDigest: staleRouteDigest,
-          disclosureRevision: 'ai-disclosure-v1',
+          disclosureRevision: 'media-disclosure-v2',
           disclosureDigest,
         }),
       },
@@ -237,7 +237,7 @@ describe('launch readiness manifest', () => {
     const input = {
       routeRevision: 'launch-indexing-policy-v1',
       routeDigest,
-      disclosureRevision: 'ai-disclosure-v1',
+      disclosureRevision: 'media-disclosure-v2',
       disclosureDigest,
     }
     expect(generator.buildGeneratorPolicyFingerprint(input)).toBe(buildPolicyFingerprint(input))

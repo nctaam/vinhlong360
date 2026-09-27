@@ -16,6 +16,7 @@ const ai = (url: string, alt = 'Điểm đến — ảnh minh họa'): ImageDesc
   short_label: aiDisclosure.entity_ai.short_label,
   full_disclosure: aiDisclosure.entity_ai.full_disclosure,
   credit: null,
+  source_url: null,
   width: null,
   height: null,
 })
@@ -29,6 +30,7 @@ const placeholder: ImageDescriptor = {
   short_label: null,
   full_disclosure: aiDisclosure.placeholder.full_disclosure,
   credit: null,
+  source_url: null,
   width: null,
   height: null,
 }

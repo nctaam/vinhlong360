@@ -828,6 +828,7 @@ function createPlaceholderDescriptor(): Readonly<ImageDescriptor> {
     short_label: aiDisclosure.placeholder.short_label,
     full_disclosure: aiDisclosure.placeholder.full_disclosure,
     credit: null,
+    source_url: null,
     width: null,
     height: null,
   })

@@ -18,6 +18,7 @@ const descriptor: ImageDescriptor = {
   short_label: 'Ảnh đại diện đang cập nhật',
   full_disclosure: 'Hình đại diện tạm thời trong khi ảnh thực tế đang được cập nhật.',
   credit: null,
+  source_url: null,
   width: null,
   height: null,
 }

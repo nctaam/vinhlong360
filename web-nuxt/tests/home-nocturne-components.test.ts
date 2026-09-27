@@ -31,6 +31,7 @@ const descriptor: ImageDescriptor = {
   short_label: 'Ảnh minh họa',
   full_disclosure: 'Ảnh minh họa do AI dựng, không phải ảnh chụp tại hiện trường.',
   credit: null,
+  source_url: null,
   width: 960,
   height: 640,
 }

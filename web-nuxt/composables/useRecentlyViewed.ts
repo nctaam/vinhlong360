@@ -6,7 +6,7 @@ export interface RecentItem {
   name: string
   type: string
   image_descriptor: ImageDescriptor
-  descriptor_revision: 'ai-disclosure-v1'
+  descriptor_revision: 'media-disclosure-v2'
   viewedAt: number
 }
 

@@ -48,14 +48,14 @@ describe('saved image descriptor snapshots', () => {
   it('takes the snapshot revision from the canonical disclosure artifact', () => {
     const source = readFileSync(resolve(__dirname, '../utils/savedImageDescriptors.ts'), 'utf8')
     expect(source).toContain('aiDisclosure.revision')
-    expect(source).not.toContain("SAVED_DESCRIPTOR_REVISION = 'ai-disclosure-v1'")
+    expect(source).not.toContain("SAVED_DESCRIPTOR_REVISION = 'media-disclosure-v2'")
   })
 
   it('migrates a legacy entity image URL to an AI descriptor snapshot', () => {
     const migrated = normalizeSavedImageSnapshot(entity({ image: '/img/entities/entity.webp' }))
 
     expect(migrated.image_descriptor).toEqual(aiDescriptor)
-    expect(migrated.descriptor_revision).toBe('ai-disclosure-v1')
+    expect(migrated.descriptor_revision).toBe('media-disclosure-v2')
     expect(migrated).not.toHaveProperty('image')
   })
 
@@ -191,7 +191,7 @@ describe('favorite, recent, and recommendation adapters', () => {
       url: null,
       source_class: 'placeholder',
     }))
-    expect(favorite.descriptor_revision).toBe('ai-disclosure-v1')
+    expect(favorite.descriptor_revision).toBe('media-disclosure-v2')
     expect(favorite).not.toHaveProperty('image')
   })
 
@@ -199,7 +199,7 @@ describe('favorite, recent, and recommendation adapters', () => {
     const recent = createRecentItem(entity({ images: ['/img/entities/entity.webp'] }), 123)
 
     expect(recent.image_descriptor).toEqual(aiDescriptor)
-    expect(recent.descriptor_revision).toBe('ai-disclosure-v1')
+    expect(recent.descriptor_revision).toBe('media-disclosure-v2')
     expect(recent).not.toHaveProperty('image')
   })
 
@@ -212,7 +212,7 @@ describe('favorite, recent, and recommendation adapters', () => {
       url: null,
       source_class: 'placeholder',
     }))
-    expect(recommendation?.descriptor_revision).toBe('ai-disclosure-v1')
+    expect(recommendation?.descriptor_revision).toBe('media-disclosure-v2')
     expect(recommendation).not.toHaveProperty('image')
   })
 })

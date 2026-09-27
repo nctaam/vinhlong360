@@ -363,7 +363,7 @@ function withClaims(claims: unknown): Record<string, unknown> {
 }
 
 function assertReadonlyDisclosureTypes(disclosure: AiDisclosureArtifact): void {
-  const revision: 'ai-disclosure-v1' = disclosure.revision
+  const revision: 'media-disclosure-v2' = disclosure.revision
   const entityShort: 'Minh h\u1ecda AI' = disclosure.entity_ai.short_label
   const placeholderShort: null = disclosure.placeholder.short_label
   const ugcFull: '\u1ea2nh do ng\u01b0\u1eddi d\u00f9ng cung c\u1ea5p.' = disclosure.ugc_photo.full_disclosure

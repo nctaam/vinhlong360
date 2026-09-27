@@ -10,7 +10,7 @@ export interface FavoriteItem {
   place_area?: string
   summary?: string
   image_descriptor: ImageDescriptor
-  descriptor_revision: 'ai-disclosure-v1'
+  descriptor_revision: 'media-disclosure-v2'
   savedAt: string
 }
 

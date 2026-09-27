@@ -26,6 +26,7 @@ describe('Google Images License structured data (AEO / Search Central)', () => {
       short_label: 'Ảnh AI',
       full_disclosure: 'Ảnh tư liệu báo chí',
       credit: null,
+      source_url: null,
       width: null,
       height: null,
     }

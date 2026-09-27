@@ -55,6 +55,7 @@ function postDescriptor(url: string): ImageDescriptor {
     short_label: aiDisclosure.ugc_photo.short_label,
     full_disclosure: aiDisclosure.ugc_photo.full_disclosure,
     credit: null,
+    source_url: null,
     width: null,
     height: null,
   }

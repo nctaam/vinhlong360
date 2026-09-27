@@ -12,7 +12,7 @@ import { launchRouteManifest } from './launchRouteManifest'
 
 export const READINESS_MANIFEST_SCHEMA_VERSION = 1 as const
 export const ROUTE_MANIFEST_REVISION = 'launch-indexing-policy-v1' as const
-export const AI_DISCLOSURE_REVISION = 'ai-disclosure-v1' as const
+export const AI_DISCLOSURE_REVISION = 'media-disclosure-v2' as const
 export const SERVICE_WORKER_VERSION = 'vl360-launch-v1' as const
 
 export const POLICY_ROUTE_CLASSES = Object.freeze([
