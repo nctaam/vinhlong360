@@ -672,7 +672,7 @@ def _validated_canonical_artifacts(
             "config/launch-indexing-policy.json",
             "launch-indexing-policy-v1",
         ),
-        ("ai_disclosure", "config/ai-disclosure.json", "ai-disclosure-v1"),
+        ("ai_disclosure", "config/ai-disclosure.json", "media-disclosure-v2"),
     )
     for key, relative, expected_revision in definitions:
         path = root / relative
@@ -697,13 +697,13 @@ def _validated_canonical_artifacts(
                 "entity_ai",
                 "placeholder",
                 "ugc_photo",
+                "sourced_photo",
                 "forbidden_entity_image_claims",
             }
         )
         _exact_keys(artifact, expected_keys, f"canonical artifact {relative}")
-        if type(artifact.get("schema_version")) is not int or artifact.get(
-            "schema_version"
-        ) != 1:
+        expected_schema_version = 1 if key == "route_manifest" else 2
+        if type(artifact.get("schema_version")) is not int or artifact.get("schema_version") != expected_schema_version:
             raise ValueError(f"canonical artifact schema mismatch: {relative}")
         if artifact.get("revision") != expected_revision:
             raise ValueError(f"canonical artifact revision mismatch: {relative}")
@@ -732,7 +732,7 @@ def _policy_fingerprint(canonical_artifacts: Mapping[str, object]) -> str:
     payload = {
         "cache_isolation": "launch-cache-isolation-v1",
         "disclosure_artifact": {
-            "revision": "ai-disclosure-v1",
+            "revision": "media-disclosure-v2",
             "sha256": disclosure_digest,
         },
         "index_policy": "index-policy-v1",

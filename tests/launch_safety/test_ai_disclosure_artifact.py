@@ -24,8 +24,8 @@ EXPECTED_GIT_ATTRIBUTES_BYTES = (
 )
 EXPECTED_DISCLOSURE_BYTES = (
     "{\n"
-    '  "schema_version": 1,\n'
-    '  "revision": "ai-disclosure-v1",\n'
+    '  "schema_version": 2,\n'
+    '  "revision": "media-disclosure-v2",\n'
     '  "entity_ai": {\n'
     '    "short_label": "Minh họa AI",\n'
     '    "full_disclosure": "Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.",\n'
@@ -40,6 +40,11 @@ EXPECTED_DISCLOSURE_BYTES = (
     '    "short_label": "Ảnh người dùng",\n'
     '    "full_disclosure": "Ảnh do người dùng cung cấp.",\n'
     '    "accessible_description_key": "ugc-photo-full"\n'
+    "  },\n"
+    '  "sourced_photo": {\n'
+    '    "short_label": "Ảnh có nguồn",\n'
+    '    "full_disclosure": "Ảnh tư liệu có nguồn và căn cứ sử dụng — xem tác giả, cơ quan nguồn và liên kết gốc.",\n'
+    '    "accessible_description_key": "entity-sourced-photo-full"\n'
     "  },\n"
     '  "forbidden_entity_image_claims": [\n'
     '    "ảnh thật",\n'
@@ -56,8 +61,8 @@ DISCLOSURE_FIELDS = {
     "accessible_description_key",
 }
 EXPECTED_DISCLOSURE = {
-    "schema_version": 1,
-    "revision": "ai-disclosure-v1",
+    "schema_version": 2,
+    "revision": "media-disclosure-v2",
     "entity_ai": {
         "short_label": "Minh họa AI",
         "full_disclosure": "Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.",
@@ -72,6 +77,11 @@ EXPECTED_DISCLOSURE = {
         "short_label": "Ảnh người dùng",
         "full_disclosure": "Ảnh do người dùng cung cấp.",
         "accessible_description_key": "ugc-photo-full",
+    },
+    "sourced_photo": {
+        "short_label": "Ảnh có nguồn",
+        "full_disclosure": "Ảnh tư liệu có nguồn và căn cứ sử dụng — xem tác giả, cơ quan nguồn và liên kết gốc.",
+        "accessible_description_key": "entity-sourced-photo-full",
     },
     "forbidden_entity_image_claims": [
         "ảnh thật",
@@ -235,8 +245,8 @@ def test_autocrlf_checkout_index_preserves_canonical_artifact_bytes(tmp_path: Pa
         ).encode("utf-8")
         + b"\n",
         EXPECTED_DISCLOSURE_BYTES.replace(
-            b'  "schema_version": 1,\n  "revision": "ai-disclosure-v1",\n',
-            b'  "revision": "ai-disclosure-v1",\n  "schema_version": 1,\n',
+            b'  "schema_version": 2,\n  "revision": "media-disclosure-v2",\n',
+            b'  "revision": "media-disclosure-v2",\n  "schema_version": 2,\n',
         ),
         EXPECTED_DISCLOSURE_BYTES.replace(b"\n", b"\r\n"),
         EXPECTED_DISCLOSURE_BYTES.removesuffix(b"\n"),
@@ -266,14 +276,15 @@ def test_ai_disclosure_contains_exact_reviewed_schema_and_copy():
         "entity_ai",
         "placeholder",
         "ugc_photo",
+        "sourced_photo",
         "forbidden_entity_image_claims",
     }
     assert disclosure == EXPECTED_DISCLOSURE
     assert type(disclosure["schema_version"]) is int
-    assert disclosure["schema_version"] == 1
-    assert disclosure["revision"] == "ai-disclosure-v1"
+    assert disclosure["schema_version"] == 2
+    assert disclosure["revision"] == "media-disclosure-v2"
 
-    for section_name in ("entity_ai", "placeholder", "ugc_photo"):
+    for section_name in ("entity_ai", "placeholder", "ugc_photo", "sourced_photo"):
         section = disclosure[section_name]
         assert type(section) is dict
         assert set(section) == DISCLOSURE_FIELDS

@@ -25,6 +25,7 @@ if __package__:
         CANONICAL_SOURCED_PHOTO,
     )
     from .image_descriptor import normalize_renderable_image_url
+    from .media_provenance import is_public_provenance_url
 else:
     from ai_disclosure import (
         CANONICAL_ENTITY_AI,
@@ -33,6 +34,7 @@ else:
         CANONICAL_SOURCED_PHOTO,
     )
     from image_descriptor import normalize_renderable_image_url
+    from media_provenance import is_public_provenance_url
 
 
 class ApiModel(BaseModel):
@@ -92,6 +94,8 @@ def _validate_gallery_provenance(self: "GalleryImageDescriptor") -> None:
         raise ValueError("non-placeholder image must have a URL")
     if self.source_class == "rights-cleared" and (not self.credit or not self.source_url):
         raise ValueError("rights-cleared image requires credit and source_url")
+    if self.source_class == "rights-cleared" and not is_public_provenance_url(self.source_url):
+        raise ValueError("rights-cleared image source_url must be public")
     if self.source_class != "rights-cleared" and self.source_url is not None:
         raise ValueError("only rights-cleared images may have source_url")
     if self.source_class not in {"rights-cleared", "user-uploaded"} and self.credit is not None:

@@ -42,9 +42,20 @@ def _valid_public_hostname(host: str) -> bool:
             and not any(host == suffix or host.endswith(f".{suffix}") for suffix in _PLACEHOLDER_SUFFIXES))
 def is_public_provenance_url(value: object, *, require_path: bool = True) -> bool:
     if not isinstance(value, str) or not value.strip(): return False
-    try: parsed = urlparse(value.strip()); hostname = parsed.hostname
+    try: parsed = urlparse(value.strip())
     except ValueError: return False
-    return bool(parsed.scheme in {"http", "https"} and parsed.netloc and _normalized_public_hostname(hostname) and (not require_path or parsed.path not in {"", "/"}))
+    if not _safe_provenance_parts(parsed): return False
+    return bool(_normalized_public_hostname(parsed.hostname) and (not require_path or parsed.path not in {"", "/"}))
+
+def _safe_provenance_parts(parsed: object) -> bool:
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc or parsed.username or parsed.password or parsed.fragment:
+        return False
+    try:
+        if parsed.port is not None and not 1 <= parsed.port <= 65535:
+            return False
+    except ValueError:
+        return False
+    return True
 def is_placeholder_hostname(hostname: object) -> bool:
     return isinstance(hostname, str) and bool(hostname.strip()) and _normalized_public_hostname(hostname) is None
 @dataclass(frozen=True)

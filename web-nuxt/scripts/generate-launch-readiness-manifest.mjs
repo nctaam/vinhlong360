@@ -18,7 +18,7 @@ import {
 } from '../utils/launchArtifactValidators.mjs'
 
 const ROUTE_MANIFEST_REVISION = 'launch-indexing-policy-v1'
-const AI_DISCLOSURE_REVISION = 'ai-disclosure-v1'
+const AI_DISCLOSURE_REVISION = 'media-disclosure-v2'
 const SERVICE_WORKER_VERSION = 'vl360-launch-v1'
 const POLICY_ROUTE_CLASSES = Object.freeze([
   'public-html',
@@ -50,6 +50,13 @@ const CACHE_PURGE_DECLARATION = deepFreeze({
 const SHA256_PATTERN = /^[a-f0-9]{64}$/u
 const POLICY_PRERENDER_PATTERN = /\.html(?:\.(?:br|gz))?$/iu
 const INLINE_CONFIG_MARKER = 'const _inlineRuntimeConfig = '
+const MAPLIBRE_REVALIDATED_ASSETS = new Set([
+  '/maplibre-gl-loader.mjs',
+  '/maplibre-gl.mjs',
+  '/maplibre-gl-shared.mjs',
+  '/maplibre-gl-worker.mjs',
+  '/maplibre-gl.css',
+])
 
 function sha256(source) {
   return createHash('sha256').update(source).digest('hex')
@@ -140,12 +147,12 @@ export function auditCompiledRouteRules(routeRules) {
 
     const cacheControl = cacheControlHeader(rule.headers)
     if (cacheControl !== undefined) {
-      const isWorkerRevalidation = path === '/maplibre-gl-csp-worker.js'
+      const isMapLibreRevalidation = MAPLIBRE_REVALIDATED_ASSETS.has(path)
         && cacheControl === 'no-cache, must-revalidate'
       if (
-        (!isReviewedAssetRule(path) && !isWorkerRevalidation)
+        (!isReviewedAssetRule(path) && !isMapLibreRevalidation)
         || typeof cacheControl !== 'string'
-        || (!isWorkerRevalidation && !/^public,\s*max-age=\d+,\s*immutable$/iu.test(cacheControl))
+        || (!isMapLibreRevalidation && !/^public,\s*max-age=\d+,\s*immutable$/iu.test(cacheControl))
       ) {
         throw new Error(`compiled cache rule is unsafe: ${path}`)
       }

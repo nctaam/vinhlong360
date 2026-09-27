@@ -300,7 +300,9 @@ def _parse_supplied_entity_descriptor(
         return None
     if full_disclosure != copy.full_disclosure:
         return None
-    if credit is not None or source_url is not None or not _valid_descriptor_dimensions(width, height):
+    if credit is not None or source_url is not None:
+        return None
+    if not _valid_descriptor_dimensions(width, height):
         return None
     source_class, source_kind, disclosure_key = source
     return ImageDescriptor(

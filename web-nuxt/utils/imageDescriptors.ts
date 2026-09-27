@@ -10,6 +10,7 @@ const DESCRIPTOR_KEYS = [
   'short_label',
   'source_class',
   'source_kind',
+  'source_url',
   'url',
   'width',
 ]
@@ -32,11 +33,19 @@ const ALLOWED_SOURCE_COMBINATIONS = new Set([
   'placeholder|generated-placeholder|entity-placeholder',
   'user-uploaded|review-ugc|ugc-photo',
   'user-uploaded|post-ugc|ugc-photo',
+  'rights-cleared|documentary|entity-sourced-photo',
+  'rights-cleared|journalistic|entity-sourced-photo',
+  'rights-cleared|official|entity-sourced-photo',
+  'rights-cleared|press|entity-sourced-photo',
 ])
 
 const RENDERABLE_ENTITY_SOURCE_COMBINATIONS = new Set([
   'ai-generated|entity-editorial|entity-ai',
   'placeholder|generated-placeholder|entity-placeholder',
+  'rights-cleared|documentary|entity-sourced-photo',
+  'rights-cleared|journalistic|entity-sourced-photo',
+  'rights-cleared|official|entity-sourced-photo',
+  'rights-cleared|press|entity-sourced-photo',
 ])
 
 const CANONICAL_LEGACY_ENTITY_IMAGE_PATTERN = /^\/img\/entities\/[a-z0-9]+(?:-+[a-z0-9]+)*\.webp$/
@@ -197,13 +206,19 @@ export function parseGalleryDescriptor(value: unknown): Readonly<ImageDescriptor
     ? aiDisclosure.entity_ai
     : descriptor.disclosure_key === 'entity-placeholder'
       ? aiDisclosure.placeholder
-      : aiDisclosure.ugc_photo
+      : descriptor.disclosure_key === 'entity-sourced-photo'
+        ? aiDisclosure.sourced_photo
+        : aiDisclosure.ugc_photo
   if (
     descriptor.short_label !== canonical.short_label
     || descriptor.full_disclosure !== canonical.full_disclosure
   ) return null
   if (descriptor.source_class !== 'placeholder' && descriptor.url === null) return null
-  if (descriptor.source_class !== 'user-uploaded' && descriptor.credit !== null) return null
+  if (descriptor.source_class === 'rights-cleared') {
+    if (typeof descriptor.credit !== 'string' || !descriptor.credit.trim() || typeof descriptor.source_url !== 'string' || !/^https?:\/\//i.test(descriptor.source_url)) return null
+  } else {
+    if (descriptor.credit !== null || descriptor.source_url !== null) return null
+  }
 
   const dimensions = [descriptor.width, descriptor.height]
   if (dimensions.some(dimension => (
@@ -232,7 +247,7 @@ const ENTITY_EDITORIAL_UPLOAD_ERROR = [
   'entity.images chỉ nhận AI editorial',
 ].join('; ')
 
-/** Enforce the AI-only entity image contract before admin data reaches the API. */
+/** Keep this admin upload path AI-only; rights-cleared press media uses audited ingestion. */
 export function normalizeEntityEditorialUpload(value: unknown): Readonly<ImageDescriptor> {
   const descriptor = parseGalleryDescriptor(value)
   if (

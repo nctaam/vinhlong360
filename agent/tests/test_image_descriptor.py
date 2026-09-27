@@ -206,6 +206,7 @@ def _supplied_entity_descriptor(**overrides: object) -> dict[str, object]:
         "short_label": DISCLOSURE.entity_ai.short_label,
         "full_disclosure": DISCLOSURE.entity_ai.full_disclosure,
         "credit": None,
+        "source_url": None,
         "width": None,
         "height": None,
     }
@@ -247,6 +248,7 @@ def test_describe_entity_images_allows_an_explicit_canonical_placeholder():
         "short_label": DISCLOSURE.placeholder.short_label,
         "full_disclosure": DISCLOSURE.placeholder.full_disclosure,
         "credit": None,
+        "source_url": None,
         "width": None,
         "height": None,
     }

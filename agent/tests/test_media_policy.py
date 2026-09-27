@@ -4,6 +4,11 @@ def test_rights_cleared_source_family_is_exported():
     from media_policy import ENTITY_RIGHTS_CLEARED_SOURCES
     assert ("rights-cleared", "press", "entity-sourced-photo") in ENTITY_RIGHTS_CLEARED_SOURCES
 
+def test_stored_ai_classes_require_literal_false_verification():
+    from media_policy import is_stored_image_class_valid
+    assert is_stored_image_class_valid({"image_type": "ai-generated", "is_verified_photo": False})
+    assert not is_stored_image_class_valid({"image_type": "ai-generated"})
+
 import asyncio
 import importlib
 import sys

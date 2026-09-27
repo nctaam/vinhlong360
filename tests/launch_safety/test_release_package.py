@@ -33,14 +33,14 @@ def test_release_policy_fingerprint_matches_backend_contract():
             "sha256": "a" * 64,
         },
         "ai_disclosure": {
-            "revision": "ai-disclosure-v1",
+            "revision": "media-disclosure-v2",
             "sha256": "b" * 64,
         },
     }
     expected = build_policy_fingerprint(
         route_revision="launch-indexing-policy-v1",
         route_digest="a" * 64,
-        disclosure_revision="ai-disclosure-v1",
+        disclosure_revision="media-disclosure-v2",
         disclosure_digest="b" * 64,
     )
 
@@ -264,7 +264,7 @@ def _write_launch_fixture(root: Path) -> Path:
     policy_fingerprint = build_policy_fingerprint(
         route_revision="launch-indexing-policy-v1",
         route_digest=route_digest,
-        disclosure_revision="ai-disclosure-v1",
+        disclosure_revision="media-disclosure-v2",
         disclosure_digest=disclosure_digest,
     )
     readiness = {
@@ -276,7 +276,7 @@ def _write_launch_fixture(root: Path) -> Path:
                 "sha256": route_digest,
             },
             "ai_disclosure": {
-                "revision": "ai-disclosure-v1",
+                "revision": "media-disclosure-v2",
                 "sha256": disclosure_digest,
             },
             "policy_fingerprint": policy_fingerprint,

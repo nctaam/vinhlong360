@@ -347,10 +347,11 @@ def _constructor_kwargs(artifact: object) -> dict[str, Any]:
     canonical = canonical_disclosure_copy()
     return {
         "artifact": artifact,
-        "revision": "ai-disclosure-v1",
+        "revision": "media-disclosure-v2",
         "entity_ai": DisclosureCopy(**canonical["entity_ai"]),
         "placeholder": DisclosureCopy(**canonical["placeholder"]),
         "ugc_photo": DisclosureCopy(**canonical["ugc_photo"]),
+        "sourced_photo": DisclosureCopy(**canonical["sourced_photo"]),
         "forbidden_entity_image_claims": list(
             canonical["forbidden_entity_image_claims"]
         ),
@@ -380,7 +381,7 @@ def test_loads_exact_canonical_copy_with_immutable_artifact_snapshot():
     assert disclosure.artifact.raw == raw
     assert disclosure.artifact.sha256 == hashlib.sha256(raw).hexdigest()
     assert isinstance(disclosure.artifact.data, MappingProxyType)
-    assert disclosure.revision == "ai-disclosure-v1"
+    assert disclosure.revision == "media-disclosure-v2"
     assert disclosure.entity_ai == DisclosureCopy(
         short_label="Minh h\u1ecda AI",
         full_disclosure=(
@@ -597,12 +598,14 @@ def test_loaded_constructor_owns_claims_and_rejects_artifact_divergence():
     entity_ai = DisclosureCopy(**canonical["entity_ai"])
     placeholder = DisclosureCopy(**canonical["placeholder"])
     ugc_photo = DisclosureCopy(**canonical["ugc_photo"])
+    sourced_photo = DisclosureCopy(**canonical["sourced_photo"])
     loaded = LoadedAiDisclosure(
         artifact=load_ai_disclosure().artifact,
-        revision="ai-disclosure-v1",
+        revision="media-disclosure-v2",
         entity_ai=entity_ai,
         placeholder=placeholder,
         ugc_photo=ugc_photo,
+        sourced_photo=sourced_photo,
         forbidden_entity_image_claims=claims,
     )
 

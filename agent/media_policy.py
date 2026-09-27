@@ -28,6 +28,20 @@ RENDERABLE_ENTITY_SOURCES = frozenset(
     {ENTITY_AI_SOURCE, ENTITY_PLACEHOLDER_SOURCE} | ENTITY_RIGHTS_CLEARED_SOURCES
 )
 
+def is_stored_image_class_valid(attributes: object) -> bool:
+    if not isinstance(attributes, Mapping):
+        return False
+    image_type = attributes.get("image_type")
+    if image_type in {"ai-generated", "generated-placeholder"}:
+        return attributes.get("is_verified_photo") is False
+    if image_type in DOCUMENTARY_IMAGE_TYPES:
+        try:
+            from .media_provenance import sourced_photo_evidence
+        except ImportError:
+            from media_provenance import sourced_photo_evidence
+        return sourced_photo_evidence(attributes) is not None
+    return True
+
 AI_ONLY_MEDIA_DETAIL = {
     "code": "ai_only_media",
     "message": "Only canonical AI-generated entity media is accepted.",

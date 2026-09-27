@@ -72,7 +72,7 @@ CONFIG_INGRESS_UNIT_PATHS = (
     *SYSTEMD_UNIT_PATHS,
 )
 ROUTE_REVISION = "launch-indexing-policy-v1"
-DISCLOSURE_REVISION = "ai-disclosure-v1"
+DISCLOSURE_REVISION = "media-disclosure-v2"
 READINESS_PATH = "web-nuxt/.output/server/launch-readiness-manifest.json"
 ROUTE_CLASSES = ["public-html", "public-api", "root-seo", "internal-readiness"]
 AUDIT_CHECK_NAMES = (
