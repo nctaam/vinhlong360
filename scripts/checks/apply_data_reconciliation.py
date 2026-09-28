@@ -618,8 +618,11 @@ def _validated_mutations(plan: dict[str, Any]) -> tuple[list[dict[str, Any]], li
     if not isinstance(mutations, list) or not all(isinstance(item, dict) for item in mutations):
         raise ApplyError("mutations must be a list of objects")
     json_mutations = [item for item in mutations if item.get("store") == "json"]
-    indexes = [((item.get("metadata") or {}).get("index")) for item in json_mutations]
-    if len(indexes) != len(set(indexes)):
+    index_keys = [
+        (item.get("recordType"), (item.get("metadata") or {}).get("index"))
+        for item in json_mutations
+    ]
+    if len(index_keys) != len(set(index_keys)):
         raise ApplyError("conflicting JSON mutation index")
     sqlite_mutations = [item for item in mutations if item.get("store") == "sqlite"]
     unknown = [item for item in mutations if item.get("store") not in {"sqlite", "json"}]
@@ -629,8 +632,12 @@ def _validated_mutations(plan: dict[str, Any]) -> tuple[list[dict[str, Any]], li
 
 
 def _apply_json_mutations(payload: dict[str, Any], json_mutations: list[dict[str, Any]]) -> None:
-    for mutation in sorted(json_mutations, key=lambda item: (item.get("metadata") or {}).get("index", -1), reverse=True):
-        _json_mutation(payload, mutation)
+    grouped: dict[Any, list[dict[str, Any]]] = {}
+    for mutation in json_mutations:
+        grouped.setdefault(mutation.get("recordType"), []).append(mutation)
+    for group in grouped.values():
+        for mutation in sorted(group, key=lambda item: (item.get("metadata") or {}).get("index", -1), reverse=True):
+            _json_mutation(payload, mutation)
 
 
 def _stage_apply_journal(

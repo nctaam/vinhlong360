@@ -158,6 +158,41 @@ def test_targeted_media_verification_preserves_unrelated_global_drift(tmp_path):
     assert result == {"mode": "targeted-media-v1", "status": "clean", "globalParity": "known-drift-preserved"}
 
 
+def test_json_manifest_indexes_are_scoped_by_record_type():
+    payload = {
+        "entities": [{"id": "a", "attributes": {"image_author": "remove-me"}}],
+        "relationships": [{"from": "a", "to": "a", "type": "near"}],
+    }
+    mutations = [
+        {
+            "mutationId": "entity-remove",
+            "store": "json",
+            "recordType": "entity",
+            "recordId": "a",
+            "operation": "remove",
+            "field": "attributes.image_author",
+            "before": "remove-me",
+            "after": None,
+            "metadata": {"index": 0},
+        },
+        {
+            "mutationId": "relationship-update",
+            "store": "json",
+            "recordType": "relationship",
+            "recordId": "a->a",
+            "operation": "update",
+            "field": "relationship",
+            "before": {"from": "a", "to": "a", "type": "near"},
+            "after": {"from": "a", "to": "a", "type": "related_to"},
+            "metadata": {"index": 0},
+        },
+    ]
+    _, json_mutations, _ = apply_module._validated_mutations({"mutations": mutations})
+    apply_module._apply_json_mutations(payload, json_mutations)
+    assert payload["entities"][0]["attributes"] == {}
+    assert payload["relationships"][0]["type"] == "related_to"
+
+
 def test_generated_graph_insert_schema_applies_and_preserves_relationship_parity(tmp_path):
     db, data, db_bak, data_bak = _fixture(tmp_path)
     payload = json.loads(data.read_text(encoding="utf-8"))
