@@ -142,6 +142,7 @@ def test_entity_delete_and_nested_remove_apply_to_both_fixture_stores(tmp_path):
     plan["mutations"][3]["before"] = "remove-me"
     result = apply_plan(plan, db, data, db_bak, data_bak, confirm=True, plan_sha256=canonical_plan_sha256(plan))
     assert result["parity"]["status"] == "clean"
+    assert result["verification"]["status"] == "clean"
     expected_survivor = dict(payload["entities"][1], attributes={})
     assert json.loads(data.read_text(encoding="utf-8"))["entities"] == [expected_survivor]
     with sqlite3.connect(db) as conn:

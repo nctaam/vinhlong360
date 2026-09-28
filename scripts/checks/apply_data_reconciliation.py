@@ -703,7 +703,12 @@ def _execute_apply_transaction(
         write_journal(journal_path, state)
         journal_path.unlink()
         _fsync_directory(journal_path.parent)
-        return {"status": "applied", "parity": final_parity, "mutationCount": len(mutations)}
+        return {
+            "status": "applied",
+            "verification": final_parity,
+            "parity": final_parity,
+            "mutationCount": len(mutations),
+        }
     except (ApplyError, OSError, sqlite3.Error, json.JSONDecodeError) as exc:
         if connection is not None and transaction_active:
             connection.rollback()
