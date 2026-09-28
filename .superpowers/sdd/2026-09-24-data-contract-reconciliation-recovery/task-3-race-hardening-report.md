@@ -35,6 +35,10 @@ and removed the journal after the external edit.
 - Recovery now permits restoration only when the current JSON SHA-256 matches the
   journaled pre-apply hash or the staged hash representing the known published
   state.
+- For the pre-apply branch, the current device/inode/size must also match the
+  journaled `beforeIdentity`; the staged published branch intentionally uses its
+  durable hash because its post-`os.replace` identity is not recorded at the
+  crash boundary.
 - A mismatch (or unreadable target) fails closed with
   `ApplyError("JSON target ownership cannot be verified")`; recovery does not call
   the unconditional restore path, so external bytes and the journal remain intact.
