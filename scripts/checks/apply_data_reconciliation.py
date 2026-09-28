@@ -67,10 +67,11 @@ def _capture_json_target(
     _race_hook("before_capture", json_path, capture_path)
     if capture_path.exists():
         raise ApplyError("JSON capture path was recreated")
-    # Rename is the ownership transfer: unlike link+unlink, it cannot delete a
-    # replacement that wins the window between verification and unlink.
+    move_path = _unique_json_artifact(json_path, "moving")
     try:
-        os.rename(json_path, capture_path)
+        os.rename(json_path, move_path)
+        os.link(move_path, capture_path)
+        move_path.unlink()
     except FileExistsError as exc:
         raise ApplyError("JSON capture path was recreated") from exc
     except OSError as exc:
@@ -91,6 +92,7 @@ def _capture_json_target(
 def _publish_json_no_overwrite(candidate_path: Path, json_path: Path) -> tuple[int, int, int, int]:
     """Publish a candidate with an exclusive hard link, never replacing a target."""
     candidate_path, json_path = Path(candidate_path), Path(json_path)
+    expected_sha = _sha(candidate_path)
     _race_hook("before_publish", candidate_path, json_path)
     try:
         os.link(candidate_path, json_path)
@@ -104,7 +106,7 @@ def _publish_json_no_overwrite(candidate_path: Path, json_path: Path) -> tuple[i
         raise ApplyError("published JSON cannot be verified") from exc
     _race_hook("after_publish", candidate_path, json_path)
     try:
-        if _sha(json_path) != _sha(candidate_path) or _file_identity(json_path)[:3] != identity[:3]:
+        if _sha(json_path) != expected_sha or _file_identity(json_path)[:3] != identity[:3]:
             raise ApplyError("JSON target changed after publication")
     except OSError as exc:
         raise ApplyError("published JSON cannot be verified") from exc
@@ -862,6 +864,7 @@ def _execute_apply_transaction(
         state["json"]["capturedSha256"] = expected_json
         write_journal(journal_path, state)
         _capture_json_target(json_path, capture_path, expected_json, original_identity)
+        state["json"]["candidateIdentity"] = _identity_dict(temp_json)
         published_identity = _publish_json_no_overwrite(temp_json, json_path)
         state["json"]["publishedIdentity"] = {
             "device": published_identity[0], "inode": published_identity[1], "size": published_identity[2]
@@ -875,8 +878,8 @@ def _execute_apply_transaction(
         # Recheck after the durable completion record; a sidecar can appear
         # between the pre-journal check and this crash boundary.
         _ensure_no_sidecars(sqlite_path)
+        _remove_owned_candidate(temp_json, state, journal_path)
         capture_path.unlink()
-        temp_json.unlink(missing_ok=True)
         journal_path.unlink()
         _fsync_directory(journal_path.parent)
         return {
@@ -915,6 +918,23 @@ def _finalize_checks(plan: dict[str, Any], sqlite_path: Path, json_path: Path, c
         raise ApplyError("captured JSON changed during final verification")
     _ensure_no_sidecars(sqlite_path)
     return final_parity
+
+
+def _remove_owned_candidate(candidate_path: Path, state: dict[str, Any], journal_path: Path) -> None:
+    if not candidate_path.exists():
+        return
+    expected_sha = state["json"].get("candidateSha256")
+    expected_identity = state["json"].get("candidateIdentity")
+    actual_sha, actual_identity = _sha(candidate_path), _identity_dict(candidate_path)
+    owned = actual_sha == expected_sha and (not expected_identity or actual_identity == expected_identity)
+    if owned:
+        candidate_path.unlink()
+        return
+    observed = _unique_json_artifact(Path(state["json"]["path"]), "candidate-observed")
+    os.rename(candidate_path, observed)
+    state["json"].update(candidateObservedPath=str(observed), candidateObservedSha256=actual_sha, candidateObservedIdentity=actual_identity)
+    write_journal(journal_path, state)
+    raise ApplyError("candidate changed before cleanup")
 
 
 def _apply_plan_impl(

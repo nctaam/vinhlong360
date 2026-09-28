@@ -721,3 +721,57 @@ def test_rollback_capture_race_hook_preserves_foreign_bytes(tmp_path, monkeypatc
     observed = apply_module._restore_captured_json(target, capture)
     assert observed is not None
     assert observed.read_bytes() == b"new-foreign"
+
+
+@pytest.mark.parametrize("hook", ["before_capture", "after_capture", "before_publish", "after_publish"])
+def test_transaction_race_hooks_leave_recoverable_journal(tmp_path, monkeypatch, hook):
+    db, data, db_bak, data_bak = _fixture(tmp_path)
+    plan = _plan(db, data)
+    def race(_first, second):
+        if hook in {"before_capture", "after_capture"}:
+            second.write_bytes(b"foreign-capture")
+        else:
+            second.write_bytes(b"foreign-target")
+    monkeypatch.setitem(apply_module._RACE_HOOKS, hook, race)
+    with pytest.raises(ApplyError):
+        apply_plan(plan, db, data, db_bak, data_bak, confirm=True, plan_sha256=canonical_plan_sha256(plan))
+    journal = db.with_name(f"{db.name}.reconciliation.journal.json")
+    assert journal.exists()
+    monkeypatch.delitem(apply_module._RACE_HOOKS, hook)
+    recover_interrupted_apply(journal, db.with_name(f"{db.name}.reconciliation.lock"))
+    assert data.read_bytes() == data_bak.read_bytes()
+
+
+def test_transaction_rollback_capture_hook_leaves_recoverable_journal(tmp_path, monkeypatch):
+    db, data, db_bak, data_bak = _fixture(tmp_path)
+    plan = _plan(db, data)
+    def fail_publish(_candidate, target):
+        target.write_bytes(b"foreign-target")
+        raise ApplyError("publish race")
+    monkeypatch.setattr(apply_module, "_publish_json_no_overwrite", fail_publish)
+    with pytest.raises(ApplyError):
+        apply_plan(plan, db, data, db_bak, data_bak, confirm=True, plan_sha256=canonical_plan_sha256(plan))
+    journal = db.with_name(f"{db.name}.reconciliation.journal.json")
+    def rollback_race(target, _capture):
+        target.write_bytes(b"late-foreign")
+    monkeypatch.setitem(apply_module._RACE_HOOKS, "before_rollback_capture", rollback_race)
+    recover_interrupted_apply(journal, db.with_name(f"{db.name}.reconciliation.lock"))
+    assert data.read_bytes() == data_bak.read_bytes()
+
+
+def test_late_sidecar_after_final_journal_keeps_recovery_artifacts(tmp_path, monkeypatch):
+    db, data, db_bak, data_bak = _fixture(tmp_path)
+    plan = _plan(db, data)
+    original_write = apply_module.write_journal
+    def write_then_sidecar(path, state):
+        original_write(path, state)
+        if state.get("phase") == "complete":
+            db.with_name(db.name + "-wal").write_bytes(b"late")
+    monkeypatch.setattr(apply_module, "write_journal", write_then_sidecar)
+    with pytest.raises(ApplyError, match="sidecar"):
+        apply_plan(plan, db, data, db_bak, data_bak, confirm=True, plan_sha256=canonical_plan_sha256(plan))
+    journal = db.with_name(f"{db.name}.reconciliation.journal.json")
+    assert journal.exists()
+    with pytest.raises(ApplyError, match="sidecar"):
+        recover_interrupted_apply(journal, db.with_name(f"{db.name}.reconciliation.lock"))
+    db.with_name(db.name + "-wal").unlink()
