@@ -444,7 +444,11 @@ def _prepare_attribute_update(row: sqlite3.Row, mutation: dict[str, Any], record
     except json.JSONDecodeError as exc:
         raise ApplyError(f"malformed entity attributes: {record_id}") from exc
     attribute_name = mutation["field"].removeprefix("attributes.")
-    if attribute_name not in attributes or attributes[attribute_name] != _required_mutation_value(mutation, "before"):
+    before = _required_mutation_value(mutation, "before")
+    if attribute_name not in attributes and mutation.get("operation") == "update" and before is None:
+        attributes[attribute_name] = _required_mutation_value(mutation, "after")
+        return json.dumps(attributes, ensure_ascii=False)
+    if attribute_name not in attributes or attributes[attribute_name] != before:
         raise ApplyError(f"entity before value mismatch: {mutation.get('mutationId')}")
     if mutation.get("operation") == "remove":
         del attributes[attribute_name]
@@ -505,7 +509,12 @@ def _json_entity_mutation(payload: dict[str, Any], mutation: dict[str, Any]) -> 
 def _json_nested_entity_mutation(entity: dict[str, Any], field: str, mutation: dict[str, Any]) -> None:
     attributes = entity.get("attributes")
     name = field.removeprefix("attributes.")
-    if not isinstance(attributes, dict) or name not in attributes:
+    if not isinstance(attributes, dict):
+        raise ApplyError(f"JSON before value mismatch: {mutation.get('mutationId')}")
+    if name not in attributes and mutation.get("operation") == "update" and _required_mutation_value(mutation, "before") is None:
+        attributes[name] = _required_mutation_value(mutation, "after")
+        return
+    if name not in attributes:
         raise ApplyError(f"JSON before value mismatch: {mutation.get('mutationId')}")
     _assert_json_before(attributes[name], mutation)
     _mutate_json_attribute(attributes, name, mutation)
@@ -785,7 +794,12 @@ def _validated_mutations(plan: dict[str, Any]) -> tuple[list[dict[str, Any]], li
         raise ApplyError("mutations must be a list of objects")
     json_mutations = [item for item in mutations if item.get("store") == "json"]
     index_keys = [
-        (item.get("recordType"), (item.get("metadata") or {}).get("index"))
+        (
+            item.get("recordType"),
+            (item.get("metadata") or {}).get("index"),
+            item.get("recordId"),
+            item.get("field"),
+        )
         for item in json_mutations
     ]
     if len(index_keys) != len(set(index_keys)):

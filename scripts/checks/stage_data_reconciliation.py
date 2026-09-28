@@ -34,6 +34,11 @@ class StageResult:
     stage_result: dict[str, Any]
 
 
+def _identity(path: Path) -> tuple[int, int, int, int, int]:
+    stat = path.stat()
+    return (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
+
+
 def _asset_digest(root: Path) -> str:
     rows = []
     for path in sorted(item for item in root.rglob("*") if item.is_file()):
@@ -64,6 +69,26 @@ def _refuses_protected(output_dir: Path, root: Path) -> None:
     for protected in _protected(root):
         if output_dir == protected or protected in output_dir.parents or output_dir in protected.parents:
             raise StageError(f"protected output path refused: {output_dir}")
+
+
+def _validate_output_dir(output_dir: Path) -> None:
+    if output_dir.is_symlink():
+        raise StageError(f"symlink output path refused: {output_dir}")
+    if output_dir.exists() and (not output_dir.is_dir() or any(output_dir.iterdir())):
+        raise StageError(f"non-empty output path refused: {output_dir}")
+
+
+def _assert_sources_stable(
+    sqlite_input: Path, json_input: Path, asset_root: Path,
+    identities: tuple[tuple[int, int, int, int, int], tuple[int, int, int, int, int], tuple[int, int, int, int, int]],
+    hashes: tuple[str, str, str],
+) -> None:
+    if _identity(sqlite_input) != identities[0] or _sha(sqlite_input) != hashes[0]:
+        raise StageError("SQLite source changed during staging")
+    if _identity(json_input) != identities[1] or _sha(json_input) != hashes[1]:
+        raise StageError("JSON source changed during staging")
+    if _identity(asset_root) != identities[2] or _asset_digest(asset_root) != hashes[2]:
+        raise StageError("asset source changed during staging")
 
 
 _EXPECTED_SUMMARY = {
@@ -114,7 +139,13 @@ def _validated_mutations(plan: dict[str, Any]) -> list[dict[str, Any]]:
 def _apply_candidate_stores(
     mutations: list[dict[str, Any]], sqlite_input: Path, candidate_db: Path,
     candidate_json: Path, json_input: Path,
+    identities: tuple[tuple[int, int, int, int, int], tuple[int, int, int, int, int]],
+    hashes: tuple[str, str],
 ) -> None:
+    if _identity(sqlite_input) != identities[0] or _sha(sqlite_input) != hashes[0]:
+        raise StageError("SQLite source changed before copy")
+    if _identity(json_input) != identities[1] or _sha(json_input) != hashes[1]:
+        raise StageError("JSON source changed before copy")
     shutil.copy2(sqlite_input, candidate_db)
     payload = json.loads(json_input.read_text(encoding="utf-8"))
     conn = sqlite3.connect(candidate_db)
@@ -133,8 +164,10 @@ def _apply_candidate_stores(
 
 def _stage_assets(
     asset_root: Path, candidate_assets: Path, plan: dict[str, Any], mutations: list[dict[str, Any]],
+    identity: tuple[int, int, int, int, int], source_asset_digest: str,
 ) -> tuple[list[dict[str, str]], list[dict[str, str]], str]:
-    source_asset_digest = _asset_digest(asset_root)
+    if _identity(asset_root) != identity or _asset_digest(asset_root) != source_asset_digest:
+        raise StageError("asset source changed before copy")
     source_assets = _asset_inventory(asset_root)
     shutil.copytree(asset_root, candidate_assets, dirs_exist_ok=True)
     deleted_asset_ids = ["prov-1"]
@@ -171,16 +204,25 @@ def stage_plan(plan: dict[str, Any], sqlite_input: Path, json_input: Path, asset
     sqlite_input, json_input, asset_root, output_dir = map(Path, (sqlite_input, json_input, asset_root, output_dir))
     root = Path(__file__).resolve().parents[2]
     _refuses_protected(output_dir, root)
+    _validate_output_dir(output_dir)
     mutations = _validate_stage_request(plan, sqlite_input, json_input, asset_root)
+    source_identities = (_identity(sqlite_input), _identity(json_input), _identity(asset_root))
+    source_hashes = (_sha(sqlite_input), _sha(json_input), _asset_digest(asset_root))
     output_dir.mkdir(parents=True, exist_ok=True)
     candidate = output_dir / "candidate"
     candidate.mkdir(parents=True, exist_ok=True)
     candidate_db = candidate / "vinhlong360.db"
     candidate_json = candidate / "data.json"
     candidate_assets = candidate / "public/img/entities"
-    _apply_candidate_stores(mutations, sqlite_input, candidate_db, candidate_json, json_input)
+    _assert_sources_stable(sqlite_input, json_input, asset_root, source_identities, source_hashes)
+    _apply_candidate_stores(
+        mutations, sqlite_input, candidate_db, candidate_json, json_input,
+        source_identities[:2], source_hashes[:2],
+    )
     json_bytes = candidate_json.read_bytes()
-    retained_assets, removed_assets, source_asset_digest = _stage_assets(asset_root, candidate_assets, plan, mutations)
+    retained_assets, removed_assets, source_asset_digest = _stage_assets(
+        asset_root, candidate_assets, plan, mutations, source_identities[2], source_hashes[2],
+    )
     target_result = apply_module.verify_plan_result(plan, candidate_db, candidate_json)
     expected = plan.get("expectedOutputs") or {}
     if _sha(candidate_json) != expected.get("jsonSha256"):

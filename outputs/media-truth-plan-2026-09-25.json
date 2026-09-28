@@ -1,163 +1,163 @@
 {
   "affectedAssets": {
     "ba-nhi-bun-bo-hue-vinh-long": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/ba-nhi-bun-bo-hue-vinh-long.webp",
+      "path": "web-nuxt/public/img/entities/ba-nhi-bun-bo-hue-vinh-long.webp",
       "sha256": "9bfbfc21c3075e3cfd1492876a1478d86441803d8d399630cf72b319b02a7972"
     },
     "banh-canh-ben-tre": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/banh-canh-ben-tre.webp",
+      "path": "web-nuxt/public/img/entities/banh-canh-ben-tre.webp",
       "sha256": "8824c39c132264b54cd172c0ab8c08f00bdc9e75cc1f7a0778b831f9ef8cdf2e"
     },
     "banh-trang-my-long": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/banh-trang-my-long.webp",
+      "path": "web-nuxt/public/img/entities/banh-trang-my-long.webp",
       "sha256": "6d31784006eb6fd67c755ca1781ff8b9c4b69d769b18cbe85788daf1349e8aed"
     },
     "banh-xeo-mien-tay": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/banh-xeo-mien-tay.webp",
+      "path": "web-nuxt/public/img/entities/banh-xeo-mien-tay.webp",
       "sha256": "73068d9d9de6f734c2ee7ca46bc59d7c4dceadb9b0ce855a1541f7ff6f85db80"
     },
     "bo-nuong-la-lot": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/bo-nuong-la-lot.webp",
+      "path": "web-nuxt/public/img/entities/bo-nuong-la-lot.webp",
       "sha256": "c0b037d8a636f0207a040945c8950894eacfb3eee977ed683931560b8dd0e4cf"
     },
     "bun-bo-co-tam-cho-ben-tre-ben-tre": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/bun-bo-co-tam-cho-ben-tre-ben-tre.webp",
+      "path": "web-nuxt/public/img/entities/bun-bo-co-tam-cho-ben-tre-ben-tre.webp",
       "sha256": "7c7b5ec0f7b7ebb28274e4827eb25b6ce1061ba7d0ae59bc70d8010ffbee7bc8"
     },
     "bun-mam-mien-tay": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/bun-mam-mien-tay.webp",
+      "path": "web-nuxt/public/img/entities/bun-mam-mien-tay.webp",
       "sha256": "6b8f1779a3df1b1861d3060834b04cf9d1d983a4ff2ef20d32e04e70466aa463"
     },
     "ca-tai-tuong-chien-xu": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/ca-tai-tuong-chien-xu.webp",
+      "path": "web-nuxt/public/img/entities/ca-tai-tuong-chien-xu.webp",
       "sha256": "ffee213de30ccb06a40074cf692863955524fa3ff9672cf8a5c2267d9199e3d7"
     },
     "caffe-takeaway---tan-ke": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/caffe-takeaway---tan-ke.webp",
+      "path": "web-nuxt/public/img/entities/caffe-takeaway---tan-ke.webp",
       "sha256": "9b4089b0a3d0cc930a6642e1919108509613cda60583682615c8078a5b12da1c"
     },
     "cha-gio-chay": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/cha-gio-chay.webp",
+      "path": "web-nuxt/public/img/entities/cha-gio-chay.webp",
       "sha256": "837ec93e722beaee6fafaa6f616f014c0a04793fb98f53a50b3cd2b351e7d855"
     },
     "chao-ca-loc-rau-dang": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/chao-ca-loc-rau-dang.webp",
+      "path": "web-nuxt/public/img/entities/chao-ca-loc-rau-dang.webp",
       "sha256": "f80c486579f281b0a2776d174efc900ce2a08139091ced0ecb3ce9bfce192c91"
     },
     "chuoi-nuong-gia-truyen": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/chuoi-nuong-gia-truyen.webp",
+      "path": "web-nuxt/public/img/entities/chuoi-nuong-gia-truyen.webp",
       "sha256": "7c3304c3555326c6420e047715ad6222c013d213974656b1a0577704d20dc822"
     },
     "co-dai---sinh-to-giai-khat": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/co-dai---sinh-to-giai-khat.webp",
+      "path": "web-nuxt/public/img/entities/co-dai---sinh-to-giai-khat.webp",
       "sha256": "9ee48c4f630b32338ab4801b996e6ab0ab9667aa7e5e0d7e4a2be7fe33f282b3"
     },
     "com-chay-au-lac-vinh-long": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/com-chay-au-lac-vinh-long.webp",
+      "path": "web-nuxt/public/img/entities/com-chay-au-lac-vinh-long.webp",
       "sha256": "6cfe787a7bc7c15fcb1e86d76529ca7e340b573e28dea4f5243d8a9273de3ef1"
     },
     "com-ga-xoi-mo-5-vi-ben-tre": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/com-ga-xoi-mo-5-vi-ben-tre.webp",
+      "path": "web-nuxt/public/img/entities/com-ga-xoi-mo-5-vi-ben-tre.webp",
       "sha256": "0fc4fc66a2a4e23c8c0ae4434d16fc8d15ec10cc75f14eace7292df7e25ba910"
     },
     "cua-com-duyen-hai": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/cua-com-duyen-hai.webp",
+      "path": "web-nuxt/public/img/entities/cua-com-duyen-hai.webp",
       "sha256": "f285cdc94ae8abe91ddc93e2dd00fa0990f0b5bea177f2f49492cefa3dff5f7a"
     },
     "duong-dua": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/duong-dua.webp",
+      "path": "web-nuxt/public/img/entities/duong-dua.webp",
       "sha256": "c195ec0d5876b3a1f991bef6897a91e609679c91f2f159e0f7dbd5f789be90e0"
     },
     "goi-cuon-tom-thit": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/goi-cuon-tom-thit.webp",
+      "path": "web-nuxt/public/img/entities/goi-cuon-tom-thit.webp",
       "sha256": "21f0dd749af923b3eae68ada4b2a1dede83acabfd062a0977f3113c517bb4262"
     },
     "hot-pot-72---quan-lau": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/hot-pot-72---quan-lau.webp",
+      "path": "web-nuxt/public/img/entities/hot-pot-72---quan-lau.webp",
       "sha256": "60725a7c05351324440307cfbeab3d2493d22aa2eb67683ddd561718d6a7daab"
     },
     "khoi---lau-nuong": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/khoi---lau-nuong.webp",
+      "path": "web-nuxt/public/img/entities/khoi---lau-nuong.webp",
       "sha256": "22d2761e0fed88c033a9698573d1f4ed3af9426283c0533e6f974cdb3b289892"
     },
     "kimchi-kimchi---mi-cay-han-quoc": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/kimchi-kimchi---mi-cay-han-quoc.webp",
+      "path": "web-nuxt/public/img/entities/kimchi-kimchi---mi-cay-han-quoc.webp",
       "sha256": "f75d3ec917c7623eed609bd4a0a1289db3dd69aa726b9c4ba81b938ddbb02846"
     },
     "lau-bo": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/lau-bo.webp",
+      "path": "web-nuxt/public/img/entities/lau-bo.webp",
       "sha256": "87be0a6c1a71f03bdb2e9e8affd36cdaebb0b5be9354bc2ec9ba7119623aba47"
     },
     "lau-mam-ben-tre": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/lau-mam-ben-tre.webp",
+      "path": "web-nuxt/public/img/entities/lau-mam-ben-tre.webp",
       "sha256": "4bced0b588f1df2f5d0663be917344c6c5246c873e73eceda7fbb0e340714479"
     },
     "lau-tai-co": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/lau-tai-co.webp",
+      "path": "web-nuxt/public/img/entities/lau-tai-co.webp",
       "sha256": "716a5cd9e1e1fab1447d3461eb8ed32722c6466f3adce8d8fe7e3c03be257c70"
     },
     "lu-lu---cake-drink": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/lu-lu---cake-drink.webp",
+      "path": "web-nuxt/public/img/entities/lu-lu---cake-drink.webp",
       "sha256": "fdf308b85721b07aaf6039ba1d01bf9c804adfa7c3bb30c75fb40b8e1860c1b5"
     },
     "ma-van-tai-quan---pham-thai-buong": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/ma-van-tai-quan---pham-thai-buong.webp",
+      "path": "web-nuxt/public/img/entities/ma-van-tai-quan---pham-thai-buong.webp",
       "sha256": "a099cf3d8c01b6e4d9763b285f1b9c6033f80da8ea57dd34031b242e9a911b88"
     },
     "mam-tom-cha-vinh-long": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/mam-tom-cha-vinh-long.webp",
+      "path": "web-nuxt/public/img/entities/mam-tom-cha-vinh-long.webp",
       "sha256": "ba64f718082a64f9807406efd357dbd5979a6b684b94b86005145008e45c4f9d"
     },
     "mi-cay-vinh-long": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/mi-cay-vinh-long.webp",
+      "path": "web-nuxt/public/img/entities/mi-cay-vinh-long.webp",
       "sha256": "2b9be5d0679a5920b5f1637b3ebb90076ed9cce4965a38515faac7c009540a82"
     },
     "nem-nuong-thanh-binh-ben-tre": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/nem-nuong-thanh-binh-ben-tre.webp",
+      "path": "web-nuxt/public/img/entities/nem-nuong-thanh-binh-ben-tre.webp",
       "sha256": "27c3dc34d08c9f9d77d20ea3b36d0fa9227b5bb0b9d02b56ecb5618200ad4ed9"
     },
     "nha-hang-thien-tan": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/nha-hang-thien-tan.webp",
+      "path": "web-nuxt/public/img/entities/nha-hang-thien-tan.webp",
       "sha256": "a6b536ed9962b7919cdfc0f0ec6c67b2c6169e59aa47ae0c665cc1e1e7a41e42"
     },
     "prov-1": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/prov-1.webp",
+      "path": "web-nuxt/public/img/entities/prov-1.webp",
       "sha256": "f12a65de147a08877408dd01b92dee640ed26b85d9d9717d7fa20a011c7ebdd4"
     },
     "tep-rang-dua": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/tep-rang-dua.webp",
+      "path": "web-nuxt/public/img/entities/tep-rang-dua.webp",
       "sha256": "0ad39263fa7dde809620dae79cc66e31364e16abeb6f75b4e04ae42bc3a1fa90"
     },
     "tiem-ba-khoang": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/tiem-ba-khoang.webp",
+      "path": "web-nuxt/public/img/entities/tiem-ba-khoang.webp",
       "sha256": "6c0292158ee1c85dd9e17b08f99a968c1e21ea7ad14b4d894b595ae11bd16ca1"
     },
     "tinh-binh-chay-vinh-long": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/tinh-binh-chay-vinh-long.webp",
+      "path": "web-nuxt/public/img/entities/tinh-binh-chay-vinh-long.webp",
       "sha256": "e4883c48240b22909652b17e3c7a259ea8478ca73c266dfb83c2998686c2ce24"
     },
     "tom-cang-xanh-nuong": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/tom-cang-xanh-nuong.webp",
+      "path": "web-nuxt/public/img/entities/tom-cang-xanh-nuong.webp",
       "sha256": "b39e5611fec5485fca5095ec7a76fddcfe20dbaa65de10c04030807e530b8c12"
     },
     "tom-cang-xanh-song-tien": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/tom-cang-xanh-song-tien.webp",
+      "path": "web-nuxt/public/img/entities/tom-cang-xanh-song-tien.webp",
       "sha256": "e58936afeb97422e63266b079266ade217782df1fa303e7b726b8e526b38d1ea"
     },
     "tom-rang-muoi-ot": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/tom-rang-muoi-ot.webp",
+      "path": "web-nuxt/public/img/entities/tom-rang-muoi-ot.webp",
       "sha256": "03788c2f8a420630010c40a5d976c1c7a5909af45ddcad399f7dcba34d172589"
     },
     "vys-house-drinks-tea---2-thang-9": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/vys-house-drinks-tea---2-thang-9.webp",
+      "path": "web-nuxt/public/img/entities/vys-house-drinks-tea---2-thang-9.webp",
       "sha256": "e60e959a68098587f9352240af3b43dc992d71c3714e2da0b006b98a01a3cc92"
     },
     "xoi-vi-mien-tay": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/xoi-vi-mien-tay.webp",
+      "path": "web-nuxt/public/img/entities/xoi-vi-mien-tay.webp",
       "sha256": "dc4371f0b16374b4aa0ef8ceb57126e96ccb29f491d8f3a3bb0ee003de37d131"
     },
     "xom-nuong-que-nha": {
-      "path": "C:/Users/NCTaam/Documents/vinhlong360-correction-case-pilot/web-nuxt/public/img/entities/xom-nuong-que-nha.webp",
+      "path": "web-nuxt/public/img/entities/xom-nuong-que-nha.webp",
       "sha256": "1fb6321af0b368c9749599871cf68dcde12ede090d7ad795f7e90f10cddb0668"
     }
   },
@@ -211,7 +211,7 @@
       "sqliteRelationships": 13337
     },
     "jsonSha256": "45596dd131f665fd255b08d70a7aa9105d98706f8e35bcfa6a203c462af69f01",
-    "sqliteLogicalDigest": "d295d8631b1e41d3c0f8410eae8c11d74e0cdc36c34d12d420feca3a0164c409"
+    "sqliteLogicalDigest": "457f80a09cf7d8aad2f0c64d0b01dfbfa921c9d2c825ba84b243f9af097d0426"
   },
   "inputs": {
     "json": {

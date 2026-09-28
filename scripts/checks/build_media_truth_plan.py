@@ -103,7 +103,10 @@ def sqlite_logical_digest(sqlite_path: Path) -> str:
     entities, relationships = _sqlite_snapshot(Path(sqlite_path))
     payload = {
         "entities": [entities[key] for key in sorted(entities)],
-        "relationships": [{key: row[key] for key in ("from", "to", "type")} for row in relationships],
+        "relationships": sorted(
+            [{key: row[key] for key in ("from", "to", "type")} for row in relationships],
+            key=lambda row: (row["from"], row["to"], row["type"]),
+        ),
     }
     return _sha_bytes(json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode())
 
@@ -149,22 +152,26 @@ def _target_mutations(store: str, record: dict[str, Any], record_id: str, index:
             raise PlanError(f"expected field missing: {record_id}:{field}")
         mutations.append(_mutation(store, "entity", record_id, "update", field, before, after, **metadata))
     for field in PRESS_FIELDS:
-        if field in attrs:
+        if field in attrs and (field != "image_caption" or _is_false_photographic_caption(attrs)):
             mutations.append(_mutation(store, "entity", record_id, "remove", f"attributes.{field}", attrs[field], None, **metadata))
     return mutations
+
+
+def _is_false_photographic_caption(attrs: dict[str, Any]) -> bool:
+    return attrs.get("image_type") == "documentary" and attrs.get("is_verified_photo") is True
 
 
 def _json_render(payload: dict[str, Any]) -> bytes:
     return (json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode()
 
 
-def _asset_hashes(asset_root: Path, ids: list[str]) -> dict[str, dict[str, str]]:
+def _asset_hashes(asset_root: Path, ids: list[str], root: Path) -> dict[str, dict[str, str]]:
     result: dict[str, dict[str, str]] = {}
     for record_id in ids:
         path = asset_root / f"{record_id}.webp"
         if not path.is_file():
             raise PlanError(f"asset hash missing: {path}")
-        result[record_id] = {"path": path.as_posix(), "sha256": _sha(path)}
+        result[record_id] = {"path": path.resolve().relative_to(root.resolve()).as_posix(), "sha256": _sha(path)}
     return result
 
 
@@ -219,7 +226,7 @@ def _validate_scope(
         raise PlanError("unexpected SQLite relationship references prov-1")
     asset_root = root / "web-nuxt/public/img/entities"
     affected_asset_ids = [*truth.delete, *truth.ai_generated, *truth.generated_placeholder]
-    return _asset_hashes(asset_root, affected_asset_ids)
+    return _asset_hashes(asset_root, affected_asset_ids, root)
 
 
 def _entity_index(payload: dict[str, Any], record_id: str) -> int:

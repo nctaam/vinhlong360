@@ -61,3 +61,21 @@ def test_stage_refuses_sqlite_sidecars(tmp_path):
             ROOT / "web-nuxt/public/img/entities",
             tmp_path / "stage",
         )
+
+
+def test_stage_refuses_non_empty_or_symlink_outputs(tmp_path):
+    non_empty = tmp_path / "non-empty"
+    non_empty.mkdir()
+    (non_empty / "existing").write_text("keep", encoding="utf-8")
+    with pytest.raises(StageError, match="non-empty"):
+        stage_plan(_plan(), ROOT / "agent/data/vinhlong360.db", ROOT / "web/data.json", ROOT / "web-nuxt/public/img/entities", non_empty)
+
+    symlink = tmp_path / "symlink"
+    try:
+        symlink.symlink_to(tmp_path / "target", target_is_directory=True)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            pytest.skip("symlink creation requires Windows developer mode or privilege")
+        raise
+    with pytest.raises(StageError, match="symlink"):
+        stage_plan(_plan(), ROOT / "agent/data/vinhlong360.db", ROOT / "web/data.json", ROOT / "web-nuxt/public/img/entities", symlink)

@@ -75,3 +75,67 @@ Concern/ruling: the backup manifest's `counts` are intentionally derived from
 source and its backup. This is the pre-existing JSON/SQLite relationship drift
 preserved by the targeted plan, not a backup corruption or copy mismatch; both
 stores match their respective protected sources byte-for-byte/logically.
+
+## Fix Round 1
+
+Review findings addressed in commit after `f834881b`:
+
+- JSON mutation validation now scopes duplicate-location checks by
+  `(recordType, index, recordId, field)`, allowing multiple exact fields on one
+  entity while still rejecting duplicate writes to the same field/location.
+  A regression calls the shared `_validated_mutations` validator on the
+  generated 484-mutation plan.
+- `affectedAssets[*].path` is now stable and repository-root-relative, for
+  example `web-nuxt/public/img/entities/prov-1.webp`; no checkout-specific
+  absolute path is serialized.
+- SQLite logical digests sort relationship triples by `(from, to, type)` and a
+  regression proves row insertion order does not change the digest.
+- Staging captures source identity/hash snapshots and rechecks SQLite, JSON,
+  and the complete asset-tree digest immediately before copying. It refuses
+  symlink and non-empty output directories rather than reusing or overwriting
+  an existing candidate tree.
+- `image_caption` removal remains restricted to the reviewed false photographic
+  shape (`image_type=documentary` and `is_verified_photo=true`); other caption
+  fields are preserved. The current Batch 21 records match this reviewed shape.
+
+The Task 5 shared attribute mutation helper already present in the worktree
+supports strict absent-to-add generation fields (`before=None`, exact `after`)
+for the two AI IDs; all other before/after checks remain strict. Task 7's
+regression and staging run exercise this compatibility. That helper's existing
+uncommitted Task 5 changes are intentionally not folded into the Task 7 commit.
+
+Fix-round validation:
+
+```text
+PYTEST_DEBUG_TEMPROOT=C:\vlt python -m pytest -q tests/checks/test_build_media_truth_plan.py tests/checks/test_stage_data_reconciliation.py tests/test_entity_write_guard.py tests/checks/test_apply_data_reconciliation.py
+78 passed, 1 skipped in 146.58s (the symlink case is skipped when Windows privilege 1314 prevents creating a test symlink)
+
+python -m ruff check scripts/checks/build_media_truth_plan.py scripts/checks/stage_data_reconciliation.py scripts/check_entity_write_paths.py tests/checks/test_build_media_truth_plan.py tests/checks/test_stage_data_reconciliation.py tests/test_entity_write_guard.py
+All checks passed!
+
+python -m py_compile scripts/checks/build_media_truth_plan.py scripts/checks/stage_data_reconciliation.py scripts/check_entity_write_paths.py tests/checks/test_build_media_truth_plan.py tests/checks/test_stage_data_reconciliation.py tests/test_entity_write_guard.py
+passed
+```
+
+Fix-round post-checks:
+
+```text
+PYTEST_DEBUG_TEMPROOT=C:\vlt python -m pytest -q tests/checks/test_build_media_truth_plan.py tests/checks/test_stage_data_reconciliation.py tests/test_entity_write_guard.py tests/checks/test_apply_data_reconciliation.py
+78 passed, 1 skipped in 146.07s
+
+Direct R20.8 complexity check for the changed builder/stager modules
+scripts/checks/build_media_truth_plan.py []
+scripts/checks/stage_data_reconciliation.py []
+
+python -m ruff check <Task 7 files plus scripts/checks/apply_data_reconciliation.py and Task 5 tests>
+All checks passed!
+
+python -m py_compile <same scoped Python files>
+passed
+```
+
+The checked-in plan was regenerated after the fixes; its SHA-256 remains
+`0d027436c730a8753b99a5956afeeac3bd815a3219ac1c9025346e4cf78a6ff2`.
+The generated plan contains 484 mutations and the shared validator returns
+484 total / 245 JSON / 239 SQLite mutations. Source protected hashes and
+mtimes remain unchanged; no source SQLite sidecar exists.
