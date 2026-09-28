@@ -195,7 +195,7 @@ afterEach(() => {
 })
 
 describe('region preference ownership', () => {
-  it('hydrates and persists the anonymous region only through local storage', async () => {
+  it('normalizes legacy anonymous regions through local storage', async () => {
     localStorage.setItem('vl360-region-pref', 'ben-tre')
     let regionPref: ReturnType<typeof useRegionPref> | undefined
     const Harness = defineComponent({
@@ -207,9 +207,9 @@ describe('region preference ownership', () => {
     const wrapper = await mountSuspended(Harness)
     await flushUi()
 
-    expect(regionPref!.region.value).toBe('ben-tre')
+    expect(regionPref!.region.value).toBe('vinh-long')
     await regionPref!.setRegion('tra-vinh')
-    expect(localStorage.getItem('vl360-region-pref')).toBe('tra-vinh')
+    expect(localStorage.getItem('vl360-region-pref')).toBe('vinh-long')
     expect(apiFetchMock).not.toHaveBeenCalled()
     wrapper.unmount()
   })
@@ -236,13 +236,14 @@ describe('region preference ownership', () => {
     const wrapper = await mountSuspended(Harness)
     await flushUi()
 
-    expect(regionPref!.region.value).toBe('ben-tre')
+    expect(regionPref!.region.value).toBe('vinh-long')
     await regionPref!.setRegion('tra-vinh')
     expect(apiFetchMock).toHaveBeenLastCalledWith('/api/me/preferences', expect.objectContaining({
       method: 'PATCH',
       body: expect.objectContaining({
         revision: 3,
-        region_id: 'province-tv',
+        region_id: 'province-vl',
+        region_label: 'Vĩnh Long',
         location_source: 'manual',
       }),
     }))
@@ -354,8 +355,8 @@ describe('optional location consent flow', () => {
     authState.user.value = { id: 'user-1' }
     authState.isLoggedIn.value = true
     await hydratePreferences(snapshot({
-      region_id: 'province-bt',
-      region_label: 'Bến Tre',
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
       region_scope: 'province',
       location_source: 'ip',
       location_accuracy: 'province',
@@ -385,7 +386,7 @@ describe('optional location consent flow', () => {
 
     const manualWrapper = await mountSetupHarness()
     dialog = () => document.body.querySelector('[role="dialog"]') as HTMLElement
-    ;(dialog().querySelector('[data-region="province-tv"]') as HTMLButtonElement).click()
+    ;(dialog().querySelector('[data-region="province-vl"]') as HTMLButtonElement).click()
     ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
     await flushUi()
     ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
@@ -421,7 +422,7 @@ describe('optional location consent flow', () => {
     })
     const regionWrapper = await mountSuspended(RegionConsumer)
     await flushUi()
-    expect(regionWrapper.get('output').attributes('data-final-region')).toBe('tra-vinh')
+    expect(regionWrapper.get('output').attributes('data-final-region')).toBe('vinh-long')
     regionWrapper.unmount()
     manualWrapper.unmount()
   })

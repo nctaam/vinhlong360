@@ -390,8 +390,8 @@ describe('usePersonalizationPreferences contract', () => {
     const pendingPatch = deferred<PreferenceSnapshot>()
     const pendingRefresh = deferred<PreferenceSnapshot>()
     const patched = snapshot({
-      region_id: 'province-bt',
-      region_label: 'Bến Tre',
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
       region_scope: 'province',
       location_source: 'manual',
       location_accuracy: 'province',
@@ -415,7 +415,7 @@ describe('usePersonalizationPreferences contract', () => {
     })
     await mountSuspended(Harness)
 
-    const patchPromise = preferences!.setRegion({ id: 'province-bt', label: 'Bến Tre', scope: 'province' })
+    const patchPromise = preferences!.setRegion({ id: 'province-vl', label: 'Vĩnh Long', scope: 'province' })
     await patchStarted.promise
     const refreshPromise = preferences!.refresh()
     pendingPatch.resolve(patched)
@@ -449,8 +449,8 @@ describe('usePersonalizationPreferences contract', () => {
     expect(preferences!.snapshot.value).toEqual(defaultSnapshot)
 
     const userTwoSnapshot = snapshot({
-      region_id: 'province-bt',
-      region_label: 'Bến Tre',
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
       region_scope: 'province',
       location_source: 'manual',
       location_accuracy: 'province',
@@ -507,8 +507,8 @@ describe('usePersonalizationPreferences contract', () => {
       revision: 4,
     })
     const server = snapshot({
-      region_id: 'province-tv',
-      region_label: 'Trà Vinh',
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
       region_scope: 'province',
       location_source: 'manual',
       location_accuracy: 'province',
@@ -528,7 +528,7 @@ describe('usePersonalizationPreferences contract', () => {
     await mountSuspended(Harness)
     await preferences!.refresh()
 
-    const result = await preferences!.setRegion({ id: 'province-bt', label: 'Bến Tre', scope: 'province' })
+    const result = await preferences!.setRegion({ id: 'province-vl', label: 'Vĩnh Long', scope: 'province' })
 
     expect(result).toEqual({ ok: false, snapshot: server, status: 409 })
     expect(preferences!.snapshot.value).toEqual(server)
@@ -544,8 +544,8 @@ describe('usePersonalizationPreferences contract', () => {
       revision: 4,
     })
     const unrelatedPayload = snapshot({
-      region_id: 'province-tv',
-      region_label: 'Trà Vinh',
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
       region_scope: 'province',
       location_source: 'manual',
       location_accuracy: 'province',
@@ -565,7 +565,7 @@ describe('usePersonalizationPreferences contract', () => {
     await mountSuspended(Harness)
     await preferences!.refresh()
 
-    const result = await preferences!.setRegion({ id: 'province-bt', label: 'Bến Tre', scope: 'province' })
+    const result = await preferences!.setRegion({ id: 'province-vl', label: 'Vĩnh Long', scope: 'province' })
 
     expect(result).toEqual({ ok: false, snapshot: previous, status: 503 })
     expect(preferences!.snapshot.value).toEqual(previous)
@@ -576,16 +576,16 @@ describe('usePersonalizationPreferences contract', () => {
     const stalePatch = deferred<PreferenceSnapshot>()
     const previous = snapshot({ revision: 4 })
     const current = snapshot({
-      region_id: 'province-bt',
-      region_label: 'Bến Tre',
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
       region_scope: 'province',
       location_source: 'manual',
       location_accuracy: 'province',
       revision: 5,
     })
     const staleServer = snapshot({
-      region_id: 'province-tv',
-      region_label: 'Trà Vinh',
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
       region_scope: 'province',
       location_source: 'manual',
       location_accuracy: 'province',
@@ -617,7 +617,7 @@ describe('usePersonalizationPreferences contract', () => {
 
     const staleResult = preferences!.setRegion({ id: 'province-vl', label: 'Vĩnh Long', scope: 'province' })
     await stalePatchStarted.promise
-    const currentResult = await preferences!.setRegion({ id: 'province-bt', label: 'Bến Tre', scope: 'province' })
+    const currentResult = await preferences!.setRegion({ id: 'province-vl', label: 'Vĩnh Long', scope: 'province' })
     stalePatch.reject({ response: { status: 409, _data: staleServer } })
 
     expect(currentResult).toEqual({ ok: true, snapshot: current, status: null })
@@ -1084,7 +1084,7 @@ describe('settings preference and account contracts', () => {
       preferenceMutations: [{ reject: new TypeError('offline') }],
     })
 
-    await wrapper.get('[data-region="province-bt"]').trigger('click')
+    await wrapper.get('[data-region="all"]').trigger('click')
     await flushUi()
     const panel = wrapper.get('#khu-vuc-de-xuat')
     expect(panel.text()).toContain('Vĩnh Long')
@@ -1106,16 +1106,16 @@ describe('settings preference and account contracts', () => {
 
   it('shows a same-revision 409 server snapshot and waits for an explicit retry', async () => {
     const serverSnapshot = preferenceFixture({
-      region_id: 'province-tv',
-      region_label: 'Trà Vinh',
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
       region_scope: 'province',
       location_source: 'manual',
       location_accuracy: 'province',
       revision: 4,
     })
     const retriedSnapshot = preferenceFixture({
-      region_id: 'province-bt',
-      region_label: 'Bến Tre',
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
       region_scope: 'province',
       location_source: 'manual',
       location_accuracy: 'province',
@@ -1136,17 +1136,17 @@ describe('settings preference and account contracts', () => {
       ],
     })
 
-    await wrapper.get('[data-region="province-bt"]').trigger('click')
+    await wrapper.get('[data-region="all"]').trigger('click')
     await flushUi()
 
     const panel = wrapper.get('#khu-vuc-de-xuat')
     expect(panel.text()).toContain('Dữ liệu trên máy chủ đã thay đổi')
-    expect(panel.text()).toContain('Trà Vinh')
+    expect(panel.text()).toContain('Vĩnh Long')
     expect(panel.get('[data-action="retry-conflict"]').text()).toContain('Thử lưu lại')
 
     await panel.get('[data-action="retry-conflict"]').trigger('click')
     await flushUi()
-    expect(panel.text()).toContain('Bến Tre')
+    expect(panel.text()).toContain('Vĩnh Long')
     expect(panel.find('[data-action="retry-conflict"]').exists()).toBe(false)
     wrapper.unmount()
   })
@@ -1161,8 +1161,8 @@ describe('settings preference and account contracts', () => {
       revision: 4,
     })
     const unrelatedPayload = preferenceFixture({
-      region_id: 'province-tv',
-      region_label: 'Trà Vinh',
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
       region_scope: 'province',
       location_source: 'manual',
       location_accuracy: 'province',
@@ -1173,7 +1173,7 @@ describe('settings preference and account contracts', () => {
       preferenceMutations: [{ reject: { response: { status: 503, _data: unrelatedPayload } } }],
     })
 
-    await wrapper.get('[data-region="province-bt"]').trigger('click')
+    await wrapper.get('[data-region="all"]').trigger('click')
     await flushUi()
 
     const panel = wrapper.get('#khu-vuc-de-xuat')
