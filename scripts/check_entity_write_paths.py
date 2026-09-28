@@ -48,6 +48,11 @@ ALLOWED_WRITE_SITES = {
     # The correction write boundary: caller-owned transaction, no verification
     # marker writable, revision checked. See agent/entity_write.py.
     ("agent/entity_write.py", "EntityWriteService.apply_patch", "dynamic-update"),
+    # Fixture-only reconciliation apply boundary. These exact shapes are
+    # guarded by plan approval, backups, lock, journal, before-values, parity,
+    # and live-path refusal; this is not a general dynamic-write waiver.
+    ("scripts/checks/apply_data_reconciliation.py", "_update_sqlite_entity", "attributes-update"),
+    ("scripts/checks/apply_data_reconciliation.py", "_update_sqlite_entity", "dynamic-update"),
 }
 ALLOWED_WRITE_SITE_COUNTS = {
     site: 2

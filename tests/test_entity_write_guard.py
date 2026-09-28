@@ -34,6 +34,16 @@ EXPECTED_REPOSITORY_WRITE_SITES = {
     ("scripts/fix_tinh_moi.py", "apply_pg", "attributes-update"),
     ("scripts/fix_tinh_moi.py", "apply_pg", "dynamic-update"),
     ("agent/entity_write.py", "EntityWriteService.apply_patch", "dynamic-update"),
+    (
+        "scripts/checks/apply_data_reconciliation.py",
+        "_update_sqlite_entity",
+        "attributes-update",
+    ),
+    (
+        "scripts/checks/apply_data_reconciliation.py",
+        "_update_sqlite_entity",
+        "dynamic-update",
+    ),
 }
 
 
@@ -409,3 +419,51 @@ def test_current_repository_has_no_unapproved_direct_entity_writes():
     assert discovered == EXPECTED_REPOSITORY_WRITE_SITES
     assert checker.ALLOWED_WRITE_SITES == EXPECTED_REPOSITORY_WRITE_SITES
     assert checker.unapproved_write_sites(ROOT) == []
+
+
+def test_reconciliation_allowlist_is_exact_and_does_not_cover_renamed_or_extra_sites(tmp_path):
+    checker = _load_checker()
+    source = """
+def _sqlite_mutation(conn, mutation):
+    conn.execute('UPDATE entities SET attributes = ? WHERE id = ?', ('{}', 'x'))
+    conn.execute('UPDATE entities SET attributes = ? WHERE id = ?', ('{}', 'x'))
+
+def renamed_reconciliation(conn):
+    conn.execute('UPDATE entities SET attributes = ? WHERE id = ?', ('{}', 'x'))
+"""
+    _write_source(tmp_path / "scripts/checks/apply_data_reconciliation.py", source)
+    checker.ALLOWED_WRITE_SITES = {
+        ("scripts/checks/apply_data_reconciliation.py", "_sqlite_mutation", "attributes-update"),
+    }
+    checker.ALLOWED_WRITE_SITE_COUNTS = {
+        ("scripts/checks/apply_data_reconciliation.py", "_sqlite_mutation", "attributes-update"): 1,
+    }
+
+    unapproved = checker.unapproved_write_sites(tmp_path)
+
+    assert [(site.function, site.kind) for site in unapproved] == [
+        ("_sqlite_mutation", "attributes-update"),
+        ("renamed_reconciliation", "attributes-update"),
+    ]
+
+
+def test_media_staging_boundary_is_not_a_directory_wildcard(tmp_path):
+    checker = _load_checker()
+    _write_source(
+        tmp_path / "scripts/checks/stage_data_reconciliation.py",
+        """
+def stage_plan(conn):
+    conn.execute('UPDATE entities SET attributes = ? WHERE id = ?', ('{}', 'x'))
+
+def other_stage(conn):
+    conn.execute('UPDATE entities SET attributes = ? WHERE id = ?', ('{}', 'x'))
+""",
+    )
+    checker.ALLOWED_WRITE_SITES = {
+        ("scripts/checks/stage_data_reconciliation.py", "stage_plan", "attributes-update"),
+    }
+    checker.ALLOWED_WRITE_SITE_COUNTS = {
+        ("scripts/checks/stage_data_reconciliation.py", "stage_plan", "attributes-update"): 1,
+    }
+    unapproved = checker.unapproved_write_sites(tmp_path)
+    assert [(site.function, site.kind) for site in unapproved] == [("other_stage", "attributes-update")]
