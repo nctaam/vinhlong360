@@ -49,6 +49,31 @@ const RENDERABLE_ENTITY_SOURCE_COMBINATIONS = new Set([
 ])
 
 const CANONICAL_LEGACY_ENTITY_IMAGE_PATTERN = /^\/img\/entities\/[a-z0-9]+(?:-+[a-z0-9]+)*\.webp$/
+const DOCUMENTARY_IMAGE_TYPES = new Set(['documentary', 'journalistic', 'official', 'press'])
+const PLACEHOLDER_HOSTS = new Set([
+  'example', 'example.test', 'example.com', 'example.net', 'example.org',
+  'localhost', 'local', 'localdomain', 'invalid', 'test', 'home.arpa',
+  'corp', 'internal', 'intranet', 'lan',
+])
+const CONCRETE_LICENSE_PATTERNS = [
+  /\bcc0\s+1\.0\b/i,
+  /\bcc\s*by\s+4\.0\b/i,
+  /\bcc\s*by[-\s]sa\s+4\.0\b/i,
+  /\bcc\s*by[-\s]nc[-\s]nd\s+4\.0\b/i,
+  /\bpublic\s+domain\s+mark\s+1\.0\b/i,
+]
+const AFFIRMATIVE_GRANT_PATTERNS = [
+  /\b(?:permitted|allowed)\s+(?:to\s+|for\s+)?(?:re-?host(?:ing)?|reuse|republish)\b/i,
+  /\bpermission\s+granted\s+(?:to\s+|for\s+)?(?:re-?host(?:ing)?|reuse|republish)\b/i,
+  /\b(?:re-?host(?:ing)?|reuse|republish)\s+(?:is\s+)?(?:permitted|allowed)\b/i,
+  /\b(?:được\s+phép|cho\s+phép)\s+(?:re-?host|tái\s+(?:sử\s+dụng|lưu\s+trữ|đăng\s+lại|đăng\s+tải))\b/i,
+]
+const LICENSE_DENIAL_PATTERNS = [
+  /\ball\s+rights\s+reserved\b/i,
+  /\b(?:not|no|never|prohibited|forbidden|denied|unavailable|cannot)\b/i,
+  /\bwithout\s+(?:permission|rights?|authorization)\b/i,
+  /\bkhông\s+(?:được\s+phép|cho\s+phép)\b/i,
+]
 
 function isValidPort(port: string): boolean {
   if (port.length > 5 || !/^[0-9]+$/.test(port)) return false
@@ -126,6 +151,106 @@ export function normalizeRenderableImageUrl(value: unknown): string | null {
     if (position >= 0) authorityEnd = Math.min(authorityEnd, position)
   }
   return isValidHttpsAuthority(remainder.slice(0, authorityEnd)) ? url : null
+}
+
+function normalizedStatement(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const normalized = value.trim().replace(/\s+/g, ' ')
+  return normalized || null
+}
+
+function isAffirmativeLicenseScope(value: unknown): boolean {
+  const statement = normalizedStatement(value)
+  return statement !== null
+    && !LICENSE_DENIAL_PATTERNS.some(pattern => pattern.test(statement))
+    && [...CONCRETE_LICENSE_PATTERNS, ...AFFIRMATIVE_GRANT_PATTERNS].some(pattern => pattern.test(statement))
+}
+
+function selectedLicenseScope(attributes: Record<string, unknown>): string | null {
+  const statements = [attributes.image_license, attributes.license_scope]
+    .map(normalizedStatement)
+    .filter((value): value is string => value !== null)
+  if (statements.some(statement => LICENSE_DENIAL_PATTERNS.some(pattern => pattern.test(statement)))) return null
+  return statements.find(statement => isAffirmativeLicenseScope(statement)) ?? null
+}
+
+function isPublicIpv4(hostname: string): boolean | null {
+  const octets = hostname.split('.')
+  if (octets.length !== 4 || !octets.every(octet => /^(0|[1-9][0-9]{0,2})$/.test(octet))) return null
+  const values = octets.map(Number)
+  if (values.some(value => value > 255)) return false
+  const [first, second] = values
+  return !(
+    first === 0
+    || first === 10
+    || first === 127
+    || first >= 224
+    || (first === 100 && second >= 64 && second <= 127)
+    || (first === 169 && second === 254)
+    || (first === 172 && second >= 16 && second <= 31)
+    || (first === 192 && second === 168)
+  )
+}
+
+function isPublicIpv6(hostname: string): boolean {
+  const host = hostname.replace(/^\[|\]$/g, '').toLowerCase()
+  return !(
+    host === '::'
+    || host === '::1'
+    || host.startsWith('fc')
+    || host.startsWith('fd')
+    || host.startsWith('fe8')
+    || host.startsWith('fe9')
+    || host.startsWith('fea')
+    || host.startsWith('feb')
+    || host.startsWith('2001:db8:')
+  )
+}
+
+function isPublicProvenanceUrl(value: unknown): value is string {
+  if (typeof value !== 'string' || !value.trim()) return false
+  try {
+    const url = new URL(value.trim())
+    const hostname = url.hostname.toLowerCase().replace(/\.$/, '')
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.hash) return false
+    if (!url.pathname || url.pathname === '/') return false
+    const ipv4 = isPublicIpv4(hostname)
+    if (ipv4 !== null) return ipv4
+    if (hostname.startsWith('[') && hostname.endsWith(']')) return isPublicIpv6(hostname)
+    return hostname.includes('.') && ![...PLACEHOLDER_HOSTS].some(suffix => hostname === suffix || hostname.endsWith(`.${suffix}`))
+  } catch {
+    return false
+  }
+}
+
+type SourcedPhotoEvidence = {
+  imageType: 'documentary' | 'journalistic' | 'official' | 'press'
+  credit: string
+  sourceUrl: string
+}
+
+function sourcedPhotoEvidence(attributes: Record<string, unknown>): SourcedPhotoEvidence | null {
+  const imageType = normalizedStatement(attributes.image_type)?.toLowerCase()
+  const author = normalizedStatement(attributes.image_author)
+  const source = normalizedStatement(attributes.image_source)
+  const sourceUrl = normalizedStatement(attributes.image_source_url)
+  const permissionEvidence = normalizedStatement(attributes.permission_evidence)
+  if (
+    imageType === undefined
+    || !DOCUMENTARY_IMAGE_TYPES.has(imageType)
+    || attributes.is_verified_photo !== true
+    || !author
+    || !source
+    || !sourceUrl
+    || !isPublicProvenanceUrl(sourceUrl)
+    || !selectedLicenseScope(attributes)
+    || !permissionEvidence
+  ) return null
+  return {
+    imageType: imageType as SourcedPhotoEvidence['imageType'],
+    credit: `${author} · ${source}`,
+    sourceUrl,
+  }
 }
 
 function normalizePostUgcImageUrl(value: unknown): string | null {
@@ -215,7 +340,7 @@ export function parseGalleryDescriptor(value: unknown): Readonly<ImageDescriptor
   ) return null
   if (descriptor.source_class !== 'placeholder' && descriptor.url === null) return null
   if (descriptor.source_class === 'rights-cleared') {
-    if (typeof descriptor.credit !== 'string' || !descriptor.credit.trim() || typeof descriptor.source_url !== 'string' || !/^https?:\/\//i.test(descriptor.source_url)) return null
+    if (typeof descriptor.credit !== 'string' || !descriptor.credit.trim() || !isPublicProvenanceUrl(descriptor.source_url)) return null
   } else {
     if (descriptor.source_url !== null) return null
     if (descriptor.source_class !== 'user-uploaded' && descriptor.credit !== null) return null
@@ -491,6 +616,36 @@ type EntityImageLike = {
   image?: unknown
   image_descriptor?: unknown
   image_descriptors?: unknown
+  attributes?: unknown
+}
+
+function classifiedLocalImages(entity: EntityImageLike): Array<{ index: number, url: string }> {
+  const values = Array.isArray(entity.images)
+    ? entity.images
+    : typeof entity.image === 'string'
+      ? [entity.image]
+      : []
+  return values.flatMap((value, index) => {
+    const url = normalizeRenderableImageUrl(value)
+    return url?.startsWith('/') ? [{ index, url }] : []
+  })
+}
+
+function classifiedPlaceholder(url: string, entity: EntityImageLike, index: number): ImageDescriptor {
+  const name = typeof entity.name === 'string' && entity.name.trim() ? entity.name.trim() : 'Địa điểm'
+  return {
+    url,
+    alt: `${name} — minh họa chưa được xác minh ${index + 1}`,
+    source_class: 'placeholder',
+    source_kind: 'generated-placeholder',
+    disclosure_key: 'entity-placeholder',
+    short_label: aiDisclosure.placeholder.short_label,
+    full_disclosure: aiDisclosure.placeholder.full_disclosure,
+    credit: null,
+    source_url: null,
+    width: null,
+    height: null,
+  }
 }
 
 function descriptorAlt(entity: EntityImageLike): string {
@@ -520,15 +675,28 @@ export function describeEntityImages(entity: EntityImageLike): ImageDescriptor[]
   const supplied = suppliedEntityDescriptors(entity)
   if (supplied.present) return supplied.descriptors
 
-  const legacy = Array.isArray(entity.images)
-    ? entity.images
-    : typeof entity.image === 'string'
-      ? [entity.image]
-      : []
-  return legacy.flatMap(value => {
-    if (!isCanonicalLegacyEntityImageUrl(value)) return []
-    return [{
-      url: value,
+  if (!entity.attributes || typeof entity.attributes !== 'object' || Array.isArray(entity.attributes)) return []
+  const attributes = entity.attributes as Record<string, unknown>
+  const mediaClass = normalizedStatement(attributes.image_type)?.toLowerCase()
+  if (mediaClass !== 'ai-generated' && mediaClass !== 'generated-placeholder' && !DOCUMENTARY_IMAGE_TYPES.has(mediaClass || '')) return []
+
+  const evidence = sourcedPhotoEvidence(attributes)
+  return classifiedLocalImages(entity).map(({ index, url }) => {
+    if (evidence) return {
+      url,
+      alt: `${typeof entity.name === 'string' && entity.name.trim() ? entity.name.trim() : 'Địa điểm'} — ảnh tư liệu ${index + 1}`,
+      source_class: 'rights-cleared',
+      source_kind: evidence.imageType,
+      disclosure_key: 'entity-sourced-photo',
+      short_label: aiDisclosure.sourced_photo.short_label,
+      full_disclosure: aiDisclosure.sourced_photo.full_disclosure,
+      credit: evidence.credit,
+      source_url: evidence.sourceUrl,
+      width: null,
+      height: null,
+    } satisfies ImageDescriptor
+    if (mediaClass === 'ai-generated' && attributes.is_verified_photo === false) return {
+      url,
       alt: descriptorAlt(entity),
       source_class: 'ai-generated',
       source_kind: 'entity-editorial',
@@ -539,7 +707,8 @@ export function describeEntityImages(entity: EntityImageLike): ImageDescriptor[]
       source_url: null,
       width: null,
       height: null,
-    } satisfies ImageDescriptor]
+    } satisfies ImageDescriptor
+    return classifiedPlaceholder(url, entity, index)
   })
 }
 

@@ -39,6 +39,20 @@ const reviewDescriptor: ImageDescriptor = {
   height: null,
 }
 
+const pressDescriptor: ImageDescriptor = {
+  url: '/img/entities/dinh-long-ho.webp',
+  alt: 'Đình Long Hồ — ảnh tư liệu',
+  source_class: 'rights-cleared',
+  source_kind: 'press',
+  disclosure_key: 'entity-sourced-photo',
+  short_label: aiDisclosure.sourced_photo.short_label,
+  full_disclosure: aiDisclosure.sourced_photo.full_disclosure,
+  credit: 'Trần Phước · Báo Vĩnh Long',
+  source_url: 'https://baovinhlong.com.vn/images/photo.webp',
+  width: null,
+  height: null,
+}
+
 const entity = (overrides: Record<string, unknown> = {}) => ({
   id: 'entity-1',
   name: 'Điểm đến',
@@ -54,7 +68,10 @@ describe('saved image descriptor snapshots', () => {
   })
 
   it('migrates a legacy entity image URL to an AI descriptor snapshot', () => {
-    const migrated = normalizeSavedImageSnapshot(entity({ image: '/img/entities/entity.webp' }))
+    const migrated = normalizeSavedImageSnapshot(entity({
+      image: '/img/entities/entity.webp',
+      attributes: { image_type: 'ai-generated', is_verified_photo: false },
+    }))
 
     expect(migrated.image_descriptor).toEqual(aiDescriptor)
     expect(migrated.descriptor_revision).toBe('media-disclosure-v2')
@@ -73,6 +90,13 @@ describe('saved image descriptor snapshots', () => {
       disclosure_key: 'entity-placeholder',
     }))
     expect(normalized).not.toHaveProperty('image')
+  })
+
+  it('preserves rights-cleared source credits in a saved descriptor snapshot', () => {
+    const normalized = normalizeSavedImageSnapshot(entity({ image_descriptor: pressDescriptor }))
+
+    expect(normalized.image_descriptor).toEqual(pressDescriptor)
+    expect(normalized.image_descriptor.source_url).toBe('https://baovinhlong.com.vn/images/photo.webp')
   })
 
   it('fails closed on an invalid structured descriptor instead of using a raw fallback', () => {
@@ -198,7 +222,10 @@ describe('favorite, recent, and recommendation adapters', () => {
   })
 
   it('stores descriptors in recently viewed snapshots', () => {
-    const recent = createRecentItem(entity({ images: ['/img/entities/entity.webp'] }), 123)
+    const recent = createRecentItem(entity({
+      images: ['/img/entities/entity.webp'],
+      attributes: { image_type: 'ai-generated', is_verified_photo: false },
+    }), 123)
 
     expect(recent.image_descriptor).toEqual(aiDescriptor)
     expect(recent.descriptor_revision).toBe('media-disclosure-v2')

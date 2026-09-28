@@ -567,7 +567,11 @@ function entityTableDisclosureId(entity: Entity): string {
 }
 
 function editorialDescriptor(name: string, value: unknown): Readonly<ImageDescriptor> | null {
-  const descriptor = describeEntityImages({ name, images: [value] })[0]
+  const descriptor = describeEntityImages({
+    name,
+    images: [value],
+    attributes: { image_type: 'ai-generated', is_verified_photo: false },
+  })[0]
   if (!descriptor) return null
   try {
     return normalizeEntityEditorialUpload(descriptor)
@@ -594,7 +598,11 @@ function formatAdminImageValue(value: unknown): string {
 
 function normalizedEntityImageUrls(name: string, values: unknown[]): string[] {
   return values.map((value) => {
-    const descriptor = describeEntityImages({ name, images: [value] })[0]
+    const descriptor = describeEntityImages({
+      name,
+      images: [value],
+      attributes: { image_type: 'ai-generated', is_verified_photo: false },
+    })[0]
     const normalized = normalizeEntityEditorialUpload(descriptor ?? value)
     return normalized.url as string
   })
@@ -611,7 +619,11 @@ async function addImage() {
   if (!candidate || !editingEntity.value) return
   try {
     const descriptor = normalizeEntityEditorialUpload(
-      describeEntityImages({ name: form.value.name, images: [candidate] })[0] ?? candidate,
+      describeEntityImages({
+        name: form.value.name,
+        images: [candidate],
+        attributes: { image_type: 'ai-generated', is_verified_photo: false },
+      })[0] ?? candidate,
     )
     const r = await $fetch<EntityImagesResponse>(`/admin-api/entities/${form.value.id}/images`, {
       method: 'POST', headers: authHeaders(), body: { url: descriptor.url } })

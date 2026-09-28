@@ -32,7 +32,15 @@ const disclosureVisible = computed(() => props.presentation === 'full' || props.
       :data-image-disclosure="showShortLabel ? undefined : ''"
       :class="{ 'image-disclosure-sr-only': !disclosureVisible }"
     >{{ descriptor.full_disclosure }}</span>
-    <span v-if="descriptor.credit" class="image-disclosure-credit" data-credit>{{ descriptor.credit }}</span>
+    <a
+      v-if="descriptor.credit && descriptor.source_url"
+      class="image-disclosure-credit"
+      data-credit
+      :href="descriptor.source_url"
+      target="_blank"
+      rel="noopener noreferrer"
+    >{{ descriptor.credit }}</a>
+    <span v-else-if="descriptor.credit" class="image-disclosure-credit" data-credit>{{ descriptor.credit }}</span>
   </span>
 </template>
 

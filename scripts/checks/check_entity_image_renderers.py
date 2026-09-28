@@ -27,7 +27,7 @@ ROW_KEYS = frozenset(
         "test_file",
     }
 )
-SOURCE_CLASSES = frozenset({"ai-generated", "placeholder", "user-uploaded", "none"})
+SOURCE_CLASSES = frozenset({"ai-generated", "placeholder", "rights-cleared", "user-uploaded", "none"})
 RENDER_POLICIES = frozenset({"render", "suppress"})
 PRESENTATIONS = frozenset({"short", "full", "short-and-full", "none"})
 ACCESSIBILITY = frozenset(
@@ -665,16 +665,16 @@ def _scoped_proof_text(text: str, entry: dict) -> str | None:
 
 
 PRODUCER_SOURCE_CLASSES = {
-    "describeEntityImages": {"ai-generated"},
+    "describeEntityImages": {"ai-generated", "rights-cleared"},
     "describeEntityPlaceholder": {"placeholder"},
-    "describeAdminRawMedia": {"ai-generated", "placeholder", "user-uploaded"},
+    "describeAdminRawMedia": {"ai-generated", "placeholder", "rights-cleared", "user-uploaded"},
     "createPlaceholderDescriptor": {"placeholder"},
     "describePostImages": {"user-uploaded"},
     "describeReviewImages": {"user-uploaded"},
     "describePostPreviewRows": {"user-uploaded"},
     "describeReviewPreviewRows": {"user-uploaded"},
     "parseGalleryDescriptor": set(SOURCE_CLASSES - {"none"}),
-    "normalizeSavedImageSnapshot": {"ai-generated", "placeholder"},
+    "normalizeSavedImageSnapshot": {"ai-generated", "placeholder", "rights-cleared"},
     "ImageDescriptor": set(SOURCE_CLASSES - {"none"}),
 }
 

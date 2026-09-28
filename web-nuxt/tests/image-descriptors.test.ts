@@ -104,14 +104,97 @@ describe('renderable image URL normalization', () => {
 describe('non-rights-cleared descriptor source URLs', () => {
   it('requires factories to emit a null source_url exact key', () => {
     expect(normalizeReviewPhoto({ url: '/img/review.jpg', alt: 'Review' })).not.toBeNull()
-    expect(describeEntityImages({ name: 'Entity', images: ['/img/entities/entity.webp'] })[0]?.source_url).toBeNull()
+    expect(describeEntityImages({
+      name: 'Entity',
+      images: ['/img/entities/entity.webp'],
+      attributes: { image_type: 'ai-generated', is_verified_photo: false },
+    })[0]?.source_url).toBeNull()
     expect(describeEntityPlaceholder({ name: 'Entity' }).source_url).toBeNull()
+  })
+})
+
+describe('rights-cleared descriptor provenance URLs', () => {
+  const pressDescriptor = {
+    url: '/img/entities/dinh-long-ho.webp',
+    alt: 'Đình Long Hồ — ảnh tư liệu',
+    source_class: 'rights-cleared',
+    source_kind: 'press',
+    disclosure_key: 'entity-sourced-photo',
+    short_label: aiDisclosure.sourced_photo.short_label,
+    full_disclosure: aiDisclosure.sourced_photo.full_disclosure,
+    credit: 'Trần Phước · Báo Vĩnh Long',
+    source_url: 'https://baovinhlong.com.vn/images/photo.webp',
+    width: null,
+    height: null,
+  }
+
+  it('rejects private-network source URLs with otherwise canonical sourced fields', () => {
+    expect(parseGalleryDescriptor({
+      ...pressDescriptor,
+      source_url: 'https://192.168.1.1/images/photo.webp',
+    })).toBeNull()
+  })
+})
+
+describe('legacy entity media classification', () => {
+  const pressAttributes = {
+    image_type: 'press',
+    is_verified_photo: true,
+    image_author: 'Trần Phước',
+    image_source: 'Báo Vĩnh Long',
+    image_source_url: 'https://baovinhlong.com.vn/images/photo.webp',
+    image_license: 'Permission granted for re-hosting',
+    permission_evidence: 'owner-record:IMG-2026-001',
+  }
+
+  it('derives a rights-cleared descriptor only from complete documentary evidence', () => {
+    expect(describeEntityImages({
+      name: 'Đình Long Hồ',
+      images: ['/img/entities/dinh-long-ho.webp'],
+      attributes: pressAttributes,
+    })).toEqual([expect.objectContaining({
+      source_class: 'rights-cleared',
+      source_kind: 'press',
+      disclosure_key: 'entity-sourced-photo',
+      short_label: aiDisclosure.sourced_photo.short_label,
+      full_disclosure: aiDisclosure.sourced_photo.full_disclosure,
+      credit: 'Trần Phước · Báo Vĩnh Long',
+      source_url: 'https://baovinhlong.com.vn/images/photo.webp',
+    })])
+  })
+
+  it.each([
+    ['an unknown raw entity path', {}, 'no descriptor'],
+    ['an incomplete sourced record', { ...pressAttributes, permission_evidence: undefined }, 'placeholder'],
+    ['an AI record without an explicit false verified flag', { image_type: 'ai-generated' }, 'placeholder'],
+    ['an AI record with a null verified flag', { image_type: 'ai-generated', is_verified_photo: null }, 'placeholder'],
+    ['a placeholder record without an explicit false verified flag', { image_type: 'generated-placeholder' }, 'placeholder'],
+  ])('fails closed for %s', (_label, attributes, expected) => {
+    const descriptors = describeEntityImages({
+      name: 'Đình Long Hồ',
+      images: ['/img/entities/dinh-long-ho.webp'],
+      attributes,
+    })
+
+    if (expected === 'no descriptor') {
+      expect(descriptors).toEqual([])
+      return
+    }
+    expect(descriptors).toEqual([expect.objectContaining({
+      source_class: 'placeholder',
+      disclosure_key: 'entity-placeholder',
+    })])
   })
 })
 
 describe('entity image descriptor producers', () => {
   it('classifies only canonical legacy entity images with canonical AI disclosure', () => {
-    expect(describeEntityImages({ id: 'entity-1', name: 'Điểm đến', images: ['/img/entities/diem-den.webp'] })).toEqual([
+    expect(describeEntityImages({
+      id: 'entity-1',
+      name: 'Điểm đến',
+      images: ['/img/entities/diem-den.webp'],
+      attributes: { image_type: 'ai-generated', is_verified_photo: false },
+    })).toEqual([
       expect.objectContaining({
         url: '/img/entities/diem-den.webp',
         alt: 'Điểm đến — ảnh minh họa',

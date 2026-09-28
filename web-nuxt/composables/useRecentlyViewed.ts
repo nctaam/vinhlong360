@@ -55,6 +55,7 @@ export function createRecentItem(entity: Record<string, any>, viewedAt = Date.no
     kind: entity.kind || (entity.type === 'itinerary' ? 'itinerary' : isKnownEntityType(entity.type) ? 'entity' : 'unknown'),
     images: entity.images,
     image: entity.image,
+    attributes: entity.attributes,
     ...(Object.prototype.hasOwnProperty.call(entity, 'image_descriptor') ? { image_descriptor: entity.image_descriptor } : {}),
     ...(Object.prototype.hasOwnProperty.call(entity, 'image_descriptors') ? { image_descriptors: entity.image_descriptors } : {}),
     viewedAt,

@@ -69,6 +69,7 @@ export function createFavoriteItem(entity: Record<string, any>, savedAt = new Da
     summary: entity.summary,
     images: entity.images,
     image: entity.image,
+    attributes: entity.attributes,
     ...(Object.prototype.hasOwnProperty.call(entity, 'image_descriptor') ? { image_descriptor: entity.image_descriptor } : {}),
     ...(Object.prototype.hasOwnProperty.call(entity, 'image_descriptors') ? { image_descriptors: entity.image_descriptors } : {}),
     savedAt,

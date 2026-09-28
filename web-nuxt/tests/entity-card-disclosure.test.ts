@@ -132,7 +132,10 @@ describe('EntityCard image disclosure', () => {
 
   it('classifies legacy entity images as AI with the exact canonical copy', async () => {
     const wrapper = await mountSuspended(EntityCard, {
-      props: { entity: entity({ images: ['/img/entities/legacy.webp'] }) },
+      props: { entity: entity({
+        images: ['/img/entities/legacy.webp'],
+        attributes: { image_type: 'ai-generated', is_verified_photo: false },
+      }) },
       global: globals,
     })
 
