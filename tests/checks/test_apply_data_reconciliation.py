@@ -154,9 +154,40 @@ def test_targeted_media_verification_preserves_unrelated_global_drift(tmp_path):
     payload = json.loads(data.read_text(encoding="utf-8"))
     payload["entities"][1]["attributes"] = {"unrelated_drift": True}
     data.write_text(json.dumps(payload), encoding="utf-8")
-    plan = {"verification": {"mode": "targeted-media-v1", "targets": {"a": payload["entities"][0]}}}
+    with sqlite3.connect(db) as conn:
+        conn.row_factory = sqlite3.Row
+        sqlite_entities = {
+            row["id"]: apply_module._sqlite_entity_projection(row)
+            for row in conn.execute("SELECT rowid, * FROM entities")
+        }
+    sqlite_entity_digest = apply_module._digest_rows([sqlite_entities["b"]])
+    json_entity_digest = apply_module._digest_rows([payload["entities"][1]])
+    empty_relationship_digest = apply_module._digest_rows([])
+    verification = {
+        "mode": "targeted-media-v1",
+        "targets": {"a": payload["entities"][0]},
+        "unrelatedDigests": {
+            "sqlite": {
+                "before": {"entities": sqlite_entity_digest, "relationships": empty_relationship_digest},
+                "after": {"entities": sqlite_entity_digest, "relationships": empty_relationship_digest},
+            },
+            "json": {
+                "before": {"entities": json_entity_digest, "relationships": empty_relationship_digest},
+                "after": {"entities": json_entity_digest, "relationships": empty_relationship_digest},
+            },
+        },
+    }
+    plan = {"verification": verification}
     result = apply_module.verify_plan_result(plan, db, data)
     assert result == {"mode": "targeted-media-v1", "status": "clean", "globalParity": "known-drift-preserved"}
+
+
+def test_targeted_media_verification_requires_before_after_unrelated_digests(tmp_path):
+    db, data, _, _ = _fixture(tmp_path)
+    payload = json.loads(data.read_text(encoding="utf-8"))
+    plan = {"verification": {"mode": "targeted-media-v1", "targets": {"a": payload["entities"][0]}}}
+    with pytest.raises(ApplyError, match="digest"):
+        apply_module.verify_plan_result(plan, db, data)
 
 
 def test_json_manifest_indexes_are_scoped_by_record_type():
@@ -192,6 +223,50 @@ def test_json_manifest_indexes_are_scoped_by_record_type():
     apply_module._apply_json_mutations(payload, json_mutations)
     assert payload["entities"][0]["attributes"] == {}
     assert payload["relationships"][0]["type"] == "related_to"
+
+
+def test_json_entity_top_level_update_requires_exact_before_and_after():
+    payload = {"entities": [{"id": "a", "name": "Before", "attributes": {}}], "relationships": []}
+    apply_module._json_mutation(
+        payload,
+        {
+            "mutationId": "name-update",
+            "recordType": "entity",
+            "recordId": "a",
+            "operation": "update",
+            "field": "name",
+            "before": "Before",
+            "after": "After",
+            "metadata": {"index": 0},
+        },
+    )
+    assert payload["entities"][0]["name"] == "After"
+    with pytest.raises(ApplyError, match="before"):
+        apply_module._json_mutation(
+            {"entities": [{"id": "a", "name": None, "attributes": {}}], "relationships": []},
+            {
+                "mutationId": "missing-before",
+                "recordType": "entity",
+                "recordId": "a",
+                "operation": "update",
+                "field": "name",
+                "after": "After",
+                "metadata": {"index": 0},
+            },
+        )
+    with pytest.raises(ApplyError, match="after"):
+        apply_module._json_mutation(
+            payload,
+            {
+                "mutationId": "missing-after",
+                "recordType": "entity",
+                "recordId": "a",
+                "operation": "update",
+                "field": "name",
+                "before": "After",
+                "metadata": {"index": 0},
+            },
+        )
 
 
 def test_generated_graph_insert_schema_applies_and_preserves_relationship_parity(tmp_path):

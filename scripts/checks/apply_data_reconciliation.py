@@ -275,12 +275,13 @@ def _insert_relationship(conn: sqlite3.Connection, mutation: dict[str, Any]) -> 
 def _update_or_delete_relationship(conn: sqlite3.Connection, mutation: dict[str, Any], rowid: int, current: sqlite3.Row) -> int:
     operation = mutation.get("operation")
     if operation == "update" and mutation.get("field") == "type":
-        if current[2] != mutation.get("before"):
+        if current[2] != _required_mutation_value(mutation, "before"):
             raise ApplyError(f"relationship before value mismatch: {mutation.get('mutationId')}")
-        return conn.execute("UPDATE relationships SET type = ? WHERE rowid = ?", (mutation["after"], rowid)).rowcount
+        after = _required_mutation_value(mutation, "after")
+        return conn.execute("UPDATE relationships SET type = ? WHERE rowid = ?", (after, rowid)).rowcount
     if operation == "delete":
         current_tuple = {"from": current[0], "to": current[1], "type": current[2]}
-        if current_tuple != mutation.get("before"):
+        if current_tuple != _required_mutation_value(mutation, "before"):
             raise ApplyError(f"relationship before value mismatch: {mutation.get('mutationId')}")
         return conn.execute("DELETE FROM relationships WHERE rowid = ?", (rowid,)).rowcount
     raise ApplyError(f"unsupported relationship mutation: {mutation.get('mutationId')}")
@@ -300,11 +301,11 @@ def _prepare_entity_update(conn: sqlite3.Connection, mutation: dict[str, Any]) -
             current_value = json.loads(current_value)
         except json.JSONDecodeError as exc:
             raise ApplyError(f"malformed entity field: {field}") from exc
-    if current_value != mutation.get("before"):
+    if current_value != _required_mutation_value(mutation, "before"):
         raise ApplyError(f"entity before value mismatch: {mutation.get('mutationId')}")
     if mutation.get("operation") == "remove":
         raise ApplyError(f"remove requires a nested entity field: {mutation.get('mutationId')}")
-    value = mutation["after"]
+    value = _required_mutation_value(mutation, "after")
     if field in {"images", "coordinates", "season"} and not isinstance(value, str):
         value = json.dumps(value, ensure_ascii=False) if value is not None else None
     return "dynamic", field, record_id, value
@@ -316,13 +317,19 @@ def _prepare_attribute_update(row: sqlite3.Row, mutation: dict[str, Any], record
     except json.JSONDecodeError as exc:
         raise ApplyError(f"malformed entity attributes: {record_id}") from exc
     attribute_name = mutation["field"].removeprefix("attributes.")
-    if attribute_name not in attributes or attributes[attribute_name] != mutation.get("before"):
+    if attribute_name not in attributes or attributes[attribute_name] != _required_mutation_value(mutation, "before"):
         raise ApplyError(f"entity before value mismatch: {mutation.get('mutationId')}")
     if mutation.get("operation") == "remove":
         del attributes[attribute_name]
     else:
-        attributes[attribute_name] = mutation["after"]
+        attributes[attribute_name] = _required_mutation_value(mutation, "after")
     return json.dumps(attributes, ensure_ascii=False)
+
+
+def _required_mutation_value(mutation: dict[str, Any], key: str) -> Any:
+    if key not in mutation:
+        raise ApplyError(f"mutation {key} is required: {mutation.get('mutationId')}")
+    return mutation[key]
 
 
 def _json_mutation(payload: dict[str, Any], mutation: dict[str, Any]) -> None:
@@ -337,12 +344,12 @@ def _json_mutation(payload: dict[str, Any], mutation: dict[str, Any]) -> None:
     index = (mutation.get("metadata") or {}).get("index")
     if not isinstance(index, int) or index < 0 or index >= len(relationships):
         raise ApplyError(f"JSON relationship index missing: {mutation.get('mutationId')}")
-    if relationships[index] != mutation.get("before"):
+    if relationships[index] != _required_mutation_value(mutation, "before"):
         raise ApplyError(f"JSON before value mismatch: {mutation.get('mutationId')}")
     if mutation.get("operation") == "delete":
         relationships.pop(index)
     elif mutation.get("operation") == "update":
-        relationships[index] = mutation["after"]
+        relationships[index] = _required_mutation_value(mutation, "after")
     else:
         raise ApplyError(f"unsupported JSON operation: {mutation.get('operation')}")
 
@@ -359,8 +366,16 @@ def _json_entity_mutation(payload: dict[str, Any], mutation: dict[str, Any]) -> 
         entities.pop(index)
         return
     field = mutation.get("field")
-    if not isinstance(field, str) or not field.startswith("attributes."):
+    if not isinstance(field, str) or field == "id":
         raise ApplyError(f"unsupported JSON entity field: {field}")
+    if field.startswith("attributes."):
+        _json_nested_entity_mutation(entity, field, mutation)
+        return
+
+    _json_top_level_entity_mutation(entity, field, mutation)
+
+
+def _json_nested_entity_mutation(entity: dict[str, Any], field: str, mutation: dict[str, Any]) -> None:
     attributes = entity.get("attributes")
     name = field.removeprefix("attributes.")
     if not isinstance(attributes, dict) or name not in attributes:
@@ -369,8 +384,19 @@ def _json_entity_mutation(payload: dict[str, Any], mutation: dict[str, Any]) -> 
     _mutate_json_attribute(attributes, name, mutation)
 
 
+def _json_top_level_entity_mutation(entity: dict[str, Any], field: str, mutation: dict[str, Any]) -> None:
+    if field not in entity:
+        raise ApplyError(f"JSON before value mismatch: {mutation.get('mutationId')}")
+    _assert_json_before(entity[field], mutation)
+    if mutation.get("operation") == "remove":
+        raise ApplyError(f"remove requires a nested entity field: {mutation.get('mutationId')}")
+    if mutation.get("operation") != "update":
+        raise ApplyError(f"unsupported JSON operation: {mutation.get('operation')}")
+    entity[field] = _required_mutation_value(mutation, "after")
+
+
 def _assert_json_before(current: Any, mutation: dict[str, Any]) -> None:
-    if current != mutation.get("before"):
+    if current != _required_mutation_value(mutation, "before"):
         raise ApplyError(f"JSON before value mismatch: {mutation.get('mutationId')}")
 
 
@@ -384,7 +410,7 @@ def _mutate_json_attribute(attributes: dict[str, Any], name: str, mutation: dict
         del attributes[name]
         return
     if mutation.get("operation") == "update":
-        attributes[name] = mutation.get("after")
+        attributes[name] = _required_mutation_value(mutation, "after")
         return
     raise ApplyError(f"unsupported JSON operation: {mutation.get('operation')}")
 
@@ -510,19 +536,32 @@ def _targeted_targets(verification: dict[str, Any]) -> dict[str, Any]:
 
 def _verify_unrelated_digests(verification: dict[str, Any], target_ids: set[str], sqlite_rows: dict[str, Any], json_rows: dict[str, Any], sqlite_relationships: list[Any], json_relationships: list[Any]) -> None:
     unrelated = verification.get("unrelatedDigests") or verification.get("nonTargetDigests") or {}
+    if not isinstance(unrelated, dict):
+        raise ApplyError("targeted unrelated digests are required")
     for store_name, entities, relationships in (("sqlite", sqlite_rows, sqlite_relationships), ("json", json_rows, json_relationships)):
-        expected = unrelated.get(store_name) if isinstance(unrelated, dict) else None
+        expected = unrelated.get(store_name)
         if not isinstance(expected, dict):
-            continue
+            raise ApplyError(f"targeted unrelated digests missing: {store_name}")
+        before = _validate_digest_bundle(expected.get("before"), store_name, "before")
+        after = _validate_digest_bundle(expected.get("after"), store_name, "after")
+        if before != after:
+            raise ApplyError(f"targeted unrelated digest changed: {store_name}")
         entity_rows = [value for key, value in sorted(entities.items()) if key not in target_ids and key != "prov-1"]
         relation_rows = [row for row in relationships if row[0] not in target_ids and row[1] not in target_ids]
         actual = {"entities": _digest_rows(entity_rows), "relationships": _digest_rows(relation_rows)}
-        after = expected.get("after", expected)
         _assert_digest_match(actual, after, store_name)
 
 
+def _validate_digest_bundle(value: Any, store_name: str, phase: str) -> dict[str, str]:
+    if not isinstance(value, dict) or set(value) != {"entities", "relationships"}:
+        raise ApplyError(f"targeted unrelated {phase} digests incomplete: {store_name}")
+    if not all(isinstance(value[key], str) and len(value[key]) == 64 for key in value):
+        raise ApplyError(f"targeted unrelated {phase} digests invalid: {store_name}")
+    return {key: value[key] for key in ("entities", "relationships")}
+
+
 def _assert_digest_match(actual: dict[str, str], expected: Any, store_name: str) -> None:
-    if isinstance(expected, dict) and any(actual.get(key) != value for key, value in expected.items() if key in actual):
+    if any(actual[key] != expected[key] for key in actual):
         raise ApplyError(f"targeted unrelated digest mismatch: {store_name}")
 
 
