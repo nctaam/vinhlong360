@@ -32,12 +32,14 @@ if __package__:
     from .image_descriptor import ImageDescriptor, describe_entity_images
     from .index_policy import decide_entity
     from .launch_evidence import PolicyEvidence, current_policy_evidence
+    from .media_provenance import is_public_provenance_url
     from .media_policy import is_renderable_entity_descriptor
 else:
     from ai_disclosure import LoadedAiDisclosure, load_ai_disclosure
     from image_descriptor import ImageDescriptor, describe_entity_images
     from index_policy import decide_entity
     from launch_evidence import PolicyEvidence, current_policy_evidence
+    from media_provenance import is_public_provenance_url
     from media_policy import is_renderable_entity_descriptor
 
 router = APIRouter()
@@ -407,7 +409,6 @@ def _is_jsonld_entity_image_identity(
     descriptor: object,
     disclosure: LoadedAiDisclosure,
 ) -> bool:
-    copy = disclosure.entity_ai
     if type(descriptor) is not ImageDescriptor:
         return False
     if type(descriptor.url) is not str or type(descriptor.alt) is not str:
@@ -416,11 +417,34 @@ def _is_jsonld_entity_image_identity(
         return False
     if not is_renderable_entity_descriptor(asdict(descriptor)):
         return False
+    identity = _jsonld_descriptor_identity(descriptor, disclosure)
+    if identity is None:
+        return False
+    copy, provenance_is_valid = identity
     if descriptor.short_label != copy.short_label:
         return False
     if descriptor.full_disclosure != copy.full_disclosure:
         return False
-    return descriptor.credit is None
+    return provenance_is_valid
+
+
+def _jsonld_descriptor_identity(
+    descriptor: ImageDescriptor,
+    disclosure: LoadedAiDisclosure,
+) -> tuple[object, bool] | None:
+    if descriptor.source_class == "ai-generated":
+        return (
+            disclosure.entity_ai,
+            descriptor.credit is None and descriptor.source_url is None,
+        )
+    if descriptor.source_class == "rights-cleared":
+        return (
+            disclosure.sourced_photo,
+            type(descriptor.credit) is str
+            and bool(descriptor.credit.strip())
+            and is_public_provenance_url(descriptor.source_url),
+        )
+    return None
 
 
 def _is_jsonld_entity_image_descriptor(

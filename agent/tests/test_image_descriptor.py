@@ -324,6 +324,34 @@ def test_describe_entity_images_accepts_structured_lists_and_https_urls():
     assert descriptors == (ImageDescriptor(**supplied),)
 
 
+def test_describe_entity_images_accepts_a_supplied_rights_cleared_descriptor():
+    supplied = {
+        "url": "/media/supplied-press.webp",
+        "alt": "Dinh Long Ho — ảnh tư liệu đã phân loại",
+        "source_class": "rights-cleared",
+        "source_kind": "press",
+        "disclosure_key": "entity-sourced-photo",
+        "short_label": DISCLOSURE.sourced_photo.short_label,
+        "full_disclosure": DISCLOSURE.sourced_photo.full_disclosure,
+        "credit": "Tran Phuoc · Bao Vinh Long",
+        "source_url": "https://baovinhlong.com.vn/images/photo.webp",
+        "width": None,
+        "height": None,
+    }
+
+    descriptors = describe_entity_images(
+        {
+            "name": "Dinh Long Ho",
+            "images": ["/img/entities/fallback.webp"],
+            "attributes": _ai_attributes(),
+            "image_descriptor": supplied,
+        },
+        disclosure=DISCLOSURE,
+    )
+
+    assert descriptors == (ImageDescriptor(**supplied),)
+
+
 def test_describe_entity_images_allows_an_explicit_canonical_placeholder():
     supplied = {
         "url": None,

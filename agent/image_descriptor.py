@@ -9,20 +9,30 @@ import re
 
 if __package__:
     from .ai_disclosure import LoadedAiDisclosure
-    from .media_provenance import DOCUMENTARY_IMAGE_TYPES, sourced_photo_evidence
+    from .media_provenance import (
+        DOCUMENTARY_IMAGE_TYPES,
+        is_public_provenance_url,
+        sourced_photo_evidence,
+    )
     from .media_policy import (
         ENTITY_AI_SOURCE,
         ENTITY_PLACEHOLDER_SOURCE,
+        ENTITY_RIGHTS_CLEARED_SOURCES,
         descriptor_source,
         is_canonical_legacy_entity_image,
         is_renderable_entity_descriptor,
     )
 else:
     from ai_disclosure import LoadedAiDisclosure
-    from media_provenance import DOCUMENTARY_IMAGE_TYPES, sourced_photo_evidence
+    from media_provenance import (
+        DOCUMENTARY_IMAGE_TYPES,
+        is_public_provenance_url,
+        sourced_photo_evidence,
+    )
     from media_policy import (
         ENTITY_AI_SOURCE,
         ENTITY_PLACEHOLDER_SOURCE,
+        ENTITY_RIGHTS_CLEARED_SOURCES,
         descriptor_source,
         is_canonical_legacy_entity_image,
         is_renderable_entity_descriptor,
@@ -272,7 +282,34 @@ def _supplied_entity_descriptor_copy(
         return (url, disclosure.entity_ai) if url is not None else None
     if source == ENTITY_PLACEHOLDER_SOURCE and raw.get("url") is None:
         return None, disclosure.placeholder
+    if source in ENTITY_RIGHTS_CLEARED_SOURCES:
+        url = normalize_renderable_image_url(raw.get("url"))
+        credit = raw.get("credit")
+        source_url = raw.get("source_url")
+        if (
+            url is None
+            or type(credit) is not str
+            or not credit.strip()
+            or not is_public_provenance_url(source_url)
+        ):
+            return None
+        return url, disclosure.sourced_photo
     return None
+
+
+def _supplied_entity_descriptor_provenance(
+    raw: dict,
+    source: tuple[object, object, object] | None,
+) -> tuple[str | None, str | None] | None:
+    credit = raw.get("credit")
+    source_url = raw.get("source_url")
+    if source in ENTITY_RIGHTS_CLEARED_SOURCES:
+        if type(credit) is not str or type(source_url) is not str:
+            return None
+        return credit, source_url
+    if credit is not None or source_url is not None:
+        return None
+    return None, None
 
 
 def _parse_supplied_entity_descriptor(
@@ -302,10 +339,12 @@ def _parse_supplied_entity_descriptor(
         return None
     if full_disclosure != copy.full_disclosure:
         return None
-    if credit is not None or source_url is not None:
+    provenance = _supplied_entity_descriptor_provenance(raw, source)
+    if provenance is None:
         return None
     if not _valid_descriptor_dimensions(width, height):
         return None
+    credit, source_url = provenance
     source_class, source_kind, disclosure_key = source
     return ImageDescriptor(
         url=url,
@@ -315,8 +354,8 @@ def _parse_supplied_entity_descriptor(
         disclosure_key=disclosure_key,
         short_label=short_label,
         full_disclosure=full_disclosure,
-        credit=None,
-        source_url=None,
+        credit=credit,
+        source_url=source_url,
         width=width,
         height=height,
     )
