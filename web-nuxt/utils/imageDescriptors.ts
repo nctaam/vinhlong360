@@ -179,7 +179,9 @@ function isPublicIpv4(hostname: string): boolean | null {
   if (octets.length !== 4 || !octets.every(octet => /^(0|[1-9][0-9]{0,2})$/.test(octet))) return null
   const values = octets.map(Number)
   if (values.some(value => value > 255)) return false
-  const [first, second] = values
+  // The four-octet guard above makes these indexed values present.
+  const first = values[0]!
+  const second = values[1]!
   return !(
     first === 0
     || first === 10
