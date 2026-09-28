@@ -6,7 +6,6 @@ import CommandPalette from '../components/CommandPalette.vue'
 import IconLine from '../components/IconLine.vue'
 import PublicBottomNav from '../components/shell/PublicBottomNav.vue'
 import PublicContextBar from '../components/shell/PublicContextBar.vue'
-import { AREA_META } from '../composables/useConstants'
 import AdminLayout from '../layouts/admin.vue'
 import DefaultLayout from '../layouts/default.vue'
 import { ADMIN_KINDS } from '../utils/adminKinds'
@@ -183,23 +182,14 @@ describe('UI foundation shell', () => {
     }
   })
 
-  it('uses live area metadata while persisting the preferred region', async () => {
-    const originalLabel = AREA_META['ben-tre']!.name
-    AREA_META['ben-tre']!.name = 'Bến Tre từ cấu hình'
+  it('exposes only current Vinh Long scope choices', async () => {
+    const wrapper = await mountSuspended(PublicContextBar)
+    wrappers.push(wrapper)
 
-    try {
-      const wrapper = await mountSuspended(PublicContextBar)
-      wrappers.push(wrapper)
-
-      const select = wrapper.get('select')
-      await select.setValue('ben-tre')
-
-      expect(select.element.value).toBe('ben-tre')
-      expect(wrapper.text()).toContain('Bến Tre từ cấu hình')
-      expect(localStorage.getItem('vl360-region-pref')).toBe('ben-tre')
-    } finally {
-      AREA_META['ben-tre']!.name = originalLabel
-    }
+    const options = wrapper.findAll('option')
+    expect(options.map(option => option.attributes('value'))).toEqual(['all', 'vinh-long'])
+    expect(wrapper.find('[value="ben-tre"]').exists()).toBe(false)
+    expect(wrapper.find('[value="tra-vinh"]').exists()).toBe(false)
   })
 
   it('separates the all-region option from its current-context summary', async () => {
@@ -208,7 +198,7 @@ describe('UI foundation shell', () => {
     await wrapper.get('select').setValue('all')
 
     expect(wrapper.get('option[value="all"]').text()).toBe('Tất cả khu vực')
-    expect(wrapper.get('.public-context-current').text()).toBe('Vĩnh Long · Bến Tre · Trà Vinh')
+    expect(wrapper.get('.public-context-current').text()).toBe('Toàn tỉnh Vĩnh Long')
   })
 
   it('renders five mobile destinations and marks the current route', async () => {

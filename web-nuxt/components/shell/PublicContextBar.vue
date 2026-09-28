@@ -32,22 +32,15 @@ import type { RegionSlug } from '~/composables/useRegionPref'
 
 const { region, setRegion } = useRegionPref()
 const { envelope } = usePublicContextEnvelope()
-const allRegionsSummary = 'Vĩnh Long · Bến Tre · Trà Vinh'
+const allRegionsSummary = 'Toàn tỉnh Vĩnh Long'
 
-// Tiền tố "Vùng" tách PHẦN khỏi TOÀN THỂ. Trước đây chuỗi "Vĩnh Long" vừa mở đầu
-// tóm tắt của phạm vi TOÀN BỘ ("Vĩnh Long · Bến Tre · Trà Vinh") vừa là nhãn của
-// MỘT trong ba vùng, nên trạng thái mặc định và trạng thái đã thu hẹp đọc lên
-// gần như giống nhau — người dùng không biết mình đang ở phạm vi nào, và không
-// đoán được lựa chọn đó làm gì. Chỉ đổi chữ hiển thị: slug không đổi nên dữ
-// liệu, đường dẫn và lựa chọn đã lưu đều giữ nguyên.
+// Prefix "Vùng" distinguishes the province choice from the whole-province option.
 const zoneLabel = (slug: RegionSlug, fallback: string) =>
   `Vùng ${AREA_META[slug]?.name || fallback}`
 
 const regionOptions = computed<Array<{ value: RegionSlug; label: string; summary: string }>>(() => [
   { value: 'all', label: 'Tất cả khu vực', summary: allRegionsSummary },
   { value: 'vinh-long', label: zoneLabel('vinh-long', 'Vĩnh Long'), summary: zoneLabel('vinh-long', 'Vĩnh Long') },
-  { value: 'ben-tre', label: zoneLabel('ben-tre', 'Bến Tre'), summary: zoneLabel('ben-tre', 'Bến Tre') },
-  { value: 'tra-vinh', label: zoneLabel('tra-vinh', 'Trà Vinh'), summary: zoneLabel('tra-vinh', 'Trà Vinh') },
 ])
 
 const selectedRegion = computed<RegionSlug>({

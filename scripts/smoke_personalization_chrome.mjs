@@ -252,8 +252,8 @@ function startFixtureApi() {
           fixture.flags.conflictNextPreferencePatch = false
           fixture.preferences = {
             ...fixture.preferences,
-            region_id: 'province-tv',
-            region_label: 'Trà Vinh',
+            region_id: 'province-vl',
+            region_label: 'Vĩnh Long',
             region_scope: 'province',
             location_source: 'manual',
             location_accuracy: 'province',
@@ -841,12 +841,12 @@ async function exerciseFlow(cdp) {
 
   await navigate(cdp, '/cai-dat#khu-vuc-de-xuat')
   await waitForPage(cdp, `document.querySelector('#khu-vuc-de-xuat:not([hidden])')`, 'preference panel')
-  await click(cdp, '[data-region="province-bt"]')
-  await waitForNode(() => fixture.preferences.region_id === 'province-bt', 'region change')
+  await click(cdp, '[data-region="all"]')
+  await waitForNode(() => fixture.preferences.region_id === null, 'region change')
   await navigate(cdp, '/tai-khoan')
   await waitForPage(cdp, `document.querySelector('[data-action="why-this"]')`, 'updated recommendation')
   await click(cdp, '[data-action="why-this"]')
-  await assertText(cdp, '[role="dialog"][data-why-this]', 'Bến Tre')
+  await assertText(cdp, '[role="dialog"][data-why-this]', 'Vĩnh Long')
   console.log('[OK] region change updates the rendered explanation')
 
   await navigate(cdp, '/cai-dat#khu-vuc-de-xuat')
@@ -854,7 +854,7 @@ async function exerciseFlow(cdp) {
   fixture.flags.failNextPreferencePatch = true
   const patchCountBeforeOffline = fixture.calls.preferencePatch
   await click(cdp, '[data-region="province-vl"]')
-  await assertText(cdp, '#khu-vuc-de-xuat', 'Bến Tre')
+  await assertText(cdp, '#khu-vuc-de-xuat', 'Toàn tỉnh')
   await evaluate(cdp, `window.__smokeOnline = false; window.dispatchEvent(new Event('offline'))`)
   await assertText(cdp, '#khu-vuc-de-xuat', 'Đang ngoại tuyến')
   await evaluate(cdp, `window.__smokeOnline = true`)
@@ -864,11 +864,11 @@ async function exerciseFlow(cdp) {
   console.log('[OK] offline failure preserves cached state and retry does not duplicate mutation')
 
   fixture.flags.conflictNextPreferencePatch = true
-  await click(cdp, '[data-region="province-bt"]')
+  await click(cdp, '[data-region="all"]')
   await assertText(cdp, '#khu-vuc-de-xuat', 'Dữ liệu trên máy chủ đã thay đổi')
-  await assertText(cdp, '#khu-vuc-de-xuat', 'Trà Vinh')
+  await assertText(cdp, '#khu-vuc-de-xuat', 'Vĩnh Long')
   await click(cdp, '[data-action="retry-conflict"]')
-  await waitForNode(() => fixture.preferences.region_id === 'province-bt', 'conflict retry')
+  await waitForNode(() => fixture.preferences.region_id === 'province-vl', 'conflict retry')
   console.log('[OK] conflict renders server state and retries explicitly')
 
   await click(cdp, '[data-action="reset-recommendations"]')

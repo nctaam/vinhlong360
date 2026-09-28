@@ -9,18 +9,14 @@ export type RegionSlug = 'vinh-long' | 'ben-tre' | 'tra-vinh' | 'all'
 
 const API_REGIONS: Record<Exclude<RegionSlug, 'all'>, PreferenceRegionChoice> = {
   'vinh-long': { id: 'province-vl', label: 'Vĩnh Long', scope: 'province' },
-  'ben-tre': { id: 'province-bt', label: 'Bến Tre', scope: 'province' },
-  'tra-vinh': { id: 'province-tv', label: 'Trà Vinh', scope: 'province' },
 }
 
 function regionFromSnapshot(snapshot: PreferenceSnapshot): RegionSlug {
   if ((snapshot.location_source === 'gps' || snapshot.location_source === 'ip') && !snapshot.location_enabled) return 'all'
   if (snapshot.region_id === 'province-vl') return 'vinh-long'
-  if (snapshot.region_id === 'province-bt') return 'ben-tre'
-  if (snapshot.region_id === 'province-tv') return 'tra-vinh'
+  if (snapshot.region_id === 'province-bt' || snapshot.region_id === 'province-tv') return 'vinh-long'
   if (snapshot.region_label === 'Vĩnh Long') return 'vinh-long'
-  if (snapshot.region_label === 'Bến Tre') return 'ben-tre'
-  if (snapshot.region_label === 'Trà Vinh') return 'tra-vinh'
+  if (snapshot.region_label === 'Bến Tre' || snapshot.region_label === 'Trà Vinh') return 'vinh-long'
   return 'all'
 }
 
@@ -42,7 +38,8 @@ export function useRegionPref() {
   if (import.meta.client) {
     onMounted(() => {
       const stored = localStorage.getItem(STORAGE_KEY) as RegionSlug | null
-      if (stored && ['vinh-long', 'ben-tre', 'tra-vinh', 'all'].includes(stored)) cachedRegion.value = stored
+      if (stored === 'ben-tre' || stored === 'tra-vinh') cachedRegion.value = 'vinh-long'
+      else if (stored && ['vinh-long', 'all'].includes(stored)) cachedRegion.value = stored
 
       const vc = parseInt(localStorage.getItem(VISIT_KEY) || '0', 10)
       visitCount.value = vc + 1
@@ -57,16 +54,17 @@ export function useRegionPref() {
   })
 
   async function setRegion(slug: RegionSlug) {
+    const normalizedSlug: 'vinh-long' | 'all' = slug === 'ben-tre' || slug === 'tra-vinh' ? 'vinh-long' : slug
     if (isLoggedIn.value) {
-      const choice = slug === 'all'
+      const choice = normalizedSlug === 'all'
         ? { id: null, label: 'Toàn tỉnh', scope: 'all' as const }
-        : API_REGIONS[slug]
+        : API_REGIONS[normalizedSlug]
       await preferences.setRegion(choice)
       return
     }
-    cachedRegion.value = slug
+    cachedRegion.value = normalizedSlug
     if (import.meta.client) {
-      try { localStorage.setItem(STORAGE_KEY, slug) } catch { /* quota */ }
+      try { localStorage.setItem(STORAGE_KEY, normalizedSlug) } catch { /* quota */ }
     }
   }
 

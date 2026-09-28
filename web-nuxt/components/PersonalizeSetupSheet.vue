@@ -219,8 +219,6 @@ const steps = [
 
 const regions = [
   { id: 'province-vl', label: 'Vĩnh Long', scope: 'province', icon: 'fruit' },
-  { id: 'province-bt', label: 'Bến Tre', scope: 'province', icon: 'leaf' },
-  { id: 'province-tv', label: 'Trà Vinh', scope: 'province', icon: 'landmark' },
   { id: null, label: 'Toàn tỉnh', scope: 'all', icon: 'map' },
 ] satisfies Array<PreferenceRegionChoice & { icon: string }>
 

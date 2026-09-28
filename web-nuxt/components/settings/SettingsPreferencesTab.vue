@@ -174,8 +174,6 @@ const props = defineProps<{
 const preferences = usePersonalizationPreferences()
 const PREFERENCE_REGIONS = [
   { id: 'province-vl', label: 'Vĩnh Long', scope: 'province' },
-  { id: 'province-bt', label: 'Bến Tre', scope: 'province' },
-  { id: 'province-tv', label: 'Trà Vinh', scope: 'province' },
   { id: null, label: 'Toàn tỉnh', scope: 'all' },
 ] satisfies PreferenceRegionChoice[]
 

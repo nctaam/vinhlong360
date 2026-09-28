@@ -1419,17 +1419,21 @@ def _search_users_for_contract(q: str, user: dict | None, limit: int) -> tuple[l
 
 
 
+def _is_current_admin_child(place: dict) -> bool:
+    if place.get("parentId") != "vinh-long":
+        return False
+    kind = str(place.get("kind") or place.get("subtype") or place.get("category") or "").lower()
+    return kind in {"xa", "phuong"} or str(place.get("id", "")).lower().startswith(("xa-", "phuong-"))
+
+
 @router.get("/areas", response_model=AreasResponse,
             summary="List areas with places",
             description="Returns all administrative areas grouped with their places (wards/communes). Cached for 1 hour.")
 async def list_areas(response: Response):
-    """LUÔN trả về danh sách rỗng ở bản hiện tại — endpoint đang hỏng, không phải theo thiết kế.
+    """Return the single current Vinh Long province hierarchy.
 
-    Ý định là gom entity type=place theo `area`, nhưng nó gọi
-    `db.list_entities(entity_type="place", ...)` mà hàm đó có điều kiện cứng
-    `e.type != 'place'` (database.py:1122). Hai điều kiện loại trừ nhau nên truy vấn
-    luôn rỗng, dù DB có 125 entity type=place. Test hiện có chỉ assert cấu trúc
-    (200 + có khoá) nên bug lọt lưới. Frontend không gọi endpoint này.
+    ``area`` remains historical/editorial metadata; it is intentionally not
+    used to partition the current administrative children.
     """
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     def _query():
@@ -1443,13 +1447,23 @@ async def list_areas(response: Response):
             and e.get("status") != "provisional"
             and e.get("verified") is not False
         ][:1000]
-        areas: dict[str, list] = {}
-        for p in places:
-            area = p.get("area", "")
-            if area not in areas:
-                areas[area] = []
-            areas[area].append({"id": p["id"], "name": p["name"]})
-        return [{"area": k, "places": v, "count": len(v)} for k, v in sorted(areas.items())]
+        children = [
+            {
+                "id": p["id"],
+                "name": p["name"],
+                "type": p.get("kind") or p.get("subtype") or p.get("category") or "xa",
+                "parentId": "vinh-long",
+            }
+            for p in places
+            if _is_current_admin_child(p)
+        ]
+        return [{
+            "id": "vinh-long",
+            "name": "Vĩnh Long",
+            "parentId": None,
+            "children": children,
+            "count": len(children),
+        }]
     result = await asyncio.to_thread(_query)
     return {"areas": result, "total_places": sum(a["count"] for a in result)}
 

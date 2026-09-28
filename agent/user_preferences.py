@@ -67,6 +67,21 @@ _CANONICAL_MANUAL_REGIONS = {
         "location_accuracy": "unknown",
     },
 }
+_LEGACY_CURRENT_PROVINCES = frozenset({"province-bt", "province-tv"})
+
+
+def _normalize_legacy_current_province(fields: dict[str, Any]) -> dict[str, Any]:
+    """Collapse former province identifiers at the current-scope boundary."""
+    if fields.get("region_id") not in _LEGACY_CURRENT_PROVINCES:
+        return fields
+    fields.update(
+        {
+            "region_id": "province-vl",
+            "region_label": "Vĩnh Long",
+            "region_scope": "province",
+        }
+    )
+    return fields
 _PUBLIC_SNAPSHOT_FIELDS = (
     "region_id",
     "region_label",
@@ -322,12 +337,14 @@ def _authorize_region_patch(
                 "location_accuracy": confirmed_location.location_accuracy,
             }
         )
+        _normalize_legacy_current_province(authorized)
         return authorized
     if not client_region_fields:
         return authorized
 
     source = authorized.get("location_source")
     if source == "manual":
+        _normalize_legacy_current_province(authorized)
         _require_canonical_manual_region(authorized)
         return authorized
     if source == "default":
@@ -368,6 +385,7 @@ def _snapshot_from_mapping(value: Mapping[str, Any]) -> PersistedPreferenceSnaps
     for field in _PERSISTED_FIELDS:
         if field in value:
             snapshot[field] = value[field]
+    _normalize_legacy_current_province(snapshot)
     snapshot["revision"] = _revision_value(snapshot["revision"])
     snapshot["location_enabled"] = bool(snapshot["location_enabled"])
     snapshot["personalization_enabled"] = bool(snapshot["personalization_enabled"])
@@ -625,8 +643,6 @@ def quarantine_invalid_preferences_batch(limit: int = 100) -> dict[str, int]:
                     AND location_provenance_version IS NULL
                     AND (
                         (region_id = 'province-vl' AND region_label = 'Vĩnh Long' AND region_scope = 'province' AND location_accuracy = 'province')
-                        OR (region_id = 'province-bt' AND region_label = 'Bến Tre' AND region_scope = 'province' AND location_accuracy = 'province')
-                        OR (region_id = 'province-tv' AND region_label = 'Trà Vinh' AND region_scope = 'province' AND location_accuracy = 'province')
                         OR (region_id IS NULL AND region_label IS NULL AND region_scope = 'all' AND location_accuracy = 'unknown')
                     )
                 )
