@@ -218,11 +218,11 @@ describe('UI foundation shell', () => {
     const router = (wrapper.vm as unknown as { $router: { currentRoute: { value: { path: string } } } }).$router
     expect(router.currentRoute.value.path).toBe('/ban-do')
 
-    await wrapper.get('select').setValue('ben-tre')
+    await wrapper.get('select').setValue('vinh-long')
 
     expect(router.currentRoute.value.path).toBe('/ban-do')
     expect(wrapper.get('[data-public-context-line]').attributes('data-location-mode')).toBe('unavailable')
-    expect(wrapper.get('.public-context-current').text()).toContain('Bến Tre')
+    expect(wrapper.get('.public-context-current').text()).toContain('Vùng Vĩnh Long')
     expect(wrapper.html()).not.toMatch(/\b(?:latitude|longitude|lat|lng|coordinates?)\b/i)
   })
 

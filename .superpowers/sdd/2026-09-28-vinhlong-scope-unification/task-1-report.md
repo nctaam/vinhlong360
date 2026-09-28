@@ -61,3 +61,10 @@ GREEN:
 - `python -m pytest -q agent/tests/test_vinhlong_scope_unification.py` -> `5 passed`.
 - `python -m pytest -q agent/tests/test_user_preferences.py agent/tests/test_integration_api.py` -> `208 passed, 13 skipped, 1 warning`.
 - `python -m compileall -q agent/user_preferences.py agent/public_api.py` and `git diff --check` -> passed.
+
+## Frontend Test Fix
+
+Updated `web-nuxt/tests/ui-foundation-shell.test.ts` so the current-route context test selects `vinh-long` and expects `Vùng Vĩnh Long`; it no longer selects the removed `ben-tre` option.
+
+- Focused Vitest command: `npm test -- --run tests/ui-foundation-shell.test.ts`
+- Result: not runnable in this isolated worktree because `web-nuxt/node_modules/.bin/vitest.cmd` is absent (`vitest unavailable`).
