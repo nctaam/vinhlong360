@@ -682,3 +682,42 @@ def test_restore_captured_json_preserves_different_observed_bytes(tmp_path):
     assert target.read_bytes() == b"original"
     assert observed is not None
     assert observed.read_bytes() == b"foreign"
+
+
+@pytest.mark.parametrize("hook", ["before_capture", "after_capture"])
+def test_capture_race_hooks_fail_closed(tmp_path, monkeypatch, hook):
+    target = tmp_path / "data.json"
+    capture = tmp_path / "data.json.capture"
+    target.write_bytes(b"approved")
+    def race(_target, capture_path):
+        capture_path.write_bytes(b"foreign")
+    monkeypatch.setitem(apply_module._RACE_HOOKS, hook, race)
+    with pytest.raises(ApplyError):
+        apply_module._capture_json_target(target, capture, hashlib.sha256(b"approved").hexdigest(), apply_module._file_identity(target))
+    assert capture.read_bytes() == b"foreign"
+
+
+@pytest.mark.parametrize("hook", ["before_publish", "after_publish"])
+def test_publish_race_hooks_fail_closed(tmp_path, monkeypatch, hook):
+    candidate = tmp_path / "candidate.json"
+    target = tmp_path / "data.json"
+    candidate.write_bytes(b"candidate")
+    def race(_candidate, target_path):
+        target_path.write_bytes(b"foreign")
+    monkeypatch.setitem(apply_module._RACE_HOOKS, hook, race)
+    with pytest.raises(ApplyError):
+        apply_module._publish_json_no_overwrite(candidate, target)
+    assert target.read_bytes() == b"foreign"
+
+
+def test_rollback_capture_race_hook_preserves_foreign_bytes(tmp_path, monkeypatch):
+    target = tmp_path / "data.json"
+    capture = tmp_path / "data.json.capture"
+    target.write_bytes(b"foreign")
+    capture.write_bytes(b"original")
+    def race(target_path, _capture_path):
+        target_path.write_bytes(b"new-foreign")
+    monkeypatch.setitem(apply_module._RACE_HOOKS, "before_rollback_capture", race)
+    observed = apply_module._restore_captured_json(target, capture)
+    assert observed is not None
+    assert observed.read_bytes() == b"new-foreign"

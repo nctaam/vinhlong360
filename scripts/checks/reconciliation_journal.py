@@ -105,7 +105,14 @@ def _validate_store_scope(store_name: str, store: dict[str, Any], scope: Path | 
     for key in keys:
         _ensure_within(Path(store[key]), scope, f"{store_name}.{key}")
     for key in artifact_keys:
-        _ensure_within(Path(store[key]), artifact_scope, f"{store_name}.{key}")
+        artifact = Path(store[key])
+        try:
+            artifact.resolve(strict=False).relative_to(artifact_scope)
+        except ValueError:
+            if key == "stagedPath":
+                _ensure_within(artifact, scope, f"{store_name}.{key}")
+            else:
+                raise JournalValidationError(f"{store_name}.{key} escapes JSON artifact scope")
 
 
 def write_journal(path: Path, state: dict[str, Any]) -> None:
@@ -231,28 +238,10 @@ def _restore_json(store: dict[str, Any], state: dict[str, Any], journal_path: Pa
     captured = Path(store.get("capturedPath", store["backupPath"]))
     if "capturedPath" not in store:
         _copy_atomic(captured, target)
+        _remove_candidate(store)
         return
-    observed: Path | None = None
     if target.exists():
-        observed = target.with_name(f".{target.name}.observed.{os.urandom(16).hex()}")
-        os.rename(target, observed)
-        observed_sha = _sha256(observed)
-        observed_identity = _identity(observed)
-        published_sha = store.get("publishedSha256")
-        published_identity = store.get("publishedIdentity")
-        matches_published = isinstance(published_sha, str) and observed_sha == published_sha
-        if matches_published and isinstance(published_identity, dict):
-            matches_published = observed_identity == published_identity
-        else:
-            matches_published = False
-        if matches_published:
-            observed.unlink()
-            observed = None
-        else:
-            store["observedPath"] = str(observed)
-            store["observedSha256"] = observed_sha
-            store["observedIdentity"] = observed_identity
-            write_journal(journal_path, state)
+        _capture_observed(target, store, state, journal_path)
     if target.exists():
         raise JournalRecoveryError("JSON target was recreated during recovery")
     captured_valid = captured.exists() and _sha256(captured) == store["capturedSha256"]
@@ -271,6 +260,7 @@ def _restore_json(store: dict[str, Any], state: dict[str, Any], journal_path: Pa
             raise JournalRecoveryError("captured JSON hash mismatch")
         _copy_atomic(captured, target)
         _fsync_directory(target.parent)
+        _remove_candidate(store)
         return
     try:
         os.link(captured, target)
@@ -278,6 +268,26 @@ def _restore_json(store: dict[str, Any], state: dict[str, Any], journal_path: Pa
     except FileExistsError as exc:
         raise JournalRecoveryError("JSON target was recreated during recovery") from exc
     _fsync_directory(target.parent)
+    _remove_candidate(store)
+
+
+def _remove_candidate(store: dict[str, Any]) -> None:
+    candidate = store.get("candidatePath")
+    if isinstance(candidate, str):
+        Path(candidate).unlink(missing_ok=True)
+
+
+def _capture_observed(target: Path, store: dict[str, Any], state: dict[str, Any], journal_path: Path) -> None:
+    observed = target.with_name(f".{target.name}.observed.{os.urandom(16).hex()}")
+    os.rename(target, observed)
+    observed_sha = _sha256(observed)
+    observed_identity = _identity(observed)
+    matches = observed_sha == store.get("publishedSha256") and observed_identity == store.get("publishedIdentity")
+    if matches:
+        observed.unlink()
+        return
+    store.update(observedPath=str(observed), observedSha256=observed_sha, observedIdentity=observed_identity)
+    write_journal(journal_path, state)
 
 
 def _restore_sqlite(store: dict[str, Any]) -> None:

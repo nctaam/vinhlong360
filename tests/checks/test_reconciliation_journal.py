@@ -167,3 +167,31 @@ def test_journal_rejects_unknown_verification_mode(tmp_path: Path):
     state["verificationMode"] = "unrecognized-v1"
     with pytest.raises(JournalValidationError, match="verificationMode"):
         write_journal(tmp_path / "reconciliation.journal.json", state)
+
+
+def test_legacy_staged_path_in_journal_directory_remains_recoverable(tmp_path: Path):
+    journal_dir = tmp_path / "journals"
+    journal_dir.mkdir()
+    db, data, _, _, state = _fixture(journal_dir)
+    staged = journal_dir / "legacy.staged.json"
+    staged.write_bytes(b"legacy")
+    state["json"]["stagedPath"] = str(staged)
+    state["json"]["stagedSha256"] = _sha(staged)
+    journal = journal_dir / "reconciliation.journal.json"
+    write_journal(journal, state)
+    assert load_journal(journal)["json"]["stagedPath"] == str(staged)
+
+
+def test_captured_foreign_bytes_are_recorded_in_recovery_journal(tmp_path: Path):
+    db, data, db_backup, data_backup, state = _fixture(tmp_path)
+    capture = tmp_path / "data.capture"
+    capture.write_bytes(b"foreign-capture")
+    state["json"].update({"capturedPath": str(capture), "capturedSha256": _sha(data_backup)})
+    journal = tmp_path / "reconciliation.journal.json"
+    write_journal(journal, state)
+    data.write_text("foreign-target", encoding="utf-8")
+    lock = ReconciliationLock(tmp_path / "reconciliation.lock", {"journalPath": str(journal)})
+    with lock:
+        recover_journal(load_journal(journal), lock)
+    assert data.read_bytes() == data_backup.read_bytes()
+    assert list(tmp_path.glob(".data.json.captured-observed.*"))

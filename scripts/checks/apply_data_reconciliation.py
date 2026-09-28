@@ -67,10 +67,10 @@ def _capture_json_target(
     _race_hook("before_capture", json_path, capture_path)
     if capture_path.exists():
         raise ApplyError("JSON capture path was recreated")
-    # A hard link is the portable exclusive-create primitive.  Linking first
-    # avoids an overwrite window that exists with rename on Windows.
+    # Rename is the ownership transfer: unlike link+unlink, it cannot delete a
+    # replacement that wins the window between verification and unlink.
     try:
-        os.link(json_path, capture_path)
+        os.rename(json_path, capture_path)
     except FileExistsError as exc:
         raise ApplyError("JSON capture path was recreated") from exc
     except OSError as exc:
@@ -80,12 +80,6 @@ def _capture_json_target(
             raise ApplyError("captured JSON does not match approved input")
     except OSError as exc:
         raise ApplyError("captured JSON cannot be verified") from exc
-    try:
-        if _sha(json_path) != expected_sha256 or _file_identity(json_path) != expected_identity:
-            raise ApplyError("JSON target changed during capture")
-        json_path.unlink()
-    except OSError as exc:
-        raise ApplyError(f"JSON target capture finalization failed: {exc}") from exc
     _race_hook("after_capture", json_path, capture_path)
     try:
         if _sha(capture_path) != expected_sha256 or _file_identity(capture_path) != expected_identity:
@@ -109,6 +103,11 @@ def _publish_json_no_overwrite(candidate_path: Path, json_path: Path) -> tuple[i
     except OSError as exc:
         raise ApplyError("published JSON cannot be verified") from exc
     _race_hook("after_publish", candidate_path, json_path)
+    try:
+        if _sha(json_path) != _sha(candidate_path) or _file_identity(json_path)[:3] != identity[:3]:
+            raise ApplyError("JSON target changed after publication")
+    except OSError as exc:
+        raise ApplyError("published JSON cannot be verified") from exc
     return identity
 
 
@@ -126,30 +125,40 @@ def _restore_captured_json(
     observed_path: Path | None = None
     _race_hook("before_rollback_capture", json_path, capture_path)
     if json_path.exists():
-        observed_path = _unique_json_artifact(json_path, "observed")
-        try:
-            os.rename(json_path, observed_path)
-        except OSError as exc:
-            raise ApplyError(f"JSON rollback capture failed: {exc}") from exc
+        observed_path = _capture_observed_json(json_path, published_sha256, published_identity, state, journal_path)
+    if not capture_path.exists():
+        raise ApplyError("original JSON capture is missing")
+    if json_path.exists():
+        raise ApplyError("JSON target was recreated during rollback")
+    _link_capture_into_empty_target(capture_path, json_path)
+    return observed_path
+
+
+def _capture_observed_json(json_path: Path, published_sha256: str | None, published_identity: Any,
+                           state: dict[str, Any] | None, journal_path: Path | None) -> Path | None:
+    observed_path = _unique_json_artifact(json_path, "observed")
+    try:
+        os.rename(json_path, observed_path)
         observed_sha256 = _sha(observed_path)
         observed_identity = _identity_dict(observed_path)
-        matches = published_sha256 is not None and observed_sha256 == published_sha256
-        if matches and published_identity is not None:
-            if isinstance(published_identity, dict):
-                expected = tuple(int(published_identity[key]) for key in ("device", "inode", "size"))
-            else:
-                expected = tuple(published_identity[:3])
-            matches = tuple(observed_identity[key] for key in ("device", "inode", "size")) == expected
-        if state is not None and not matches:
-            store = state.setdefault("json", {})
-            store["observedPath"] = str(observed_path)
-            store["observedSha256"] = observed_sha256
-            store["observedIdentity"] = observed_identity
-            if journal_path is not None:
-                write_journal(Path(journal_path), state)
-        elif matches:
-            observed_path.unlink(missing_ok=True)
-            observed_path = None
+    except OSError as exc:
+        raise ApplyError(f"JSON rollback capture failed: {exc}") from exc
+    matches = published_sha256 is not None and observed_sha256 == published_sha256
+    if matches and published_identity is not None:
+        expected = tuple(int(published_identity[key]) for key in ("device", "inode", "size")) if isinstance(published_identity, dict) else tuple(published_identity[:3])
+        matches = tuple(observed_identity[key] for key in ("device", "inode", "size")) == expected
+    if matches:
+        observed_path.unlink(missing_ok=True)
+        return None
+    if state is not None:
+        store = state.setdefault("json", {})
+        store.update(observedPath=str(observed_path), observedSha256=observed_sha256, observedIdentity=observed_identity)
+        if journal_path is not None:
+            write_journal(Path(journal_path), state)
+    return observed_path
+
+
+def _link_capture_into_empty_target(capture_path: Path, json_path: Path) -> None:
     if not capture_path.exists():
         raise ApplyError("original JSON capture is missing")
     if json_path.exists():
@@ -161,7 +170,6 @@ def _restore_captured_json(
         raise ApplyError("JSON target was recreated during rollback") from exc
     except OSError as exc:
         raise ApplyError(f"JSON capture restore failed: {exc}") from exc
-    return observed_path
 
 
 def _sha_bytes(value: bytes) -> str:
@@ -861,26 +869,12 @@ def _execute_apply_transaction(
         state["json"]["publishedSha256"] = state["json"]["candidateSha256"]
         state["phase"] = "json_published"
         write_journal(journal_path, state)
-        final_parity = verify_plan_result(plan, sqlite_path, json_path)
-        if final_parity["status"] != "clean":
-            raise ApplyError("post-apply parity verification failed")
-        if _sha(json_path) != state["json"]["publishedSha256"]:
-            raise ApplyError("published JSON changed during final verification")
-        published = state["json"]["publishedIdentity"]
-        if _file_identity(json_path)[:3] != (published["device"], published["inode"], published["size"]):
-            raise ApplyError("published JSON identity changed during final verification")
-        if _sha(capture_path) != expected_json:
-            raise ApplyError("captured JSON changed during final verification")
-        for suffix in ("-wal", "-shm", "-journal"):
-            if sqlite_path.with_name(sqlite_path.name + suffix).exists():
-                raise ApplyError(f"SQLite sidecar appeared during final verification: {suffix}")
+        final_parity = _finalize_checks(plan, sqlite_path, json_path, capture_path, state)
         state["phase"] = "complete"
         write_journal(journal_path, state)
         # Recheck after the durable completion record; a sidecar can appear
         # between the pre-journal check and this crash boundary.
-        for suffix in ("-wal", "-shm", "-journal"):
-            if sqlite_path.with_name(sqlite_path.name + suffix).exists():
-                raise ApplyError(f"SQLite sidecar appeared after final journal: {suffix}")
+        _ensure_no_sidecars(sqlite_path)
         capture_path.unlink()
         temp_json.unlink(missing_ok=True)
         journal_path.unlink()
@@ -900,6 +894,27 @@ def _execute_apply_transaction(
     finally:
         if connection is not None:
             connection.close()
+
+
+def _ensure_no_sidecars(sqlite_path: Path) -> None:
+    for suffix in ("-wal", "-shm", "-journal"):
+        if sqlite_path.with_name(sqlite_path.name + suffix).exists():
+            raise ApplyError(f"SQLite sidecar appeared during final verification: {suffix}")
+
+
+def _finalize_checks(plan: dict[str, Any], sqlite_path: Path, json_path: Path, capture_path: Path, state: dict[str, Any]) -> dict[str, Any]:
+    final_parity = verify_plan_result(plan, sqlite_path, json_path)
+    if final_parity["status"] != "clean":
+        raise ApplyError("post-apply parity verification failed")
+    if _sha(json_path) != state["json"]["publishedSha256"]:
+        raise ApplyError("published JSON changed during final verification")
+    published = state["json"]["publishedIdentity"]
+    if _file_identity(json_path)[:3] != (published["device"], published["inode"], published["size"]):
+        raise ApplyError("published JSON identity changed during final verification")
+    if _sha(capture_path) != state["json"]["capturedSha256"]:
+        raise ApplyError("captured JSON changed during final verification")
+    _ensure_no_sidecars(sqlite_path)
+    return final_parity
 
 
 def _apply_plan_impl(
