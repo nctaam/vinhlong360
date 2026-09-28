@@ -58,21 +58,66 @@ def test_legacy_persisted_snapshot_is_projected_as_current_vinh_long():
     assert snapshot["region_label"] == "Vĩnh Long"
 
 
+def test_loading_legacy_manual_snapshot_writes_canonical_value_back(monkeypatch):
+    raw = user_preferences._default_persisted_snapshot()
+    raw.update(
+        {
+            "region_id": "province-bt",
+            "region_label": "Bến Tre",
+            "region_scope": "province",
+            "location_source": "manual",
+            "location_accuracy": "province",
+            "revision": 7,
+        }
+    )
+    written = []
+    monkeypatch.setattr(user_preferences, "_select_preferences", lambda *args, **kwargs: raw)
+
+    def write_back(conn, owner, snapshot, expected_revision):
+        written.append((owner, snapshot.copy(), expected_revision))
+        return snapshot
+
+    monkeypatch.setattr(user_preferences, "_update_persisted_snapshot_in_connection", write_back)
+
+    loaded = user_preferences._load_persisted_preferences_in_connection(
+        object(), "owner-1", for_update=False, heal=True
+    )
+
+    assert loaded["region_id"] == "province-vl"
+    assert written == [("owner-1", loaded, 7)]
+    assert loaded["region_label"] == "Vĩnh Long"
+    assert loaded["revision"] == 8
+
+
 def test_api_areas_exposes_one_current_province_with_124_direct_children(monkeypatch):
     places = [
         {"id": "province-vl", "name": "Vĩnh Long", "type": "place", "parentId": None, "status": "published", "verified": True},
         {"id": "old-ben-tre", "name": "Bến Tre", "type": "place", "area": "ben-tre", "parentId": None, "status": "published", "verified": True},
+        {"id": "bad-type", "name": "Not a place", "type": "event", "level": "xa", "parentId": "vinh-long", "status": "published", "verified": True},
+        {"id": "bad-level", "name": "Bad level", "type": "place", "level": "huyen", "parentId": "vinh-long", "status": "published", "verified": True},
+        {"id": "old-tv", "name": "Trà Vinh", "type": "place", "level": "phuong", "parentId": "tra-vinh", "status": "published", "verified": True},
     ] + [
         {
-            "id": f"xa-{index}",
-            "name": f"Ward {index}",
+            "id": f"phuong-{index}",
+            "name": f"Phường {index}",
             "type": "place",
-            "area": "historical-area",
+            "level": "phuong",
             "parentId": "vinh-long",
             "status": "published",
             "verified": True,
         }
-        for index in range(124)
+        for index in range(35)
+    ] + [
+        {
+            "id": f"xa-{index}",
+            "name": f"Xã {index}",
+            "type": "place",
+            "level": "xa",
+            "parentId": "vinh-long",
+            "status": "published",
+            "verified": True,
+        }
+        for index in range(89)
     ]
     monkeypatch.setattr(public_api.db, "all_entities", lambda: places)
 
@@ -82,15 +127,13 @@ def test_api_areas_exposes_one_current_province_with_124_direct_children(monkeyp
     result = asyncio.run(public_api.list_areas(Response()))
 
     assert result["total_places"] == 124
-    assert result["areas"] == [
-        {
-            "id": "vinh-long",
-            "name": "Vĩnh Long",
-            "parentId": None,
-            "children": [
-                {"id": place["id"], "name": place["name"], "type": "xa", "parentId": "vinh-long"}
-                for place in places[2:]
-            ],
-            "count": 124,
-        }
-    ]
+    assert len(result["areas"]) == 1
+    province = result["areas"][0]
+    assert province["id"] == "vinh-long"
+    assert province["name"] == "Vĩnh Long"
+    assert province["parentId"] is None
+    assert province["count"] == 124
+    assert province["places"] == province["children"]
+    assert {place["type"] for place in province["places"]} == {"xa", "phuong"}
+    assert sum(place["type"] == "phuong" for place in province["places"]) == 35
+    assert sum(place["type"] == "xa" for place in province["places"]) == 89

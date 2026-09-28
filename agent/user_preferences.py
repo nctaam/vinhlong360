@@ -68,6 +68,10 @@ _CANONICAL_MANUAL_REGIONS = {
     },
 }
 _LEGACY_CURRENT_PROVINCES = frozenset({"province-bt", "province-tv"})
+_LEGACY_MANUAL_REGION_LABELS = {
+    "province-bt": "Bến Tre",
+    "province-tv": "Trà Vinh",
+}
 
 
 def _normalize_legacy_current_province(fields: dict[str, Any]) -> dict[str, Any]:
@@ -82,6 +86,18 @@ def _normalize_legacy_current_province(fields: dict[str, Any]) -> dict[str, Any]
         }
     )
     return fields
+
+
+def _is_legacy_manual_region_snapshot(fields: Mapping[str, Any]) -> bool:
+    region_id = fields.get("region_id")
+    return (
+        region_id in _LEGACY_MANUAL_REGION_LABELS
+        and fields.get("region_label") == _LEGACY_MANUAL_REGION_LABELS[region_id]
+        and fields.get("region_scope") == "province"
+        and fields.get("location_source") == "manual"
+        and fields.get("location_accuracy") == "province"
+        and fields.get("location_provenance_version") is None
+    )
 _PUBLIC_SNAPSHOT_FIELDS = (
     "region_id",
     "region_label",
@@ -903,7 +919,17 @@ def _load_persisted_preferences_in_connection(
     if row is None:
         return _default_persisted_snapshot()
 
-    snapshot = _row_snapshot(row)
+    row_data = db._row_to_dict(row)
+    snapshot = _row_snapshot(row_data)
+    if heal and _is_legacy_manual_region_snapshot(row_data):
+        if snapshot["revision"] < MAX_PREFERENCE_REVISION:
+            expected_revision = snapshot["revision"]
+            snapshot["revision"] = expected_revision + 1
+            healed = _update_persisted_snapshot_in_connection(
+                conn, owner, snapshot, expected_revision
+            )
+            if healed is not None:
+                return healed
     if not heal or invalid_region_reason(snapshot) is None:
         return snapshot
 

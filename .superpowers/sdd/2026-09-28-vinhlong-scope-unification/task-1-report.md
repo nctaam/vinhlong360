@@ -45,3 +45,19 @@ Expected failures before implementation: 3 failed. Legacy manual and resolver va
 - The current test environment cannot execute frontend Vitest or Nuxt typecheck without dependencies.
 - The ignored SQLite test database was materialized by the test harness; no task code writes to it, but it remains an untracked ignored artifact in the worktree.
 - `/api/areas` identifies children using explicit `xa`/`phuong` metadata or ID prefixes and requires `parentId == "vinh-long"`; this protects against province and historical rows being surfaced as current children.
+
+## Fix Round 1
+
+Reviewer findings addressed:
+
+- `/api/areas` now requires `type == "place"`, `level in {"xa", "phuong"}`, and `parentId == "vinh-long"`; child `type` and `level` preserve the authoritative source level, with exact 35 `phuong` + 89 `xa` regression coverage.
+- The established `places` response key is preserved; `children` remains as a hierarchy alias for current clients.
+- Legacy manual snapshots are detected from the raw persisted row and compare-updated to canonical Vinh Long with a single revision increment during load/remediation.
+
+RED: `python -m pytest -q agent/tests/test_vinhlong_scope_unification.py` -> `3 passed, 2 failed` before the fix (no persistence write-back; missing `places`; permissive child filtering).
+
+GREEN:
+
+- `python -m pytest -q agent/tests/test_vinhlong_scope_unification.py` -> `5 passed`.
+- `python -m pytest -q agent/tests/test_user_preferences.py agent/tests/test_integration_api.py` -> `208 passed, 13 skipped, 1 warning`.
+- `python -m compileall -q agent/user_preferences.py agent/public_api.py` and `git diff --check` -> passed.

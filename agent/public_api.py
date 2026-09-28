@@ -1420,10 +1420,11 @@ def _search_users_for_contract(q: str, user: dict | None, limit: int) -> tuple[l
 
 
 def _is_current_admin_child(place: dict) -> bool:
-    if place.get("parentId") != "vinh-long":
-        return False
-    kind = str(place.get("kind") or place.get("subtype") or place.get("category") or "").lower()
-    return kind in {"xa", "phuong"} or str(place.get("id", "")).lower().startswith(("xa-", "phuong-"))
+    return (
+        place.get("type") == "place"
+        and place.get("parentId") == "vinh-long"
+        and place.get("level") in {"xa", "phuong"}
+    )
 
 
 @router.get("/areas", response_model=AreasResponse,
@@ -1451,19 +1452,23 @@ async def list_areas(response: Response):
             {
                 "id": p["id"],
                 "name": p["name"],
-                "type": p.get("kind") or p.get("subtype") or p.get("category") or "xa",
+                "type": p["level"],
+                "level": p["level"],
                 "parentId": "vinh-long",
             }
             for p in places
             if _is_current_admin_child(p)
         ]
-        return [{
+        province = {
             "id": "vinh-long",
             "name": "Vĩnh Long",
             "parentId": None,
+            # Preserve the established public key while exposing the hierarchy alias.
+            "places": children,
             "children": children,
             "count": len(children),
-        }]
+        }
+        return [province]
     result = await asyncio.to_thread(_query)
     return {"areas": result, "total_places": sum(a["count"] for a in result)}
 
