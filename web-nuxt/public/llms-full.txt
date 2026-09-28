@@ -12621,7 +12621,6 @@ Tỉnh Vĩnh Long gồm 35 phường và 89 xã:
 - **[Phường Tập Ngãi](https://vinhlong360.vn/xa-phuong/p-tap-ngai)** (`p-tap-ngai`) | Hotline CAX: 0294 3693 65
 - **[Phường Vũng Liêm](https://vinhlong360.vn/xa-phuong/p-vung-liem)** (`p-vung-liem`) | Hotline CAX: 0270 3896 59
 - **[Phường Đông Thành](https://vinhlong360.vn/xa-phuong/p-dong-thanh)** (`p-dong-thanh`) | Hotline CAX: 0270 3898 12
-- **[Tỉnh Vĩnh Long](https://vinhlong360.vn/xa-phuong/vinh-long)** (`vinh-long`)
 - **[Xã An Bình](https://vinhlong360.vn/xa-phuong/xa-an-binh)** (`xa-an-binh`) | Hotline CAX: 0270 3858 113
 - **[Xã An Hiệp](https://vinhlong360.vn/xa-phuong/xa-an-hiep)** (`xa-an-hiep`) | Hotline CAX: 0275 3591 58
 - **[Xã An Ngãi Trung](https://vinhlong360.vn/xa-phuong/xa-an-ngai-trung)** (`xa-an-ngai-trung`) | Hotline CAX: 0275 3591 43

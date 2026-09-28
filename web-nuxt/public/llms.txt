@@ -18,7 +18,7 @@ Từ tháng 7-2025, ba địa bàn Vĩnh Long, Bến Tre và Trà Vinh đã **H�
 - **Tổng số thực thể dữ liệu**: 1772 điểm đến, di tích, ẩm thực, làng nghề, nhân vật, sản phẩm.
 - **Thực thể xác minh ảnh tư liệu báo chí chính thống**: 1772 thực thể (100% ảnh WebP nội bộ kèm bản quyền Google Images).
 - **Lộ trình du lịch liên vùng gợi ý**: 33 tuyến chuyên đề (1–3 ngày).
-- **Đơn vị hành chính cấp cơ sở**: 125 xã/phường.
+- **Đơn vị hành chính cấp cơ sở**: 124 xã/phường.
 
 ## Ba vùng Văn Hóa - Thổ Nhưỡng Tam Vùng (gọi theo địa giới tỉnh cũ, trước 7-2025)
 

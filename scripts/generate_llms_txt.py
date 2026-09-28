@@ -193,7 +193,9 @@ def main():
     ]
     wards = [
         e for e in entities
-        if e.get("type") == "place" and e.get("id") != "prov-1"
+        if e.get("type") == "place"
+        and e.get("level") in {"xa", "phuong"}
+        and e.get("parentId") == "vinh-long"
     ]
 
     print(f"Entities: {len(entities)}")
