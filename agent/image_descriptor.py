@@ -9,6 +9,7 @@ import re
 
 if __package__:
     from .ai_disclosure import LoadedAiDisclosure
+    from .media_provenance import DOCUMENTARY_IMAGE_TYPES, sourced_photo_evidence
     from .media_policy import (
         ENTITY_AI_SOURCE,
         ENTITY_PLACEHOLDER_SOURCE,
@@ -18,6 +19,7 @@ if __package__:
     )
 else:
     from ai_disclosure import LoadedAiDisclosure
+    from media_provenance import DOCUMENTARY_IMAGE_TYPES, sourced_photo_evidence
     from media_policy import (
         ENTITY_AI_SOURCE,
         ENTITY_PLACEHOLDER_SOURCE,
@@ -343,34 +345,152 @@ def _supplied_entity_descriptors(
     )
 
 
+def _entity_media_class(entity: Mapping[str, object]) -> str | None:
+    attributes = entity.get("attributes")
+    if not isinstance(attributes, Mapping):
+        return None
+    value = attributes.get("image_type")
+    return value.strip().lower() if type(value) is str and value.strip() else None
+
+
+def _classified_local_images(
+    entity: Mapping[str, object],
+) -> tuple[str, tuple[tuple[int, str], ...]] | None:
+    entity_name = entity.get("name")
+    images = entity.get("images")
+    if (
+        type(entity_name) is not str
+        or not entity_name.strip()
+        or type(images) not in {list, tuple}
+    ):
+        return None
+    local_images = tuple(
+        (index, url)
+        for index, raw in enumerate(images)
+        if (url := normalize_renderable_image_url(raw)) is not None
+        and url.startswith("/")
+    )
+    return entity_name, local_images
+
+
+def _placeholder_entity_descriptor(
+    url: str,
+    *,
+    entity_name: str,
+    index: int,
+    disclosure: LoadedAiDisclosure,
+) -> ImageDescriptor:
+    copy = disclosure.placeholder
+    return ImageDescriptor(
+        url=url,
+        alt=f"{entity_name} — minh họa chưa được xác minh {index + 1}",
+        source_class="placeholder",
+        source_kind="generated-placeholder",
+        disclosure_key="entity-placeholder",
+        short_label=copy.short_label,
+        full_disclosure=copy.full_disclosure,
+        credit=None,
+        source_url=None,
+        width=None,
+        height=None,
+    )
+
+
+def _ai_entity_descriptor(
+    url: str,
+    *,
+    entity_name: str,
+    index: int,
+    disclosure: LoadedAiDisclosure,
+) -> ImageDescriptor:
+    copy = disclosure.entity_ai
+    return ImageDescriptor(
+        url=url,
+        alt=f"{entity_name} — ảnh minh họa {index + 1}",
+        source_class="ai-generated",
+        source_kind="entity-editorial",
+        disclosure_key="entity-ai",
+        short_label=copy.short_label,
+        full_disclosure=copy.full_disclosure,
+        credit=None,
+        source_url=None,
+        width=None,
+        height=None,
+    )
+
+
+def _descriptors_for_classified_entity(
+    entity: Mapping[str, object],
+    media_class: str,
+    disclosure: LoadedAiDisclosure,
+) -> tuple[ImageDescriptor, ...]:
+    local_media = _classified_local_images(entity)
+    if local_media is None:
+        return ()
+    entity_name, local_images = local_media
+    attributes = entity.get("attributes")
+    if not isinstance(attributes, Mapping):
+        return ()
+
+    evidence = (
+        sourced_photo_evidence(attributes)
+        if media_class in DOCUMENTARY_IMAGE_TYPES
+        else None
+    )
+    descriptors: list[ImageDescriptor] = []
+    for index, url in local_images:
+        if evidence is not None:
+            copy = disclosure.sourced_photo
+            descriptors.append(ImageDescriptor(
+                url=url,
+                alt=f"{entity_name} — ảnh tư liệu {index + 1}",
+                source_class="rights-cleared",
+                source_kind=evidence.image_type,
+                disclosure_key="entity-sourced-photo",
+                short_label=copy.short_label,
+                full_disclosure=copy.full_disclosure,
+                credit=evidence.credit,
+                source_url=evidence.source_url,
+                width=None,
+                height=None,
+            ))
+        elif (
+            media_class == "ai-generated"
+            and attributes.get("is_verified_photo") is False
+        ):
+            descriptors.append(_ai_entity_descriptor(
+                url,
+                entity_name=entity_name,
+                index=index,
+                disclosure=disclosure,
+            ))
+        else:
+            descriptors.append(_placeholder_entity_descriptor(
+                url,
+                entity_name=entity_name,
+                index=index,
+                disclosure=disclosure,
+            ))
+    return tuple(descriptors)
+
+
 def describe_entity_images(
     entity: object,
     *,
     disclosure: object,
 ) -> tuple[ImageDescriptor, ...]:
-    """Return descriptors only for a well-formed entity image collection."""
+    """Return descriptors from explicit entity media classification and evidence."""
     loaded_disclosure = _require_disclosure(disclosure)
     if not isinstance(entity, Mapping):
         return ()
-    entity_name = entity.get("name")
-    if type(entity_name) is not str or not entity_name.strip():
+    supplied = _supplied_entity_descriptors(entity, disclosure=loaded_disclosure)
+    if "image_descriptor" in entity or "image_descriptors" in entity:
+        return supplied
+    media_class = _entity_media_class(entity)
+    if media_class not in {
+        "generated-placeholder",
+        "ai-generated",
+        *DOCUMENTARY_IMAGE_TYPES,
+    }:
         return ()
-
-    if "image_descriptors" in entity or "image_descriptor" in entity:
-        return _supplied_entity_descriptors(entity, disclosure=loaded_disclosure)
-
-    images = entity.get("images")
-    if type(images) not in {list, tuple}:
-        return ()
-
-    descriptors: list[ImageDescriptor] = []
-    for index, raw in enumerate(images):
-        descriptor = describe_entity_image(
-            raw,
-            entity_name=entity_name,
-            index=index,
-            disclosure=loaded_disclosure,
-        )
-        if descriptor is not None:
-            descriptors.append(descriptor)
-    return tuple(descriptors)
+    return _descriptors_for_classified_entity(entity, media_class, loaded_disclosure)

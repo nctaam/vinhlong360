@@ -24,6 +24,27 @@ from api_schemas import GalleryImageDescriptor, GalleryResponse  # noqa: E402
 
 DISCLOSURE = load_ai_disclosure()
 
+
+def valid_press_attributes() -> dict[str, object]:
+    return {
+        "image_type": "press",
+        "is_verified_photo": True,
+        "image_author": "Tran Phuoc",
+        "image_source": "Bao Vinh Long",
+        "image_source_url": "https://baovinhlong.com.vn/images/photo.webp",
+        "image_license": "Permission granted for re-hosting",
+        "permission_evidence": "owner-record:IMG-2026-001",
+    }
+
+
+def _ai_attributes(**overrides: object) -> dict[str, object]:
+    attributes: dict[str, object] = {
+        "image_type": "ai-generated",
+        "is_verified_photo": False,
+    }
+    attributes.update(overrides)
+    return attributes
+
 def test_gallery_source_url_defaults_to_null_for_legacy_descriptors():
     descriptor = describe_entity_image('/img/entities/test.webp', entity_name='Test', index=0, disclosure=DISCLOSURE)
     assert descriptor is not None and descriptor.source_url is None
@@ -182,6 +203,7 @@ def test_describe_entity_images_preserves_source_positions_and_skips_invalid_url
                 "https://cdn.example/two.webp",
                 "/img/entities/three.webp",
             ],
+            "attributes": _ai_attributes(),
         },
         disclosure=DISCLOSURE,
     )
@@ -194,6 +216,70 @@ def test_describe_entity_images_preserves_source_positions_and_skips_invalid_url
         "Vườn trái cây — ảnh minh họa 1",
         "Vườn trái cây — ảnh minh họa 3",
     )
+
+
+def test_describe_entity_images_builds_a_rights_cleared_descriptor():
+    entity = {
+        "name": "Dinh Long Ho",
+        "images": ["/img/entities/dinh-long-ho.webp"],
+        "attributes": valid_press_attributes(),
+    }
+
+    descriptor = describe_entity_images(entity, disclosure=DISCLOSURE)[0]
+
+    assert descriptor.source_class == "rights-cleared"
+    assert descriptor.source_kind == "press"
+    assert descriptor.disclosure_key == "entity-sourced-photo"
+    assert descriptor.credit == "Tran Phuoc · Bao Vinh Long"
+    assert descriptor.source_url == "https://baovinhlong.com.vn/images/photo.webp"
+
+
+def test_unclassified_legacy_path_is_not_inferred_as_ai():
+    entity = {"name": "Unknown", "images": ["/img/entities/unknown.webp"]}
+    assert describe_entity_images(entity, disclosure=DISCLOSURE) == ()
+
+
+def test_local_placeholder_asset_remains_renderable_but_unverified():
+    entity = {
+        "name": "Placeholder",
+        "images": ["/img/entities/placeholder.webp"],
+        "attributes": {
+            "image_type": "generated-placeholder",
+            "is_verified_photo": False,
+        },
+    }
+    descriptor = describe_entity_images(entity, disclosure=DISCLOSURE)[0]
+    assert (descriptor.source_class, descriptor.url, descriptor.credit) == (
+        "placeholder", "/img/entities/placeholder.webp", None,
+    )
+
+
+def test_incomplete_sourced_photo_falls_back_to_explicit_placeholder():
+    entity = {
+        "name": "Incomplete press record",
+        "images": ["/img/entities/incomplete.webp"],
+        "attributes": {"image_type": "press", "is_verified_photo": False},
+    }
+    descriptor = describe_entity_images(entity, disclosure=DISCLOSURE)[0]
+    assert descriptor.source_class == "placeholder"
+    assert descriptor.source_url is None
+    assert descriptor.credit is None
+
+
+@pytest.mark.parametrize("verified", [None, True])
+def test_ai_class_without_literal_false_verification_falls_back_to_placeholder(
+    verified: object,
+):
+    entity = {
+        "name": "Unverified AI",
+        "images": ["/img/entities/unverified-ai.webp"],
+        "attributes": _ai_attributes(is_verified_photo=verified),
+    }
+
+    descriptor = describe_entity_images(entity, disclosure=DISCLOSURE)[0]
+
+    assert descriptor.source_class == "placeholder"
+    assert descriptor.source_kind == "generated-placeholder"
 
 
 def _supplied_entity_descriptor(**overrides: object) -> dict[str, object]:
@@ -399,6 +485,7 @@ def test_gallery_image_response_rejects_noncanonical_descriptors(
         ("placeholder", "generated-placeholder", "entity-placeholder"),
         ("user-uploaded", "review-ugc", "ugc-photo"),
         ("user-uploaded", "post-ugc", "ugc-photo"),
+        ("rights-cleared", "press", "entity-sourced-photo"),
     ],
 )
 def test_gallery_image_response_accepts_only_the_documented_source_triples(
@@ -413,6 +500,10 @@ def test_gallery_image_response_accepts_only_the_documented_source_triples(
         copy = DISCLOSURE.placeholder
         url = None
         credit = None
+    elif disclosure_key == "entity-sourced-photo":
+        copy = DISCLOSURE.sourced_photo
+        url = "/img/entity.webp"
+        credit = "Tran Phuoc · Bao Vinh Long"
     else:
         copy = DISCLOSURE.ugc_photo
         url = "/img/review.jpg"
@@ -427,6 +518,11 @@ def test_gallery_image_response_accepts_only_the_documented_source_triples(
         "short_label": copy.short_label,
         "full_disclosure": copy.full_disclosure,
         "credit": credit,
+        "source_url": (
+            "https://baovinhlong.com.vn/images/photo.webp"
+            if disclosure_key == "entity-sourced-photo"
+            else None
+        ),
         "width": 640,
         "height": 480,
     })
@@ -451,6 +547,7 @@ def test_gallery_helpers_keep_entity_images_before_review_images():
             "/img/entities/entity.webp",
             "https://cdn.example/entity.webp",
         ],
+        "attributes": _ai_attributes(),
     })
     public_api._append_review_gallery_images(
         images,
