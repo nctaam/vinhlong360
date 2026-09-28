@@ -41,6 +41,20 @@ const placeholderDescriptor: ImageDescriptor = {
   full_disclosure: aiDisclosure.placeholder.full_disclosure,
 }
 
+const sourcedDescriptor: ImageDescriptor = {
+  url: '/img/entities/dinh-long-ho.webp',
+  alt: 'Đình Long Hồ — ảnh tư liệu',
+  source_class: 'rights-cleared',
+  source_kind: 'press',
+  disclosure_key: 'entity-sourced-photo',
+  short_label: aiDisclosure.sourced_photo.short_label,
+  full_disclosure: aiDisclosure.sourced_photo.full_disclosure,
+  credit: 'Trần Phước · Báo Vĩnh Long',
+  source_url: 'https://baovinhlong.vn/images/dinh-long-ho.webp',
+  width: null,
+  height: null,
+}
+
 afterEach(() => {
   vi.restoreAllMocks()
 })
@@ -76,6 +90,21 @@ describe('image metadata disclosure helpers', () => {
     expect(descriptorToImageObject(aiDescriptor)).not.toHaveProperty('exifData')
     expect(descriptorToImageObject(aiDescriptor)).not.toHaveProperty('contentLocation')
     expect(descriptorToImageObject(placeholderDescriptor)).toBeNull()
+  })
+
+  it('keeps sourced-photo disclosure behavior in share, metadata, and ImageObject consumers', () => {
+    expect(appendImageDisclosureToShareText('Khám phá Đình Long Hồ', sourcedDescriptor))
+      .toBe(`Khám phá Đình Long Hồ\n\n${sourcedDescriptor.full_disclosure}`)
+    expect(buildImageMeta(sourcedDescriptor)).toEqual({
+      ogImage: `${SITE_URL}${sourcedDescriptor.url}`,
+      ogImageAlt: `${sourcedDescriptor.alt} — ${sourcedDescriptor.full_disclosure}`,
+      twitterImage: `${SITE_URL}${sourcedDescriptor.url}`,
+      twitterImageAlt: `${sourcedDescriptor.alt} — ${sourcedDescriptor.full_disclosure}`,
+    })
+    expect(descriptorToImageObject(sourcedDescriptor)).toEqual(expect.objectContaining({
+      contentUrl: `${SITE_URL}${sourcedDescriptor.url}`,
+      caption: sourcedDescriptor.full_disclosure,
+    }))
   })
 })
 

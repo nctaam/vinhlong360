@@ -174,39 +174,92 @@ function selectedLicenseScope(attributes: Record<string, unknown>): string | nul
   return statements.find(statement => isAffirmativeLicenseScope(statement)) ?? null
 }
 
-function isPublicIpv4(hostname: string): boolean | null {
+function ipv4Value(hostname: string): number | null {
   const octets = hostname.split('.')
   if (octets.length !== 4 || !octets.every(octet => /^(0|[1-9][0-9]{0,2})$/.test(octet))) return null
   const values = octets.map(Number)
-  if (values.some(value => value > 255)) return false
-  // The four-octet guard above makes these indexed values present.
-  const first = values[0]!
-  const second = values[1]!
-  return !(
-    first === 0
-    || first === 10
-    || first === 127
-    || first >= 224
-    || (first === 100 && second >= 64 && second <= 127)
-    || (first === 169 && second === 254)
-    || (first === 172 && second >= 16 && second <= 31)
-    || (first === 192 && second === 168)
-  )
+  if (values.some(value => value > 255)) return null
+  return values.reduce((value, octet) => (value * 256) + octet, 0)
+}
+
+function isInIpv4Range(value: number, network: number, prefix: number): boolean {
+  const mask = prefix === 0 ? 0 : (0xffffffff << (32 - prefix)) >>> 0
+  return (value & mask) === (network & mask)
+}
+
+function parseIpv6Value(hostname: string): bigint | null {
+  const host = hostname.replace(/^\[|\]$/g, '').toLowerCase()
+  if (!host || (host.match(/::/g) ?? []).length > 1) return null
+  const [leftRaw, rightRaw] = host.split('::')
+  const parsePart = (part: string): number[] | null => {
+    if (!part) return []
+    const pieces = part.split(':')
+    const values: number[] = []
+    for (const piece of pieces) {
+      if (piece.includes('.')) {
+        const value = ipv4Value(piece)
+        if (value === null) return null
+        values.push(value >>> 16, value & 0xffff)
+      } else if (/^[0-9a-f]{1,4}$/.test(piece)) {
+        values.push(Number.parseInt(piece, 16))
+      } else {
+        return null
+      }
+    }
+    return values
+  }
+  const left = parsePart(leftRaw ?? '')
+  const right = parsePart(rightRaw ?? '')
+  if (left === null || right === null) return null
+  const missing = 8 - left.length - right.length
+  if (missing < 0 || (host.includes('::') ? missing < 1 : missing !== 0)) return null
+  const words = [...left, ...Array.from({ length: missing }, () => 0), ...right]
+  return words.reduce((value, word) => (value << 16n) | BigInt(word), 0n)
+}
+
+function isInIpv6Range(value: bigint, network: bigint, prefix: number): boolean {
+  if (prefix === 0) return true
+  const mask = ((1n << BigInt(prefix)) - 1n) << BigInt(128 - prefix)
+  return (value & mask) === (network & mask)
+}
+
+function isPublicIpv4Value(value: number): boolean {
+  const privateRanges: Array<[number, number]> = [
+    [0, 8], [0x0a000000, 8], [0x7f000000, 8], [0xa9fe0000, 16],
+    [0xac100000, 12], [0xc0000000, 24], [0xc00000aa, 31], [0xc0000200, 24],
+    [0xc0a80000, 16], [0xc6120000, 15], [0xc6336400, 24], [0xcb007100, 24],
+    [0xf0000000, 4], [0xffffffff, 32],
+  ]
+  if (value === 0xc0000009 || value === 0xc000000a) return true
+  if (isInIpv4Range(value, 0x64400000, 10)) return false
+  return !privateRanges.some(([network, prefix]) => isInIpv4Range(value, network, prefix))
+}
+
+function isPublicIpv4(hostname: string): boolean | null {
+  const value = ipv4Value(hostname)
+  if (value === null) return null
+  return isPublicIpv4Value(value)
 }
 
 function isPublicIpv6(hostname: string): boolean {
-  const host = hostname.replace(/^\[|\]$/g, '').toLowerCase()
-  return !(
-    host === '::'
-    || host === '::1'
-    || host.startsWith('fc')
-    || host.startsWith('fd')
-    || host.startsWith('fe8')
-    || host.startsWith('fe9')
-    || host.startsWith('fea')
-    || host.startsWith('feb')
-    || host.startsWith('2001:db8:')
-  )
+  const value = parseIpv6Value(hostname)
+  if (value === null) return false
+  const mapped = isInIpv6Range(value, 0xffffn << 32n, 96)
+  if (mapped) return isPublicIpv4Value(Number(value & 0xffffffffn))
+  const privateRanges: Array<[bigint, number]> = [
+    [0n, 128], [0xffffn << 32n, 96], [0x64ff9b00000000000000000000000000n, 48],
+    [0x10000000000000000000000000000000n, 64], [0x20010000000000000000000000000000n, 23],
+    [0x20010db8000000000000000000000000n, 32], [0x20020000000000000000000000000000n, 16],
+    [0x3fff0000000000000000000000000000n, 20], [0xfc00000000000000000000000000000000n, 7],
+    [0xfe80000000000000000000000000000000n, 10],
+  ]
+  const exceptions: Array<[bigint, number]> = [
+    [0x20010000000000000000000000000001n, 128], [0x20010000000000000000000000000002n, 128],
+    [0x20010003000000000000000000000000n, 32], [0x20010470000000000000000000000000n, 48],
+    [0x20012000000000000000000000000000n, 28], [0x20013000000000000000000000000000n, 28],
+  ]
+  return !privateRanges.some(([network, prefix]) => isInIpv6Range(value, network, prefix))
+    || exceptions.some(([network, prefix]) => isInIpv6Range(value, network, prefix))
 }
 
 function isPublicProvenanceUrl(value: unknown): value is string {
@@ -218,7 +271,7 @@ function isPublicProvenanceUrl(value: unknown): value is string {
     if (!url.pathname || url.pathname === '/') return false
     const ipv4 = isPublicIpv4(hostname)
     if (ipv4 !== null) return ipv4
-    if (hostname.startsWith('[') && hostname.endsWith(']')) return isPublicIpv6(hostname)
+    if (hostname.includes(':')) return isPublicIpv6(hostname)
     return hostname.includes('.') && ![...PLACEHOLDER_HOSTS].some(suffix => hostname === suffix || hostname.endsWith(`.${suffix}`))
   } catch {
     return false

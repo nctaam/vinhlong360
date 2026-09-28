@@ -1,6 +1,7 @@
 // @vitest-environment node
 
 import { describe, expect, it } from 'vitest'
+import provenanceCorpusJson from '../../tests/fixtures/media-provenance-validator-corpus.json'
 import { aiDisclosure } from '../utils/aiDisclosure'
 import {
   describeEntityImages,
@@ -134,6 +135,19 @@ describe('rights-cleared descriptor provenance URLs', () => {
       source_url: 'https://192.168.1.1/images/photo.webp',
     })).toBeNull()
   })
+
+  it.each(provenanceCorpusJson)(
+    'matches the shared provenance corpus for $name',
+    (row) => {
+      const descriptor = describeEntityImages({
+        name: 'Đình Long Hồ',
+        images: ['/img/entities/dinh-long-ho.webp'],
+        attributes: row.attributes,
+      })[0]
+
+      expect(descriptor?.source_class === 'rights-cleared').toBe(row.accepted)
+    },
+  )
 })
 
 describe('legacy entity media classification', () => {

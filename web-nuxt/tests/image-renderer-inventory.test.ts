@@ -108,7 +108,6 @@ const requiredBoundaries = [
 const rightsClearedBoundaries = requiredBoundaries
   .filter(([, surface, sourceClass]) => (
     sourceClass === 'ai-generated'
-    && !['native-share', 'metadata-helpers', 'entity-metadata'].includes(surface)
   ))
   .map(([file, surface]) => [file, surface, 'rights-cleared'] as const)
 
@@ -151,7 +150,6 @@ describe('entity image renderer inventory', () => {
   it('registers rights-cleared rendering for every entity-media AI surface', () => {
     const entityMediaAiRows = registry.renderers.filter(row => (
       row.source_class === 'ai-generated'
-      && !['native-share', 'metadata-helpers', 'entity-metadata'].includes(row.surface)
     ))
 
     for (const aiRow of entityMediaAiRows) {

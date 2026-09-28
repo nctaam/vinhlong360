@@ -1210,6 +1210,61 @@
       "presentation": "short",
       "accessibility": "aria-describedby-full-copy",
       "test_file": "tests/home-nocturne-page.test.ts"
+    },
+    {
+      "file": "components/ShareButton.vue",
+      "surface": "native-share",
+      "access_path": "native-share.image",
+      "source_class": "rights-cleared",
+      "descriptor_producer": "appendImageDisclosureToShareText",
+      "render_policy": "render",
+      "presentation": "full",
+      "accessibility": "visible-full-copy",
+      "test_file": "tests/image-metadata-disclosure.test.ts"
+    },
+    {
+      "file": "composables/useSeoHelpers.ts",
+      "surface": "metadata-helpers",
+      "access_path": "descriptor",
+      "source_class": "rights-cleared",
+      "descriptor_producer": "metadata-helpers",
+      "render_policy": "render",
+      "presentation": "full",
+      "accessibility": "visible-full-copy",
+      "test_file": "tests/image-metadata-disclosure.test.ts"
+    },
+    {
+      "file": "pages/dia-diem/[id].vue",
+      "surface": "entity-metadata",
+      "access_path": "metadata.image",
+      "source_class": "rights-cleared",
+      "descriptor_producer": "buildImageMeta",
+      "render_policy": "render",
+      "presentation": "full",
+      "accessibility": "visible-full-copy",
+      "test_file": "tests/image-metadata-disclosure.test.ts"
+    },
+    {
+      "file": "pages/xa-phuong/[id].vue",
+      "surface": "entity-metadata",
+      "access_path": "metadata.image",
+      "source_class": "rights-cleared",
+      "descriptor_producer": "buildImageMeta",
+      "render_policy": "render",
+      "presentation": "full",
+      "accessibility": "visible-full-copy",
+      "test_file": "tests/image-metadata-disclosure.test.ts"
+    },
+    {
+      "file": "pages/khu-vuc/[area].vue",
+      "surface": "entity-metadata",
+      "access_path": "metadata.image",
+      "source_class": "rights-cleared",
+      "descriptor_producer": "buildImageMeta",
+      "render_policy": "render",
+      "presentation": "full",
+      "accessibility": "visible-full-copy",
+      "test_file": "tests/image-metadata-disclosure.test.ts"
     }
   ]
 }
