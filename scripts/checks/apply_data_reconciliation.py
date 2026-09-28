@@ -72,11 +72,14 @@ def _verify_recovery_json_ownership(state: dict[str, Any]) -> None:
     before_sha256 = store["beforeSha256"]
     if actual == before_sha256:
         before_identity = store["beforeIdentity"]
-        expected_identity = (
-            int(before_identity["device"]),
-            int(before_identity["inode"]),
-            int(before_identity["size"]),
-        )
+        try:
+            expected_identity = (
+                int(before_identity["device"]),
+                int(before_identity["inode"]),
+                int(before_identity["size"]),
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ApplyError("JSON target ownership cannot be verified") from exc
         if actual_identity[:3] != expected_identity:
             raise ApplyError("JSON target ownership cannot be verified")
         return
