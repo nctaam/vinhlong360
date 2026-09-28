@@ -66,13 +66,22 @@ def _verify_recovery_json_ownership(state: dict[str, Any]) -> None:
     target = Path(store["path"])
     try:
         actual = _sha(target)
+        actual_identity = _file_identity(target)
     except OSError as exc:
         raise ApplyError("JSON target ownership cannot be verified") from exc
-    known_states = {store["beforeSha256"]}
+    before_sha256 = store["beforeSha256"]
+    if actual == before_sha256:
+        before_identity = store["beforeIdentity"]
+        expected_identity = (
+            int(before_identity["device"]),
+            int(before_identity["inode"]),
+            int(before_identity["size"]),
+        )
+        if actual_identity[:3] != expected_identity:
+            raise ApplyError("JSON target ownership cannot be verified")
+        return
     staged_sha256 = store.get("stagedSha256")
-    if isinstance(staged_sha256, str):
-        known_states.add(staged_sha256)
-    if actual not in known_states:
+    if not isinstance(staged_sha256, str) or actual != staged_sha256:
         raise ApplyError("JSON target ownership cannot be verified")
 
 
