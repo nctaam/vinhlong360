@@ -1,6 +1,6 @@
 # Manifest revision: batch-21-media-truth-v1
 # Inventory: subtractive legacy image compatibility revocations
-ba-nhi-bun-bo-hue-vinh-long
+ba-nhi-bun-bo-hue-vinh-long-vinh-long
 banh-canh-ben-tre
 banh-trang-my-long
 banh-xeo-mien-tay

@@ -9,6 +9,18 @@ from pathlib import Path
 _MANIFEST_REL = Path("docs/standards/batch-21-media-truth.json")
 _REVOCATIONS_REL = Path("docs/standards/r10.6-legacy-image-revocations.txt")
 _REVISION = "batch-21-media-truth-v1"
+_SCHEMA_VERSION = 1
+_SOURCE_LEDGER_COMMIT = "68d59f0f"
+_AI_EVIDENCE_COMMIT = "30a3fae9"
+_MANIFEST_KEYS = {
+    "schemaVersion",
+    "revision",
+    "sourceLedgerCommit",
+    "aiEvidenceCommit",
+    "delete",
+    "ai_generated",
+    "generated_placeholder",
+}
 
 
 @dataclass(frozen=True)
@@ -29,6 +41,27 @@ def _repo_root() -> Path:
 def load_batch_21_truth(root: Path | None = None) -> Batch21Truth:
     path = (root or _repo_root()) / _MANIFEST_REL
     payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict) or set(payload) != _MANIFEST_KEYS:
+        raise ValueError("Batch 21 manifest has unexpected top-level keys")
+    if (
+        payload["schemaVersion"] != _SCHEMA_VERSION
+        or payload["revision"] != _REVISION
+        or payload["sourceLedgerCommit"] != _SOURCE_LEDGER_COMMIT
+        or payload["aiEvidenceCommit"] != _AI_EVIDENCE_COMMIT
+    ):
+        raise ValueError("Batch 21 manifest metadata does not match the frozen contract")
+    partitions = [payload[name] for name in ("delete", "ai_generated", "generated_placeholder")]
+    if any(
+        not isinstance(partition, list)
+        or any(not isinstance(item, str) or not item for item in partition)
+        or partition != sorted(set(partition))
+        for partition in partitions
+    ):
+        raise ValueError("Batch 21 manifest partitions must be sorted, unique string lists")
+    if tuple(map(len, partitions)) != (1, 2, 37):
+        raise ValueError("Batch 21 manifest partition counts must be 1/2/37")
+    if len(set().union(*map(set, partitions))) != 40:
+        raise ValueError("Batch 21 manifest partitions must be disjoint and total 40 IDs")
     return Batch21Truth(
         schema_version=payload["schemaVersion"],
         revision=payload["revision"],

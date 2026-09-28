@@ -16,8 +16,8 @@
     "image_generation_reference": "git:30a3fae9"
   },
   {
-    "entity_id": "ba-nhi-bun-bo-hue-vinh-long",
-    "image": "web-nuxt/public/img/entities/ba-nhi-bun-bo-hue-vinh-long.webp",
+    "entity_id": "ba-nhi-bun-bo-hue-vinh-long-vinh-long",
+    "image": "web-nuxt/public/img/entities/ba-nhi-bun-bo-hue-vinh-long-vinh-long.webp",
     "image_type": "generated-placeholder",
     "is_verified_photo": false
   },

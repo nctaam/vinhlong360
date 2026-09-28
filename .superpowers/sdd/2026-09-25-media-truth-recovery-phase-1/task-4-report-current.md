@@ -39,3 +39,9 @@ Protected-store checks observed: `agent/data/vinhlong360.db` SHA-256 `ea83864990
 ## Determinism Correction (Controller Verification)
 
 On 2026-09-29, the controller reran `python scripts/ops/generate_batch_21.py` twice and observed byte-identical SHA-256 `B2B3B2E7EEC419BD631F61481BA0BEA1C6C5CCC9A51C5E57F6A343C788CB5DC4`. This supersedes the earlier local hash recorded above; both runs remain deterministic.
+
+## Round 1 Fix
+
+Added strict manifest validation for exact keys, frozen metadata, list/string types, 1/2/37 partition counts, sorted uniqueness, disjointness, and total cardinality. RED coverage demonstrated that an extra-key manifest was previously accepted. Corrected the authoritative placeholder ID to the required `ba-nhi-bun-bo-hue-vinh-long-vinh-long` spelling in the manifest, revocation inventory, and regenerated ledger.
+
+Round 1 focused GREEN: `17 passed`; `python -m ruff check`, `py_compile`, and `git diff --check` passed for the changed validation/test files.
