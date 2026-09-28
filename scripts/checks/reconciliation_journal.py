@@ -75,22 +75,37 @@ def _validate_store_entry(store_name: str, store: Any, scope: Path | None) -> No
 
 
 def _validate_staged_json(store_name: str, store: dict[str, Any]) -> None:
-    if store_name != "json" or "stagedPath" not in store:
+    if store_name != "json":
         return
-    if not isinstance(store["stagedPath"], str):
-        raise JournalValidationError("invalid json.stagedPath")
-    if "stagedSha256" in store:
-        _validate_hash(store["stagedSha256"], "json.stagedSha256")
+    for path_key, hash_key in (
+        ("stagedPath", "stagedSha256"),
+        ("candidatePath", "candidateSha256"),
+        ("capturedPath", "capturedSha256"),
+        ("capturedObservedPath", "capturedObservedSha256"),
+        ("observedPath", "observedSha256"),
+    ):
+        if path_key in store:
+            if not isinstance(store[path_key], str):
+                raise JournalValidationError(f"invalid json.{path_key}")
+            _validate_hash(store.get(hash_key), f"json.{hash_key}")
+    if "publishedSha256" in store:
+        _validate_hash(store["publishedSha256"], "json.publishedSha256")
+    if "publishedIdentity" in store:
+        _validate_identity(store["publishedIdentity"], "json.published")
 
 
 def _validate_store_scope(store_name: str, store: dict[str, Any], scope: Path | None) -> None:
     if scope is None:
         return
     keys = ["path", "backupPath"]
-    if store_name == "json" and "stagedPath" in store:
-        keys.append("stagedPath")
+    artifact_scope = Path(store["path"]).parent.resolve() if store_name == "json" else scope
+    artifact_keys = []
+    if store_name == "json":
+        artifact_keys = [key for key in ("stagedPath", "candidatePath", "capturedPath", "capturedObservedPath", "observedPath") if key in store]
     for key in keys:
         _ensure_within(Path(store[key]), scope, f"{store_name}.{key}")
+    for key in artifact_keys:
+        _ensure_within(Path(store[key]), artifact_scope, f"{store_name}.{key}")
 
 
 def write_journal(path: Path, state: dict[str, Any]) -> None:
@@ -152,7 +167,10 @@ def recover_journal(state: dict[str, Any], lock: ReconciliationLock) -> dict[str
                 raise JournalRecoveryError(f"{name} hash mismatch after prior recovery")
         return {"status": "already_recovered", "phase": state["phase"], "journalPath": str(journal_path)}
     try:
-        _restore_json(state["json"])
+        # Refuse before consuming the JSON capture; a late SQLite sidecar must
+        # leave every recovery artifact available for a later safe retry.
+        _ensure_no_sqlite_sidecars(state["sqlite"])
+        _restore_json(state["json"], state, journal_path)
         _restore_sqlite(state["sqlite"])
         for name in ("sqlite", "json"):
             target = Path(state[name]["path"])
@@ -208,15 +226,63 @@ def _validate_backup(store: dict[str, Any], store_name: str) -> None:
         raise JournalValidationError(f"{store_name} backup does not match before hash")
 
 
-def _restore_json(store: dict[str, Any]) -> None:
-    _copy_atomic(Path(store["backupPath"]), Path(store["path"]))
+def _restore_json(store: dict[str, Any], state: dict[str, Any], journal_path: Path) -> None:
+    target = Path(store["path"])
+    captured = Path(store.get("capturedPath", store["backupPath"]))
+    if "capturedPath" not in store:
+        _copy_atomic(captured, target)
+        return
+    observed: Path | None = None
+    if target.exists():
+        observed = target.with_name(f".{target.name}.observed.{os.urandom(16).hex()}")
+        os.rename(target, observed)
+        observed_sha = _sha256(observed)
+        observed_identity = _identity(observed)
+        published_sha = store.get("publishedSha256")
+        published_identity = store.get("publishedIdentity")
+        matches_published = isinstance(published_sha, str) and observed_sha == published_sha
+        if matches_published and isinstance(published_identity, dict):
+            matches_published = observed_identity == published_identity
+        else:
+            matches_published = False
+        if matches_published:
+            observed.unlink()
+            observed = None
+        else:
+            store["observedPath"] = str(observed)
+            store["observedSha256"] = observed_sha
+            store["observedIdentity"] = observed_identity
+            write_journal(journal_path, state)
+    if target.exists():
+        raise JournalRecoveryError("JSON target was recreated during recovery")
+    captured_valid = captured.exists() and _sha256(captured) == store["capturedSha256"]
+    if not captured_valid:
+        # A race hook may have populated or altered the capture path. Preserve
+        # those foreign bytes, then fall back to the independently verified
+        # backup so the journal remains recoverable.
+        if captured.exists():
+            preserved = target.with_name(f".{target.name}.captured-observed.{os.urandom(16).hex()}")
+            os.rename(captured, preserved)
+            store["capturedObservedPath"] = str(preserved)
+            store["capturedObservedSha256"] = _sha256(preserved)
+            write_journal(journal_path, state)
+        captured = Path(store["backupPath"])
+        if not captured.exists() or _sha256(captured) != store["backupSha256"]:
+            raise JournalRecoveryError("captured JSON hash mismatch")
+        _copy_atomic(captured, target)
+        _fsync_directory(target.parent)
+        return
+    try:
+        os.link(captured, target)
+        captured.unlink()
+    except FileExistsError as exc:
+        raise JournalRecoveryError("JSON target was recreated during recovery") from exc
+    _fsync_directory(target.parent)
 
 
 def _restore_sqlite(store: dict[str, Any]) -> None:
     target = Path(store["path"])
-    for suffix in ("-wal", "-shm", "-journal"):
-        if target.with_name(target.name + suffix).exists():
-            raise JournalRecoveryError(f"sqlite sidecar exists: {target.name + suffix}")
+    _ensure_no_sqlite_sidecars(store)
     source = Path(store["backupPath"])
     if os.name != "nt":
         _copy_atomic(source, target)
@@ -230,6 +296,13 @@ def _restore_sqlite(store: dict[str, Any]) -> None:
             os.fsync(handle.fileno())
     except OSError as exc:
         raise JournalRecoveryError(f"cannot restore sqlite target: {exc}") from exc
+
+
+def _ensure_no_sqlite_sidecars(store: dict[str, Any]) -> None:
+    target = Path(store["path"])
+    for suffix in ("-wal", "-shm", "-journal"):
+        if target.with_name(target.name + suffix).exists():
+            raise JournalRecoveryError(f"sqlite sidecar exists: {target.name + suffix}")
 
 
 def _copy_atomic(source: Path, target: Path) -> None:
@@ -262,6 +335,11 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _identity(path: Path) -> dict[str, int]:
+    info = path.stat()
+    return {"device": info.st_dev, "inode": info.st_ino, "size": info.st_size}
 
 
 def _fsync_directory(path: Path) -> None:

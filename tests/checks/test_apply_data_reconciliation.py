@@ -503,22 +503,23 @@ def test_commit_failure_restores_json_atomically_and_rolls_back_sqlite(tmp_path,
 def test_external_json_edit_before_publication_fails_closed_and_preserves_external_bytes(tmp_path, monkeypatch):
     db, data, db_bak, data_bak = _fixture(tmp_path)
     plan = _plan(db, data)
-    original_publish = apply_module._publish_json
+    original_publish = apply_module._publish_json_no_overwrite
 
-    def edit_before_publication(source, target, expected_bytes, expected_identity):
+    def edit_before_publication(source, target):
         data.write_bytes(b'{"external":"edit"}\n')
-        return original_publish(source, target, expected_bytes, expected_identity)
+        return original_publish(source, target)
 
-    monkeypatch.setattr(apply_module, "_publish_json", edit_before_publication)
+    monkeypatch.setattr(apply_module, "_publish_json_no_overwrite", edit_before_publication)
     with pytest.raises(ApplyError, match="changed"):
         apply_plan(plan, db, data, db_bak, data_bak, confirm=True, plan_sha256=canonical_plan_sha256(plan))
     assert data.read_bytes() == b'{"external":"edit"}\n'
     journal = db.with_name(f"{db.name}.reconciliation.journal.json")
     assert journal.exists()
-    with pytest.raises(ApplyError, match="JSON target ownership cannot be verified"):
-        recover_interrupted_apply(journal, db.with_name(f"{db.name}.reconciliation.lock"))
-    assert data.read_bytes() == b'{"external":"edit"}\n'
-    assert journal.exists()
+    recover_interrupted_apply(journal, db.with_name(f"{db.name}.reconciliation.lock"))
+    assert data.read_bytes() == data_bak.read_bytes()
+    observed = list(tmp_path.glob(".data.json.observed.*"))
+    assert len(observed) == 1
+    assert observed[0].read_bytes() == b'{"external":"edit"}\n'
 
 
 def test_cli_malformed_plan_returns_controlled_refusal(tmp_path):
@@ -550,16 +551,16 @@ def test_committed_phase_journal_recovers_exact_fixture_snapshot(tmp_path, monke
     plan = _plan(db, data)
     lock = tmp_path / "apply.lock"
     journal = tmp_path / "apply.journal.json"
-    original_publish = apply_module._publish_json
+    original_publish = apply_module._publish_json_no_overwrite
 
     def fail_publish(*args, **kwargs):
         raise ApplyError("injected after SQLite commit")
 
-    monkeypatch.setattr(apply_module, "_publish_json", fail_publish)
+    monkeypatch.setattr(apply_module, "_publish_json_no_overwrite", fail_publish)
     with pytest.raises(ApplyError, match="injected"):
         apply_plan(plan, db, data, db_bak, data_bak, lock_path=lock, journal_path=journal, confirm=True, plan_sha256=canonical_plan_sha256(plan))
     assert load_journal(journal)["phase"] == "sqlite_committed"
-    monkeypatch.setattr(apply_module, "_publish_json", original_publish)
+    monkeypatch.setattr(apply_module, "_publish_json_no_overwrite", original_publish)
     result = recover_interrupted_apply(journal, lock)
     assert result["status"] == "recovered"
     assert db.read_bytes() == db_bak.read_bytes()
@@ -597,14 +598,14 @@ def test_recovery_refuses_external_json_edit_after_publication_boundary(tmp_path
     plan = _plan(db, data)
     lock = tmp_path / "apply.lock"
     journal = tmp_path / "apply.journal.json"
-    original_publish = apply_module._publish_json
+    original_publish = apply_module._publish_json_no_overwrite
 
-    def publish_then_external_edit(source, target, expected_bytes, expected_identity):
-        original_publish(source, target, expected_bytes, expected_identity)
+    def publish_then_external_edit(source, target):
+        original_publish(source, target)
         target.write_bytes(b'{"external":"after-publication"}\n')
         raise ApplyError("simulated failure after publication boundary")
 
-    monkeypatch.setattr(apply_module, "_publish_json", publish_then_external_edit)
+    monkeypatch.setattr(apply_module, "_publish_json_no_overwrite", publish_then_external_edit)
     with pytest.raises(ApplyError, match="after publication boundary"):
         apply_plan(
             plan,
@@ -620,10 +621,11 @@ def test_recovery_refuses_external_json_edit_after_publication_boundary(tmp_path
 
     external_bytes = b'{"external":"after-publication"}\n'
     assert data.read_bytes() == external_bytes
-    with pytest.raises(ApplyError, match="JSON target ownership cannot be verified"):
-        recover_interrupted_apply(journal, lock)
-    assert data.read_bytes() == external_bytes
-    assert journal.exists()
+    recover_interrupted_apply(journal, lock)
+    assert data.read_bytes() == data_bak.read_bytes()
+    observed = list(tmp_path.glob(".data.json.observed.*"))
+    assert len(observed) == 1
+    assert observed[0].read_bytes() == external_bytes
 
 
 def test_maintenance_window_does_not_bypass_live_refusal(tmp_path):
@@ -642,3 +644,41 @@ def test_maintenance_window_does_not_bypass_live_refusal(tmp_path):
             confirm=True,
             plan_sha256=canonical_plan_sha256(plan),
         )
+
+
+def test_capture_json_target_refuses_preexisting_capture_path(tmp_path):
+    target = tmp_path / "data.json"
+    target.write_bytes(b"approved")
+    capture = tmp_path / "data.json.capture"
+    capture.write_bytes(b"foreign")
+    identity = apply_module._file_identity(target)
+    with pytest.raises(ApplyError, match="capture"):
+        apply_module._capture_json_target(target, capture, "".join([hashlib.sha256(b"approved").hexdigest()]), identity)
+    assert target.read_bytes() == b"approved"
+    assert capture.read_bytes() == b"foreign"
+
+
+def test_publish_json_no_overwrite_preserves_recreated_target(tmp_path):
+    candidate = tmp_path / "candidate.json"
+    target = tmp_path / "data.json"
+    candidate.write_bytes(b"candidate")
+    target.write_bytes(b"foreign")
+    with pytest.raises(ApplyError, match="changed"):
+        apply_module._publish_json_no_overwrite(candidate, target)
+    assert target.read_bytes() == b"foreign"
+    assert candidate.read_bytes() == b"candidate"
+
+
+def test_restore_captured_json_preserves_different_observed_bytes(tmp_path):
+    target = tmp_path / "data.json"
+    capture = tmp_path / "data.json.capture"
+    target.write_bytes(b"foreign")
+    capture.write_bytes(b"original")
+    observed = apply_module._restore_captured_json(
+        target,
+        capture,
+        published_sha256=hashlib.sha256(b"published").hexdigest(),
+    )
+    assert target.read_bytes() == b"original"
+    assert observed is not None
+    assert observed.read_bytes() == b"foreign"
