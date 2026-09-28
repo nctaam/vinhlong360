@@ -134,8 +134,8 @@ python -m py_compile <same scoped Python files>
 passed
 ```
 
-The checked-in plan was regenerated after the fixes; its SHA-256 remains
-`0d027436c730a8753b99a5956afeeac3bd815a3219ac1c9025346e4cf78a6ff2`.
+The checked-in plan was regenerated after the fixes; its latest SHA-256 is
+`aac5baec34c758e8b67f27ca943461c31d2d27bf661d4e8e013334892edcb37b`.
 The generated plan contains 484 mutations and the shared validator returns
 484 total / 245 JSON / 239 SQLite mutations. Source protected hashes and
 mtimes remain unchanged; no source SQLite sidecar exists.
