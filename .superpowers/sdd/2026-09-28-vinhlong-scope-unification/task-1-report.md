@@ -68,3 +68,18 @@ Updated `web-nuxt/tests/ui-foundation-shell.test.ts` so the current-route contex
 
 - Focused Vitest command: `npm test -- --run tests/ui-foundation-shell.test.ts`
 - Result: not runnable in this isolated worktree because `web-nuxt/node_modules/.bin/vitest.cmd` is absent (`vitest unavailable`).
+
+## Frontend Legacy Test Alignment
+
+Updated `location-consent.test.ts` to keep legacy `ben-tre`/`tra-vinh` inputs only as explicit backward-compatibility fixtures while asserting canonical `vinh-long` state, localStorage, and `province-vl` patches. Updated setup/GPS flow to select the current `province-vl` option. Updated `personalization-preferences.test.ts` server snapshots and manual actions to current Vinh Long or `all` choices; offline/conflict semantics remain unchanged.
+
+Requested RED command:
+`npx vitest run tests/location-consent.test.ts tests/personalization-preferences.test.ts --pool=forks --maxWorkers=1 --reporter=dot`
+
+Observed in this worktree: startup failure because `@nuxt/test-utils/config` is unavailable from `vitest.config.ts` (`ERR_MODULE_NOT_FOUND`). Integrated branch review had identified six stale legacy-selector assertions; these are now updated.
+
+## Final API/Storage Fix
+
+Added a regression with 1,100 unrelated public places before the current children; `/api/areas` now filters authoritative current children before applying the 124-row cap. Focused invariant: `6 passed`; combined backend suites: `208 passed, 13 skipped, 1 warning`.
+
+Anonymous legacy localStorage values are now rewritten to canonical `vinh-long` immediately during hydration, with quota-safe handling; the frontend test asserts the rewrite before any subsequent selection.

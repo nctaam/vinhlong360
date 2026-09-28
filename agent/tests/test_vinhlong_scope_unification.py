@@ -137,3 +137,52 @@ def test_api_areas_exposes_one_current_province_with_124_direct_children(monkeyp
     assert {place["type"] for place in province["places"]} == {"xa", "phuong"}
     assert sum(place["type"] == "phuong" for place in province["places"]) == 35
     assert sum(place["type"] == "xa" for place in province["places"]) == 89
+
+
+def test_api_areas_filters_before_cap_preserving_all_current_children(monkeypatch):
+    unrelated = [
+        {
+            "id": f"old-{index}",
+            "name": f"Old {index}",
+            "type": "place",
+            "level": "huyen",
+            "parentId": "old-province",
+            "status": "published",
+            "verified": True,
+        }
+        for index in range(1100)
+    ]
+    current = [
+        {
+            "id": f"phuong-{index}",
+            "name": f"Phuong {index}",
+            "type": "place",
+            "level": "phuong",
+            "parentId": "vinh-long",
+            "status": "published",
+            "verified": True,
+        }
+        for index in range(35)
+    ] + [
+        {
+            "id": f"xa-{index}",
+            "name": f"Xa {index}",
+            "type": "place",
+            "level": "xa",
+            "parentId": "vinh-long",
+            "status": "published",
+            "verified": True,
+        }
+        for index in range(89)
+    ]
+    monkeypatch.setattr(public_api.db, "all_entities", lambda: unrelated + current)
+
+    class Response:
+        headers: dict[str, str] = {}
+
+    result = asyncio.run(public_api.list_areas(Response()))
+    province = result["areas"][0]
+    assert result["total_places"] == 124
+    assert len(province["places"]) == 124
+    assert sum(place["level"] == "phuong" for place in province["places"]) == 35
+    assert sum(place["level"] == "xa" for place in province["places"]) == 89

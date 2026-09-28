@@ -208,6 +208,7 @@ describe('region preference ownership', () => {
     await flushUi()
 
     expect(regionPref!.region.value).toBe('vinh-long')
+    expect(localStorage.getItem('vl360-region-pref')).toBe('vinh-long')
     await regionPref!.setRegion('tra-vinh')
     expect(localStorage.getItem('vl360-region-pref')).toBe('vinh-long')
     expect(apiFetchMock).not.toHaveBeenCalled()

@@ -1447,7 +1447,8 @@ async def list_areas(response: Response):
             if e.get("type") == "place"
             and e.get("status") != "provisional"
             and e.get("verified") is not False
-        ][:1000]
+        ]
+        current_places = [p for p in places if _is_current_admin_child(p)]
         children = [
             {
                 "id": p["id"],
@@ -1456,9 +1457,8 @@ async def list_areas(response: Response):
                 "level": p["level"],
                 "parentId": "vinh-long",
             }
-            for p in places
-            if _is_current_admin_child(p)
-        ]
+            for p in current_places
+        ][:124]
         province = {
             "id": "vinh-long",
             "name": "Vĩnh Long",

@@ -38,7 +38,10 @@ export function useRegionPref() {
   if (import.meta.client) {
     onMounted(() => {
       const stored = localStorage.getItem(STORAGE_KEY) as RegionSlug | null
-      if (stored === 'ben-tre' || stored === 'tra-vinh') cachedRegion.value = 'vinh-long'
+      if (stored === 'ben-tre' || stored === 'tra-vinh') {
+        cachedRegion.value = 'vinh-long'
+        try { localStorage.setItem(STORAGE_KEY, 'vinh-long') } catch { /* quota */ }
+      }
       else if (stored && ['vinh-long', 'all'].includes(stored)) cachedRegion.value = stored
 
       const vc = parseInt(localStorage.getItem(VISIT_KEY) || '0', 10)
