@@ -35,3 +35,7 @@ Protected-store checks observed: `agent/data/vinhlong360.db` SHA-256 `ea83864990
 - The standalone `ruff` command is not installed; the bundled `python -m ruff` module was used successfully.
 - `prov-1` remains an external owner-evidence blocker and is intentionally not given provenance.
 - Existing unrelated dirty changes remain in overlapping check/test files and were preserved.
+
+## Determinism Correction (Controller Verification)
+
+On 2026-09-29, the controller reran `python scripts/ops/generate_batch_21.py` twice and observed byte-identical SHA-256 `B2B3B2E7EEC419BD631F61481BA0BEA1C6C5CCC9A51C5E57F6A343C788CB5DC4`. This supersedes the earlier local hash recorded above; both runs remain deterministic.
