@@ -98,6 +98,66 @@ def test_successful_fixture_apply_is_atomic_and_parity_clean(tmp_path):
     assert result["parity"]["status"] == "clean"
 
 
+def test_entity_delete_and_nested_remove_apply_to_both_fixture_stores(tmp_path):
+    db = tmp_path / "media.db"
+    payload = {
+        "entities": [
+            {"id": "prov-1", "type": "place", "name": "Provider", "season": None,
+             "attributes": {"image_author": "unknown", "keep": "yes"}, "source": None,
+             "images": [], "coordinates": None},
+            {"id": "unrelated", "type": "place", "name": "Unrelated", "season": None,
+             "attributes": {"image_author": "remove-me"}, "source": None, "images": [], "coordinates": None},
+        ],
+        "relationships": [], "itineraries": [],
+    }
+    with sqlite3.connect(db) as conn:
+        conn.executescript(
+            "CREATE TABLE entities (id TEXT PRIMARY KEY, type TEXT, name TEXT, season TEXT, attributes TEXT, source TEXT, images TEXT, coordinates TEXT);"
+            "CREATE TABLE relationships (from_id TEXT, to_id TEXT, type TEXT);"
+            "CREATE TABLE itineraries (id TEXT);"
+        )
+        conn.execute("INSERT INTO entities VALUES ('prov-1','place','Provider',NULL,?,?,?,?)", (json.dumps({"image_author": "unknown", "keep": "yes"}), None, "[]", None))
+        conn.execute("INSERT INTO entities VALUES ('unrelated','place','Unrelated',NULL,?,?,?,?)", (json.dumps({"image_author": "remove-me"}), None, "[]", None))
+    data = tmp_path / "media.json"
+    data.write_text(json.dumps(payload), encoding="utf-8")
+    db_bak = tmp_path / "media.db.bak"; db_bak.write_bytes(db.read_bytes())
+    data_bak = tmp_path / "media.json.bak"; data_bak.write_bytes(data.read_bytes())
+    plan = {
+        "schemaVersion": 1, "mode": "dry-run", "status": "approved", "reviewedPlanMarker": "reviewed",
+        "inputs": {"sqlite": {"sha256": hashlib.sha256(db.read_bytes()).hexdigest()},
+                   "json": {"sha256": hashlib.sha256(data.read_bytes()).hexdigest()}},
+        "mutations": [
+            {"mutationId": "s-delete", "store": "sqlite", "recordType": "entity", "recordId": "prov-1",
+             "operation": "delete", "field": "entity", "before": payload["entities"][0]},
+            {"mutationId": "s-remove", "store": "sqlite", "recordType": "entity", "recordId": "unrelated",
+             "operation": "remove", "field": "attributes.image_author", "before": None, "after": None},
+            {"mutationId": "j-delete", "store": "json", "recordType": "entity", "recordId": "prov-1",
+             "operation": "delete", "field": "entity", "before": payload["entities"][0], "metadata": {"index": 0}},
+            {"mutationId": "j-remove", "store": "json", "recordType": "entity", "recordId": "unrelated",
+             "operation": "remove", "field": "attributes.image_author", "before": None, "after": None, "metadata": {"index": 1}},
+        ], "deferred": [],
+    }
+    # Remove the nested key from the surviving entity in both stores.
+    plan["mutations"][1]["before"] = "remove-me"
+    plan["mutations"][3]["before"] = "remove-me"
+    result = apply_plan(plan, db, data, db_bak, data_bak, confirm=True, plan_sha256=canonical_plan_sha256(plan))
+    assert result["parity"]["status"] == "clean"
+    expected_survivor = dict(payload["entities"][1], attributes={})
+    assert json.loads(data.read_text(encoding="utf-8"))["entities"] == [expected_survivor]
+    with sqlite3.connect(db) as conn:
+        assert conn.execute("SELECT id FROM entities").fetchall() == [("unrelated",)]
+
+
+def test_targeted_media_verification_preserves_unrelated_global_drift(tmp_path):
+    db, data, _, _ = _fixture(tmp_path)
+    payload = json.loads(data.read_text(encoding="utf-8"))
+    payload["entities"][1]["attributes"] = {"unrelated_drift": True}
+    data.write_text(json.dumps(payload), encoding="utf-8")
+    plan = {"verification": {"mode": "targeted-media-v1", "targets": {"a": payload["entities"][0]}}}
+    result = apply_module.verify_plan_result(plan, db, data)
+    assert result == {"mode": "targeted-media-v1", "status": "clean", "globalParity": "known-drift-preserved"}
+
+
 def test_generated_graph_insert_schema_applies_and_preserves_relationship_parity(tmp_path):
     db, data, db_bak, data_bak = _fixture(tmp_path)
     payload = json.loads(data.read_text(encoding="utf-8"))

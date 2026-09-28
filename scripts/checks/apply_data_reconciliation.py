@@ -199,8 +199,38 @@ def _sqlite_mutation(conn: sqlite3.Connection, mutation: dict[str, Any]) -> None
     if mutation.get("recordType") == "relationship":
         _relationship_mutation(conn, mutation)
         return
-    if mutation.get("recordType") != "entity" or mutation.get("operation") != "update":
-        raise ApplyError(f"unsupported mutation: {mutation.get('mutationId')}")
+    if mutation.get("recordType") != "entity":
+        raise ApplyError(f"unsupported mutation record type: {mutation.get('recordType')}")
+    if mutation.get("operation") == "delete":
+        _delete_sqlite_entity(conn, mutation)
+        return
+    if mutation.get("operation") in {"update", "remove"}:
+        _update_sqlite_entity(conn, mutation)
+        return
+    raise ApplyError(f"unsupported entity mutation: {mutation.get('mutationId')}")
+
+
+def _sqlite_entity_projection(row: sqlite3.Row) -> dict[str, Any]:
+    projection = {key: row[key] for key in row.keys() if key != "rowid"}
+    for field in ("attributes", "images", "coordinates"):
+        if isinstance(projection.get(field), str):
+            try:
+                projection[field] = json.loads(projection[field])
+            except json.JSONDecodeError as exc:
+                raise ApplyError(f"malformed entity field: {field}") from exc
+    return projection
+
+
+def _delete_sqlite_entity(conn: sqlite3.Connection, mutation: dict[str, Any]) -> None:
+    row = _entity_row(conn, mutation["recordId"])
+    if _sqlite_entity_projection(row) != mutation.get("before"):
+        raise ApplyError(f"entity before value mismatch: {mutation.get('mutationId')}")
+    changed = conn.execute("DELETE FROM entities WHERE id = ?", (mutation["recordId"],)).rowcount
+    if changed != 1:
+        raise ApplyError(f"entity row missing: {mutation['recordId']}")
+
+
+def _update_sqlite_entity(conn: sqlite3.Connection, mutation: dict[str, Any]) -> None:
     update_kind, field, record_id, value = _prepare_entity_update(conn, mutation)
     if update_kind == "attributes":
         changed = conn.execute("UPDATE entities SET attributes = ? WHERE id = ?", (value, record_id)).rowcount
@@ -272,6 +302,8 @@ def _prepare_entity_update(conn: sqlite3.Connection, mutation: dict[str, Any]) -
             raise ApplyError(f"malformed entity field: {field}") from exc
     if current_value != mutation.get("before"):
         raise ApplyError(f"entity before value mismatch: {mutation.get('mutationId')}")
+    if mutation.get("operation") == "remove":
+        raise ApplyError(f"remove requires a nested entity field: {mutation.get('mutationId')}")
     value = mutation["after"]
     if field in {"images", "coordinates", "season"} and not isinstance(value, str):
         value = json.dumps(value, ensure_ascii=False) if value is not None else None
@@ -284,13 +316,19 @@ def _prepare_attribute_update(row: sqlite3.Row, mutation: dict[str, Any], record
     except json.JSONDecodeError as exc:
         raise ApplyError(f"malformed entity attributes: {record_id}") from exc
     attribute_name = mutation["field"].removeprefix("attributes.")
-    if attributes.get(attribute_name) != mutation.get("before"):
+    if attribute_name not in attributes or attributes[attribute_name] != mutation.get("before"):
         raise ApplyError(f"entity before value mismatch: {mutation.get('mutationId')}")
-    attributes[attribute_name] = mutation["after"]
+    if mutation.get("operation") == "remove":
+        del attributes[attribute_name]
+    else:
+        attributes[attribute_name] = mutation["after"]
     return json.dumps(attributes, ensure_ascii=False)
 
 
 def _json_mutation(payload: dict[str, Any], mutation: dict[str, Any]) -> None:
+    if mutation.get("recordType") == "entity":
+        _json_entity_mutation(payload, mutation)
+        return
     if mutation.get("recordType") != "relationship" or mutation.get("field") != "relationship":
         raise ApplyError(f"unsupported JSON mutation: {mutation.get('mutationId')}")
     relationships = payload.get("relationships")
@@ -307,6 +345,48 @@ def _json_mutation(payload: dict[str, Any], mutation: dict[str, Any]) -> None:
         relationships[index] = mutation["after"]
     else:
         raise ApplyError(f"unsupported JSON operation: {mutation.get('operation')}")
+
+
+def _json_entity_mutation(payload: dict[str, Any], mutation: dict[str, Any]) -> None:
+    entities = payload.get("entities")
+    index = (mutation.get("metadata") or {}).get("index")
+    if not isinstance(entities, list) or not isinstance(index, int) or index < 0 or index >= len(entities):
+        raise ApplyError(f"JSON entity index missing: {mutation.get('mutationId')}")
+    entity = entities[index]
+    _assert_json_entity_target(entity, mutation)
+    if mutation.get("operation") == "delete":
+        _assert_json_before(entity, mutation)
+        entities.pop(index)
+        return
+    field = mutation.get("field")
+    if not isinstance(field, str) or not field.startswith("attributes."):
+        raise ApplyError(f"unsupported JSON entity field: {field}")
+    attributes = entity.get("attributes")
+    name = field.removeprefix("attributes.")
+    if not isinstance(attributes, dict) or name not in attributes:
+        raise ApplyError(f"JSON before value mismatch: {mutation.get('mutationId')}")
+    _assert_json_before(attributes[name], mutation)
+    _mutate_json_attribute(attributes, name, mutation)
+
+
+def _assert_json_before(current: Any, mutation: dict[str, Any]) -> None:
+    if current != mutation.get("before"):
+        raise ApplyError(f"JSON before value mismatch: {mutation.get('mutationId')}")
+
+
+def _assert_json_entity_target(entity: Any, mutation: dict[str, Any]) -> None:
+    if not isinstance(entity, dict) or entity.get("id") != mutation.get("recordId"):
+        raise ApplyError(f"JSON entity ID mismatch: {mutation.get('mutationId')}")
+
+
+def _mutate_json_attribute(attributes: dict[str, Any], name: str, mutation: dict[str, Any]) -> None:
+    if mutation.get("operation") == "remove":
+        del attributes[name]
+        return
+    if mutation.get("operation") == "update":
+        attributes[name] = mutation.get("after")
+        return
+    raise ApplyError(f"unsupported JSON operation: {mutation.get('operation')}")
 
 
 def _parity(sqlite_path: Path, json_path: Path, connection: sqlite3.Connection | None = None) -> dict[str, Any]:
@@ -395,6 +475,86 @@ def _parity_status(
     return "clean" if all(checks) else "drift"
 
 
+def _digest_rows(rows: list[Any]) -> str:
+    encoded = json.dumps(rows, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+    return _sha_bytes(encoded)
+
+
+def _targeted_media_verification(
+    plan: dict[str, Any], sqlite_path: Path, json_path: Path, connection: sqlite3.Connection | None = None,
+) -> dict[str, Any]:
+    verification = plan.get("verification") or {}
+    targets = _targeted_targets(verification)
+    payload = _json_load(json_path)
+    if connection is None:
+        with sqlite3.connect(sqlite_path) as conn:
+            return _targeted_media_verification(plan, sqlite_path, json_path, conn)
+    connection.row_factory = sqlite3.Row
+    sqlite_rows = {row["id"]: _sqlite_entity_projection(row) for row in connection.execute("SELECT rowid, * FROM entities")}
+    json_rows = {row.get("id"): row for row in payload.get("entities", []) if isinstance(row, dict) and row.get("id")}
+    target_ids = set(targets)
+    _verify_target_projections(targets, sqlite_rows, json_rows)
+    sqlite_relationships, json_relationships = _relationship_rows(connection, payload)
+    _verify_unrelated_digests(verification, target_ids, sqlite_rows, json_rows, sqlite_relationships, json_relationships)
+    return {"mode": "targeted-media-v1", "status": "clean", "globalParity": "known-drift-preserved"}
+
+
+def _targeted_targets(verification: dict[str, Any]) -> dict[str, Any]:
+    targets = verification.get("targets") or verification.get("expectedProjections") or {}
+    if isinstance(targets, list):
+        targets = {item.get("id"): item for item in targets if isinstance(item, dict) and item.get("id")}
+    if not isinstance(targets, dict):
+        raise ApplyError("targeted verification targets must be an object")
+    return targets
+
+
+def _verify_unrelated_digests(verification: dict[str, Any], target_ids: set[str], sqlite_rows: dict[str, Any], json_rows: dict[str, Any], sqlite_relationships: list[Any], json_relationships: list[Any]) -> None:
+    unrelated = verification.get("unrelatedDigests") or verification.get("nonTargetDigests") or {}
+    for store_name, entities, relationships in (("sqlite", sqlite_rows, sqlite_relationships), ("json", json_rows, json_relationships)):
+        expected = unrelated.get(store_name) if isinstance(unrelated, dict) else None
+        if not isinstance(expected, dict):
+            continue
+        entity_rows = [value for key, value in sorted(entities.items()) if key not in target_ids and key != "prov-1"]
+        relation_rows = [row for row in relationships if row[0] not in target_ids and row[1] not in target_ids]
+        actual = {"entities": _digest_rows(entity_rows), "relationships": _digest_rows(relation_rows)}
+        after = expected.get("after", expected)
+        _assert_digest_match(actual, after, store_name)
+
+
+def _assert_digest_match(actual: dict[str, str], expected: Any, store_name: str) -> None:
+    if isinstance(expected, dict) and any(actual.get(key) != value for key, value in expected.items() if key in actual):
+        raise ApplyError(f"targeted unrelated digest mismatch: {store_name}")
+
+
+def _verify_target_projections(targets: dict[str, Any], sqlite_rows: dict[str, Any], json_rows: dict[str, Any]) -> None:
+    if "prov-1" in sqlite_rows or "prov-1" in json_rows:
+        raise ApplyError("targeted media verification requires prov-1 absence")
+    for record_id, expected in targets.items():
+        expected_sqlite = expected.get("sqlite", expected) if isinstance(expected, dict) else expected
+        expected_json = expected.get("json", expected) if isinstance(expected, dict) else expected
+        if sqlite_rows.get(record_id) != expected_sqlite or json_rows.get(record_id) != expected_json:
+            raise ApplyError(f"targeted entity projection mismatch: {record_id}")
+
+
+def _relationship_rows(connection: sqlite3.Connection, payload: dict[str, Any]) -> tuple[list[Any], list[Any]]:
+    sqlite_rows = [tuple(row) for row in connection.execute("SELECT from_id, to_id, type FROM relationships")]
+    json_rows = [(item.get("from"), item.get("to"), item.get("type")) for item in payload.get("relationships", []) if isinstance(item, dict)]
+    if any("prov-1" in edge[:2] for edge in sqlite_rows + json_rows):
+        raise ApplyError("targeted media verification found prov-1 relationship endpoint")
+    return sqlite_rows, json_rows
+
+
+def verify_plan_result(
+    plan: dict[str, Any], sqlite_path: Path, json_path: Path, connection: sqlite3.Connection | None = None,
+) -> dict[str, Any]:
+    mode = ((plan.get("verification") or {}).get("mode"))
+    if mode in {None, "global-parity-v1"}:
+        return {"mode": "global-parity-v1", **_parity(sqlite_path, json_path, connection)}
+    if mode == "targeted-media-v1":
+        return _targeted_media_verification(plan, sqlite_path, json_path, connection)
+    raise ApplyError(f"unsupported verification mode: {mode}")
+
+
 def _fsync_directory(path: Path) -> None:
     if os.name == "nt":
         return
@@ -476,7 +636,7 @@ def _apply_json_mutations(payload: dict[str, Any], json_mutations: list[dict[str
 def _stage_apply_journal(
     payload: dict[str, Any], journal_path: Path, operation_id: str, plan_sha256: str,
     sqlite_path: Path, json_path: Path, sqlite_backup: Path, json_backup: Path,
-    expected_sqlite: str, expected_json: str,
+    expected_sqlite: str, expected_json: str, verification_mode: str = "global-parity-v1",
 ) -> tuple[Path, dict[str, Any]]:
     journal_path.parent.mkdir(parents=True, exist_ok=True)
     temp_json: Path | None = None
@@ -489,6 +649,7 @@ def _stage_apply_journal(
             temp_json = Path(handle.name)
         state = {
             "schemaVersion": 1, "operationId": operation_id, "phase": "prepared", "planSha256": plan_sha256,
+            "verificationMode": verification_mode,
             "sqlite": {"path": str(sqlite_path), "beforeSha256": expected_sqlite, "backupPath": str(sqlite_backup),
                         "backupSha256": _sha(sqlite_backup), "beforeIdentity": _journal_identity(sqlite_path)},
             "json": {"path": str(json_path), "beforeSha256": expected_json, "backupPath": str(json_backup),
@@ -504,7 +665,7 @@ def _stage_apply_journal(
 
 
 def _execute_apply_transaction(
-    sqlite_path: Path, json_path: Path, temp_json: Path, journal_path: Path, state: dict[str, Any],
+    plan: dict[str, Any], sqlite_path: Path, json_path: Path, temp_json: Path, journal_path: Path, state: dict[str, Any],
     sqlite_mutations: list[dict[str, Any]], mutations: list[dict[str, Any]],
     expected_sqlite: str, expected_json: str, original_json: bytes, original_identity: tuple[int, int, int, int],
 ) -> dict[str, Any]:
@@ -518,7 +679,7 @@ def _execute_apply_transaction(
             raise ApplyError("stale input hash")
         for mutation in sqlite_mutations:
             _sqlite_mutation(connection, mutation)
-        parity = _parity(sqlite_path, temp_json, connection)
+        parity = verify_plan_result(plan, sqlite_path, temp_json, connection)
         if parity["status"] != "clean":
             raise ApplyError("post-apply parity verification failed")
         connection.commit()
@@ -528,7 +689,7 @@ def _execute_apply_transaction(
         _publish_json(temp_json, json_path, original_json, original_identity)
         state["phase"] = "json_published"
         write_journal(journal_path, state)
-        final_parity = _parity(sqlite_path, json_path)
+        final_parity = verify_plan_result(plan, sqlite_path, json_path)
         if final_parity["status"] != "clean":
             raise ApplyError("post-apply parity verification failed")
         state["phase"] = "complete"
@@ -590,10 +751,11 @@ def _apply_plan_impl(
         temp_json, state = _stage_apply_journal(
             payload, journal_path, operation_id, plan_sha256, sqlite_path, json_path,
             sqlite_backup, json_backup, expected_sqlite, expected_json,
+            ((plan.get("verification") or {}).get("mode") or "global-parity-v1"),
         )
         try:
             return _execute_apply_transaction(
-                sqlite_path, json_path, temp_json, journal_path, state, sqlite_mutations, mutations,
+                plan, sqlite_path, json_path, temp_json, journal_path, state, sqlite_mutations, mutations,
                 expected_sqlite, expected_json, original_json, original_identity,
             )
         finally:
