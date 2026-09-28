@@ -45,3 +45,9 @@ On 2026-09-29, the controller reran `python scripts/ops/generate_batch_21.py` tw
 Added strict manifest validation for exact keys, frozen metadata, list/string types, 1/2/37 partition counts, sorted uniqueness, disjointness, and total cardinality. RED coverage demonstrated that an extra-key manifest was previously accepted. Corrected the authoritative placeholder ID to the required `ba-nhi-bun-bo-hue-vinh-long-vinh-long` spelling in the manifest, revocation inventory, and regenerated ledger.
 
 Round 1 focused GREEN: `17 passed`; `python -m ruff check`, `py_compile`, and `git diff --check` passed for the changed validation/test files.
+
+## Round 2 Fix
+
+Reconciled the Batch 21 placeholder back to the actual protected/source-ledger entity ID `ba-nhi-bun-bo-hue-vinh-long` (the plan-list double-suffix spelling is nonexistent). Added a regression asserting every frozen manifest ID exists in protected `web/data.json`.
+
+Full Task 4 focused GREEN: `82 passed`. Generator ran twice with identical SHA-256 `B2B3B2E7EEC419BD631F61481BA0BEA1C6C5CCC9A51C5E57F6A343C788CB5DC4`. `python -m ruff check`, `py_compile`, and `git diff --check` passed. Protected hashes and mtimes remained unchanged: DB `EA83864990CF8455061B2436F072C097BC7011F56428C5BA3BA43BCD66FB78A4`; `web/data.json` `8AC327DE6C4F273C96EFE99004F6A1858BA41AF43799EBCDAE5CD7F31316D92F`; SQLite sidecar inventory unchanged.

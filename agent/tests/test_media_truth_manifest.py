@@ -17,7 +17,7 @@ def test_batch_21_manifest_freezes_exact_partition_and_revision() -> None:
     assert truth.delete == ("prov-1",)
     assert truth.ai_generated == ("cua-com-duyen-hai", "tep-rang-dua")
     assert len(truth.generated_placeholder) == 37
-    assert truth.generated_placeholder[0] == "ba-nhi-bun-bo-hue-vinh-long-vinh-long"
+    assert truth.generated_placeholder[0] == "ba-nhi-bun-bo-hue-vinh-long"
     all_ids = truth.delete + truth.ai_generated + truth.generated_placeholder
     assert len(all_ids) == 40
     assert len(set(all_ids)) == 40
@@ -85,3 +85,11 @@ def test_manifest_loader_accepts_valid_manifest_copy(tmp_path: Path) -> None:
     manifest_path.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
     truth = load_batch_21_truth(tmp_path)
     assert truth.revision == "batch-21-media-truth-v1"
+
+
+def test_manifest_ids_bind_to_current_protected_source_records() -> None:
+    root = Path(__file__).resolve().parents[2]
+    source = json.loads((root / "web/data.json").read_text(encoding="utf-8"))
+    source_ids = {entity["id"] for entity in source["entities"]}
+    truth = load_batch_21_truth(root)
+    assert set(truth.delete + truth.ai_generated + truth.generated_placeholder) <= source_ids
