@@ -7,7 +7,7 @@ const VISIT_KEY = 'vl360-visit-count'
 
 export type RegionSlug = 'vinh-long' | 'ben-tre' | 'tra-vinh' | 'all'
 
-const API_REGIONS: Record<Exclude<RegionSlug, 'all'>, PreferenceRegionChoice> = {
+const API_REGIONS: Record<'vinh-long', PreferenceRegionChoice> = {
   'vinh-long': { id: 'province-vl', label: 'Vĩnh Long', scope: 'province' },
 }
 
