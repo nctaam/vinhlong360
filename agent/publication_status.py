@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from pathlib import Path
 
 if __package__:
+    from .media_truth_manifest import reviewed_removal_ids
     from .public_entity_types import REVIEWED_NON_PLACE_ENTITY_TYPES
     from .source_policy import has_external_source_url
 else:
+    from media_truth_manifest import reviewed_removal_ids
     from public_entity_types import REVIEWED_NON_PLACE_ENTITY_TYPES
     from source_policy import has_external_source_url
 
@@ -14,12 +17,11 @@ else:
 PUBLICATION_POLICY_REVISION = "published-v1"
 PUBLISHED_V1_EXCLUSIONS = frozenset(
     {
-        "prov-1",
         "test-mutation-create",
         "test-mutation-update",
         "cu-lao-dai-song-co-chien-vung-liem",
     }
-)
+) | reviewed_removal_ids(Path(__file__).resolve().parents[1])
 PUBLICATION_REASON_ORDER = (
     "status-missing",
     "status-not-null",
@@ -33,6 +35,7 @@ PUBLICATION_REASON_ORDER = (
 )
 
 _MISSING = object()
+_DEFAULT_REVIEWED_EXCLUSIONS = object()
 _NON_PUBLIC_FLAGS = (
     "is_private",
     "private",
@@ -100,8 +103,17 @@ def _validate_reviewed_exclusions(reviewed_exclusions: object) -> None:
 def decide_publication_candidate(
     entity: Mapping[str, object],
     *,
-    reviewed_exclusions: frozenset[str] = PUBLISHED_V1_EXCLUSIONS,
+    reviewed_exclusions: frozenset[str] | object = _DEFAULT_REVIEWED_EXCLUSIONS,
+    root: Path | None = None,
 ) -> PublicationDecision:
+    if reviewed_exclusions is _DEFAULT_REVIEWED_EXCLUSIONS:
+        reviewed_exclusions = frozenset(
+            {
+                "test-mutation-create",
+                "test-mutation-update",
+                "cu-lao-dai-song-co-chien-vung-liem",
+            }
+        ) | reviewed_removal_ids(root or Path(__file__).resolve().parents[1])
     _validate_reviewed_exclusions(reviewed_exclusions)
     if not isinstance(entity, Mapping):
         raise TypeError("entity must be a mapping")

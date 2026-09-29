@@ -337,6 +337,12 @@ def test_reviewed_exclusion_is_the_only_reason_for_an_otherwise_valid_row():
     )
 
 
+def test_manifest_tombstone_excludes_prov1_before_or_after_physical_delete():
+    decision = decide_publication_candidate(_candidate(id="prov-1"))
+    assert decision.eligible is False
+    assert decision.reasons == ("reviewed-exclusion",)
+
+
 @pytest.mark.parametrize("entity_id", [None, 1, True, ["prov-1"]])
 def test_non_string_ids_do_not_match_or_crash(entity_id: object):
     assert decide_publication_candidate(_candidate(id=entity_id)).eligible is True
