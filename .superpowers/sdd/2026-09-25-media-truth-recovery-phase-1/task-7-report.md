@@ -176,3 +176,9 @@ Direct R20.8: build_media_truth_plan.py [], stage_data_reconciliation.py []
 git diff --check -- <scoped Fix Round 2 files>
 passed
 ```
+Post-commit Fix Round 2 full focused run:
+
+```text
+PYTEST_DEBUG_TEMPROOT=C:\vlt_task7_round2_full python -m pytest -q tests/checks/test_build_media_truth_plan.py tests/checks/test_stage_data_reconciliation.py tests/test_entity_write_guard.py tests/checks/test_apply_data_reconciliation.py
+79 passed, 1 skipped in 155.17s
+```
