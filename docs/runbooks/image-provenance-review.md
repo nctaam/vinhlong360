@@ -114,6 +114,28 @@ protected SQLite database's `-wal`, `-shm`, `-journal`, and
 `.reconciliation.lock` paths. It must never be used to create or replace those
 files.
 
+## Catalog-wide media truth inventory
+
+Build the inventory from the staged candidate only; never point this command at
+the live JSON or SQLite paths:
+
+```powershell
+python scripts/checks/build_media_truth_inventory.py `
+  --data .tmp/media-truth-candidate/candidate/data.json `
+  --asset-root .tmp/media-truth-candidate/candidate/public/img/entities `
+  --truth docs/standards/batch-21-media-truth.json `
+  --output outputs/media-truth-inventory-2026-09-25.json
+```
+
+The output is a deterministic, LF-only, sorted-key inventory with one row per
+candidate entity. It classifies only explicit truth-manifest and rights
+evidence; file size, filenames, visual resemblance, and mutable dates never
+upgrade a row. Unknown records are quarantined, missing documentary evidence is
+reported for owner review, and every row has `proposedMutation: null`. The
+inventory always declares `mutationAllowed: false` and is evidence for review,
+not an apply or publication authorization. Run it twice and compare the output
+bytes before attaching it to an owner-review package.
+
 ## Owner review checklist
 
 - Confirm the URL resolves to the exact image or its authoritative publication.
