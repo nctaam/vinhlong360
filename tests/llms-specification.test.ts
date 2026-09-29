@@ -19,23 +19,25 @@ describe('LLMs Machine-Readable Specification Compliance (llmstxt.org)', () => {
     expect(content.length).toBeGreaterThan(500)
     expect(content).toContain('# vinhlong360.vn')
     expect(content).toContain('/llms-full.txt')
-    expect(content).toContain('1772')
     expect(content).toContain('33')
     expect(content).toContain('124')
     expect(content).toContain('GET /api/v1/entities')
   })
 
-  it('verifies llms-full.txt exists and contains exhaustive data for all 1772 verified photo entities', () => {
+  it('verifies llms-full.txt exists and covers every entity with type-aware media truth', () => {
     expect(fs.existsSync(LLMS_FULL_TXT_PATH)).toBe(true)
     const content = fs.readFileSync(LLMS_FULL_TXT_PATH, 'utf8')
     expect(content.length).toBeGreaterThan(100000)
 
-    expect(verifiedEntities.length).toBe(1772)
-    for (const e of verifiedEntities) {
+    for (const e of data.entities.filter((item: any) => item.id !== 'prov-1')) {
       expect(content).toContain(e.id)
-      expect(content).toContain('/img/entities/' + e.id + '.webp')
-      if (e.attributes?.image_author) {
-        expect(content).toContain(e.attributes.image_author)
+      const attrs = e.attributes || {}
+      if (attrs.image_type === 'ai-generated') {
+        expect(content).toContain('Minh họa AI')
+      } else if (attrs.image_type === 'generated-placeholder') {
+        expect(content).toContain('Minh họa đồ họa')
+      } else if (['documentary', 'journalistic', 'official', 'press'].includes(attrs.image_type)) {
+        expect(Boolean(attrs.image_author && attrs.image_source && (attrs.image_license || attrs.image_source_url))).toBe(true)
       }
     }
   })

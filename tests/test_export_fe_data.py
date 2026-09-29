@@ -159,3 +159,21 @@ def test_type_meta_covers_all_common_types() -> None:
                 "nature", "craft_village", "event", "experience", "person", "drink"}
     for t in expected:
         assert t in export_fe_data.TYPE_META, f"{t} missing from TYPE_META"
+
+
+def test_frontend_export_uses_only_the_explicit_candidate_source(tmp_path: Path) -> None:
+    candidate_json = tmp_path / "candidate.json"
+    candidate_json.write_text(json.dumps({"entities": SAMPLE_ENTITIES, "relationships": []}), encoding="utf-8")
+    outputs = export_fe_data.export_frontend_data(
+        sqlite_path=None,
+        json_path=candidate_json,
+        output_dir=tmp_path / "out",
+    )
+    index = json.loads(outputs["entity_index"].read_text(encoding="utf-8"))
+    assert "prov-1" not in {row["id"] for row in index}
+
+
+def test_frontend_export_requires_exactly_one_source(tmp_path: Path) -> None:
+    import pytest
+    with pytest.raises(ValueError):
+        export_fe_data.export_frontend_data(sqlite_path=None, json_path=None, output_dir=tmp_path)

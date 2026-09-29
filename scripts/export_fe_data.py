@@ -13,6 +13,8 @@ Usage:
 """
 
 import json
+import argparse
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -74,7 +76,7 @@ def get_place_name(entities: list, place_id: str) -> str:
     return ""
 
 
-def export_entity_index(entities: list, places: dict):
+def export_entity_index(entities: list, places: dict, output_dir: Path | None = None):
     content_entities = [e for e in entities if e.get("type") != "place"]
 
     items = []
@@ -98,14 +100,15 @@ def export_entity_index(entities: list, places: dict):
             "coords": coords,
         })
 
-    out_path = OUT_DIR / "entity-index.json"
+    out_path = (output_dir or OUT_DIR) / "entity-index.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(items, f, ensure_ascii=False, separators=(",", ":"))
     print(f"[OK] entity-index.json: {len(items)} entities ({out_path.stat().st_size / 1024:.0f} KB)")
     return items
 
 
-def export_areas(entities: list):
+def export_areas(entities: list, output_dir: Path | None = None):
     area_counts = {}
     for e in entities:
         if e.get("type") == "place":
@@ -121,14 +124,15 @@ def export_areas(entities: list):
             "entity_count": count,
         })
 
-    out_path = OUT_DIR / "areas.json"
+    out_path = (output_dir or OUT_DIR) / "areas.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(items, f, ensure_ascii=False, indent=2)
     print(f"[OK] areas.json: {len(items)} areas")
     return items
 
 
-def export_types(entities: list):
+def export_types(entities: list, output_dir: Path | None = None):
     type_counts = {}
     for e in entities:
         if e.get("type") == "place":
@@ -146,28 +150,83 @@ def export_types(entities: list):
             "count": count,
         })
 
-    out_path = OUT_DIR / "types.json"
+    out_path = (output_dir or OUT_DIR) / "types.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(items, f, ensure_ascii=False, indent=2)
     print(f"[OK] types.json: {len(items)} types")
     return items
 
 
-def main():
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
+def _load_json_source(path: Path) -> list[dict]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict) or not isinstance(payload.get("entities"), list):
+        raise ValueError("JSON source must contain an entities list")
+    return payload["entities"]
 
-    entities, source = load_all()
-    print(f"[INFO] Loaded {len(entities)} entities from {source}")
 
-    # Build place lookup
-    places = {}
-    for e in entities:
-        if e.get("type") == "place":
-            places[e.get("id", "")] = e.get("name", "")
+def _load_sqlite_source(path: Path) -> list[dict]:
+    uri = f"file:{path.resolve().as_posix()}?mode=ro&immutable=1"
+    try:
+        with sqlite3.connect(uri, uri=True) as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute("SELECT * FROM entities ORDER BY id").fetchall()
+    except sqlite3.Error as exc:
+        raise ValueError(f"cannot read SQLite source: {path}") from exc
+    entities = []
+    for row in rows:
+        item = dict(row)
+        for field in ("images", "coordinates", "attributes", "season"):
+            if isinstance(item.get(field), str):
+                try:
+                    item[field] = json.loads(item[field])
+                except json.JSONDecodeError:
+                    pass
+        entities.append(item)
+    return entities
 
-    index = export_entity_index(entities, places)
-    areas = export_areas(entities)
-    types = export_types(entities)
+
+def export_frontend_data(*, sqlite_path: Path | None, json_path: Path | None, output_dir: Path) -> dict[str, Path]:
+    """Export all FE indexes from exactly one explicitly selected source."""
+    if (sqlite_path is None) == (json_path is None):
+        raise ValueError("exactly one of sqlite_path or json_path must be provided")
+    output_dir = Path(output_dir)
+    if sqlite_path is not None:
+        entities = _load_sqlite_source(Path(sqlite_path))
+    else:
+        entities = _load_json_source(Path(json_path))
+    places = {
+        e.get("id", ""): e.get("name", "")
+        for e in entities
+        if e.get("type") == "place"
+    }
+    export_entity_index(entities, places, output_dir)
+    export_areas(entities, output_dir)
+    export_types(entities, output_dir)
+    return {
+        "entity_index": output_dir / "entity-index.json",
+        "areas": output_dir / "areas.json",
+        "types": output_dir / "types.json",
+    }
+
+
+def main(argv: list[str] | None = None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    source_group = parser.add_mutually_exclusive_group(required=True)
+    source_group.add_argument("--sqlite", type=Path)
+    source_group.add_argument("--json", dest="json_path", type=Path)
+    parser.add_argument("--output-dir", type=Path, default=OUT_DIR)
+    args = parser.parse_args(argv)
+    outputs = export_frontend_data(
+        sqlite_path=args.sqlite,
+        json_path=args.json_path,
+        output_dir=args.output_dir,
+    )
+    entities = _load_sqlite_source(args.sqlite) if args.sqlite else _load_json_source(args.json_path)
+    print(f"[INFO] Loaded {len(entities)} entities from {'sqlite' if args.sqlite else 'json'}")
+    index = json.loads(outputs["entity_index"].read_text(encoding="utf-8"))
+    areas = json.loads(outputs["areas"].read_text(encoding="utf-8"))
+    types = json.loads(outputs["types"].read_text(encoding="utf-8"))
 
     print(f"\n{'='*40}")
     print("Export Summary")
@@ -175,8 +234,8 @@ def main():
     print(f"  Entities:  {len(index)}")
     print(f"  Areas:     {len(areas)}")
     print(f"  Types:     {len(types)}")
-    print(f"  Source:    {source}")
-    print(f"  Output:    {OUT_DIR}")
+    print(f"  Source:    {'sqlite' if args.sqlite else 'json'}")
+    print(f"  Output:    {args.output_dir}")
 
 
 if __name__ == "__main__":

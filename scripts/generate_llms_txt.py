@@ -5,6 +5,8 @@ Tuân thủ chuẩn llmstxt.org và quy tắc địa giới hành chính 2 cấp
 """
 
 import json
+import argparse
+from dataclasses import dataclass
 from pathlib import Path
 
 ROOT_DIR = Path(r"c:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot")
@@ -14,8 +16,8 @@ LLMS_FULL_TXT_PATH = ROOT_DIR / "web-nuxt" / "public" / "llms-full.txt"
 SITE_URL = "https://vinhlong360.vn"
 
 
-def load_data():
-    with open(DATA_JSON_PATH, "r", encoding="utf-8") as f:
+def load_data(data_path: Path = DATA_JSON_PATH):
+    with open(data_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -26,11 +28,60 @@ def sanitize_historical(text: str) -> str:
     )
 
 
+@dataclass(frozen=True)
+class PhotoEvidence:
+    credit: str
+    source_url: str
+
+
+def _nonempty_text(value: object) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _has_rights_bundle(attrs: dict) -> bool:
+    if not all(_nonempty_text(attrs.get(name)) for name in ("image_author", "image_source", "image_license")):
+        return False
+    source_url = attrs.get("image_source_url")
+    if not isinstance(source_url, str) or not source_url.strip().startswith(("http://", "https://")):
+        return False
+    permission = attrs.get("permission_evidence") or attrs.get("rights_evidence") or attrs.get("permission")
+    return _nonempty_text(permission)
+
+
+def sourced_photo_evidence(attrs: dict) -> PhotoEvidence | None:
+    """Return evidence only when the candidate contains a complete rights bundle."""
+    image_type = str(attrs.get("image_type") or "").strip().lower()
+    if image_type not in {"documentary", "journalistic", "official", "press"}:
+        return None
+    if attrs.get("is_verified_photo") is not True:
+        return None
+    if not _has_rights_bundle(attrs):
+        return None
+    source_url = attrs.get("image_source_url")
+    return PhotoEvidence(
+        credit=f"{attrs['image_author'].strip()} · {attrs['image_source'].strip()}",
+        source_url=source_url.strip(),
+    )
+
+
+def media_lines(entity: dict) -> list[str]:
+    attrs = entity.get("attributes") or {}
+    image_type = attrs.get("image_type")
+    if image_type == "ai-generated":
+        return ["- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ."]
+    if image_type == "generated-placeholder":
+        return ["- **Hình ảnh**: Minh họa đồ họa — chưa có ảnh riêng cho thực thể."]
+    evidence = sourced_photo_evidence(attrs)
+    if evidence is not None:
+        return [
+            f"- **Ảnh có nguồn**: {evidence.credit}",
+            f"- **Nguồn truy vết**: {evidence.source_url}",
+        ]
+    return ["- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc."]
+
+
 def format_entity_block(e: dict) -> list:
     eid = e["id"]
-    attrs = e.get("attributes") or {}
-    author = attrs.get("image_author", "Phóng viên")
-    source = attrs.get("image_source", "Báo chí địa phương")
     summary = sanitize_historical(e.get("summary") or e.get("description") or "")
     coords = e.get("coordinates")
     coord_str = f"[{coords[0]:.4f}, {coords[1]:.4f}]" if coords and len(coords) >= 2 else "N/A"
@@ -41,9 +92,7 @@ def format_entity_block(e: dict) -> list:
     return [
         f"#### [{name}]({SITE_URL}/dia-diem/{eid})",
         f"- **Mã ID**: `{eid}` | **Phân loại**: `{entity_type}` | **Địa bàn**: {place} | **Tọa độ**: {coord_str}",
-        f"- **Ảnh tư liệu WebP**: `{SITE_URL}/img/entities/{eid}.webp`",
-        f"- **Tác giả ảnh**: {author} · **Cơ quan**: {source}",
-        f"- **Bản quyền hình ảnh**: [Điều khoản sử dụng]({SITE_URL}/dieu-khoan-su-dung) | [Cấp phép]({SITE_URL}/lien-he)",
+        *media_lines(e),
         f"- **Tóm lược**: {summary}",
         ""
     ]
@@ -111,12 +160,12 @@ def build_llms_full_txt(entities, itineraries, verified_entities, wards):
     lines.append("- Cấp huyện đã bãi bỏ; các địa danh huyện cũ (Long Hồ, Mang Thít, Ba Tri, Châu Thành, Càng Long, Cầu Kè, Trà Cú...) chỉ mang giá trị lịch sử và chỉ dẫn vị trí địa lý dân gian.")
     lines.append("")
 
-    lines.append(f"## 2. Danh Mục {len(verified_entities)} Thực Thể Xác Minh Ảnh Tư Liệu Báo Chí & Giấy Phép Google Images")
+    lines.append(f"## 2. Danh Mục {len(entities)} Thực Thể Và Trạng Thái Hình Ảnh")
     lines.append("")
-    lines.append("Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính thống được lưu trữ nội bộ chuẩn WebP, tích hợp siêu dữ liệu Schema.org `ImageObject` với đầy đủ bản quyền (`creator`, `creditText`, `copyrightNotice`, `license`, `acquireLicensePage`).")
+    lines.append("Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng chứng truy vết đã có trong dữ liệu ứng viên; không suy diễn nguồn, tác giả hay giấy phép còn thiếu.")
     lines.append("")
 
-    for e in verified_entities:
+    for e in entities:
         lines.extend(format_entity_block(e))
 
     lines.append(f"## 3. Danh Mục {len(itineraries)} Tuyến Lộ Trình Du Lịch Liên Vùng Chuyên Đề")
@@ -182,9 +231,9 @@ def build_llms_full_txt(entities, itineraries, verified_entities, wards):
     return "\n".join(lines)
 
 
-def main():
-    data = load_data()
-    entities = data.get("entities", [])
+def generate_llms(data_path: Path, output_dir: Path) -> dict[str, Path]:
+    data = load_data(Path(data_path))
+    entities = [e for e in data.get("entities", []) if e.get("id") != "prov-1"]
     itineraries = data.get("itineraries", [])
 
     verified_entities = [
@@ -193,26 +242,37 @@ def main():
     ]
     wards = [
         e for e in entities
-        if e.get("type") == "place"
-        and e.get("level") in {"xa", "phuong"}
-        and e.get("parentId") == "vinh-long"
+        if e.get("type") == "place" and e.get("id") != "prov-1"
     ]
-
-    print(f"Entities: {len(entities)}")
-    print(f"Verified photo entities: {len(verified_entities)}")
-    print(f"Itineraries: {len(itineraries)}")
-    print(f"Wards: {len(wards)}")
 
     llms_txt_content = build_llms_txt(entities, itineraries, verified_entities, wards)
     llms_full_txt_content = build_llms_full_txt(entities, itineraries, verified_entities, wards)
-
-    with open(LLMS_TXT_PATH, "w", encoding="utf-8") as f:
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    llms_path = output_dir / "llms.txt"
+    full_path = output_dir / "llms-full.txt"
+    with llms_path.open("w", encoding="utf-8") as f:
         f.write(llms_txt_content)
-    print(f"Written {LLMS_TXT_PATH} ({len(llms_txt_content.encode('utf-8'))} bytes)")
-
-    with open(LLMS_FULL_TXT_PATH, "w", encoding="utf-8") as f:
+    with full_path.open("w", encoding="utf-8") as f:
         f.write(llms_full_txt_content)
-    print(f"Written {LLMS_FULL_TXT_PATH} ({len(llms_full_txt_content.encode('utf-8'))} bytes)")
+    return {"llms": llms_path, "llms_full": full_path}
+
+
+def main(argv: list[str] | None = None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--data", type=Path, default=DATA_JSON_PATH)
+    parser.add_argument("--llms-output", type=Path, default=LLMS_TXT_PATH)
+    parser.add_argument("--llms-full-output", type=Path, default=LLMS_FULL_TXT_PATH)
+    args = parser.parse_args(argv)
+    outputs = generate_llms(args.data, args.llms_output.parent)
+    if outputs["llms"] != args.llms_output:
+        args.llms_output.parent.mkdir(parents=True, exist_ok=True)
+        args.llms_output.write_bytes(outputs["llms"].read_bytes())
+    if outputs["llms_full"] != args.llms_full_output:
+        args.llms_full_output.parent.mkdir(parents=True, exist_ok=True)
+        args.llms_full_output.write_bytes(outputs["llms_full"].read_bytes())
+    print(f"Written {args.llms_output}")
+    print(f"Written {args.llms_full_output}")
 
 
 if __name__ == "__main__":
