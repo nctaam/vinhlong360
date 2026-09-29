@@ -31,6 +31,12 @@ CLASSIFICATIONS = (
 )
 DOCUMENTARY_TYPES = {"documentary", "journalistic", "official", "press"}
 TRUTH_KEYS = {"schemaVersion", "revision", "sourceLedgerCommit", "aiEvidenceCommit", "delete", "ai_generated", "generated_placeholder"}
+TRUTH_METADATA = {
+    "schemaVersion": 1,
+    "revision": "batch-21-media-truth-v1",
+    "sourceLedgerCommit": "68d59f0f",
+    "aiEvidenceCommit": "30a3fae9",
+}
 
 
 def _sha256(path: Path) -> str:
@@ -59,22 +65,30 @@ def _load_json(path: Path, label: str) -> Any:
         raise InventoryError(f"invalid {label}: {path}") from exc
 
 
+def _truth_partition(truth: dict[str, Any], key: str) -> set[str]:
+    values = truth.get(key)
+    if not isinstance(values, list) or any(not isinstance(value, str) or not value.strip() for value in values):
+        raise InventoryError(f"truth manifest field {key} must be a list of IDs")
+    if values != sorted(set(values)):
+        raise InventoryError(f"truth manifest field {key} must be sorted and unique")
+    return set(values)
+
+
 def _truth_sets(truth_path: Path) -> dict[str, set[str]]:
     truth = _load_json(truth_path, "truth manifest")
-    if not isinstance(truth, dict) or set(truth) != TRUTH_KEYS or truth.get("schemaVersion") != 1:
+    if not isinstance(truth, dict) or set(truth) != TRUTH_KEYS:
         raise InventoryError("truth manifest schema mismatch")
-    sets: dict[str, set[str]] = {}
-    for key in ("delete", "ai_generated", "generated_placeholder"):
-        values = truth.get(key)
-        if not isinstance(values, list) or any(not isinstance(value, str) or not value.strip() for value in values):
-            raise InventoryError(f"truth manifest field {key} must be a list of IDs")
-        if len(values) != len(set(values)):
-            raise InventoryError(f"truth manifest field {key} contains duplicate IDs")
-        sets[key] = set(values)
+    if {key: truth.get(key) for key in TRUTH_METADATA} != TRUTH_METADATA:
+        raise InventoryError("truth manifest schema mismatch")
+    sets = {key: _truth_partition(truth, key) for key in ("delete", "ai_generated", "generated_placeholder")}
     if sets["delete"] & (sets["ai_generated"] | sets["generated_placeholder"]):
         raise InventoryError("truth manifest classifications overlap deleted IDs")
     if sets["ai_generated"] & sets["generated_placeholder"]:
         raise InventoryError("truth manifest classifications overlap")
+    if tuple(len(sets[key]) for key in ("delete", "ai_generated", "generated_placeholder")) != (1, 2, 37):
+        raise InventoryError("truth manifest partition counts must be 1/2/37")
+    if len(set.union(*sets.values())) != 40:
+        raise InventoryError("truth manifest partitions must contain 40 IDs")
     return sets
 
 
@@ -106,23 +120,40 @@ def _image_paths(entity: dict[str, Any], asset_root: Path) -> list[tuple[str, Pa
     return result
 
 
-def _stage_asset_hashes(root: Path) -> dict[str, str]:
+def _retained_asset(item: Any, reviewed_ids: set[str]) -> tuple[str, str]:
+    if not isinstance(item, dict) or not isinstance(item.get("id"), str) or not isinstance(item.get("sha256"), str):
+        raise InventoryError("candidate stage result contains malformed asset identity")
+    if item["id"] not in reviewed_ids:
+        raise InventoryError(f"staged retained asset is outside reviewed scope: {item['id']}")
+    if item.get("sourceSha256") not in {None, item["sha256"]}:
+        raise InventoryError(f"staged source hash mismatch: {item['id']}")
+    return item["id"], item["sha256"]
+
+
+def _stage_asset_hashes(root: Path, truth: dict[str, set[str]]) -> dict[str, str]:
     stage_path = root / "stage-result.json"
     if not stage_path.is_file():
         raise InventoryError("candidate stage result is missing")
     stage = _load_json(stage_path, "stage result")
     if not isinstance(stage, dict) or stage.get("mutationAllowed") is not False:
         raise InventoryError("candidate stage result must be non-authorizing")
-    retained = (stage.get("assets") or {}).get("retained", [])
-    if not isinstance(retained, list):
-        raise InventoryError("candidate stage result retained assets must be a list")
+    assets = stage.get("assets")
+    if not isinstance(assets, dict) or not isinstance(assets.get("retained"), list) or not isinstance(assets.get("removed"), list):
+        raise InventoryError("candidate stage result must contain retained and removed asset lists")
+    retained = assets["retained"]
+    removed = assets["removed"]
     expected: dict[str, str] = {}
+    reviewed_ids = truth["ai_generated"] | truth["generated_placeholder"]
     for item in retained:
-        if not isinstance(item, dict) or not isinstance(item.get("id"), str) or not isinstance(item.get("sha256"), str):
-            raise InventoryError("candidate stage result contains malformed asset identity")
-        if item["id"] in expected:
-            raise InventoryError(f"duplicate staged asset: {item['id']}")
-        expected[item["id"]] = item["sha256"]
+        entity_id, digest = _retained_asset(item, reviewed_ids)
+        if entity_id in expected:
+            raise InventoryError(f"duplicate staged asset: {entity_id}")
+        expected[entity_id] = digest
+    removed_ids = [item.get("id") for item in removed if isinstance(item, dict)]
+    if removed_ids != sorted(truth["delete"]):
+        raise InventoryError("staged removed assets do not match the frozen delete partition")
+    if set(expected) != reviewed_ids:
+        raise InventoryError("staged retained assets do not match the frozen media partitions")
     return expected
 
 
@@ -142,24 +173,39 @@ def _missing_requirements(attrs: dict[str, Any]) -> list[str]:
     return sorted(set(missing))
 
 
-def _classify(entity: dict[str, Any], truth: dict[str, set[str]]) -> tuple[str, str, str, list[str]]:
-    entity_id = entity["id"]
-    attrs = entity.get("attributes") or {}
+def _truth_classification(entity_id: str, attrs: dict[str, Any], truth: dict[str, set[str]]) -> tuple[str, str, str, list[str]] | None:
     if entity_id in truth["delete"]:
         raise InventoryError(f"deleted entity present in candidate: {entity_id}")
     if entity_id in truth["ai_generated"]:
-        if attrs.get("image_type") != "ai-generated" or not attrs.get("image_generation_reference"):
+        if (
+            attrs.get("image_type") != "ai-generated"
+            or attrs.get("is_verified_photo") is not False
+            or not attrs.get("image_generation_reference")
+        ):
             raise InventoryError(f"AI entity lacks explicit generation evidence: {entity_id}")
         return "ai-generated", "Batch 21 truth manifest with explicit generation reference", "non_photographic", []
     if entity_id in truth["generated_placeholder"]:
-        if attrs.get("image_type") != "generated-placeholder":
+        if attrs.get("image_type") != "generated-placeholder" or attrs.get("is_verified_photo") is not False:
             raise InventoryError(f"placeholder entity lacks explicit placeholder type: {entity_id}")
         return "generated-placeholder", "Batch 21 truth manifest classification", "non_photographic", []
+    return None
+
+
+def _classify(entity: dict[str, Any], truth: dict[str, set[str]]) -> tuple[str, str, str, list[str]]:
+    entity_id = entity["id"]
+    attrs = entity.get("attributes") or {}
+    frozen = _truth_classification(entity_id, attrs, truth)
+    if frozen:
+        return frozen
     if sourced_photo_evidence(attrs):
         return "rights-cleared", "complete image-specific rights evidence", "owner_review", []
     image_type = str(attrs.get("image_type") or "").strip().lower()
     if image_type in DOCUMENTARY_TYPES:
         return "documentary-candidate-missing-evidence", "documentary family without complete rights evidence", "owner_review", _missing_requirements(attrs)
+    if image_type == "ai-generated" and attrs.get("image_generation_reference") and attrs.get("is_verified_photo") is False:
+        return "ai-generated", "explicit generation reference", "non_photographic", []
+    if image_type == "generated-placeholder" and attrs.get("is_verified_photo") is False:
+        return "generated-placeholder", "explicit placeholder classification", "non_photographic", []
     return "unknown-quarantined", "no explicit evidence-backed media classification", "quarantine", []
 
 
@@ -195,7 +241,18 @@ def _load_candidate_inputs(
     root = root.resolve(strict=True)
     data_path, _ = _validate_candidate_paths(root, data_path, asset_root)
     truth_path = truth_path.resolve(strict=True)
-    return _load_entities(data_path), data_path, truth_path, _truth_sets(truth_path), _stage_asset_hashes(root)
+    db_path = root / "vinhlong360.db"
+    if not db_path.is_file():
+        raise InventoryError("candidate SQLite database is missing")
+    if any((root / suffix).exists() for suffix in ("vinhlong360.db-wal", "vinhlong360.db-shm", "vinhlong360.db-journal", ".reconciliation.lock")):
+        raise InventoryError("candidate SQLite sidecar or reconciliation lock is present")
+    truth = _truth_sets(truth_path)
+    entities = _load_entities(data_path)
+    entity_ids = {entity["id"] for entity in entities}
+    active_truth_ids = truth["ai_generated"] | truth["generated_placeholder"]
+    if not active_truth_ids <= entity_ids or truth["delete"] & entity_ids:
+        raise InventoryError("candidate entity IDs do not match the frozen media truth scope")
+    return entities, data_path, truth_path, truth, _stage_asset_hashes(root, truth)
 
 
 def _build_item(
@@ -269,6 +326,32 @@ def render_inventory(inventory: dict[str, Any]) -> bytes:
     return (json.dumps(inventory, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode("utf-8")
 
 
+def _safe_output_path(output: Path, root: Path, data_path: Path, truth_path: Path) -> Path:
+    if output.exists() and output.is_symlink():
+        raise InventoryError("output path must not be a symlink")
+    resolved = output.resolve(strict=False)
+    repo_root = Path(__file__).resolve().parents[2]
+    protected = {
+        data_path.resolve(),
+        truth_path.resolve(),
+        (root / "vinhlong360.db").resolve(),
+        (root / "stage-result.json").resolve(),
+        (repo_root / "web/data.json").resolve(),
+        (repo_root / "agent/data/vinhlong360.db").resolve(),
+    }
+    protected.update(path.with_name(path.name + suffix) for path in tuple(protected) for suffix in ("-wal", "-shm", "-journal"))
+    if resolved in protected:
+        raise InventoryError("output path collides with a protected input or sidecar")
+    try:
+        if os.path.commonpath((str(resolved), str(root.resolve()))) == str(root.resolve()):
+            raise InventoryError("output path must be outside the candidate root")
+    except ValueError as exc:
+        raise InventoryError("output path is not on a compatible volume") from exc
+    if resolved == (root / "public/img/entities").resolve() or resolved.is_dir():
+        raise InventoryError("output path must be a file outside the candidate layout")
+    return output
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, required=True)
@@ -277,12 +360,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     root = args.data.resolve(strict=True).parent
-    while root.name != "candidate" and root != root.parent:
-        root = root.parent
     inventory = build_inventory(root, args.data, args.asset_root, args.truth)
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_bytes(render_inventory(inventory))
-    print(json.dumps({"items": len(inventory["items"]), "mutationAllowed": False, "output": str(args.output)}, ensure_ascii=False, sort_keys=True))
+    output = _safe_output_path(args.output, root, args.data, args.truth)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_bytes(render_inventory(inventory))
+    print(json.dumps({"items": len(inventory["items"]), "mutationAllowed": False, "output": str(output)}, ensure_ascii=False, sort_keys=True))
     return 0
 
 

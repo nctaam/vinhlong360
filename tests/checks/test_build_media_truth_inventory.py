@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.checks.build_media_truth_inventory import InventoryError, build_inventory, render_inventory
+from scripts.checks.build_media_truth_inventory import InventoryError, build_inventory, main, render_inventory
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -16,6 +16,12 @@ CANDIDATE = ROOT / ".tmp/media-truth-stage-test-4/candidate"
 
 
 def _write_fixture(tmp_path: Path, entities: list[dict], *, truth: Path = TRUTH) -> tuple[Path, Path, Path]:
+    by_id = {entity["id"]: entity for entity in entities}
+    for entity_id in ("cua-com-duyen-hai", "tep-rang-dua"):
+        by_id.setdefault(entity_id, _entity(entity_id, {"image_type": "ai-generated", "is_verified_photo": False, "image_generation_reference": "git:30a3fae9"}))
+    for entity_id in json.loads(TRUTH.read_text(encoding="utf-8"))["generated_placeholder"]:
+        by_id.setdefault(entity_id, _entity(entity_id, {"image_type": "generated-placeholder", "is_verified_photo": False}))
+    entities = list(by_id.values())
     data_path = tmp_path / "data.json"
     asset_root = tmp_path / "public/img/entities"
     asset_root.mkdir(parents=True)
@@ -24,12 +30,19 @@ def _write_fixture(tmp_path: Path, entities: list[dict], *, truth: Path = TRUTH)
         encoding="utf-8",
     )
     (tmp_path / "vinhlong360.db").write_bytes(b"candidate-db")
-    (tmp_path / "stage-result.json").write_text(
-        json.dumps({"mutationAllowed": False}), encoding="utf-8"
-    )
     for entity in entities:
         entity_id = entity["id"]
         (asset_root / f"{entity_id}.webp").write_bytes(b"asset:" + entity_id.encode())
+    retained = [
+        {"id": entity_id, "sha256": hashlib.sha256(b"asset:" + entity_id.encode()).hexdigest()}
+        for entity_id in sorted({"cua-com-duyen-hai", "tep-rang-dua"} | set(json.loads(TRUTH.read_text(encoding="utf-8"))["generated_placeholder"]))
+    ]
+    (tmp_path / "stage-result.json").write_text(
+        json.dumps(
+            {"mutationAllowed": False, "assets": {"retained": retained, "removed": [{"id": "prov-1"}]}}
+        ),
+        encoding="utf-8",
+    )
     return tmp_path, data_path, asset_root
 
 
@@ -64,7 +77,7 @@ def test_unknown_asset_is_quarantined_not_inferred_from_file_size(tmp_path: Path
         tmp_path,
         [_entity("unknown-asset", {"is_verified_photo": True})],
     )
-    row = build_inventory(root, data_path, asset_root, TRUTH)["items"][0]
+    row = {row["entityId"]: row for row in build_inventory(root, data_path, asset_root, TRUTH)["items"]}["unknown-asset"]
     assert row["classification"] == "unknown-quarantined"
     assert row["proposedMutation"] is None
 
@@ -87,7 +100,7 @@ def test_missing_rights_evidence_stays_documentary_missing(tmp_path: Path):
             )
         ],
     )
-    row = build_inventory(root, data_path, asset_root, TRUTH)["items"][0]
+    row = {row["entityId"]: row for row in build_inventory(root, data_path, asset_root, TRUTH)["items"]}["documentary-gap"]
     assert row["classification"] == "documentary-candidate-missing-evidence"
     assert "license or re-host scope" in row["missingRequirements"]
     assert "explicit permission evidence" in row["missingRequirements"]
@@ -108,12 +121,23 @@ def test_ai_and_placeholder_rows_require_explicit_non_photographic_contract(tmp_
             "ba-nhi-bun-bo-hue-vinh-long",
             {"image_type": "generated-placeholder", "is_verified_photo": False},
         ),
+        _entity(
+            "unlisted-ai",
+            {
+                "image_type": "ai-generated",
+                "is_verified_photo": False,
+                "image_generation_reference": "git:custom",
+            },
+        ),
+        _entity("unlisted-placeholder", {"image_type": "generated-placeholder", "is_verified_photo": False}),
     ]
     root, data_path, asset_root = _write_fixture(tmp_path, entities)
     rows = {row["entityId"]: row for row in build_inventory(root, data_path, asset_root, TRUTH)["items"]}
     assert rows["cua-com-duyen-hai"]["classification"] == "ai-generated"
     assert rows["ba-nhi-bun-bo-hue-vinh-long"]["classification"] == "generated-placeholder"
-    assert all(rows[key]["reviewStatus"] == "non_photographic" for key in rows)
+    assert rows["unlisted-ai"]["classification"] == "ai-generated"
+    assert rows["unlisted-placeholder"]["classification"] == "generated-placeholder"
+    assert all(rows[key]["reviewStatus"] == "non_photographic" for key in rows if key != "unknown-asset")
 
 
 @pytest.mark.parametrize("case", ["missing-asset", "hash-drift", "malformed-truth", "duplicate-id", "unsafe-path"])
@@ -154,7 +178,7 @@ def test_repeated_generation_is_sorted_lf_and_byte_identical(tmp_path: Path):
     assert first.endswith(b"\n")
     assert b"\r" not in first
     parsed = json.loads(first)
-    assert [row["entityId"] for row in parsed["items"]] == ["a-id", "b-id"]
+    assert [row["entityId"] for row in parsed["items"] if row["entityId"] in {"a-id", "b-id"}] == ["a-id", "b-id"]
 
 
 def test_unsafe_image_path_is_rejected_even_when_basename_exists(tmp_path: Path):
@@ -170,8 +194,54 @@ def test_stage_result_cannot_reference_unknown_entity(tmp_path: Path):
     root, data_path, asset_root = _write_fixture(tmp_path, [_entity("known-id", {})])
     stage = {
         "mutationAllowed": False,
-        "assets": {"retained": [{"id": "ghost-id", "sha256": hashlib.sha256(b"ghost").hexdigest()}]},
+        "assets": {
+            "retained": [{"id": "ghost-id", "sha256": hashlib.sha256(b"ghost").hexdigest()}],
+            "removed": [{"id": "prov-1"}],
+        },
     }
     (root / "stage-result.json").write_text(json.dumps(stage), encoding="utf-8")
-    with pytest.raises(InventoryError, match="unknown entity"):
+    with pytest.raises(InventoryError, match="outside reviewed scope"):
         build_inventory(root, data_path, asset_root, TRUTH)
+
+
+def test_candidate_requires_sqlite_and_complete_stage_binding(tmp_path: Path):
+    root, data_path, asset_root = _write_fixture(tmp_path, [_entity("known-id", {})])
+    (root / "vinhlong360.db").unlink()
+    with pytest.raises(InventoryError, match="SQLite database is missing"):
+        build_inventory(root, data_path, asset_root, TRUTH)
+    (root / "vinhlong360.db").write_bytes(b"candidate-db")
+    (root / "stage-result.json").write_text(
+        json.dumps({"mutationAllowed": False, "assets": {"retained": [], "removed": [{"id": "prov-1"}]}}),
+        encoding="utf-8",
+    )
+    with pytest.raises(InventoryError, match="frozen media partitions"):
+        build_inventory(root, data_path, asset_root, TRUTH)
+
+
+def test_truth_manifest_requires_frozen_metadata(tmp_path: Path):
+    root, data_path, asset_root = _write_fixture(tmp_path, [_entity("known-id", {})])
+    payload = json.loads(TRUTH.read_text(encoding="utf-8"))
+    payload["revision"] = "self-declared-v2"
+    altered = tmp_path / "altered-truth.json"
+    altered.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(InventoryError, match="schema mismatch"):
+        build_inventory(root, data_path, asset_root, altered)
+
+
+def test_cli_refuses_output_collision_without_mutating_candidate(tmp_path: Path):
+    root, data_path, asset_root = _write_fixture(tmp_path, [_entity("known-id", {})])
+    before = data_path.read_bytes()
+    with pytest.raises(InventoryError, match="collides|outside the candidate"):
+        main(
+            [
+                "--data",
+                str(data_path),
+                "--asset-root",
+                str(asset_root),
+                "--truth",
+                str(TRUTH),
+                "--output",
+                str(data_path),
+            ]
+        )
+    assert data_path.read_bytes() == before
