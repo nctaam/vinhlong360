@@ -155,3 +155,23 @@ def test_repeated_generation_is_sorted_lf_and_byte_identical(tmp_path: Path):
     assert b"\r" not in first
     parsed = json.loads(first)
     assert [row["entityId"] for row in parsed["items"]] == ["a-id", "b-id"]
+
+
+def test_unsafe_image_path_is_rejected_even_when_basename_exists(tmp_path: Path):
+    root, data_path, asset_root = _write_fixture(tmp_path, [_entity("unsafe-id", {})])
+    payload = json.loads(data_path.read_text(encoding="utf-8"))
+    payload["entities"][0]["images"] = ["../../outside.webp"]
+    data_path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(InventoryError, match="unsafe image path"):
+        build_inventory(root, data_path, asset_root, TRUTH)
+
+
+def test_stage_result_cannot_reference_unknown_entity(tmp_path: Path):
+    root, data_path, asset_root = _write_fixture(tmp_path, [_entity("known-id", {})])
+    stage = {
+        "mutationAllowed": False,
+        "assets": {"retained": [{"id": "ghost-id", "sha256": hashlib.sha256(b"ghost").hexdigest()}]},
+    }
+    (root / "stage-result.json").write_text(json.dumps(stage), encoding="utf-8")
+    with pytest.raises(InventoryError, match="unknown entity"):
+        build_inventory(root, data_path, asset_root, TRUTH)

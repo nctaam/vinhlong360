@@ -78,20 +78,27 @@ def _truth_sets(truth_path: Path) -> dict[str, set[str]]:
     return sets
 
 
+def _relative_image_path(image: str, entity_id: str) -> str:
+    normalized = image.replace("\\", "/").lstrip("/")
+    marker = "img/entities/"
+    if normalized.startswith(marker):
+        relative = normalized[len(marker) :]
+    elif "/" not in normalized:
+        relative = Path(normalized).name
+    else:
+        raise InventoryError(f"unsafe image path for {entity_id}: {image}")
+    if not relative or relative in {".", ".."} or Path(relative).name != relative:
+        raise InventoryError(f"unsafe image path for {entity_id}: {image}")
+    return relative
+
+
 def _image_paths(entity: dict[str, Any], asset_root: Path) -> list[tuple[str, Path]]:
     images = entity.get("images")
     if not isinstance(images, list) or not images or any(not isinstance(value, str) or not value.strip() for value in images):
         raise InventoryError(f"entity {entity.get('id')} has no valid image list")
     result: list[tuple[str, Path]] = []
     for image in images:
-        normalized = image.replace("\\", "/").lstrip("/")
-        marker = "img/entities/"
-        if normalized.startswith(marker):
-            relative = normalized[len(marker) :]
-        else:
-            relative = Path(normalized).name
-        if not relative or relative in {".", ".."} or Path(relative).name != relative:
-            raise InventoryError(f"unsafe image path for {entity.get('id')}: {image}")
+        relative = _relative_image_path(image, entity["id"])
         path = _inside(asset_root / relative, asset_root)
         if not path.is_file():
             raise InventoryError(f"missing image asset for {entity.get('id')}: {relative}")
@@ -237,6 +244,9 @@ def build_inventory(root: Path, data_path: Path, asset_root: Path, truth_path: P
         _build_item(entity, asset_root, truth, stage_hashes)
         for entity in sorted(entities, key=lambda item: item["id"])
     ]
+    item_ids = {item["entityId"] for item in items}
+    if set(stage_hashes) - item_ids:
+        raise InventoryError("candidate stage result references an unknown entity")
     counts = dict(sorted(Counter(item["classification"] for item in items).items()))
     return {
         "schemaVersion": 1,
