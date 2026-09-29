@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "commands": [
+    {"command": "python -m pytest -q tests/checks/test_build_media_truth_review.py", "exitCode": 0, "resultClassification": "passed", "outputSha256": "d34f87b76f480a612a21abdcb32a14ac5f5f1548af0e08e9551b6819cb9b3eb5"},
+    {"command": "python -m ruff check scripts/checks/build_media_truth_review.py tests/checks/test_build_media_truth_review.py", "exitCode": 0, "resultClassification": "passed", "outputSha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"},
+    {"command": "python -m py_compile scripts/checks/build_media_truth_review.py", "exitCode": 0, "resultClassification": "passed", "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+    {"command": "python scripts/checks/run_hard.py --all", "exitCode": 1, "resultClassification": "documented_baseline", "outputSha256": "fe28b66a4f6664c365bac78cab38589baa8f7ec321822bbaad00a45b0ee1cf61"}
+  ],
+  "knownBaseline": ["R10.6 external frontend fixture truth-debt", "R20.8 complexity baseline", "R20.1 ruff baseline before Task 11 cleanup"],
+  "openFindings": [],
+  "generatedArtifacts": {"plan": true, "candidate": true, "inventory": true, "artifacts": true}
+}

@@ -1,0 +1,123 @@
+{
+  "applyProcedure": {
+    "approvedPlanPath": ".tmp/media-truth-approved/media-truth-plan-approved.json",
+    "authorization": "owner_approval_required",
+    "command": "# mutationAllowed=false doNotExecute=true owner_approval_required\npython scripts/checks/apply_data_reconciliation.py --plan C:\\Users\\NCTaam\\Documents\\vinhlong360-correction-case-pilot\\.tmp\\media-truth-approved\\media-truth-plan-approved.json --sqlite C:\\Users\\NCTaam\\Documents\\vinhlong360-correction-case-pilot\\agent\\data\\vinhlong360.db --json C:\\Users\\NCTaam\\Documents\\vinhlong360-correction-case-pilot\\web\\data.json --sqlite-backup .tmp\\media-truth-backups-phase-1\\20260929-054438-before-media-truth-review\\vinhlong360.db --json-backup .tmp\\media-truth-backups-phase-1\\20260929-054438-before-media-truth-review\\data.json --plan-sha256 aa5cbaec34c758e8b67f27ca943461c31d2d27bf661d4e8e013334892edcb37b --lock-path C:\\Users\\NCTaam\\Documents\\vinhlong360-correction-case-pilot\\.tmp\\media-truth-approved\\.reconciliation.lock --journal-path C:\\Users\\NCTaam\\Documents\\vinhlong360-correction-case-pilot\\.tmp\\media-truth-approved\\media-truth-apply-journal.json",
+    "doNotExecute": true,
+    "mutationAllowed": false,
+    "status": "ready_for_owner_review"
+  },
+  "backupProcedure": {
+    "copiedFiles": {
+      "json": {
+        "byteEqualToProtected": true,
+        "path": ".tmp/media-truth-backups-phase-1/20260929-054438-before-media-truth-review/data.json",
+        "sha256": "8ac327de6c4f273c96efe99004f6a1858ba41af43799ebcdae5cd7f31316d92f"
+      },
+      "sqlite": {
+        "integrity": "ok",
+        "logicalDigest": "1c2786c4d1cb3cd5c01906684aa3bbcf9307a6ba0cc5b401ac1790a3db7b6519",
+        "path": ".tmp/media-truth-backups-phase-1/20260929-054438-before-media-truth-review/vinhlong360.db",
+        "sha256": "f686bdc1e35675d5543720efd1d67359851b29b6a713154a2613d78977cfe7de"
+      }
+    },
+    "manifest": {
+      "path": ".tmp/media-truth-backups-phase-1/20260929-054438-before-media-truth-review/manifest.json",
+      "sha256": "2e13d7c88d52ed19c4dd8c6626aa9ea6711785ff98989e00d68b0848b4fd50bb"
+    },
+    "manifestSha256": "2e13d7c88d52ed19c4dd8c6626aa9ea6711785ff98989e00d68b0848b4fd50bb",
+    "mutationAllowed": false,
+    "protected": {
+      "json": {
+        "path": "web/data.json",
+        "sha256": "8ac327de6c4f273c96efe99004f6a1858ba41af43799ebcdae5cd7f31316d92f"
+      },
+      "sqlite": {
+        "integrity": "ok",
+        "logicalDigest": "1c2786c4d1cb3cd5c01906684aa3bbcf9307a6ba0cc5b401ac1790a3db7b6519",
+        "path": "agent/data/vinhlong360.db",
+        "sha256": "ea83864990cf8455061b2436f072c097bc7011f56428c5ba3ba43bcd66fb78a4"
+      }
+    },
+    "status": "verified"
+  },
+  "candidate": {
+    "data": {
+      "path": ".tmp/media-truth-stage-test-4/candidate/data.json",
+      "sha256": "45596dd131f665fd255b08d70a7aa9105d98706f8e35bcfa6a203c462af69f01"
+    },
+    "inventory": {
+      "counts": {
+        "ai-generated": 2,
+        "documentary-candidate-missing-evidence": 1732,
+        "generated-placeholder": 37
+      },
+      "path": "outputs/media-truth-inventory-2026-09-25.json",
+      "rows": 1771,
+      "sha256": "1ab21fca0d4bd29b95ba3cd71120b7683e817cea3c3626c5ed2fa6400e2d8d58"
+    },
+    "root": ".tmp/media-truth-stage-test-4/candidate",
+    "sqlite": {
+      "logicalDigest": "457f80a09cf7d8aad2f0c64d0b01dfbfa921c9d2c825ba84b243f9af097d0426",
+      "path": ".tmp/media-truth-stage-test-4/candidate/vinhlong360.db",
+      "sha256": "c7b2ef8c8f596768a0d5012b12666ba1fe9bd1d823481cb02d59d25bfd7b6788"
+    },
+    "stageResult": {
+      "path": ".tmp/media-truth-stage-test-4/candidate/stage-result.json",
+      "sha256": "c8d21e37379240cff2ad6d5db932f642cc1990c539d31b0593f6d88473efe97b"
+    }
+  },
+  "mutationAllowed": false,
+  "openFindings": [],
+  "plan": {
+    "approvedPath": ".tmp/media-truth-approved/media-truth-plan-approved.json",
+    "mutationAllowed": false,
+    "path": "outputs/media-truth-plan-2026-09-25.json",
+    "sha256": "aa5cbaec34c758e8b67f27ca943461c31d2d27bf661d4e8e013334892edcb37b",
+    "status": "review_required"
+  },
+  "protectedInputs": {
+    "json": {
+      "path": "web/data.json",
+      "sha256": "8ac327de6c4f273c96efe99004f6a1858ba41af43799ebcdae5cd7f31316d92f"
+    },
+    "sqlite": {
+      "integrity": "ok",
+      "logicalDigest": "1c2786c4d1cb3cd5c01906684aa3bbcf9307a6ba0cc5b401ac1790a3db7b6519",
+      "path": "agent/data/vinhlong360.db",
+      "sha256": "ea83864990cf8455061b2436f072c097bc7011f56428c5ba3ba43bcd66fb78a4"
+    }
+  },
+  "recoveryProcedure": {
+    "authorization": "owner_approval_required",
+    "command": "# mutationAllowed=false doNotExecute=true owner_approval_required\npython scripts/checks/apply_data_reconciliation.py --recover-phase-b-journal --journal-path C:\\Users\\NCTaam\\Documents\\vinhlong360-correction-case-pilot\\.tmp\\media-truth-approved\\media-truth-apply-journal.json --lock-path C:\\Users\\NCTaam\\Documents\\vinhlong360-correction-case-pilot\\.tmp\\media-truth-approved\\.reconciliation.lock --sqlite-backup .tmp\\media-truth-backups-phase-1\\20260929-054438-before-media-truth-review\\vinhlong360.db --json-backup .tmp\\media-truth-backups-phase-1\\20260929-054438-before-media-truth-review\\data.json",
+    "doNotExecute": true,
+    "mutationAllowed": false,
+    "status": "ready_for_owner_review"
+  },
+  "schemaVersion": 1,
+  "scope": {
+    "counts": {
+      "batch21Records": 40,
+      "deletedEntities": 1,
+      "jsonRelationshipsDeleted": 6,
+      "retainedAi": 2,
+      "retainedPlaceholders": 37,
+      "sqliteRelationshipsDeleted": 0
+    },
+    "inventoryCounts": {
+      "ai-generated": 2,
+      "documentary-candidate-missing-evidence": 1732,
+      "generated-placeholder": 37
+    },
+    "inventoryRows": 1771
+  },
+  "status": "ready_for_owner_review",
+  "tests": [
+    {
+      "checks": 4,
+      "path": "outputs/media-truth-test-evidence-2026-09-25.json",
+      "sha256": "b3eedb0f6d8aeb2d26d7392066b28b4af2a19632ed8c96e7c59970a122fbe52a"
+    }
+  ]
+}
