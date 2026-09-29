@@ -215,7 +215,7 @@ def main(argv: list[str] | None = None):
     source_group = parser.add_mutually_exclusive_group(required=True)
     source_group.add_argument("--sqlite", type=Path)
     source_group.add_argument("--json", dest="json_path", type=Path)
-    parser.add_argument("--output-dir", type=Path, default=OUT_DIR)
+    parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args(argv)
     outputs = export_frontend_data(
         sqlite_path=args.sqlite,

@@ -100,6 +100,8 @@ def format_entity_block(e: dict) -> list:
 
 def build_llms_txt(entities, itineraries, verified_entities, wards):
     count_verified = len(verified_entities)
+    count_ai = sum((e.get("attributes") or {}).get("image_type") == "ai-generated" for e in entities)
+    count_placeholder = sum((e.get("attributes") or {}).get("image_type") == "generated-placeholder" for e in entities)
     return f"""# vinhlong360.vn
 
 > Cổng bách khoa tri thức du lịch, văn hóa bản địa, ẩm thực truyền thống, làng nghề và sản phẩm OCOP chính thức cho **tỉnh Vĩnh Long** — miền Tây Nam Bộ, Việt Nam.
@@ -113,12 +115,13 @@ Từ tháng 7-2025, ba địa bàn Vĩnh Long, Bến Tre và Trà Vinh đã **H�
 ## Toàn Văn Dữ Liệu Máy Đọc (Full Documentation)
 
 - **Bách khoa toàn thư tri thức máy đọc chi tiết**: [llms-full.txt]({SITE_URL}/llms-full.txt)
-  (Chứa toàn bộ {count_verified} thực thể xác minh ảnh tư liệu, 33 tuyến lộ trình, 124 xã/phường, lịch mùa vụ và lễ hội AEO).
+  (Chứa toàn bộ {len(entities)} thực thể và trạng thái hình ảnh, 33 tuyến lộ trình, 124 xã/phường, lịch mùa vụ và lễ hội AEO).
 
 ## Thống Kê Nền Tảng
 
 - **Tổng số thực thể dữ liệu**: {len(entities)} điểm đến, di tích, ẩm thực, làng nghề, nhân vật, sản phẩm.
-- **Thực thể xác minh ảnh tư liệu báo chí chính thống**: {count_verified} thực thể (100% ảnh WebP nội bộ kèm bản quyền Google Images).
+- **Thực thể có bằng chứng ảnh tư liệu đầy đủ**: {count_verified} thực thể (chỉ tính bộ quyền và nguồn đã kiểm chứng).
+- **Minh họa AI**: {count_ai} thực thể; **minh họa đồ họa**: {count_placeholder} thực thể.
 - **Lộ trình du lịch liên vùng gợi ý**: {len(itineraries)} tuyến chuyên đề (1–3 ngày).
 - **Đơn vị hành chính cấp cơ sở**: {len(wards)} xã/phường.
 
@@ -224,7 +227,7 @@ def build_llms_full_txt(entities, itineraries, verified_entities, wards):
     lines.append("- `LodgingBusiness`: Cơ sở homestay, farmstay, khách sạn.")
     lines.append("- `Event`: Sự kiện văn hóa, lễ hội với `eventStatus`, `isAccessibleForFree`, `offers`.")
     lines.append("- `Product`: Nông sản, đặc sản OCOP kèm xếp hạng sao (`award`, `brand`).")
-    lines.append("- `ImageObject`: Chuẩn Google Images License với `creator`, `creditText`, `copyrightNotice`, `license`, `acquireLicensePage`.")
+    lines.append("- `ImageObject`: Chỉ công bố các trường quyền và nguồn khi dữ liệu có bằng chứng đầy đủ; thiếu bằng chứng sẽ được ghi rõ là chưa xác minh.")
     lines.append("- `SpeakableSpecification`: Hỗ trợ công cụ đọc màn hình và AI voice search qua CSS selectors `.lead`, `.highlights`, `h1`.")
     lines.append("")
 
@@ -236,10 +239,7 @@ def generate_llms(data_path: Path, output_dir: Path) -> dict[str, Path]:
     entities = [e for e in data.get("entities", []) if e.get("id") != "prov-1"]
     itineraries = data.get("itineraries", [])
 
-    verified_entities = [
-        e for e in entities
-        if (e.get("attributes") or {}).get("is_verified_photo")
-    ]
+    verified_entities = [e for e in entities if sourced_photo_evidence(e.get("attributes") or {}) is not None]
     wards = [
         e for e in entities
         if e.get("type") == "place" and e.get("id") != "prov-1"
@@ -260,9 +260,9 @@ def generate_llms(data_path: Path, output_dir: Path) -> dict[str, Path]:
 
 def main(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data", type=Path, default=DATA_JSON_PATH)
-    parser.add_argument("--llms-output", type=Path, default=LLMS_TXT_PATH)
-    parser.add_argument("--llms-full-output", type=Path, default=LLMS_FULL_TXT_PATH)
+    parser.add_argument("--data", type=Path, required=True)
+    parser.add_argument("--llms-output", type=Path, required=True)
+    parser.add_argument("--llms-full-output", type=Path, required=True)
     args = parser.parse_args(argv)
     outputs = generate_llms(args.data, args.llms_output.parent)
     if outputs["llms"] != args.llms_output:

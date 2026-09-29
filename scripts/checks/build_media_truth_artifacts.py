@@ -116,31 +116,7 @@ def build_candidate_artifacts(
     fe = export_fe_data.export_frontend_data(sqlite_path=sqlite_path, json_path=None, output_dir=output_dir / "data")
 
     review_manifest = output_dir / "data-review-manifest.json"
-    try:
-        build_data_review_manifest.build_manifest(candidate_root, review_manifest)
-    except (build_data_review_manifest.ManifestError, OSError):
-        # Candidate worktrees may intentionally contain only the reviewed source pair.
-        # Preserve the read-only contract with a deterministic scoped manifest.
-        review_manifest.write_text(
-            json.dumps(
-                {
-                    "schemaVersion": 1,
-                    "mode": "read-only-review-manifest",
-                    "status": "review_required",
-                    "mutationAllowed": False,
-                    "inputs": {
-                        "sqlite": {"path": str(sqlite_path), "sha256": _sha(sqlite_path)},
-                        "json": {"path": str(json_path), "sha256": _sha(json_path)},
-                    },
-                    "findings": [],
-                },
-                ensure_ascii=False,
-                sort_keys=True,
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
+    build_data_review_manifest.build_manifest(candidate_root, review_manifest)
     provenance = _build_provenance_scope(
         root=candidate_root,
         json_path=json_path,

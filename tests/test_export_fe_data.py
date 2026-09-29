@@ -177,3 +177,15 @@ def test_frontend_export_requires_exactly_one_source(tmp_path: Path) -> None:
     import pytest
     with pytest.raises(ValueError):
         export_fe_data.export_frontend_data(sqlite_path=None, json_path=None, output_dir=tmp_path)
+
+
+def test_export_cli_requires_output_dir_and_help_is_read_only(tmp_path: Path) -> None:
+    import subprocess
+    import sys
+    script = Path(__file__).resolve().parents[1] / "scripts/export_fe_data.py"
+    refused = subprocess.run([sys.executable, str(script), "--json", str(tmp_path / "missing.json")], capture_output=True, text=True)
+    assert refused.returncode != 0
+    env = {**__import__("os").environ, "PYTHONIOENCODING": "utf-8"}
+    help_run = subprocess.run([sys.executable, str(script), "--help"], cwd=tmp_path, capture_output=True, text=True, env=env)
+    assert help_run.returncode == 0
+    assert list(tmp_path.iterdir()) == []
