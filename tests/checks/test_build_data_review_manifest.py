@@ -81,7 +81,7 @@ def test_manifest_rejects_invalid_json_fixture(tmp_path: Path):
 
 def test_manifest_marks_deleted_prov1_history_superseded():
     manifest = build_manifest(ROOT)
-    assert not any(item["recordId"] == "prov-1" for item in manifest["findings"])
+    assert not any("prov-1" in item.get("recordIds", []) for item in manifest["findings"])
     assert any(
         item["recordId"] == "prov-1" and item["status"] == "superseded"
         for item in manifest["history"]
