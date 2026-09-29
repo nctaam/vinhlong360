@@ -34,6 +34,15 @@ class StageResult:
     stage_result: dict[str, Any]
 
 
+_TEST_HOOKS: dict[str, Any] = {}
+
+
+def _run_test_hook(name: str, **context: Any) -> None:
+    hook = _TEST_HOOKS.get(name)
+    if hook is not None:
+        hook(**context)
+
+
 def _identity(path: Path) -> tuple[int, int, int, int, int]:
     stat = path.stat()
     return (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
@@ -146,6 +155,8 @@ def _apply_candidate_stores(
         raise StageError("SQLite source changed before copy")
     if _identity(json_input) != identities[1] or _sha(json_input) != hashes[1]:
         raise StageError("JSON source changed before copy")
+    _run_test_hook("before_sqlite_copy", sqlite_input=sqlite_input, candidate_db=candidate_db)
+    _ensure_no_sidecars(sqlite_input)
     shutil.copy2(sqlite_input, candidate_db)
     payload = json.loads(json_input.read_text(encoding="utf-8"))
     conn = sqlite3.connect(candidate_db)
@@ -215,10 +226,14 @@ def stage_plan(plan: dict[str, Any], sqlite_input: Path, json_input: Path, asset
     candidate_json = candidate / "data.json"
     candidate_assets = candidate / "public/img/entities"
     _assert_sources_stable(sqlite_input, json_input, asset_root, source_identities, source_hashes)
-    _apply_candidate_stores(
-        mutations, sqlite_input, candidate_db, candidate_json, json_input,
-        source_identities[:2], source_hashes[:2],
-    )
+    try:
+        _apply_candidate_stores(
+            mutations, sqlite_input, candidate_db, candidate_json, json_input,
+            source_identities[:2], source_hashes[:2],
+        )
+    except (StageError, OSError, sqlite3.Error) as exc:
+        shutil.rmtree(output_dir, ignore_errors=True)
+        raise exc
     json_bytes = candidate_json.read_bytes()
     retained_assets, removed_assets, source_asset_digest = _stage_assets(
         asset_root, candidate_assets, plan, mutations, source_identities[2], source_hashes[2],

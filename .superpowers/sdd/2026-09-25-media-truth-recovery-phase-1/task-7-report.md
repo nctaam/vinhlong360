@@ -98,11 +98,11 @@ Review findings addressed in commit after `f834881b`:
   shape (`image_type=documentary` and `is_verified_photo=true`); other caption
   fields are preserved. The current Batch 21 records match this reviewed shape.
 
-The Task 5 shared attribute mutation helper already present in the worktree
-supports strict absent-to-add generation fields (`before=None`, exact `after`)
-for the two AI IDs; all other before/after checks remain strict. Task 7's
-regression and staging run exercise this compatibility. That helper's existing
-uncommitted Task 5 changes are intentionally not folded into the Task 7 commit.
+The Task 5 shared attribute mutation helper supports strict absent-to-add
+generation fields (`before=None`, exact `after`) for the two AI IDs; all other
+before/after checks remain strict. The compatibility changes are committed in
+`629929b1` together with the Task 7 fix-round code, and Task 7's regression and
+staging run exercise them.
 
 Fix-round validation:
 
@@ -150,3 +150,29 @@ The isolated sidecar refusal test also passed with
 `PYTEST_DEBUG_TEMPROOT=C:\vlt_task7_final` (`1 passed in 9.47s`). A prior run
 using the shared `C:\vlt` temp root encountered Windows pytest cleanup races;
 no product assertion failed, and the unique-root rerun is clean.
+
+## Fix Round 2
+
+Added a final `_ensure_no_sidecars(sqlite_input)` immediately before the
+candidate DB copy. A deterministic `before_sqlite_copy` test hook creates a
+late `-wal` sidecar after initial validation; staging refuses with
+`StageError("SQLite sidecar present")` and removes the owned, unpublished
+candidate directory. The report's Fix Round 1 wording now correctly states
+that the shared apply-helper changes are committed in `629929b1`.
+
+Fix-round checks:
+
+```text
+PYTEST_DEBUG_TEMPROOT=C:\vlt_task7_round2b python -m pytest -q tests/checks/test_stage_data_reconciliation.py::test_stage_refuses_late_sqlite_sidecar_before_copy tests/checks/test_stage_data_reconciliation.py::test_stage_creates_owned_candidate
+2 passed in 43.90s
+
+python -m ruff check <scoped Fix Round 2 files>
+All checks passed!
+
+python -m py_compile <scoped Fix Round 2 files>
+passed
+
+Direct R20.8: build_media_truth_plan.py [], stage_data_reconciliation.py []
+git diff --check -- <scoped Fix Round 2 files>
+passed
+```

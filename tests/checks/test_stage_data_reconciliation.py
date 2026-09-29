@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from scripts.checks.build_media_truth_plan import build_plan
+from scripts.checks import stage_data_reconciliation as stage_module
 from scripts.checks.stage_data_reconciliation import StageError, stage_plan
 
 
@@ -61,6 +62,26 @@ def test_stage_refuses_sqlite_sidecars(tmp_path):
             ROOT / "web-nuxt/public/img/entities",
             tmp_path / "stage",
         )
+
+
+def test_stage_refuses_late_sqlite_sidecar_before_copy(tmp_path):
+    sqlite_copy = tmp_path / "source.db"
+    sqlite_copy.write_bytes((ROOT / "agent/data/vinhlong360.db").read_bytes())
+    output_dir = tmp_path / "late-sidecar-stage"
+
+    def create_sidecar(**_context):
+        Path(f"{sqlite_copy}-wal").write_bytes(b"late")
+
+    stage_module._TEST_HOOKS["before_sqlite_copy"] = create_sidecar
+    try:
+        with pytest.raises(StageError, match="sidecar"):
+            stage_plan(
+                _plan(), sqlite_copy, ROOT / "web/data.json",
+                ROOT / "web-nuxt/public/img/entities", output_dir,
+            )
+    finally:
+        stage_module._TEST_HOOKS.pop("before_sqlite_copy", None)
+    assert not output_dir.exists() or not any(output_dir.rglob("*"))
 
 
 def test_stage_refuses_non_empty_or_symlink_outputs(tmp_path):
