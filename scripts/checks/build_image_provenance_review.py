@@ -452,7 +452,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     print(json.dumps({
         "status": packet["status"],
-        "missingRequirementCount": len(packet["requirements"]["missing"]),
+        "missingRequirementCount": len(packet.get("requirements", {}).get("missing", [])),
         "mutationAllowed": packet["mutationAllowed"],
     }, sort_keys=True))
     return 0

@@ -92,6 +92,8 @@ def test_retained_photo_duplicate_rows_do_not_duplicate_deferred_state(tmp_path)
 def test_retained_photo_accepts_complete_image_provenance(tmp_path):
     changes, requirements, deferred = _photo_mutations(_retained_current(), _retained_photo(tmp_path, image_source_url="https://baovinhlong.com.vn/images/retained-1.webp", permission_evidence="owner-record:IMG-2026-001"), frozenset(), entity_id="retained-1")
     assert len(changes) == 7
+    assert {item["recordId"] for item in changes} == {"retained-1"}
+    assert not any(item["recordId"] == "prov-1" for item in changes)
     assert requirements == []
     assert deferred is False
 

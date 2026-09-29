@@ -7,7 +7,7 @@ import sqlite3
 
 import pytest
 
-from scripts.checks.build_image_provenance_review import ProvenanceReviewError, build_packet as _build_packet
+from scripts.checks.build_image_provenance_review import ProvenanceReviewError, build_packet as _build_packet, main as provenance_main
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -572,6 +572,28 @@ def test_packet_fails_closed_when_target_entity_is_missing(tmp_path: Path):
         "target": {"entityId": "prov-1", "imagePath": "/img/entities/prov-1.webp"},
         "supersededBy": "batch-21-media-truth-v1",
         "evidenceChecklist": [],
+    }
+
+
+def test_cli_emits_target_absent_summary_without_requirements_key(tmp_path, capsys):
+    payload = json.loads(JSON_STORE.read_text(encoding="utf-8"))
+    payload["entities"] = [item for item in payload["entities"] if item["id"] != "prov-1"]
+    missing = tmp_path / "data.json"
+    missing.write_text(json.dumps(payload), encoding="utf-8")
+    output = tmp_path / "packet.json"
+
+    assert provenance_main([
+        "--root", str(ROOT),
+        "--json", str(missing),
+        "--entity-id", "prov-1",
+        "--image-path", "/img/entities/prov-1.webp",
+        "--output", str(output),
+    ]) == 0
+    summary = json.loads(capsys.readouterr().out)
+    assert summary == {
+        "status": "target_absent",
+        "missingRequirementCount": 0,
+        "mutationAllowed": False,
     }
 
 

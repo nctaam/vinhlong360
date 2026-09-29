@@ -219,7 +219,7 @@ def _photo_mutations(current: dict[str, Any], photos_path: Path,
                   ("attributes.image_source", item.get("source")), ("attributes.image_caption", item.get("caption")),
                   ("attributes.image_license", item.get("license")))
         for field, value in fields:
-            mutations.append(_mutation("sqlite", "entity", "prov-1", "update", field, _sqlite_value(current, field), value,
+            mutations.append(_mutation("sqlite", "entity", entity_id, "update", field, _sqlite_value(current, field), value,
                 "Culinary photo attribution ledger", [_stable(photos_path)], storage="json_text"))
     return mutations, requirements, has_deferred
 
