@@ -204,6 +204,17 @@ def test_stage_result_cannot_reference_unknown_entity(tmp_path: Path):
         build_inventory(root, data_path, asset_root, TRUTH)
 
 
+def test_nested_staged_asset_is_rejected(tmp_path: Path):
+    root, data_path, asset_root = _write_fixture(tmp_path, [_entity("known-id", {})])
+    nested = asset_root / "nested"
+    nested.mkdir()
+    (nested / "known-id.webp").write_bytes(b"nested")
+    stage = json.loads((root / "stage-result.json").read_text(encoding="utf-8"))
+    (root / "stage-result.json").write_text(json.dumps(stage), encoding="utf-8")
+    with pytest.raises(InventoryError, match="nested files"):
+        build_inventory(root, data_path, asset_root, TRUTH)
+
+
 def test_candidate_requires_sqlite_and_complete_stage_binding(tmp_path: Path):
     root, data_path, asset_root = _write_fixture(tmp_path, [_entity("known-id", {})])
     (root / "vinhlong360.db").unlink()

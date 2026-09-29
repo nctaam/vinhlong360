@@ -144,10 +144,14 @@ def _stage_lists(root: Path) -> tuple[list[Any], list[Any]]:
 
 def _actual_asset_hashes(root: Path) -> dict[str, str]:
     asset_root = root / "public/img/entities"
-    paths = [path for path in asset_root.glob("*") if path.is_file()]
-    actual = {path.stem: _sha256(path) for path in paths}
-    if len(actual) != len(paths):
-        raise InventoryError("candidate asset filenames are not unique by entity ID")
+    paths = [path for path in asset_root.rglob("*") if path.is_file()]
+    actual: dict[str, str] = {}
+    for path in paths:
+        if path.parent != asset_root:
+            raise InventoryError("candidate asset tree contains nested files")
+        if path.stem in actual:
+            raise InventoryError("candidate asset filenames are not unique by entity ID")
+        actual[path.stem] = _sha256(path)
     return actual
 
 
