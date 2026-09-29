@@ -120,17 +120,16 @@ def _image_paths(entity: dict[str, Any], asset_root: Path) -> list[tuple[str, Pa
     return result
 
 
-def _retained_asset(item: Any, reviewed_ids: set[str]) -> tuple[str, str]:
+def _retained_asset(item: Any) -> tuple[str, str, str | None]:
     if not isinstance(item, dict) or not isinstance(item.get("id"), str) or not isinstance(item.get("sha256"), str):
         raise InventoryError("candidate stage result contains malformed asset identity")
-    if item["id"] not in reviewed_ids:
-        raise InventoryError(f"staged retained asset is outside reviewed scope: {item['id']}")
-    if item.get("sourceSha256") not in {None, item["sha256"]}:
-        raise InventoryError(f"staged source hash mismatch: {item['id']}")
-    return item["id"], item["sha256"]
+    source_hash = item.get("sourceSha256")
+    if source_hash is not None and not isinstance(source_hash, str):
+        raise InventoryError(f"staged source hash is malformed: {item['id']}")
+    return item["id"], item["sha256"], source_hash
 
 
-def _stage_asset_hashes(root: Path, truth: dict[str, set[str]]) -> dict[str, str]:
+def _stage_lists(root: Path) -> tuple[list[Any], list[Any]]:
     stage_path = root / "stage-result.json"
     if not stage_path.is_file():
         raise InventoryError("candidate stage result is missing")
@@ -140,20 +139,44 @@ def _stage_asset_hashes(root: Path, truth: dict[str, set[str]]) -> dict[str, str
     assets = stage.get("assets")
     if not isinstance(assets, dict) or not isinstance(assets.get("retained"), list) or not isinstance(assets.get("removed"), list):
         raise InventoryError("candidate stage result must contain retained and removed asset lists")
-    retained = assets["retained"]
-    removed = assets["removed"]
+    return assets["retained"], assets["removed"]
+
+
+def _actual_asset_hashes(root: Path) -> dict[str, str]:
+    asset_root = root / "public/img/entities"
+    paths = [path for path in asset_root.glob("*") if path.is_file()]
+    actual = {path.stem: _sha256(path) for path in paths}
+    if len(actual) != len(paths):
+        raise InventoryError("candidate asset filenames are not unique by entity ID")
+    return actual
+
+
+def _retained_hashes(retained: list[Any]) -> dict[str, str]:
     expected: dict[str, str] = {}
-    reviewed_ids = truth["ai_generated"] | truth["generated_placeholder"]
     for item in retained:
-        entity_id, digest = _retained_asset(item, reviewed_ids)
+        entity_id, digest, source_hash = _retained_asset(item)
         if entity_id in expected:
             raise InventoryError(f"duplicate staged asset: {entity_id}")
+        if source_hash is not None and source_hash != digest:
+            raise InventoryError(f"staged source hash mismatch: {entity_id}")
         expected[entity_id] = digest
-    removed_ids = [item.get("id") for item in removed if isinstance(item, dict)]
-    if removed_ids != sorted(truth["delete"]):
+    return expected
+
+
+def _validate_removed_assets(removed: list[Any], truth: dict[str, set[str]]) -> None:
+    if any(not isinstance(item, dict) or not isinstance(item.get("id"), str) or not isinstance(item.get("sha256"), str) for item in removed):
+        raise InventoryError("candidate stage result contains malformed removed asset")
+    if [item["id"] for item in removed] != sorted(truth["delete"]):
         raise InventoryError("staged removed assets do not match the frozen delete partition")
-    if set(expected) != reviewed_ids:
-        raise InventoryError("staged retained assets do not match the frozen media partitions")
+
+
+def _stage_asset_hashes(root: Path, truth: dict[str, set[str]]) -> dict[str, str]:
+    retained, removed = _stage_lists(root)
+    expected = _retained_hashes(retained)
+    _validate_removed_assets(removed, truth)
+    actual = _actual_asset_hashes(root)
+    if set(expected) != set(actual) or any(expected[key] != actual[key] for key in actual):
+        raise InventoryError("staged retained assets do not match candidate asset hashes")
     return expected
 
 
@@ -301,9 +324,6 @@ def build_inventory(root: Path, data_path: Path, asset_root: Path, truth_path: P
         _build_item(entity, asset_root, truth, stage_hashes)
         for entity in sorted(entities, key=lambda item: item["id"])
     ]
-    item_ids = {item["entityId"] for item in items}
-    if set(stage_hashes) - item_ids:
-        raise InventoryError("candidate stage result references an unknown entity")
     counts = dict(sorted(Counter(item["classification"] for item in items).items()))
     return {
         "schemaVersion": 1,
@@ -326,6 +346,12 @@ def render_inventory(inventory: dict[str, Any]) -> bytes:
     return (json.dumps(inventory, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode("utf-8")
 
 
+def _protected_output_collision(output: Path, protected: set[Path]) -> bool:
+    return output.resolve(strict=False) in protected or any(
+        output.exists() and os.path.exists(path) and os.path.samefile(output, path) for path in protected
+    )
+
+
 def _safe_output_path(output: Path, root: Path, data_path: Path, truth_path: Path) -> Path:
     if output.exists() and output.is_symlink():
         raise InventoryError("output path must not be a symlink")
@@ -340,7 +366,7 @@ def _safe_output_path(output: Path, root: Path, data_path: Path, truth_path: Pat
         (repo_root / "agent/data/vinhlong360.db").resolve(),
     }
     protected.update(path.with_name(path.name + suffix) for path in tuple(protected) for suffix in ("-wal", "-shm", "-journal"))
-    if resolved in protected:
+    if _protected_output_collision(output, protected):
         raise InventoryError("output path collides with a protected input or sidecar")
     try:
         if os.path.commonpath((str(resolved), str(root.resolve()))) == str(root.resolve()):

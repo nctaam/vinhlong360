@@ -35,11 +35,11 @@ def _write_fixture(tmp_path: Path, entities: list[dict], *, truth: Path = TRUTH)
         (asset_root / f"{entity_id}.webp").write_bytes(b"asset:" + entity_id.encode())
     retained = [
         {"id": entity_id, "sha256": hashlib.sha256(b"asset:" + entity_id.encode()).hexdigest()}
-        for entity_id in sorted({"cua-com-duyen-hai", "tep-rang-dua"} | set(json.loads(TRUTH.read_text(encoding="utf-8"))["generated_placeholder"]))
+        for entity_id in sorted(entity["id"] for entity in entities)
     ]
     (tmp_path / "stage-result.json").write_text(
         json.dumps(
-            {"mutationAllowed": False, "assets": {"retained": retained, "removed": [{"id": "prov-1"}]}}
+            {"mutationAllowed": False, "assets": {"retained": retained, "removed": [{"id": "prov-1", "sha256": "removed"}]}}
         ),
         encoding="utf-8",
     )
@@ -196,11 +196,11 @@ def test_stage_result_cannot_reference_unknown_entity(tmp_path: Path):
         "mutationAllowed": False,
         "assets": {
             "retained": [{"id": "ghost-id", "sha256": hashlib.sha256(b"ghost").hexdigest()}],
-            "removed": [{"id": "prov-1"}],
+        "removed": [{"id": "prov-1", "sha256": "removed"}],
         },
     }
     (root / "stage-result.json").write_text(json.dumps(stage), encoding="utf-8")
-    with pytest.raises(InventoryError, match="outside reviewed scope"):
+    with pytest.raises(InventoryError, match="match candidate asset hashes"):
         build_inventory(root, data_path, asset_root, TRUTH)
 
 
@@ -211,10 +211,10 @@ def test_candidate_requires_sqlite_and_complete_stage_binding(tmp_path: Path):
         build_inventory(root, data_path, asset_root, TRUTH)
     (root / "vinhlong360.db").write_bytes(b"candidate-db")
     (root / "stage-result.json").write_text(
-        json.dumps({"mutationAllowed": False, "assets": {"retained": [], "removed": [{"id": "prov-1"}]}}),
+        json.dumps({"mutationAllowed": False, "assets": {"retained": [], "removed": [{"id": "prov-1", "sha256": "removed"}]}}),
         encoding="utf-8",
     )
-    with pytest.raises(InventoryError, match="frozen media partitions"):
+    with pytest.raises(InventoryError, match="match candidate asset hashes"):
         build_inventory(root, data_path, asset_root, TRUTH)
 
 
