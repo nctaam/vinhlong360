@@ -139,3 +139,14 @@ The checked-in plan was regenerated after the fixes; its latest SHA-256 is
 The generated plan contains 484 mutations and the shared validator returns
 484 total / 245 JSON / 239 SQLite mutations. Source protected hashes and
 mtimes remain unchanged; no source SQLite sidecar exists.
+Post-commit HEAD verification (unique pytest temp root to avoid Windows cleanup races):
+
+```text
+PYTEST_DEBUG_TEMPROOT=C:\vlt_task7_final_full python -m pytest -q tests/checks/test_build_media_truth_plan.py tests/checks/test_stage_data_reconciliation.py tests/test_entity_write_guard.py tests/checks/test_apply_data_reconciliation.py
+78 passed, 1 skipped in 156.03s
+```
+
+The isolated sidecar refusal test also passed with
+`PYTEST_DEBUG_TEMPROOT=C:\vlt_task7_final` (`1 passed in 9.47s`). A prior run
+using the shared `C:\vlt` temp root encountered Windows pytest cleanup races;
+no product assertion failed, and the unique-root rerun is clean.
