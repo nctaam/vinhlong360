@@ -7,13 +7,21 @@ import sqlite3
 
 import pytest
 
-from scripts.checks.build_image_provenance_review import ProvenanceReviewError, build_packet
+from scripts.checks.build_image_provenance_review import ProvenanceReviewError, build_packet as _build_packet
 
 
 ROOT = Path(__file__).resolve().parents[2]
 SQLITE = ROOT / "agent/data/vinhlong360.db"
 JSON_STORE = ROOT / "web/data.json"
 PHOTO_LEDGER = ROOT / "outputs/batch_culinary_restaurants_photos.json"
+TARGET_ID = "lang-nghe-san-xuat-chi-xo-dua-an-thanh"
+TARGET_IMAGE = f"/img/entities/{TARGET_ID}.webp"
+
+
+def build_packet(*args, **kwargs):
+    kwargs.setdefault("entity_id", TARGET_ID)
+    kwargs.setdefault("image_path", TARGET_IMAGE)
+    return _build_packet(*args, **kwargs)
 
 
 def _sha(path: Path) -> str:
@@ -21,9 +29,13 @@ def _sha(path: Path) -> str:
 
 
 def _prov1_ledger(tmp_path: Path, **updates: object) -> Path:
-    payload = json.loads(PHOTO_LEDGER.read_text(encoding="utf-8"))
-    rows = [dict(row) for row in payload if row.get("entity_id") == "prov-1"]
-    assert rows
+    rows = [{
+        "entity_id": TARGET_ID,
+        "image": f"web-nuxt/public{TARGET_IMAGE}",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+    }]
     rows[0].update(updates)
     path = tmp_path / "photos.json"
     path.write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
@@ -39,16 +51,16 @@ def _write_ledger(tmp_path: Path, rows: list[dict[str, object]]) -> Path:
 
 def _json_with_complete_metadata(tmp_path: Path) -> Path:
     payload = json.loads(JSON_STORE.read_text(encoding="utf-8"))
-    entity = next(item for item in payload["entities"] if item["id"] == "prov-1")
+    entity = next(item for item in payload["entities"] if item["id"] == "lang-nghe-san-xuat-chi-xo-dua-an-thanh")
     entity["attributes"].update(
         {
-            "image_source_url": "https://baovinhlong.com.vn/images/prov-1.webp",
+            "image_source_url": "https://baovinhlong.com.vn/images/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
             "image_author": "Trần Phước",
             "image_source": "Báo Vĩnh Long",
             "image_license": "Được phép re-host theo văn bản lưu trữ",
         }
     )
-    entity["source"] = [{"name": "Báo Vĩnh Long", "url": "https://baovinhlong.com.vn/images/prov-1.webp"}]
+    entity["source"] = [{"name": "Báo Vĩnh Long", "url": "https://baovinhlong.com.vn/images/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp"}]
     path = tmp_path / "data.json"
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
     return path
@@ -56,7 +68,7 @@ def _json_with_complete_metadata(tmp_path: Path) -> Path:
 
 def _json_with_unrelated_entity_citation(tmp_path: Path) -> Path:
     payload = json.loads(JSON_STORE.read_text(encoding="utf-8"))
-    entity = next(item for item in payload["entities"] if item["id"] == "prov-1")
+    entity = next(item for item in payload["entities"] if item["id"] == "lang-nghe-san-xuat-chi-xo-dua-an-thanh")
     entity["source"] = [{"name": "Báo Vĩnh Long", "url": "https://baovinhlong.com.vn/articles/unrelated"}]
     entity["attributes"]["source_citations"] = [
         {"url": "https://baovinhlong.com.vn/articles/also-unrelated"}
@@ -68,7 +80,7 @@ def _json_with_unrelated_entity_citation(tmp_path: Path) -> Path:
 
 def _json_with_target_images(tmp_path: Path, images: object) -> Path:
     payload = json.loads(JSON_STORE.read_text(encoding="utf-8"))
-    entity = next(item for item in payload["entities"] if item["id"] == "prov-1")
+    entity = next(item for item in payload["entities"] if item["id"] == "lang-nghe-san-xuat-chi-xo-dua-an-thanh")
     entity["images"] = images
     path = tmp_path / "data.json"
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
@@ -85,7 +97,7 @@ def _isolated_review_root(tmp_path: Path) -> Path:
         )
         connection.execute(
             "INSERT INTO entities (id, images, attributes) VALUES (?, ?, ?)",
-            ("prov-1", json.dumps(["/img/entities/prov-1.webp"]), "{}"),
+            ("lang-nghe-san-xuat-chi-xo-dua-an-thanh", json.dumps(["/img/entities/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp"]), "{}"),
         )
 
     json_store = root / "web/data.json"
@@ -95,8 +107,8 @@ def _isolated_review_root(tmp_path: Path) -> Path:
             {
                 "entities": [
                     {
-                        "id": "prov-1",
-                        "images": ["/img/entities/prov-1.webp"],
+                        "id": "lang-nghe-san-xuat-chi-xo-dua-an-thanh",
+                        "images": ["/img/entities/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp"],
                         "attributes": {
                             "image_author": "Author",
                             "image_source": "Publisher",
@@ -114,8 +126,8 @@ def _isolated_review_root(tmp_path: Path) -> Path:
         json.dumps(
             [
                 {
-                    "entity_id": "prov-1",
-                    "image": "web-nuxt/public/img/entities/prov-1.webp",
+                    "entity_id": "lang-nghe-san-xuat-chi-xo-dua-an-thanh",
+                    "image": "web-nuxt/public/img/entities/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
                     "author": "Author",
                     "source": "Publisher",
                 }
@@ -129,11 +141,11 @@ def _isolated_review_root(tmp_path: Path) -> Path:
 def test_current_prov1_packet_is_review_only_and_exposes_missing_requirements(tmp_path: Path):
     before = (_sha(SQLITE), _sha(JSON_STORE))
 
-    packet = build_packet(ROOT, tmp_path / "packet.json")
+    packet = build_packet(ROOT, tmp_path / "packet.json", photo_ledger=_prov1_ledger(tmp_path))
 
     assert packet["status"] == "ready_for_owner_review"
     assert packet["mutationAllowed"] is False
-    assert packet["target"]["entityId"] == "prov-1"
+    assert packet["target"]["entityId"] == "lang-nghe-san-xuat-chi-xo-dua-an-thanh"
     assert set(packet["requirements"]["missing"]) == {
         "image-specific source URL",
         "explicit permission evidence",
@@ -151,7 +163,7 @@ def test_current_prov1_packet_is_review_only_and_exposes_missing_requirements(tm
 def test_placeholder_source_url_never_satisfies_source_requirement(tmp_path: Path, host: str):
     ledger = _prov1_ledger(
         tmp_path,
-        image_source_url=f"https://{host}/prov-1.webp",
+        image_source_url=f"https://{host}/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
         permission_evidence="written release",
     )
 
@@ -163,7 +175,7 @@ def test_placeholder_source_url_never_satisfies_source_requirement(tmp_path: Pat
 
 @pytest.mark.parametrize("host", ["127.0.0.2", "[::1]", "10.25.0.8"])
 def test_non_public_ip_source_url_never_satisfies_source_requirement(tmp_path: Path, host: str):
-    ledger = _prov1_ledger(tmp_path, image_source_url=f"https://{host}/prov-1.webp")
+    ledger = _prov1_ledger(tmp_path, image_source_url=f"https://{host}/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp")
 
     packet = build_packet(ROOT, photo_ledger=ledger)
 
@@ -173,11 +185,11 @@ def test_non_public_ip_source_url_never_satisfies_source_requirement(tmp_path: P
 @pytest.mark.parametrize(
     "url",
     [
-        "https://intranet/images/prov-1.webp",
-        "https://rights.corp/images/prov-1.webp",
+        "https://intranet/images/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
+        "https://rights.corp/images/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
         "https://printer.local/image.webp",
-        "https://2130706433/images/prov-1.webp",
-        "https://[::1/images/prov-1.webp",
+        "https://2130706433/images/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
+        "https://[::1/images/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
     ],
 )
 def test_non_public_or_malformed_source_url_fails_closed(tmp_path: Path, url: str):
@@ -187,7 +199,7 @@ def test_non_public_or_malformed_source_url_fails_closed(tmp_path: Path, url: st
 
 
 def test_unrelated_entity_citation_never_satisfies_image_source_requirement(tmp_path: Path):
-    packet = build_packet(ROOT, json_path=_json_with_unrelated_entity_citation(tmp_path))
+    packet = build_packet(ROOT, json_path=_json_with_unrelated_entity_citation(tmp_path), photo_ledger=_prov1_ledger(tmp_path))
 
     assert "image-specific source URL" in packet["requirements"]["missing"]
 
@@ -303,7 +315,7 @@ def test_bare_license_label_never_satisfies_rehost_scope(tmp_path: Path, license
 def test_complete_fixture_evidence_is_still_non_authorizing(tmp_path: Path):
     ledger = _prov1_ledger(
         tmp_path,
-        image_source_url="https://baovinhlong.com.vn/images/prov-1.webp",
+        image_source_url="https://baovinhlong.com.vn/images/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
         permission_evidence="owner-record:IMG-2026-001",
     )
     json_path = _json_with_complete_metadata(tmp_path)
@@ -318,7 +330,7 @@ def test_complete_fixture_evidence_is_still_non_authorizing(tmp_path: Path):
 
 @pytest.mark.parametrize(
     "permission_evidence",
-    ["https://baovinhlong.com.vn/rights/prov-1", "owner-record:IMG-2026-001"],
+    ["https://baovinhlong.com.vn/rights/lang-nghe-san-xuat-chi-xo-dua-an-thanh", "owner-record:IMG-2026-001"],
 )
 def test_traceable_permission_reference_satisfies_permission_requirement(tmp_path: Path, permission_evidence: str):
     packet = build_packet(ROOT, photo_ledger=_prov1_ledger(tmp_path, permission_evidence=permission_evidence))
@@ -329,11 +341,11 @@ def test_traceable_permission_reference_satisfies_permission_requirement(tmp_pat
 @pytest.mark.parametrize(
     "permission_evidence",
     [
-        "https://intranet/rights/prov-1",
-        "https://rights.corp/rights/prov-1",
-        "https://printer.local/rights/prov-1",
-        "https://2130706433/rights/prov-1",
-        "https://[::1/rights/prov-1",
+        "https://intranet/rights/lang-nghe-san-xuat-chi-xo-dua-an-thanh",
+        "https://rights.corp/rights/lang-nghe-san-xuat-chi-xo-dua-an-thanh",
+        "https://printer.local/rights/lang-nghe-san-xuat-chi-xo-dua-an-thanh",
+        "https://2130706433/rights/lang-nghe-san-xuat-chi-xo-dua-an-thanh",
+        "https://[::1/rights/lang-nghe-san-xuat-chi-xo-dua-an-thanh",
     ],
 )
 def test_non_public_or_malformed_permission_url_fails_closed(
@@ -353,8 +365,8 @@ def test_conflicting_matching_license_evidence_never_satisfies_rehost_scope(
     tmp_path: Path,
 ):
     common = {
-        "entity_id": "prov-1",
-        "image": "web-nuxt/public/img/entities/prov-1.webp",
+        "entity_id": "lang-nghe-san-xuat-chi-xo-dua-an-thanh",
+        "image": "web-nuxt/public/img/entities/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
         "author": "Trần Phước",
         "source": "Báo Vĩnh Long",
     }
@@ -377,8 +389,8 @@ def test_conflicting_matching_license_evidence_never_satisfies_rehost_scope(
 
 def test_matching_photo_ledger_rows_render_identically_after_reordering(tmp_path: Path):
     first_row = {
-        "entity_id": "prov-1",
-        "image": "web-nuxt/public/img/entities/prov-1.webp",
+        "entity_id": "lang-nghe-san-xuat-chi-xo-dua-an-thanh",
+        "image": "web-nuxt/public/img/entities/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
         "author": "Trần Phước",
         "source": "Báo Vĩnh Long",
         "license": "CC BY 4.0",
@@ -407,17 +419,17 @@ def test_canonical_evidence_digest_ignores_unrelated_rows_and_unused_fields(
     tmp_path: Path,
 ):
     matching = {
-        "entity_id": "prov-1",
-        "image": "web-nuxt/public/img/entities/prov-1.webp",
+        "entity_id": "lang-nghe-san-xuat-chi-xo-dua-an-thanh",
+        "image": "web-nuxt/public/img/entities/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
         "author": "Trần Phước",
         "source": "Báo Vĩnh Long",
         "license": "CC BY 4.0",
-        "image_source_url": "https://baovinhlong.com.vn/images/prov-1.webp",
+        "image_source_url": "https://baovinhlong.com.vn/images/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
         "unused_note": "first",
     }
     unrelated = {
-        "entity_id": "not-prov-1",
-        "image": "web-nuxt/public/img/entities/not-prov-1.webp",
+        "entity_id": "not-lang-nghe-san-xuat-chi-xo-dua-an-thanh",
+        "image": "web-nuxt/public/img/entities/not-lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
         "license": "CC BY 4.0",
         "unused_note": "before",
     }
@@ -449,12 +461,12 @@ def test_different_image_ledger_row_never_satisfies_target_requirements(tmp_path
         tmp_path,
         [
             {
-                "entity_id": "prov-1",
-                "image": "web-nuxt/public/img/entities/not-prov-1.webp",
+                "entity_id": "lang-nghe-san-xuat-chi-xo-dua-an-thanh",
+                "image": "web-nuxt/public/img/entities/not-lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
                 "author": "Other author",
                 "source": "Other publisher",
                 "license": "CC BY 4.0",
-                "image_source_url": "https://baovinhlong.com.vn/images/not-prov-1.webp",
+                "image_source_url": "https://baovinhlong.com.vn/images/not-lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
                 "permission_evidence": "owner-record:IMG-2026-999",
             }
         ],
@@ -468,24 +480,24 @@ def test_different_image_ledger_row_never_satisfies_target_requirements(tmp_path
     )
 
 
-@pytest.mark.parametrize("images", [None, [], [None], [{"path": "/img/entities/prov-1.webp"}]])
+@pytest.mark.parametrize("images", [None, [], [None], [{"path": "/img/entities/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp"}]])
 def test_packet_fails_closed_when_target_has_no_valid_image(tmp_path: Path, images: object):
     with pytest.raises(ProvenanceReviewError):
         build_packet(ROOT, json_path=_json_with_target_images(tmp_path, images))
 
 
-@pytest.mark.parametrize("image", [None, "", 7, {"path": "/img/entities/prov-1.webp"}])
+@pytest.mark.parametrize("image", [None, "", 7, {"path": "/img/entities/lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp"}])
 def test_missing_or_malformed_ledger_image_never_matches_target_image(tmp_path: Path, image: object):
     ledger = _write_ledger(
         tmp_path,
         [
             {
-                "entity_id": "prov-1",
+                "entity_id": "lang-nghe-san-xuat-chi-xo-dua-an-thanh",
                 "image": image,
                 "author": "Other author",
                 "source": "Other publisher",
                 "license": "CC BY 4.0",
-                "image_source_url": "https://baovinhlong.com.vn/images/not-prov-1.webp",
+                "image_source_url": "https://baovinhlong.com.vn/images/not-lang-nghe-san-xuat-chi-xo-dua-an-thanh.webp",
                 "permission_evidence": "owner-record:IMG-2026-999",
             }
         ],
@@ -512,8 +524,9 @@ def test_packet_rendering_is_deterministic_and_atomically_replaced(tmp_path: Pat
     first_path = tmp_path / "first.json"
     second_path = tmp_path / "second.json"
 
-    first = build_packet(ROOT, first_path)
-    second = build_packet(ROOT, second_path)
+    ledger = _prov1_ledger(tmp_path)
+    first = build_packet(ROOT, first_path, photo_ledger=ledger)
+    second = build_packet(ROOT, second_path, photo_ledger=ledger)
 
     assert first == second
     assert first_path.read_bytes() == second_path.read_bytes()
@@ -523,7 +536,7 @@ def test_packet_rendering_is_deterministic_and_atomically_replaced(tmp_path: Pat
 def test_packet_bytes_use_utf8_lf_and_end_in_exactly_one_lf(tmp_path: Path):
     output = tmp_path / "packet.json"
 
-    build_packet(ROOT, output)
+    build_packet(ROOT, output, photo_ledger=_prov1_ledger(tmp_path))
 
     raw = output.read_bytes()
     assert b"\r\n" not in raw

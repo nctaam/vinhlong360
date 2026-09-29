@@ -30,13 +30,13 @@ def test_manifest_is_review_only_and_contains_known_findings(tmp_path: Path):
     assert all(item["status"] == "review_required" for item in manifest["findings"])
     assert all(item["mutationAllowed"] is False for item in manifest["findings"])
     assert {item["category"] for item in manifest["findings"]} >= {
-        "prov-1-contract-gaps",
         "relationship-parity-drift",
-        "documentary-image-provenance",
         "phase4-cliche",
         "verifiedAt-conflicts",
         "owner-approved-conflict",
     }
+    assert not any("prov-1" in item.get("recordIds", []) for item in manifest["findings"])
+    assert any(item["recordId"] == "prov-1" and item["status"] == "superseded" for item in manifest["history"])
     assert all(item["evidence"] for item in manifest["findings"])
     assert all("after" not in item for item in manifest["findings"])
     assert before == (_sha(SQLITE), _sha(JSON_STORE))

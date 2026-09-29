@@ -198,14 +198,14 @@ def _spatial_mutations(sqlite_entities: dict[str, dict[str, Any]], spatial_path:
 
 
 def _photo_mutations(current: dict[str, Any], photos_path: Path,
-                     tombstones: frozenset[str]) -> tuple[list[dict[str, Any]], list[str], bool]:
-    if "prov-1" in tombstones:
+                     tombstones: frozenset[str], *, entity_id: str = "prov-1") -> tuple[list[dict[str, Any]], list[str], bool]:
+    if entity_id in tombstones:
         return [], [], False
     mutations = []
     requirements = []
     has_deferred = False
     for item in _load(photos_path):
-        if item.get("entity_id") != "prov-1":
+        if item.get("entity_id") != entity_id:
             continue
         missing = _photo_provenance_requirements(item)
         if missing:
@@ -214,7 +214,7 @@ def _photo_mutations(current: dict[str, Any], photos_path: Path,
                 if requirement not in requirements:
                     requirements.append(requirement)
             continue
-        fields = (("images", ["/img/entities/prov-1.webp"]), ("attributes.image_type", "documentary"),
+        fields = (("images", [f"/img/entities/{entity_id}.webp"]), ("attributes.image_type", "documentary"),
                   ("attributes.is_verified_photo", True), ("attributes.image_author", item.get("author")),
                   ("attributes.image_source", item.get("source")), ("attributes.image_caption", item.get("caption")),
                   ("attributes.image_license", item.get("license")))

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.checks.reconcile_data_dry_run import build_plan, main, render_plan
+from scripts.checks.reconcile_data_dry_run import _photo_mutations, build_plan, main, render_plan
 from scripts.checks.audit_data_parity import build_report
 
 
@@ -35,120 +35,65 @@ def test_production_counts_and_key_proposals(tmp_path):
     assert sum(m["operation"] == "update" and m["recordType"] == "relationship" for m in plan["mutations"]) == 478
     assert sum(m["operation"] == "delete" and m["store"] == "sqlite" for m in plan["mutations"]) == 4
     assert sum(m["operation"] == "delete" and m["store"] == "json" for m in plan["mutations"]) == 6
-    prov = [m for m in plan["mutations"] if m["recordId"] == "prov-1"]
-    assert {m["store"] for m in prov} >= {"sqlite"}
-    assert any(m["field"] == "coordinates" and m["after"] == [10.253, 106.012] for m in prov)
-    assert any(m["field"] == "placeId" and m["after"] == "p-thanh-duc" for m in prov)
+    assert not any(m["recordId"] == "prov-1" for m in plan["mutations"])
     assert any("verifiedAt" in str(d) for d in plan["deferred"])
     assert any(d["recordId"] == "vuon-trai-cay-cu-lao-dai" for d in plan["deferred"])
-    assert any(d["itemId"] == "prov-1-text-gaps" and "parity" in d["evidence"][0] for d in plan["deferred"])
+    assert not any(d["recordId"] == "prov-1" for d in plan["deferred"])
 
 
-def test_prov1_documentary_image_bundle_is_deferred_until_provenance_is_complete(tmp_path):
-    plan = build_plan(SQLITE, JSON, _fresh_parity(tmp_path), LEDGERS)
-    image_fields = {
-        "images",
-        "attributes.image_type",
-        "attributes.is_verified_photo",
-        "attributes.image_author",
-        "attributes.image_source",
-        "attributes.image_caption",
-        "attributes.image_license",
-    }
-
-    assert not any(
-        mutation["recordId"] == "prov-1" and mutation["field"] in image_fields
-        for mutation in plan["mutations"]
-    )
-    deferred = [item for item in plan["deferred"] if item["itemId"] == "prov-1-image-provenance"]
-    assert len(deferred) == 1
-    assert deferred[0]["recordId"] == "prov-1"
-    assert deferred[0]["requirements"] == [
-        "image-specific source URL",
-        "explicit permission evidence",
-    ]
+def _retained_photo(tmp_path, **updates):
+    row = {"entity_id": "retained-1", "image": "web-nuxt/public/img/entities/retained-1.webp", "author": "Author", "source": "Publisher", "license": "Copyright attribution"}
+    row.update(updates)
+    path = tmp_path / "photos.json"
+    path.write_text(json.dumps([row]), encoding="utf-8")
+    return path
 
 
-def test_prov1_documentary_image_bundle_rejects_placeholder_source_url(tmp_path):
-    photos = json.loads(LEDGERS["photos"].read_text(encoding="utf-8"))
-    item = next(record for record in photos if record.get("entity_id") == "prov-1")
-    item.update({"image_source_url": "https://example.test/source", "permission_evidence": "written release"})
-    photos_path = tmp_path / "photos.json"
-    photos_path.write_text(json.dumps(photos), encoding="utf-8")
-
-    ledgers = {**LEDGERS, "photos": photos_path}
-    plan = build_plan(SQLITE, JSON, _fresh_parity(tmp_path), ledgers)
-    deferred = [item for item in plan["deferred"] if item["itemId"] == "prov-1-image-provenance"]
-
-    assert len(deferred) == 1
-    assert deferred[0]["requirements"] == ["image-specific source URL"]
+def _retained_current():
+    return {"id": "retained-1", "images": json.dumps(["/img/entities/retained-1.webp"]), "attributes": "{}"}
 
 
-@pytest.mark.parametrize(
-    "host",
-    ["foo.example.test", "foo.example.com", "foo.example.net", "foo.example.org", "foo.localhost", "foo.localdomain"],
-)
-def test_prov1_documentary_image_bundle_rejects_placeholder_subdomains(tmp_path, host):
-    photos = json.loads(LEDGERS["photos"].read_text(encoding="utf-8"))
-    item = next(record for record in photos if record.get("entity_id") == "prov-1")
-    item.update({"image_source_url": f"https://{host}/source", "permission_evidence": "written release"})
-    photos_path = tmp_path / "photos.json"
-    photos_path.write_text(json.dumps(photos), encoding="utf-8")
-
-    plan = build_plan(SQLITE, JSON, _fresh_parity(tmp_path), {**LEDGERS, "photos": photos_path})
-    deferred = [item for item in plan["deferred"] if item["itemId"] == "prov-1-image-provenance"]
-
-    assert len(deferred) == 1
-    assert deferred[0]["requirements"] == ["image-specific source URL"]
+def test_present_target_photo_review_semantics_use_retained_fixture(tmp_path):
+    changes, requirements, deferred = _photo_mutations(_retained_current(), _retained_photo(tmp_path), frozenset(), entity_id="retained-1")
+    assert not changes
+    assert requirements == ["image-specific source URL", "explicit permission evidence"]
+    assert deferred is True
 
 
-def test_prov1_documentary_image_bundle_accepts_complete_image_provenance(tmp_path):
-    photos = json.loads(LEDGERS["photos"].read_text(encoding="utf-8"))
-    item = next(record for record in photos if record.get("entity_id") == "prov-1")
-    item.update({"image_source_url": "https://baovinhlong.com.vn/images/prov-1.webp", "permission_evidence": "written release"})
-    photos_path = tmp_path / "photos.json"
-    photos_path.write_text(json.dumps(photos), encoding="utf-8")
-
-    plan = build_plan(SQLITE, JSON, _fresh_parity(tmp_path), {**LEDGERS, "photos": photos_path})
-    image_mutations = [
-        mutation for mutation in plan["mutations"]
-        if mutation["recordId"] == "prov-1" and mutation["field"].startswith("attributes.image_")
-    ]
-
-    assert len(image_mutations) == 5
-    assert not any(item["itemId"] == "prov-1-image-provenance" for item in plan["deferred"])
+@pytest.mark.parametrize("host", ["foo.example.test", "foo.example.com", "foo.example.net", "foo.example.org", "foo.localhost", "foo.localdomain"])
+def test_retained_photo_rejects_placeholder_source_url(tmp_path, host):
+    changes, requirements, deferred = _photo_mutations(_retained_current(), _retained_photo(tmp_path, image_source_url=f"https://{host}/source", permission_evidence="written release"), frozenset(), entity_id="retained-1")
+    assert not changes and deferred is True
+    assert requirements == ["image-specific source URL"]
 
 
-def test_prov1_documentary_image_bundle_rejects_generic_or_malformed_url(tmp_path):
-    photos = json.loads(LEDGERS["photos"].read_text(encoding="utf-8"))
-    item = next(record for record in photos if record.get("entity_id") == "prov-1")
-    item.update({"source_url": "https://news.example/article", "permission_evidence": "written release"})
-    photos_path = tmp_path / "photos.json"
-    photos_path.write_text(json.dumps(photos), encoding="utf-8")
-
-    plan = build_plan(SQLITE, JSON, _fresh_parity(tmp_path), {**LEDGERS, "photos": photos_path})
-    deferred = next(item for item in plan["deferred"] if item["itemId"] == "prov-1-image-provenance")
-
-    assert deferred["requirements"] == ["image-specific source URL"]
-
-    item["image_source_url"] = "https://"
-    photos_path.write_text(json.dumps(photos), encoding="utf-8")
-    plan = build_plan(SQLITE, JSON, _fresh_parity(tmp_path), {**LEDGERS, "photos": photos_path})
-    deferred = next(item for item in plan["deferred"] if item["itemId"] == "prov-1-image-provenance")
-    assert deferred["requirements"] == ["image-specific source URL"]
+def test_retained_photo_rejects_generic_or_malformed_url(tmp_path):
+    changes, requirements, deferred = _photo_mutations(_retained_current(), _retained_photo(tmp_path, source_url="https://news.example/article", permission_evidence="owner-record:IMG-2026-001"), frozenset(), entity_id="retained-1")
+    assert not changes and deferred is True
+    assert requirements == ["image-specific source URL"]
 
 
-def test_prov1_documentary_image_bundle_deduplicates_duplicate_ledger_rows(tmp_path):
-    photos = json.loads(LEDGERS["photos"].read_text(encoding="utf-8"))
-    item = next(record for record in photos if record.get("entity_id") == "prov-1")
-    photos.append(dict(item))
-    photos_path = tmp_path / "photos.json"
-    photos_path.write_text(json.dumps(photos), encoding="utf-8")
+def test_retained_photo_rejects_malformed_url(tmp_path):
+    changes, requirements, deferred = _photo_mutations(_retained_current(), _retained_photo(tmp_path, image_source_url="https://", permission_evidence="owner-record:IMG-2026-001"), frozenset(), entity_id="retained-1")
+    assert not changes and deferred is True
+    assert requirements == ["image-specific source URL"]
 
-    plan = build_plan(SQLITE, JSON, _fresh_parity(tmp_path), {**LEDGERS, "photos": photos_path})
 
-    assert sum(item["itemId"] == "prov-1-image-provenance" for item in plan["deferred"]) == 1
+def test_retained_photo_duplicate_rows_do_not_duplicate_deferred_state(tmp_path):
+    path = _retained_photo(tmp_path)
+    rows = json.loads(path.read_text(encoding="utf-8"))
+    rows.append(dict(rows[0]))
+    path.write_text(json.dumps(rows), encoding="utf-8")
+    changes, requirements, deferred = _photo_mutations(_retained_current(), path, frozenset(), entity_id="retained-1")
+    assert not changes and deferred is True
+    assert requirements == ["image-specific source URL", "explicit permission evidence"]
 
+
+def test_retained_photo_accepts_complete_image_provenance(tmp_path):
+    changes, requirements, deferred = _photo_mutations(_retained_current(), _retained_photo(tmp_path, image_source_url="https://baovinhlong.com.vn/images/retained-1.webp", permission_evidence="owner-record:IMG-2026-001"), frozenset(), entity_id="retained-1")
+    assert len(changes) == 7
+    assert requirements == []
+    assert deferred is False
 
 def test_stale_parity_fails_closed(tmp_path):
     stale = json.loads(PARITY.read_text(encoding="utf-8"))
