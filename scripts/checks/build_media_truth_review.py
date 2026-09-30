@@ -13,6 +13,7 @@ import hashlib
 import json
 import sqlite3
 import sys
+from collections import Counter
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -48,6 +49,69 @@ EXPECTED_ARTIFACT_KEYS = {
     "llms",
     "llms_full",
     "renderer_registry",
+}
+EXPECTED_TARGET_IDS = (
+    "ba-nhi-bun-bo-hue-vinh-long",
+    "banh-canh-ben-tre",
+    "banh-trang-my-long",
+    "banh-xeo-mien-tay",
+    "bo-nuong-la-lot",
+    "bun-bo-co-tam-cho-ben-tre-ben-tre",
+    "bun-mam-mien-tay",
+    "ca-tai-tuong-chien-xu",
+    "caffe-takeaway---tan-ke",
+    "cha-gio-chay",
+    "chao-ca-loc-rau-dang",
+    "chuoi-nuong-gia-truyen",
+    "co-dai---sinh-to-giai-khat",
+    "com-chay-au-lac-vinh-long",
+    "com-ga-xoi-mo-5-vi-ben-tre",
+    "cua-com-duyen-hai",
+    "duong-dua",
+    "goi-cuon-tom-thit",
+    "hot-pot-72---quan-lau",
+    "khoi---lau-nuong",
+    "kimchi-kimchi---mi-cay-han-quoc",
+    "lau-bo",
+    "lau-mam-ben-tre",
+    "lau-tai-co",
+    "lu-lu---cake-drink",
+    "ma-van-tai-quan---pham-thai-buong",
+    "mam-tom-cha-vinh-long",
+    "mi-cay-vinh-long",
+    "nem-nuong-thanh-binh-ben-tre",
+    "nha-hang-thien-tan",
+    "prov-1",
+    "tep-rang-dua",
+    "tiem-ba-khoang",
+    "tinh-binh-chay-vinh-long",
+    "tom-cang-xanh-nuong",
+    "tom-cang-xanh-song-tien",
+    "tom-rang-muoi-ot",
+    "vys-house-drinks-tea---2-thang-9",
+    "xoi-vi-mien-tay",
+    "xom-nuong-que-nha",
+)
+EXPECTED_MUTATION_COUNTS = {
+    ("json", "entity", "delete", "entity"): 1,
+    ("json", "entity", "remove", "attributes.image_author"): 39,
+    ("json", "entity", "remove", "attributes.image_caption"): 39,
+    ("json", "entity", "remove", "attributes.image_license"): 39,
+    ("json", "entity", "remove", "attributes.image_source"): 39,
+    ("json", "entity", "update", "attributes.image_generation_model"): 2,
+    ("json", "entity", "update", "attributes.image_generation_reference"): 2,
+    ("json", "entity", "update", "attributes.image_type"): 39,
+    ("json", "entity", "update", "attributes.is_verified_photo"): 39,
+    ("json", "relationship", "delete", "relationship"): 6,
+    ("sqlite", "entity", "delete", "entity"): 1,
+    ("sqlite", "entity", "remove", "attributes.image_author"): 39,
+    ("sqlite", "entity", "remove", "attributes.image_caption"): 39,
+    ("sqlite", "entity", "remove", "attributes.image_license"): 39,
+    ("sqlite", "entity", "remove", "attributes.image_source"): 39,
+    ("sqlite", "entity", "update", "attributes.image_generation_model"): 2,
+    ("sqlite", "entity", "update", "attributes.image_generation_reference"): 2,
+    ("sqlite", "entity", "update", "attributes.image_type"): 39,
+    ("sqlite", "entity", "update", "attributes.is_verified_photo"): 39,
 }
 PROTECTED_JSON = Path("web/data.json")
 PROTECTED_SQLITE = Path("agent/data/vinhlong360.db")
@@ -192,7 +256,46 @@ def _validate_inventory(root: Path, inventory_path: Path, data_sha: str) -> dict
     }
 
 
-def _validate_plan_scope(plan: Mapping[str, Any]) -> None:
+def _plan_mutations(plan: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    mutations = plan.get("mutations")
+    if not isinstance(mutations, list) or any(not isinstance(item, dict) for item in mutations):
+        raise ReviewError("plan mutations are malformed")
+    return mutations
+
+
+def _validate_plan_targets(mutations: list[Mapping[str, Any]]) -> list[str]:
+    target_ids = sorted({item.get("recordId") for item in mutations if item.get("recordType") == "entity"})
+    if target_ids != list(EXPECTED_TARGET_IDS):
+        raise ReviewError("plan entity target ID set mismatch")
+    return target_ids
+
+
+def _validate_mutation_counts(mutations: list[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    observed = Counter((item.get("store"), item.get("recordType"), item.get("operation"), item.get("field")) for item in mutations)
+    if dict(observed) != EXPECTED_MUTATION_COUNTS:
+        raise ReviewError("plan mutation-count map mismatch")
+    return [
+        {"store": store, "recordType": record_type, "operation": operation, "field": field, "count": observed[(store, record_type, operation, field)]}
+        for store, record_type, operation, field in sorted(EXPECTED_MUTATION_COUNTS)
+    ]
+
+
+def _validate_relationship_scope(mutations: list[Mapping[str, Any]]) -> list[dict[str, str]]:
+    expected_relationships = {
+        ("prov-1", "banh-xeo-mien-tay", "near"), ("prov-1", "com-tam-co-tuyet", "near"),
+        ("prov-1", "cong-ty-tnhh-mtv-quoc-thao", "near"), ("prov-1", "khu-du-lich-truong-huy", "near"),
+        ("prov-1", "mekong-pottery-homestay", "near"), ("prov-1", "vinh-long", "located_in"),
+    }
+    relationships = {
+        ((item.get("before") or {}).get("from"), (item.get("before") or {}).get("to"), (item.get("before") or {}).get("type"))
+        for item in mutations if item.get("recordType") == "relationship"
+    }
+    if relationships != expected_relationships:
+        raise ReviewError("plan relationship triples mismatch")
+    return [{"from": source, "to": target, "type": relation_type} for source, target, relation_type in sorted(relationships)]
+
+
+def _validate_plan_scope(plan: Mapping[str, Any]) -> dict[str, Any]:
     summary = plan.get("summary")
     if not isinstance(summary, dict):
         raise ReviewError("plan summary is missing")
@@ -206,17 +309,12 @@ def _validate_plan_scope(plan: Mapping[str, Any]) -> None:
     }
     if any(summary.get(key) != value for key, value in expected_summary.items()):
         raise ReviewError("plan scope summary mismatch")
-    expected_relationships = {
-        ("prov-1", "banh-xeo-mien-tay", "near"), ("prov-1", "com-tam-co-tuyet", "near"),
-        ("prov-1", "cong-ty-tnhh-mtv-quoc-thao", "near"), ("prov-1", "khu-du-lich-truong-huy", "near"),
-        ("prov-1", "mekong-pottery-homestay", "near"), ("prov-1", "vinh-long", "located_in"),
+    mutations = _plan_mutations(plan)
+    return {
+        "targetIds": _validate_plan_targets(mutations),
+        "relationshipTriples": _validate_relationship_scope(mutations),
+        "mutationCounts": _validate_mutation_counts(mutations),
     }
-    relationships = {
-        ((m.get("before") or {}).get("from"), (m.get("before") or {}).get("to"), (m.get("before") or {}).get("type"))
-        for m in plan.get("mutations", []) if m.get("recordType") == "relationship"
-    }
-    if relationships != expected_relationships:
-        raise ReviewError("plan relationship triples mismatch")
 
 
 def _validate_candidate(root: Path, plan: Mapping[str, Any], stage_result_path: Path, inventory_path: Path) -> dict[str, Any]:
@@ -227,13 +325,14 @@ def _validate_candidate(root: Path, plan: Mapping[str, Any], stage_result_path: 
     _validate_candidate_sidecars(candidate)
     data_sha, candidate_logical = _validate_candidate_digests(plan, data_path, sqlite_path)
     inventory = _validate_inventory(root, inventory_path, data_sha)
-    _validate_plan_scope(plan)
+    plan_scope = _validate_plan_scope(plan)
     return {
         "root": _relative(root, candidate),
         "stageResult": {"path": _relative(root, stage_result_path), "sha256": _sha(stage_result_path)},
         "data": {"path": _relative(root, data_path), "sha256": data_sha},
         "sqlite": {"path": _relative(root, sqlite_path), "sha256": _sha(sqlite_path), "logicalDigest": candidate_logical},
         "inventory": inventory,
+        "scope": plan_scope,
     }
 
 
@@ -474,6 +573,7 @@ def build_review_package(
     root = Path(root).resolve()
     plan, plan_sha = _canonical_plan(plan_path, approved_plan_path)
     candidate = _validate_candidate(root, plan, stage_result_path, inventory_path)
+    scope_details = candidate.pop("scope")
     artifacts = _validate_artifacts(root, artifact_manifest_path)
     evidence, evidence_ref = _validate_test_evidence(root, test_evidence_path)
     approved_plan = Path(approved_plan_path).resolve()
@@ -512,7 +612,7 @@ def build_review_package(
             "retainedAi": EXPECTED_SCOPE["retainedAi"],
             "jsonRelationshipsDeleted": EXPECTED_SCOPE["jsonRelationshipsDeleted"],
             "sqliteRelationshipsDeleted": EXPECTED_SCOPE["sqliteRelationshipsDeleted"],
-        }, "inventoryRows": candidate["inventory"]["rows"], "inventoryCounts": candidate["inventory"]["counts"]},
+        }, "inventoryRows": candidate["inventory"]["rows"], "inventoryCounts": candidate["inventory"]["counts"], **scope_details},
         "tests": [evidence_ref],
         "protectedInputs": backup["protected"],
         "backupProcedure": {"status": "verified", "mutationAllowed": False, "manifestSha256": backup["manifest"]["sha256"], **backup},

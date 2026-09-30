@@ -146,6 +146,56 @@ def test_plan_and_candidate_drift_are_rejected(tmp_path: Path) -> None:
         )
 
 
+def test_plan_target_id_drift_is_rejected(tmp_path: Path) -> None:
+    if not all(path.exists() for path in (PLAN, CANDIDATE, INVENTORY, ARTIFACT, BACKUP)):
+        pytest.skip("review evidence fixtures are not available")
+    altered = json.loads(PLAN.read_text(encoding="utf-8"))
+    altered["planSha256"] = None
+    next(item for item in altered["mutations"] if item["recordType"] == "entity")["recordId"] = "drift-id"
+    plan = tmp_path / "plan-target-drift.json"
+    approved = tmp_path / "approved-target-drift.json"
+    payload = json.dumps(altered, ensure_ascii=False, sort_keys=True)
+    plan.write_text(payload, encoding="utf-8")
+    approved.write_text(payload, encoding="utf-8")
+    evidence = _evidence(tmp_path / "test-evidence.json")
+    with pytest.raises(ReviewError, match="target ID set"):
+        build_review_package(
+            ROOT,
+            plan_path=plan,
+            approved_plan_path=approved,
+            stage_result_path=CANDIDATE / "stage-result.json",
+            inventory_path=INVENTORY,
+            artifact_manifest_path=ARTIFACT,
+            backup_dir=BACKUP,
+            test_evidence_path=evidence,
+        )
+
+
+def test_plan_mutation_count_drift_is_rejected(tmp_path: Path) -> None:
+    if not all(path.exists() for path in (PLAN, CANDIDATE, INVENTORY, ARTIFACT, BACKUP)):
+        pytest.skip("review evidence fixtures are not available")
+    altered = json.loads(PLAN.read_text(encoding="utf-8"))
+    altered["planSha256"] = None
+    next(item for item in altered["mutations"] if item["recordType"] == "entity" and item["operation"] == "remove")["operation"] = "update"
+    plan = tmp_path / "plan-count-drift.json"
+    approved = tmp_path / "approved-count-drift.json"
+    payload = json.dumps(altered, ensure_ascii=False, sort_keys=True)
+    plan.write_text(payload, encoding="utf-8")
+    approved.write_text(payload, encoding="utf-8")
+    evidence = _evidence(tmp_path / "test-evidence.json")
+    with pytest.raises(ReviewError, match="mutation-count map"):
+        build_review_package(
+            ROOT,
+            plan_path=plan,
+            approved_plan_path=approved,
+            stage_result_path=CANDIDATE / "stage-result.json",
+            inventory_path=INVENTORY,
+            artifact_manifest_path=ARTIFACT,
+            backup_dir=BACKUP,
+            test_evidence_path=evidence,
+        )
+
+
 def test_renderer_rejects_non_digest() -> None:
     with pytest.raises(ReviewError, match="SHA-256"):
         render_non_authorizing_apply_command(
