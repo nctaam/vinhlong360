@@ -14,8 +14,9 @@ Base review: `15d770f3`
   for all documented passing classifications.
 - Exact SQLite backup mode now stages JSON, SQLite, and the manifest in an
   owned temporary directory and publishes only after all work succeeds. Failed
-  staging removes only the owned temporary directory and leaves foreign output
-  paths untouched.
+  staging verifies the temporary directory identity before removal, so it
+  removes only the owned temporary directory and leaves foreign output paths
+  untouched.
 - Added regression coverage for a byte-exact failure after JSON staging and a
   pre-existing foreign backup directory.
 
@@ -25,7 +26,7 @@ All commands ran from the repository root. Exit codes are shown explicitly.
 
 1. `python -m pytest -q tests/checks/test_build_media_truth_review.py tests/test_backup_data.py`
    - Exit code: `0`
-   - Output: `73 passed, 2 skipped in 19.81s`
+   - Output: `73 passed, 2 skipped in 20.01s`
 2. `python -m ruff check scripts/checks/build_media_truth_review.py tests/checks/test_build_media_truth_review.py scripts/backup_data.py tests/test_backup_data.py`
    - Exit code: `0`
    - Output: `All checks passed!`

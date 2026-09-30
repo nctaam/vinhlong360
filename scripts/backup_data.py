@@ -543,6 +543,16 @@ def _unlink_if_owned(path: Path, identity: tuple[int, int]) -> None:
         pass
 
 
+def _remove_owned_directory(path: Path, identity: tuple[int, int]) -> None:
+    """Remove a staging directory only if its original directory identity remains."""
+    if _path_identity(path) != identity:
+        return
+    try:
+        shutil.rmtree(path)
+    except OSError:
+        pass
+
+
 def _copy_binary_file(source_fd: int, temp_path: Path, temp_fd: int) -> None:
     del temp_path
     os.lseek(source_fd, 0, os.SEEK_SET)
@@ -725,6 +735,8 @@ def _create_local_backup(
     destination.parent.mkdir(parents=True, exist_ok=True)
     _require_absent_destination(destination)
     stage = Path(tempfile.mkdtemp(prefix=f".{destination.name}-", dir=destination.parent))
+    stage_identity = _path_identity(stage)
+    assert stage_identity is not None
     try:
         _, manifest = _write_local_backup(
             stage,
@@ -736,7 +748,7 @@ def _create_local_backup(
         os.replace(stage, destination)
         return destination, manifest
     except Exception:
-        shutil.rmtree(stage, ignore_errors=True)
+        _remove_owned_directory(stage, stage_identity)
         raise
 
 
