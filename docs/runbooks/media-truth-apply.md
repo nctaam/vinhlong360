@@ -9,7 +9,11 @@ protected data. Every apply or recovery command is marked
 ## Reviewed inputs
 
 - Canonical plan: `outputs/media-truth-plan-2026-09-25.json`.
-- Approved-plan bytes: `.tmp/media-truth-approved/media-truth-plan-approved.json`.
+- Approved plan: `.tmp/media-truth-approved/media-truth-plan-approved.json`.
+- Review-source file SHA-256: `aa5cbaec34c758e8b67f27ca943461c31d2d27bf661d4e8e013334892edcb37b`.
+- Approved-plan file SHA-256: `524f0d18d48bebfc8cc768b60ecc5bfdeb7854cf8dc9ed04c3113c3ec0a106f6`.
+- Approved-plan canonical SHA-256: `39d55df5e10897165dcdb2410def7ed1666b054d8e97e4818ea726bbb4b7a032`.
+- Controller owner marker: `owner-approved-2026-09-30-media-truth-phase-1-review-498ac0b8d5349f79`.
 - Candidate: `.tmp/media-truth-stage-test-4/candidate/stage-result.json`.
 - Inventory: `outputs/media-truth-inventory-2026-09-25.json`.
 - Task 9 artifact manifest: `.tmp/media-truth-artifacts/first/manifest.json` (the
@@ -37,6 +41,9 @@ authorization marker. It never executes the rendered commands.
 
 Use only the exact command and recovery command recorded in
 `outputs/media-truth-review-2026-09-25.json`; do not guess a journal or lock path.
+The command now binds the canonical approved-plan digest, not the review-source
+file digest. This changed exact digest and command require a new owner approval;
+the earlier approval package does not authorize execution.
 
 ## Exact inert commands from the generated package
 
@@ -44,7 +51,7 @@ Reviewed backup: `.tmp/media-truth-backups-phase-1/20260929-054438-before-media-
 
 ```text
 # mutationAllowed=false doNotExecute=true owner_approval_required
-python scripts/checks/apply_data_reconciliation.py --plan C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\.tmp\media-truth-approved\media-truth-plan-approved.json --sqlite C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\agent\data\vinhlong360.db --json C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\web\data.json --sqlite-backup .tmp\media-truth-backups-phase-1\20260929-054438-before-media-truth-review\vinhlong360.db --json-backup .tmp\media-truth-backups-phase-1\20260929-054438-before-media-truth-review\data.json --plan-sha256 aa5cbaec34c758e8b67f27ca943461c31d2d27bf661d4e8e013334892edcb37b --lock-path C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\.tmp\media-truth-approved\.reconciliation.lock --journal-path C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\.tmp\media-truth-approved\media-truth-apply-journal.json --maintenance-window --confirm-phase-b --allow-live-protected-inputs
+python scripts/checks/apply_data_reconciliation.py --plan C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\.tmp\media-truth-approved\media-truth-plan-approved.json --sqlite C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\agent\data\vinhlong360.db --json C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\web\data.json --sqlite-backup .tmp\media-truth-backups-phase-1\20260929-054438-before-media-truth-review\vinhlong360.db --json-backup .tmp\media-truth-backups-phase-1\20260929-054438-before-media-truth-review\data.json --plan-sha256 39d55df5e10897165dcdb2410def7ed1666b054d8e97e4818ea726bbb4b7a032 --lock-path C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\.tmp\media-truth-approved\.reconciliation.lock --journal-path C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\.tmp\media-truth-approved\media-truth-apply-journal.json --maintenance-window --confirm-phase-b --allow-live-protected-inputs
 
 # mutationAllowed=false doNotExecute=true owner_approval_required
 python scripts/checks/apply_data_reconciliation.py --recover-phase-b-journal --journal-path C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\.tmp\media-truth-approved\media-truth-apply-journal.json --lock-path C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\.tmp\media-truth-approved\.reconciliation.lock --sqlite-backup .tmp\media-truth-backups-phase-1\20260929-054438-before-media-truth-review\vinhlong360.db --json-backup .tmp\media-truth-backups-phase-1\20260929-054438-before-media-truth-review\data.json

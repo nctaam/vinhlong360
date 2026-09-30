@@ -18,9 +18,11 @@ from pathlib import Path
 from typing import Any, Mapping
 
 try:
+    from scripts.checks.apply_data_reconciliation import canonical_plan_sha256
     from scripts.checks.build_media_truth_plan import sqlite_logical_digest
 except ModuleNotFoundError:  # direct script execution from the repository root
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from scripts.checks.apply_data_reconciliation import canonical_plan_sha256
     from scripts.checks.build_media_truth_plan import sqlite_logical_digest
 
 
@@ -115,6 +117,8 @@ EXPECTED_MUTATION_COUNTS = {
 }
 PROTECTED_JSON = Path("web/data.json")
 PROTECTED_SQLITE = Path("agent/data/vinhlong360.db")
+OWNER_REVIEW_MARKER = "owner-approved-2026-09-30-media-truth-phase-1-review-498ac0b8d5349f79"
+APPROVAL_FIELDS = frozenset({"status", "reviewedPlanMarker", "planSha256"})
 
 
 def _sha(path: Path) -> str:
@@ -160,24 +164,39 @@ def _read_only_marker(payload: Mapping[str, Any], label: str) -> None:
             raise ReviewError(f"{label} contains an authorization marker")
 
 
-def _canonical_plan(plan_path: Path, approved_plan_path: Path) -> tuple[dict[str, Any], str]:
+def _without_approval_fields(plan: Mapping[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in plan.items() if key not in APPROVAL_FIELDS}
+
+
+def _canonical_plan(
+    plan_path: Path,
+    approved_plan_path: Path,
+) -> tuple[dict[str, Any], str, str, str]:
     plan_path = _require_file(plan_path, "plan")
     approved_plan_path = _require_file(approved_plan_path, "approved plan")
-    plan_bytes = plan_path.read_bytes()
-    if plan_bytes != approved_plan_path.read_bytes():
-        raise ReviewError("approved plan bytes do not match canonical plan")
     plan = _load_json(plan_path, "plan")
-    if not isinstance(plan, dict):
-        raise ReviewError("plan must be an object")
+    approved_plan = _load_json(approved_plan_path, "approved plan")
+    if not isinstance(plan, dict) or not isinstance(approved_plan, dict):
+        raise ReviewError("plan and approved plan must be objects")
     _read_only_marker(plan, "plan")
+    _read_only_marker(approved_plan, "approved plan")
     if plan.get("status") != "review_required":
         raise ReviewError("plan is not review_required")
     if plan.get("mode") != "media-truth-reconciliation":
         raise ReviewError("plan mode mismatch")
-    digest = _sha(plan_path)
-    if plan.get("planSha256") not in (None, digest):
+    review_source_sha = _sha(plan_path)
+    if plan.get("planSha256") not in (None, review_source_sha):
         raise ReviewError("planSha256 does not bind canonical plan bytes")
-    return plan, digest
+    if approved_plan.get("status") != "approved":
+        raise ReviewError("approved plan status must be approved")
+    if approved_plan.get("reviewedPlanMarker") != OWNER_REVIEW_MARKER:
+        raise ReviewError("approved plan owner marker mismatch")
+    if _without_approval_fields(plan) != _without_approval_fields(approved_plan):
+        raise ReviewError("approval plan drift outside allowed approval fields")
+    approved_canonical_sha = canonical_plan_sha256(approved_plan)
+    if approved_plan.get("planSha256") != approved_canonical_sha:
+        raise ReviewError("approved planSha256 does not bind approved plan payload")
+    return plan, review_source_sha, _sha(approved_plan_path), approved_canonical_sha
 
 
 def _load_candidate_files(stage_result_path: Path) -> tuple[Path, dict[str, Any], Path, Path]:
@@ -581,7 +600,10 @@ def build_review_package(
 ) -> dict[str, Any]:
     """Validate all pre-apply evidence and return a non-authorizing package."""
     root = Path(root).resolve()
-    plan, plan_sha = _canonical_plan(plan_path, approved_plan_path)
+    plan, review_source_sha, approved_file_sha, approved_canonical_sha = _canonical_plan(
+        plan_path,
+        approved_plan_path,
+    )
     candidate = _validate_candidate(root, plan, stage_result_path, inventory_path)
     scope_details = candidate.pop("scope")
     artifacts = _validate_artifacts(root, artifact_manifest_path)
@@ -597,7 +619,7 @@ def build_review_package(
         json_path=json_path,
         sqlite_backup=Path(backup_dir) / "vinhlong360.db",
         json_backup=Path(backup_dir) / "data.json",
-        plan_sha256=plan_sha,
+        plan_sha256=approved_canonical_sha,
         lock_path=lock_path,
         journal_path=journal_path,
     )
@@ -613,7 +635,17 @@ def build_review_package(
         "schemaVersion": 1,
         "status": "ready_for_owner_review",
         "mutationAllowed": False,
-        "plan": {"path": _relative(root, Path(plan_path)), "approvedPath": _relative(root, approved_plan), "sha256": plan_sha, "status": plan["status"], "mutationAllowed": False},
+        "plan": {
+            "path": _relative(root, Path(plan_path)),
+            "sha256": review_source_sha,
+            "reviewSourceSha256": review_source_sha,
+            "status": plan["status"],
+            "mutationAllowed": False,
+            "approvedPath": _relative(root, approved_plan),
+            "approvedFileSha256": approved_file_sha,
+            "approvedCanonicalSha256": approved_canonical_sha,
+            "reviewedPlanMarker": OWNER_REVIEW_MARKER,
+        },
         "candidate": candidate,
         "scope": {"counts": {
             "batch21Records": EXPECTED_SCOPE["records"],
