@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -445,6 +446,86 @@ def _independent_file_snapshot(path: Path) -> _FileSnapshot:
     )
 
 
+def _validated_source_status(path: Path):
+    try:
+        status, is_symlink, is_reparse = _lstat_status(path)
+    except OSError as exc:
+        raise RuntimeError(f"Byte-exact SQLite source is not a regular independent file: {path}") from exc
+    if is_symlink or is_reparse or not stat.S_ISREG(status.st_mode) or status.st_nlink != 1:
+        raise RuntimeError(f"Byte-exact SQLite source is not a regular independent file: {path}")
+    return status
+
+
+def _source_open_flags() -> int:
+    flags = os.O_RDONLY
+    for name in ("O_BINARY", "O_CLOEXEC", "O_NOINHERIT", "O_NOFOLLOW", "O_NONBLOCK"):
+        flags |= getattr(os, name, 0)
+    return flags
+
+
+def _descriptor_status(source_fd: int):
+    status = os.fstat(source_fd)
+    if not stat.S_ISREG(status.st_mode) or status.st_nlink != 1:
+        raise RuntimeError("Byte-exact SQLite source descriptor is not a regular independent file")
+    return status
+
+
+def _status_identity(status) -> tuple[int, int]:
+    return status.st_dev, status.st_ino
+
+
+def _open_validated_source(source_path: Path) -> int:
+    path_status = _validated_source_status(source_path)
+    try:
+        source_fd = os.open(source_path, _source_open_flags())
+    except OSError as exc:
+        raise RuntimeError("Byte-exact SQLite source changed before it could be opened safely") from exc
+    try:
+        descriptor_status = _descriptor_status(source_fd)
+        if _status_identity(descriptor_status) != _status_identity(path_status):
+            raise RuntimeError("Byte-exact SQLite source changed before it could be read")
+        if descriptor_status.st_size != path_status.st_size:
+            raise RuntimeError("Byte-exact SQLite source changed before it could be read")
+        _require_path_matches_descriptor(source_path, descriptor_status)
+        return source_fd
+    except Exception:
+        os.close(source_fd)
+        raise
+
+
+def _require_path_matches_descriptor(source_path: Path, descriptor_status) -> None:
+    path_status = _validated_source_status(source_path)
+    if _status_identity(path_status) != _status_identity(descriptor_status):
+        raise RuntimeError("Byte-exact SQLite source path changed during copy")
+    if path_status.st_size != descriptor_status.st_size:
+        raise RuntimeError("Byte-exact SQLite source size changed during copy")
+
+
+def _hash_file_descriptor(source_fd: int) -> str:
+    digest = hashlib.sha256()
+    os.lseek(source_fd, 0, os.SEEK_SET)
+    while chunk := os.read(source_fd, 1024 * 1024):
+        digest.update(chunk)
+    os.lseek(source_fd, 0, os.SEEK_SET)
+    return digest.hexdigest()
+
+
+def _descriptor_snapshot(source_fd: int) -> _FileSnapshot:
+    status_before = _descriptor_status(source_fd)
+    digest = _hash_file_descriptor(source_fd)
+    status_after = _descriptor_status(source_fd)
+    if _status_identity(status_after) != _status_identity(status_before):
+        raise RuntimeError("Byte-exact SQLite source descriptor changed during read")
+    if status_after.st_size != status_before.st_size:
+        raise RuntimeError("Byte-exact SQLite source descriptor changed during read")
+    return _FileSnapshot(
+        device=status_after.st_dev,
+        inode=status_after.st_ino,
+        size=status_after.st_size,
+        sha256=digest,
+    )
+
+
 def _path_identity(path: Path) -> tuple[int, int] | None:
     try:
         status = path.lstat()
@@ -462,10 +543,12 @@ def _unlink_if_owned(path: Path, identity: tuple[int, int]) -> None:
         pass
 
 
-def _copy_binary_file(source_path: Path, temp_path: Path, temp_fd: int) -> None:
+def _copy_binary_file(source_fd: int, temp_path: Path, temp_fd: int) -> None:
     del temp_path
-    with source_path.open("rb") as source, os.fdopen(temp_fd, "wb") as destination:
-        shutil.copyfileobj(source, destination)
+    os.lseek(source_fd, 0, os.SEEK_SET)
+    with os.fdopen(temp_fd, "wb") as destination:
+        while chunk := os.read(source_fd, 1024 * 1024):
+            destination.write(chunk)
         destination.flush()
         os.fsync(destination.fileno())
 
@@ -524,34 +607,43 @@ def _verify_published_copy(
 def _backup_sqlite_byte_exact(source_path: Path, artifact_path: Path) -> str:
     _require_absent_destination(artifact_path)
     _require_no_sqlite_sidecars(source_path)
-    source_before = _independent_file_snapshot(source_path)
-    temp_fd, temp_name = tempfile.mkstemp(prefix=".vinhlong360.db-", suffix=".tmp", dir=artifact_path.parent)
-    temp_path = Path(temp_name)
-    temp_status = os.fstat(temp_fd)
-    owned_identity = temp_status.st_dev, temp_status.st_ino
+    source_fd = _open_validated_source(source_path)
     try:
-        _copy_binary_file(source_path, temp_path, temp_fd)
-        _require_no_sqlite_sidecars(source_path)
-        if _independent_file_snapshot(source_path) != source_before:
-            raise RuntimeError("Byte-exact SQLite source changed during copy")
-        if _path_identity(temp_path) != owned_identity:
-            raise RuntimeError("Byte-exact SQLite temporary file changed during copy")
-        copied = _independent_file_snapshot(temp_path)
-        if copied.size != source_before.size or copied.sha256 != source_before.sha256:
-            raise RuntimeError("Byte-exact SQLite copy does not match the source")
-        _check_sqlite_integrity(temp_path)
-        _publish_exact_copy(temp_path, artifact_path, owned_identity)
-        _verify_published_copy(artifact_path, source_before, owned_identity)
-        return source_before.sha256
-    except Exception:
-        _unlink_if_owned(artifact_path, owned_identity)
-        raise
-    finally:
+        source_before = _descriptor_snapshot(source_fd)
+        _require_path_matches_descriptor(source_path, os.fstat(source_fd))
+        temp_fd, temp_name = tempfile.mkstemp(
+            prefix=".vinhlong360.db-", suffix=".tmp", dir=artifact_path.parent
+        )
+        temp_path = Path(temp_name)
+        temp_status = os.fstat(temp_fd)
+        owned_identity = temp_status.st_dev, temp_status.st_ino
         try:
-            os.close(temp_fd)
-        except OSError:
-            pass
-        _unlink_if_owned(temp_path, owned_identity)
+            _copy_binary_file(source_fd, temp_path, temp_fd)
+            _require_no_sqlite_sidecars(source_path)
+            source_after = _descriptor_snapshot(source_fd)
+            _require_path_matches_descriptor(source_path, os.fstat(source_fd))
+            if source_after != source_before:
+                raise RuntimeError("Byte-exact SQLite source changed during copy")
+            if _path_identity(temp_path) != owned_identity:
+                raise RuntimeError("Byte-exact SQLite temporary file changed during copy")
+            copied = _independent_file_snapshot(temp_path)
+            if copied.size != source_before.size or copied.sha256 != source_before.sha256:
+                raise RuntimeError("Byte-exact SQLite copy does not match the source")
+            _check_sqlite_integrity(temp_path)
+            _publish_exact_copy(temp_path, artifact_path, owned_identity)
+            _verify_published_copy(artifact_path, source_before, owned_identity)
+            return source_before.sha256
+        except Exception:
+            _unlink_if_owned(artifact_path, owned_identity)
+            raise
+        finally:
+            try:
+                os.close(temp_fd)
+            except OSError:
+                pass
+            _unlink_if_owned(temp_path, owned_identity)
+    finally:
+        os.close(source_fd)
 
 
 def _create_local_backup(

@@ -219,17 +219,29 @@ def test_byte_exact_copy_refuses_source_drift_and_removes_owned_temp(
     destination = tmp_path / "destination"
     destination.mkdir()
 
-    def drifting_copy(source_path: Path, temp_path: Path, temp_fd: int) -> None:
-        with os.fdopen(temp_fd, "wb") as target:
-            target.write(source_path.read_bytes())
+    real_copy = backup_data._copy_binary_file
+    real_lstat_status = backup_data._lstat_status
+    identity_replacement = tmp_path / "replacement.db"
+    identity_drifted = False
+
+    def drifted_lstat(path: Path):
+        if os.name == "nt" and identity_drifted and Path(path) == source:
+            return real_lstat_status(identity_replacement)
+        return real_lstat_status(path)
+
+    def drifting_copy(source_fd: int, temp_path: Path, temp_fd: int) -> None:
+        nonlocal identity_drifted
+        real_copy(source_fd, temp_path, temp_fd)
         if drift == "identity":
-            replacement = tmp_path / "replacement.db"
-            replacement.write_bytes(source_path.read_bytes())
-            os.replace(replacement, source_path)
+            identity_replacement.write_bytes(source.read_bytes())
+            identity_drifted = True
+            if os.name != "nt":
+                os.replace(identity_replacement, source)
         else:
-            source_path.write_bytes(source_path.read_bytes() + b"drift")
+            source.write_bytes(source.read_bytes() + b"drift")
 
     monkeypatch.setattr(backup_data, "_copy_binary_file", drifting_copy, raising=False)
+    monkeypatch.setattr(backup_data, "_lstat_status", drifted_lstat)
 
     with pytest.raises(RuntimeError, match="changed"):
         backup_data._backup_sqlite_byte_exact(source, destination / "vinhlong360.db")
@@ -271,14 +283,15 @@ def test_byte_exact_copy_does_not_delete_replaced_temp_file(
     destination.mkdir()
     foreign_temp: Path | None = None
 
-    def replace_temp_then_drift(source_path: Path, temp_path: Path, temp_fd: int) -> None:
+    real_copy = backup_data._copy_binary_file
+
+    def replace_temp_then_drift(source_fd: int, temp_path: Path, temp_fd: int) -> None:
         nonlocal foreign_temp
-        with os.fdopen(temp_fd, "wb") as target:
-            target.write(source_path.read_bytes())
+        real_copy(source_fd, temp_path, temp_fd)
         temp_path.unlink()
         temp_path.write_bytes(b"foreign-temp")
         foreign_temp = temp_path
-        source_path.write_bytes(source_path.read_bytes() + b"drift")
+        source.write_bytes(source.read_bytes() + b"drift")
 
     monkeypatch.setattr(backup_data, "_copy_binary_file", replace_temp_then_drift, raising=False)
 
@@ -300,8 +313,8 @@ def test_byte_exact_copy_rechecks_sidecars_after_copy_and_preserves_them(
     sidecar = Path(f"{source}-wal")
     real_copy = backup_data._copy_binary_file
 
-    def copy_then_add_sidecar(source_path: Path, temp_path: Path, temp_fd: int) -> None:
-        real_copy(source_path, temp_path, temp_fd)
+    def copy_then_add_sidecar(source_fd: int, temp_path: Path, temp_fd: int) -> None:
+        real_copy(source_fd, temp_path, temp_fd)
         sidecar.write_bytes(b"concurrent-wal")
 
     monkeypatch.setattr(backup_data, "_copy_binary_file", copy_then_add_sidecar)
@@ -322,6 +335,94 @@ def test_byte_exact_copy_rejects_invalid_sqlite_bytes(tmp_path: Path) -> None:
     with pytest.raises(RuntimeError, match="integrity"):
         backup_data._backup_sqlite_byte_exact(source, destination / "vinhlong360.db")
 
+    assert list(destination.iterdir()) == []
+
+
+def test_byte_exact_copy_refuses_path_replacement_before_read_or_copy(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source.db"
+    _create_closed_sqlite(source)
+    original = tmp_path / "original.db"
+    replacement = tmp_path / "replacement.db"
+    _create_closed_sqlite(replacement)
+    destination = tmp_path / "destination"
+    destination.mkdir()
+    real_lstat_status = backup_data._lstat_status
+    real_sha256_file = backup_data.sha256_file
+    swapped = False
+    copied = False
+
+    def swap_after_validation(path: Path):
+        nonlocal swapped
+        status = real_lstat_status(path)
+        if Path(path) == source and not swapped:
+            os.replace(source, original)
+            os.replace(replacement, source)
+            swapped = True
+        return status
+
+    def reject_path_hash(path: Path) -> str:
+        if Path(path) == source and swapped:
+            pytest.fail("replacement content was hashed through the source path")
+        return real_sha256_file(path)
+
+    def reject_copy(*_args) -> None:
+        nonlocal copied
+        copied = True
+        pytest.fail("replacement content reached the copy boundary")
+
+    monkeypatch.setattr(backup_data, "_lstat_status", swap_after_validation)
+    monkeypatch.setattr(backup_data, "sha256_file", reject_path_hash)
+    monkeypatch.setattr(backup_data, "_copy_binary_file", reject_copy)
+
+    with pytest.raises(RuntimeError, match="changed"):
+        backup_data._backup_sqlite_byte_exact(source, destination / "vinhlong360.db")
+
+    assert swapped
+    assert not copied
+    assert list(destination.iterdir()) == []
+
+
+def test_byte_exact_copy_refuses_symlink_source_without_opening_it(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target = tmp_path / "target.db"
+    _create_closed_sqlite(target)
+    source = tmp_path / "source.db"
+    try:
+        source.symlink_to(target)
+    except OSError as exc:
+        pytest.skip(f"symlinks unavailable: {exc}")
+    destination = tmp_path / "destination"
+    destination.mkdir()
+
+    monkeypatch.setattr(
+        backup_data.os,
+        "open",
+        lambda *_args, **_kwargs: pytest.fail("symlink source was opened"),
+    )
+
+    with pytest.raises(RuntimeError, match="regular independent file"):
+        backup_data._backup_sqlite_byte_exact(source, destination / "vinhlong360.db")
+
+    assert list(destination.iterdir()) == []
+
+
+@pytest.mark.skipif(not hasattr(os, "mkfifo"), reason="FIFO fixture is POSIX-only")
+def test_byte_exact_copy_refuses_fifo_without_blocking(tmp_path: Path) -> None:
+    source = tmp_path / "source.fifo"
+    os.mkfifo(source)
+    destination = tmp_path / "destination"
+    destination.mkdir()
+    started = time.monotonic()
+
+    with pytest.raises(RuntimeError, match="regular independent file"):
+        backup_data._backup_sqlite_byte_exact(source, destination / "vinhlong360.db")
+
+    assert time.monotonic() - started < 1.0
     assert list(destination.iterdir()) == []
 
 
