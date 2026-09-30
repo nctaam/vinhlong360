@@ -12,6 +12,7 @@ import sqlite3
 import stat
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -74,6 +75,14 @@ class _OwnedLocalBackup:
     inode: int
     is_symlink: bool
     is_reparse: bool
+
+
+@dataclass(frozen=True)
+class _FileSnapshot:
+    device: int
+    inode: int
+    size: int
+    sha256: str
 
 
 def _utc_now() -> str:
@@ -405,8 +414,152 @@ def _backup_sqlite(source_path: Path, artifact_path: Path) -> None:
             pass
 
 
-def _create_local_backup(destination: Path, timestamp: str) -> tuple[Path, dict]:
-    destination.mkdir(parents=True, exist_ok=True)
+def _sqlite_sidecar_paths(source_path: Path) -> tuple[Path, ...]:
+    return tuple(Path(f"{source_path}{suffix}") for suffix in ("-wal", "-shm", "-journal"))
+
+
+def _require_no_sqlite_sidecars(source_path: Path) -> None:
+    for sidecar in _sqlite_sidecar_paths(source_path):
+        try:
+            sidecar.lstat()
+        except FileNotFoundError:
+            continue
+        except OSError as exc:
+            raise RuntimeError(f"Unable to verify SQLite sidecar absence: {sidecar.name}") from exc
+        raise RuntimeError(f"Byte-exact SQLite backup refuses existing sidecar: {sidecar.name}")
+
+
+def _independent_file_snapshot(path: Path) -> _FileSnapshot:
+    try:
+        status, is_symlink, is_reparse = _lstat_status(path)
+    except OSError as exc:
+        raise RuntimeError(f"Byte-exact SQLite source is not a regular independent file: {path}") from exc
+    is_regular = stat.S_ISREG(status.st_mode)
+    if is_symlink or is_reparse or not is_regular or status.st_nlink != 1:
+        raise RuntimeError(f"Byte-exact SQLite source is not a regular independent file: {path}")
+    return _FileSnapshot(
+        device=status.st_dev,
+        inode=status.st_ino,
+        size=status.st_size,
+        sha256=sha256_file(path),
+    )
+
+
+def _path_identity(path: Path) -> tuple[int, int] | None:
+    try:
+        status = path.lstat()
+    except OSError:
+        return None
+    return status.st_dev, status.st_ino
+
+
+def _unlink_if_owned(path: Path, identity: tuple[int, int]) -> None:
+    if _path_identity(path) != identity:
+        return
+    try:
+        path.unlink()
+    except OSError:
+        pass
+
+
+def _copy_binary_file(source_path: Path, temp_path: Path, temp_fd: int) -> None:
+    del temp_path
+    with source_path.open("rb") as source, os.fdopen(temp_fd, "wb") as destination:
+        shutil.copyfileobj(source, destination)
+        destination.flush()
+        os.fsync(destination.fileno())
+
+
+def _check_sqlite_integrity(path: Path) -> None:
+    uri = f"{path.resolve().as_uri()}?mode=ro&immutable=1"
+    connection = None
+    try:
+        connection = sqlite3.connect(uri, uri=True)
+        result = connection.execute("PRAGMA integrity_check").fetchall()
+    except sqlite3.Error as exc:
+        raise RuntimeError("Byte-exact SQLite copy failed integrity validation") from exc
+    finally:
+        if connection is not None:
+            connection.close()
+    if result != [("ok",)]:
+        raise RuntimeError("Byte-exact SQLite copy failed integrity validation")
+
+
+def _require_absent_destination(path: Path) -> None:
+    try:
+        path.lstat()
+    except FileNotFoundError:
+        return
+    except OSError as exc:
+        raise RuntimeError("Unable to verify byte-exact SQLite destination") from exc
+    raise RuntimeError("Byte-exact SQLite destination already exists")
+
+
+def _publish_exact_copy(temp_path: Path, artifact_path: Path, identity: tuple[int, int]) -> None:
+    try:
+        os.link(temp_path, artifact_path)
+    except FileExistsError as exc:
+        raise RuntimeError("Byte-exact SQLite destination already exists") from exc
+    except OSError as exc:
+        raise RuntimeError("Unable to publish byte-exact SQLite destination") from exc
+    if _path_identity(artifact_path) != identity:
+        raise RuntimeError("Byte-exact SQLite destination identity changed during publication")
+    _unlink_if_owned(temp_path, identity)
+
+
+def _verify_published_copy(
+    artifact_path: Path,
+    source: _FileSnapshot,
+    owned_identity: tuple[int, int],
+) -> None:
+    artifact = _independent_file_snapshot(artifact_path)
+    if (artifact.device, artifact.inode) != owned_identity:
+        raise RuntimeError("Byte-exact SQLite destination identity changed during publication")
+    if (artifact.device, artifact.inode) == (source.device, source.inode):
+        raise RuntimeError("Byte-exact SQLite destination aliases the source")
+    if artifact.size != source.size or artifact.sha256 != source.sha256:
+        raise RuntimeError("Byte-exact SQLite destination bytes changed during publication")
+
+
+def _backup_sqlite_byte_exact(source_path: Path, artifact_path: Path) -> str:
+    _require_absent_destination(artifact_path)
+    _require_no_sqlite_sidecars(source_path)
+    source_before = _independent_file_snapshot(source_path)
+    temp_fd, temp_name = tempfile.mkstemp(prefix=".vinhlong360.db-", suffix=".tmp", dir=artifact_path.parent)
+    temp_path = Path(temp_name)
+    temp_status = os.fstat(temp_fd)
+    owned_identity = temp_status.st_dev, temp_status.st_ino
+    try:
+        _copy_binary_file(source_path, temp_path, temp_fd)
+        _require_no_sqlite_sidecars(source_path)
+        if _independent_file_snapshot(source_path) != source_before:
+            raise RuntimeError("Byte-exact SQLite source changed during copy")
+        if _path_identity(temp_path) != owned_identity:
+            raise RuntimeError("Byte-exact SQLite temporary file changed during copy")
+        copied = _independent_file_snapshot(temp_path)
+        if copied.size != source_before.size or copied.sha256 != source_before.sha256:
+            raise RuntimeError("Byte-exact SQLite copy does not match the source")
+        _check_sqlite_integrity(temp_path)
+        _publish_exact_copy(temp_path, artifact_path, owned_identity)
+        _verify_published_copy(artifact_path, source_before, owned_identity)
+        return source_before.sha256
+    except Exception:
+        _unlink_if_owned(artifact_path, owned_identity)
+        raise
+    finally:
+        try:
+            os.close(temp_fd)
+        except OSError:
+            pass
+        _unlink_if_owned(temp_path, owned_identity)
+
+
+def _create_local_backup(
+    destination: Path,
+    timestamp: str,
+    require_byte_exact_sqlite: bool = False,
+) -> tuple[Path, dict]:
+    destination.mkdir(parents=True, exist_ok=not require_byte_exact_sqlite)
     manifest: dict = {
         "schema": LOCAL_BACKUP_SCHEMA,
         "target": LOCAL_BACKUP_TARGET,
@@ -414,6 +567,7 @@ def _create_local_backup(destination: Path, timestamp: str) -> tuple[Path, dict]
         "copied": [],
         "counts": {},
         "sizes": {},
+        "artifact_hashes": {},
     }
 
     if DATA_JSON.exists():
@@ -422,14 +576,22 @@ def _create_local_backup(destination: Path, timestamp: str) -> tuple[Path, dict]
         manifest["copied"].append("web/data.json")
         manifest["counts"] = _count_data_json(DATA_JSON)
         manifest["sizes"]["data.json"] = _file_size_human(data_artifact)
+        manifest["artifact_hashes"]["data.json"] = sha256_file(data_artifact)
     else:
         manifest["counts"] = {"warning": "web/data.json không tồn tại"}
 
-    if DB_FILE.exists():
+    if require_byte_exact_sqlite or DB_FILE.exists():
         database_artifact = destination / "vinhlong360.db"
-        _backup_sqlite(DB_FILE, database_artifact)
+        if require_byte_exact_sqlite:
+            database_hash = _backup_sqlite_byte_exact(DB_FILE, database_artifact)
+            manifest["sqlite_backup_mode"] = "byte-exact-v1"
+        else:
+            _backup_sqlite(DB_FILE, database_artifact)
+            database_hash = sha256_file(database_artifact)
+            manifest["sqlite_backup_mode"] = "sqlite-backup-api-v1"
         manifest["copied"].append("agent/data/vinhlong360.db")
         manifest["sizes"]["vinhlong360.db"] = _file_size_human(database_artifact)
+        manifest["artifact_hashes"]["vinhlong360.db"] = database_hash
 
     # Keep the historical fields above for old tooling while publishing the
     # normalized manifest consumed by offsite upload and restore drill.
@@ -600,7 +762,15 @@ def _parse_args() -> argparse.Namespace:
         default=30,
         help="xóa backup cũ hơn N ngày (mặc định: 30)",
     )
-    return parser.parse_args()
+    parser.add_argument(
+        "--require-byte-exact-sqlite",
+        action="store_true",
+        help="require a sidecar-free, byte-identical local SQLite copy",
+    )
+    args = parser.parse_args()
+    if args.require_byte_exact_sqlite and args.target != "local":
+        parser.error("--require-byte-exact-sqlite is valid only with --target local")
+    return args
 
 
 def main() -> int:
@@ -624,7 +794,14 @@ def main() -> int:
         print(f"[backup] -> {destination}")
         return 0
 
-    _, manifest = _create_local_backup(destination, timestamp)
+    if args.require_byte_exact_sqlite:
+        try:
+            _, manifest = _create_local_backup(destination, timestamp, True)
+        except Exception as exc:  # noqa: BLE001 - CLI reports fail-closed exact-copy errors
+            print(f"[backup] ERROR: {exc}", file=sys.stderr)
+            return 1
+    else:
+        _, manifest = _create_local_backup(destination, timestamp)
     print(f"[backup] -> {destination}")
     print(f"[backup] copied: {', '.join(manifest['copied']) or '(none)'}")
     for filename, size in manifest["sizes"].items():

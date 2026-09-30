@@ -111,12 +111,259 @@ def test_main_uses_sqlite_backup_api_for_consistent_artifact(
     dirs = list((tmp_path / "backups").iterdir())
     manifest = json.loads((dirs[0] / "manifest.json").read_text(encoding="utf-8"))
     assert "agent/data/vinhlong360.db" in manifest["copied"]
+    assert manifest["sqlite_backup_mode"] == "sqlite-backup-api-v1"
     artifact = dirs[0] / "vinhlong360.db"
+    assert manifest["artifact_hashes"]["vinhlong360.db"] == hashlib.sha256(
+        artifact.read_bytes()
+    ).hexdigest()
     with sqlite3.connect(artifact) as connection:
         assert connection.execute("PRAGMA quick_check").fetchone() == ("ok",)
         assert connection.execute("SELECT id, published FROM entities").fetchall() == [
             ("entity-1", 1)
         ]
+
+
+def _create_closed_sqlite(path: Path) -> bytes:
+    connection = sqlite3.connect(path)
+    try:
+        connection.execute("CREATE TABLE entities (id TEXT PRIMARY KEY, published INTEGER)")
+        connection.execute("INSERT INTO entities VALUES ('entity-exact', 1)")
+        connection.commit()
+    finally:
+        connection.close()
+    return path.read_bytes()
+
+
+def test_byte_exact_mode_copies_identical_independent_sqlite_and_manifest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    db_file = tmp_path / "exact-source.db"
+    source_bytes = _create_closed_sqlite(db_file)
+    data_json = tmp_path / "data.json"
+    data_bytes = b'{"entities": [], "relationships": [], "itineraries": []}'
+    data_json.write_bytes(data_bytes)
+    output_root = tmp_path / "backups"
+    monkeypatch.setattr(backup_data, "DATA_JSON", data_json)
+    monkeypatch.setattr(backup_data, "DB_FILE", db_file)
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "backup_data.py",
+            "--target",
+            "local",
+            "--out-dir",
+            str(output_root),
+            "--require-byte-exact-sqlite",
+        ],
+    )
+
+    assert backup_data.main() == 0
+
+    destination = next(output_root.iterdir())
+    artifact = destination / "vinhlong360.db"
+    manifest = json.loads((destination / "manifest.json").read_text(encoding="utf-8"))
+    expected_db_hash = hashlib.sha256(source_bytes).hexdigest()
+    assert artifact.read_bytes() == source_bytes
+    assert not os.path.samefile(db_file, artifact)
+    assert artifact.stat().st_nlink == 1
+    assert not Path(f"{db_file}-wal").exists()
+    assert not Path(f"{db_file}-shm").exists()
+    assert not Path(f"{db_file}-journal").exists()
+    assert manifest["sqlite_backup_mode"] == "byte-exact-v1"
+    assert manifest["artifact_hashes"] == {
+        "data.json": hashlib.sha256(data_bytes).hexdigest(),
+        "vinhlong360.db": expected_db_hash,
+    }
+
+
+@pytest.mark.parametrize("suffix", ["-wal", "-shm", "-journal"])
+def test_byte_exact_mode_refuses_preexisting_sqlite_sidecar(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    suffix: str,
+) -> None:
+    db_file = tmp_path / "sidecar-source.db"
+    _create_closed_sqlite(db_file)
+    sidecar = Path(f"{db_file}{suffix}")
+    sidecar.write_bytes(b"foreign-sidecar")
+    output_root = tmp_path / "backups"
+    monkeypatch.setattr(backup_data, "DATA_JSON", tmp_path / "missing.json")
+    monkeypatch.setattr(backup_data, "DB_FILE", db_file)
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "backup_data.py",
+            "--target",
+            "local",
+            "--out-dir",
+            str(output_root),
+            "--require-byte-exact-sqlite",
+        ],
+    )
+
+    assert backup_data.main() == 1
+    assert sidecar.read_bytes() == b"foreign-sidecar"
+    assert not list(output_root.rglob("manifest.json"))
+    assert not list(output_root.rglob("*.tmp"))
+
+
+@pytest.mark.parametrize("drift", ["identity", "hash"])
+def test_byte_exact_copy_refuses_source_drift_and_removes_owned_temp(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    drift: str,
+) -> None:
+    source = tmp_path / "drift-source.db"
+    _create_closed_sqlite(source)
+    destination = tmp_path / "destination"
+    destination.mkdir()
+
+    def drifting_copy(source_path: Path, temp_path: Path, temp_fd: int) -> None:
+        with os.fdopen(temp_fd, "wb") as target:
+            target.write(source_path.read_bytes())
+        if drift == "identity":
+            replacement = tmp_path / "replacement.db"
+            replacement.write_bytes(source_path.read_bytes())
+            os.replace(replacement, source_path)
+        else:
+            source_path.write_bytes(source_path.read_bytes() + b"drift")
+
+    monkeypatch.setattr(backup_data, "_copy_binary_file", drifting_copy, raising=False)
+
+    with pytest.raises(RuntimeError, match="changed"):
+        backup_data._backup_sqlite_byte_exact(source, destination / "vinhlong360.db")
+
+    assert not (destination / "vinhlong360.db").exists()
+    assert list(destination.iterdir()) == []
+
+
+def test_byte_exact_copy_preserves_foreign_destination_collision(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source.db"
+    _create_closed_sqlite(source)
+    destination = tmp_path / "destination"
+    destination.mkdir()
+    artifact = destination / "vinhlong360.db"
+    artifact.write_bytes(b"foreign-destination")
+
+    with pytest.raises(RuntimeError, match="destination"):
+        backup_data._backup_sqlite_byte_exact(source, artifact)
+
+    assert artifact.read_bytes() == b"foreign-destination"
+    assert list(destination.iterdir()) == [artifact]
+
+    artifact.unlink()
+    os.link(source, artifact)
+    with pytest.raises(RuntimeError, match="destination"):
+        backup_data._backup_sqlite_byte_exact(source, artifact)
+    assert os.path.samefile(source, artifact)
+
+
+def test_byte_exact_copy_does_not_delete_replaced_temp_file(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source.db"
+    _create_closed_sqlite(source)
+    destination = tmp_path / "destination"
+    destination.mkdir()
+    foreign_temp: Path | None = None
+
+    def replace_temp_then_drift(source_path: Path, temp_path: Path, temp_fd: int) -> None:
+        nonlocal foreign_temp
+        with os.fdopen(temp_fd, "wb") as target:
+            target.write(source_path.read_bytes())
+        temp_path.unlink()
+        temp_path.write_bytes(b"foreign-temp")
+        foreign_temp = temp_path
+        source_path.write_bytes(source_path.read_bytes() + b"drift")
+
+    monkeypatch.setattr(backup_data, "_copy_binary_file", replace_temp_then_drift, raising=False)
+
+    with pytest.raises(RuntimeError, match="changed"):
+        backup_data._backup_sqlite_byte_exact(source, destination / "vinhlong360.db")
+
+    assert foreign_temp is not None
+    assert foreign_temp.read_bytes() == b"foreign-temp"
+
+
+def test_byte_exact_copy_rechecks_sidecars_after_copy_and_preserves_them(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source.db"
+    _create_closed_sqlite(source)
+    destination = tmp_path / "destination"
+    destination.mkdir()
+    sidecar = Path(f"{source}-wal")
+    real_copy = backup_data._copy_binary_file
+
+    def copy_then_add_sidecar(source_path: Path, temp_path: Path, temp_fd: int) -> None:
+        real_copy(source_path, temp_path, temp_fd)
+        sidecar.write_bytes(b"concurrent-wal")
+
+    monkeypatch.setattr(backup_data, "_copy_binary_file", copy_then_add_sidecar)
+
+    with pytest.raises(RuntimeError, match="sidecar"):
+        backup_data._backup_sqlite_byte_exact(source, destination / "vinhlong360.db")
+
+    assert sidecar.read_bytes() == b"concurrent-wal"
+    assert list(destination.iterdir()) == []
+
+
+def test_byte_exact_copy_rejects_invalid_sqlite_bytes(tmp_path: Path) -> None:
+    source = tmp_path / "invalid.db"
+    source.write_bytes(b"not a sqlite database")
+    destination = tmp_path / "destination"
+    destination.mkdir()
+
+    with pytest.raises(RuntimeError, match="integrity"):
+        backup_data._backup_sqlite_byte_exact(source, destination / "vinhlong360.db")
+
+    assert list(destination.iterdir()) == []
+
+
+def test_byte_exact_mode_refuses_missing_or_linked_source(
+    tmp_path: Path,
+) -> None:
+    destination = tmp_path / "destination"
+    destination.mkdir()
+    missing = tmp_path / "missing.db"
+    with pytest.raises(RuntimeError, match="regular independent file"):
+        backup_data._backup_sqlite_byte_exact(missing, destination / "missing-copy.db")
+
+    source = tmp_path / "linked.db"
+    _create_closed_sqlite(source)
+    alias = tmp_path / "linked-alias.db"
+    os.link(source, alias)
+    with pytest.raises(RuntimeError, match="regular independent file"):
+        backup_data._backup_sqlite_byte_exact(source, destination / "linked-copy.db")
+
+
+def test_parse_args_exposes_byte_exact_flag_as_local_only_opt_in(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr("sys.argv", ["backup_data.py", "--help"])
+    with pytest.raises(SystemExit, match="0"):
+        backup_data._parse_args()
+    assert "--require-byte-exact-sqlite" in capsys.readouterr().out
+
+    monkeypatch.setattr(
+        "sys.argv",
+        ["backup_data.py", "--target", "local", "--require-byte-exact-sqlite"],
+    )
+    assert backup_data._parse_args().require_byte_exact_sqlite is True
+
+    monkeypatch.setattr(
+        "sys.argv",
+        ["backup_data.py", "--target", "pg", "--require-byte-exact-sqlite"],
+    )
+    with pytest.raises(SystemExit, match="2"):
+        backup_data._parse_args()
+    assert "local" in capsys.readouterr().err
 
 
 def test_local_target_does_not_import_or_call_postgresql(
