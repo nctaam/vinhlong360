@@ -37,3 +37,19 @@ authorization marker. It never executes the rendered commands.
 
 Use only the exact command and recovery command recorded in
 `outputs/media-truth-review-2026-09-25.json`; do not guess a journal or lock path.
+
+## Exact inert commands from the generated package
+
+Reviewed backup: `.tmp/media-truth-backups-phase-1/20260929-054438-before-media-truth-review`; manifest is bound by `backupProcedure.manifestSha256` in the generated JSON.
+
+```text
+# mutationAllowed=false doNotExecute=true owner_approval_required
+python scripts/checks/apply_data_reconciliation.py --plan C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\.tmp\media-truth-approved\media-truth-plan-approved.json --sqlite C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\agent\data\vinhlong360.db --json C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\web\data.json --sqlite-backup .tmp\media-truth-backups-phase-1\20260929-054438-before-media-truth-review\vinhlong360.db --json-backup .tmp\media-truth-backups-phase-1\20260929-054438-before-media-truth-review\data.json --plan-sha256 aa5cbaec34c758e8b67f27ca943461c31d2d27bf661d4e8e013334892edcb37b --lock-path C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\.tmp\media-truth-approved\.reconciliation.lock --journal-path C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\.tmp\media-truth-approved\media-truth-apply-journal.json --maintenance-window --confirm-phase-b --allow-live-protected-inputs
+
+# mutationAllowed=false doNotExecute=true owner_approval_required
+python scripts/checks/apply_data_reconciliation.py --recover-phase-b-journal --journal-path C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\.tmp\media-truth-approved\media-truth-apply-journal.json --lock-path C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot\.tmp\media-truth-approved\.reconciliation.lock --sqlite-backup .tmp\media-truth-backups-phase-1\20260929-054438-before-media-truth-review\vinhlong360.db --json-backup .tmp\media-truth-backups-phase-1\20260929-054438-before-media-truth-review\data.json
+```
+
+Stop if any digest, count, backup manifest, protected hash, sidecar, finding, or
+authorization marker differs. These strings are evidence only and must not be
+executed without explicit owner approval.
