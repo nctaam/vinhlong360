@@ -38,6 +38,15 @@ EXPECTED_SCOPE = {
     "jsonRelationshipsDeleted": 6,
     "sqliteRelationshipsDeleted": 0,
 }
+
+# Evidence classifications are intentionally finite and all acceptable rows
+# require a successful command exit.  A baseline or copy-only rehearsal may
+# carry extra meaning, but neither is allowed to hide a failed command.
+EVIDENCE_RESULT_EXIT_CODES = {
+    "passed": frozenset({0}),
+    "passed_baseline": frozenset({0}),
+    "passed_copy_only_rehearsal": frozenset({0}),
+}
 EXPECTED_INVENTORY_COUNTS = {
     "ai-generated": 2,
     "documentary-candidate-missing-evidence": 1732,
@@ -540,18 +549,33 @@ def _validate_evidence_schema(path: Path) -> dict[str, Any]:
     return evidence
 
 
+def _is_valid_evidence_command(item: Any) -> bool:
+    if not isinstance(item, dict):
+        return False
+    command = item.get("command")
+    exit_code = item.get("exitCode")
+    classification = item.get("resultClassification")
+    output_hash = item.get("outputSha256")
+    return not (
+        not isinstance(command, str)
+        or not isinstance(exit_code, int)
+        or isinstance(exit_code, bool)
+        or not isinstance(classification, str)
+        or classification not in EVIDENCE_RESULT_EXIT_CODES
+        or exit_code not in EVIDENCE_RESULT_EXIT_CODES[classification]
+        or not isinstance(output_hash, str)
+        or len(output_hash) != 64
+        or any(char not in "0123456789abcdef" for char in output_hash)
+    )
+
+
 def _validate_evidence_commands(evidence: Mapping[str, Any]) -> list[dict[str, Any]]:
     checks = evidence.get("commands")
-    if not isinstance(checks, list) or not checks or any(
-        not isinstance(item, dict)
-        or not isinstance(item.get("command"), str)
-        or not isinstance(item.get("exitCode"), int)
-        or not isinstance(item.get("resultClassification"), str)
-        or not isinstance(item.get("outputSha256"), str)
-        or (item["exitCode"] != 0 and item["resultClassification"] == "passed")
-        for item in checks
-    ):
+    if not isinstance(checks, list) or not checks:
         raise ReviewError("test evidence commands are malformed")
+    for item in checks:
+        if not _is_valid_evidence_command(item):
+            raise ReviewError("test evidence commands are malformed")
     return checks
 
 

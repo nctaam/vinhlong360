@@ -646,12 +646,15 @@ def _backup_sqlite_byte_exact(source_path: Path, artifact_path: Path) -> str:
         os.close(source_fd)
 
 
-def _create_local_backup(
+def _write_local_backup(
     destination: Path,
     timestamp: str,
     require_byte_exact_sqlite: bool = False,
+    *,
+    create_destination: bool = True,
 ) -> tuple[Path, dict]:
-    destination.mkdir(parents=True, exist_ok=not require_byte_exact_sqlite)
+    if create_destination:
+        destination.mkdir(parents=True, exist_ok=not require_byte_exact_sqlite)
     manifest: dict = {
         "schema": LOCAL_BACKUP_SCHEMA,
         "target": LOCAL_BACKUP_TARGET,
@@ -707,6 +710,34 @@ def _create_local_backup(
     with (destination / "manifest.json").open("w", encoding="utf-8") as stream:
         json.dump(manifest, stream, ensure_ascii=False, indent=2)
     return destination, manifest
+
+
+def _create_local_backup(
+    destination: Path,
+    timestamp: str,
+    require_byte_exact_sqlite: bool = False,
+) -> tuple[Path, dict]:
+    if not require_byte_exact_sqlite:
+        return _write_local_backup(destination, timestamp)
+
+    # Exact mode stages every artifact outside the published timestamped
+    # directory, then publishes the complete directory in one rename.
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    _require_absent_destination(destination)
+    stage = Path(tempfile.mkdtemp(prefix=f".{destination.name}-", dir=destination.parent))
+    try:
+        _, manifest = _write_local_backup(
+            stage,
+            timestamp,
+            require_byte_exact_sqlite=True,
+            create_destination=False,
+        )
+        _require_absent_destination(destination)
+        os.replace(stage, destination)
+        return destination, manifest
+    except Exception:
+        shutil.rmtree(stage, ignore_errors=True)
+        raise
 
 
 def _run_command(runner, command: list[str], environment: dict[str, str]):

@@ -95,7 +95,7 @@ def _evidence(path: Path, *, findings: list[dict] | None = None) -> Path:
         json.dumps(
             {
                 "schemaVersion": 1,
-                "commands": [{"command": "python -m pytest -q", "exitCode": 0, "resultClassification": "pass", "outputSha256": "a" * 64}],
+                "commands": [{"command": "python -m pytest -q", "exitCode": 0, "resultClassification": "passed", "outputSha256": "a" * 64}],
                 "knownBaseline": [],
                 "openFindings": findings or [],
                 "generatedArtifacts": {"plan": True, "candidate": True, "inventory": True, "artifacts": True},
@@ -105,6 +105,49 @@ def _evidence(path: Path, *, findings: list[dict] | None = None) -> Path:
         encoding="utf-8",
     )
     return path
+
+
+def _command_evidence(*, exit_code: int, classification: str, output_hash: str = "a" * 64) -> dict:
+    return {
+        "commands": [
+            {
+                "command": "python -m pytest -q",
+                "exitCode": exit_code,
+                "resultClassification": classification,
+                "outputSha256": output_hash,
+            }
+        ]
+    }
+
+
+def test_evidence_commands_reject_nonzero_exit_with_positive_classification() -> None:
+    with pytest.raises(ReviewError, match="test evidence commands are malformed"):
+        review_module._validate_evidence_commands(
+            _command_evidence(exit_code=1, classification="passed_copy_only_rehearsal")
+        )
+
+
+def test_evidence_commands_reject_unknown_classification() -> None:
+    with pytest.raises(ReviewError, match="test evidence commands are malformed"):
+        review_module._validate_evidence_commands(
+            _command_evidence(exit_code=0, classification="passed_custom")
+        )
+
+
+@pytest.mark.parametrize("output_hash", ["A" * 64, "a" * 63, "g" * 64, "not-a-hash"])
+def test_evidence_commands_reject_malformed_output_hash(output_hash: str) -> None:
+    with pytest.raises(ReviewError, match="test evidence commands are malformed"):
+        review_module._validate_evidence_commands(
+            _command_evidence(exit_code=0, classification="passed", output_hash=output_hash)
+        )
+
+
+@pytest.mark.parametrize("classification", ["passed", "passed_baseline", "passed_copy_only_rehearsal"])
+def test_evidence_commands_accept_documented_passing_classifications(classification: str) -> None:
+    checks = review_module._validate_evidence_commands(
+        _command_evidence(exit_code=0, classification=classification)
+    )
+    assert checks[0]["resultClassification"] == classification
 
 
 def _review(tmp_path: Path, *, root: Path = ROOT, backup_dir: Path = BACKUP) -> dict:

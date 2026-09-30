@@ -177,6 +177,48 @@ def test_byte_exact_mode_copies_identical_independent_sqlite_and_manifest(
     }
 
 
+def test_byte_exact_backup_failure_after_json_staging_publishes_no_partial_directory(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    db_file = tmp_path / "exact-source.db"
+    _create_closed_sqlite(db_file)
+    data_json = tmp_path / "data.json"
+    data_json.write_text(
+        json.dumps({"entities": [], "relationships": [], "itineraries": []}),
+        encoding="utf-8",
+    )
+    output_root = tmp_path / "backups"
+    foreign_directory = output_root / "foreign-backup"
+    foreign_directory.mkdir(parents=True)
+    foreign_file = foreign_directory / "keep.txt"
+    foreign_file.write_text("unrelated", encoding="utf-8")
+
+    monkeypatch.setattr(backup_data, "DATA_JSON", data_json)
+    monkeypatch.setattr(backup_data, "DB_FILE", db_file)
+
+    def fail_byte_exact(*_args, **_kwargs):
+        raise RuntimeError("injected byte-exact failure")
+
+    monkeypatch.setattr(backup_data, "_backup_sqlite_byte_exact", fail_byte_exact)
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "backup_data.py",
+            "--target",
+            "local",
+            "--out-dir",
+            str(output_root),
+            "--require-byte-exact-sqlite",
+        ],
+    )
+
+    assert backup_data.main() == 1
+    assert output_root.exists()
+    assert list(output_root.iterdir()) == [foreign_directory]
+    assert foreign_file.read_text(encoding="utf-8") == "unrelated"
+
+
 @pytest.mark.parametrize("suffix", ["-wal", "-shm", "-journal"])
 def test_byte_exact_mode_refuses_preexisting_sqlite_sidecar(
     tmp_path: Path,
