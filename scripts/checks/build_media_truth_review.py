@@ -116,7 +116,7 @@ def _canonical_plan(plan_path: Path, approved_plan_path: Path) -> tuple[dict[str
     return plan, digest
 
 
-def _validate_candidate(root: Path, plan: Mapping[str, Any], stage_result_path: Path, inventory_path: Path) -> dict[str, Any]:
+def _load_candidate_files(stage_result_path: Path) -> tuple[Path, dict[str, Any], Path, Path]:
     stage_result_path = _require_file(stage_result_path, "stage result")
     candidate = stage_result_path.parent.resolve()
     stage = _load_json(stage_result_path, "stage result")
@@ -125,11 +125,18 @@ def _validate_candidate(root: Path, plan: Mapping[str, Any], stage_result_path: 
     _read_only_marker(stage, "stage result")
     data_path = _require_file(candidate / "data.json", "candidate JSON")
     sqlite_path = _require_file(candidate / "vinhlong360.db", "candidate SQLite")
+    return stage_result_path, stage, data_path, sqlite_path
+
+
+def _validate_stage_assets(stage: Mapping[str, Any]) -> None:
     assets = stage.get("assets")
     if not isinstance(assets, dict) or not isinstance(assets.get("retained"), list) or not isinstance(assets.get("removed"), list):
         raise ReviewError("stage result asset partitions are malformed")
     if [item.get("id") for item in assets["removed"] if isinstance(item, dict)] != ["prov-1"]:
         raise ReviewError("stage result must contain exactly the prov-1 removal")
+
+
+def _validate_candidate_payload(data_path: Path) -> list[dict[str, Any]]:
     candidate_payload = _load_json(data_path, "candidate JSON")
     entities = candidate_payload.get("entities") if isinstance(candidate_payload, dict) else None
     if not isinstance(entities, list) or len(entities) != 1771:
@@ -138,9 +145,16 @@ def _validate_candidate(root: Path, plan: Mapping[str, Any], stage_result_path: 
         raise ReviewError("candidate entity identity is malformed")
     if "prov-1" in {item["id"] for item in entities}:
         raise ReviewError("tombstoned prov-1 is present in candidate")
+    return entities
+
+
+def _validate_candidate_sidecars(candidate: Path) -> None:
     sidecars = [candidate / f"vinhlong360.db{suffix}" for suffix in ("-wal", "-shm", "-journal")]
     if any(path.exists() for path in sidecars):
         raise ReviewError("candidate SQLite sidecar is present")
+
+
+def _validate_candidate_digests(plan: Mapping[str, Any], data_path: Path, sqlite_path: Path) -> tuple[str, str]:
     expected = plan.get("expectedOutputs")
     if not isinstance(expected, dict):
         raise ReviewError("plan expectedOutputs are missing")
@@ -154,6 +168,10 @@ def _validate_candidate(root: Path, plan: Mapping[str, Any], stage_result_path: 
         integrity = conn.execute("PRAGMA integrity_check").fetchone()
         if not integrity or integrity[0] != "ok":
             raise ReviewError("candidate SQLite integrity check failed")
+    return data_sha, candidate_logical
+
+
+def _validate_inventory(root: Path, inventory_path: Path, data_sha: str) -> dict[str, Any]:
     inventory = _load_json(_require_file(inventory_path, "inventory"), "inventory")
     if not isinstance(inventory, dict):
         raise ReviewError("inventory must be an object")
@@ -166,6 +184,15 @@ def _validate_candidate(root: Path, plan: Mapping[str, Any], stage_result_path: 
         raise ReviewError("inventory is not bound to candidate JSON")
     if any(item.get("proposedMutation") is not None for item in items if isinstance(item, dict)):
         raise ReviewError("inventory contains a proposed mutation")
+    return {
+        "path": _relative(root, Path(inventory_path)),
+        "sha256": _sha(Path(inventory_path)),
+        "rows": len(items),
+        "counts": counts,
+    }
+
+
+def _validate_plan_scope(plan: Mapping[str, Any]) -> None:
     summary = plan.get("summary")
     if not isinstance(summary, dict):
         raise ReviewError("plan summary is missing")
@@ -190,16 +217,27 @@ def _validate_candidate(root: Path, plan: Mapping[str, Any], stage_result_path: 
     }
     if relationships != expected_relationships:
         raise ReviewError("plan relationship triples mismatch")
+
+
+def _validate_candidate(root: Path, plan: Mapping[str, Any], stage_result_path: Path, inventory_path: Path) -> dict[str, Any]:
+    stage_result_path, stage, data_path, sqlite_path = _load_candidate_files(stage_result_path)
+    candidate = stage_result_path.parent.resolve()
+    _validate_stage_assets(stage)
+    _validate_candidate_payload(data_path)
+    _validate_candidate_sidecars(candidate)
+    data_sha, candidate_logical = _validate_candidate_digests(plan, data_path, sqlite_path)
+    inventory = _validate_inventory(root, inventory_path, data_sha)
+    _validate_plan_scope(plan)
     return {
         "root": _relative(root, candidate),
         "stageResult": {"path": _relative(root, stage_result_path), "sha256": _sha(stage_result_path)},
         "data": {"path": _relative(root, data_path), "sha256": data_sha},
         "sqlite": {"path": _relative(root, sqlite_path), "sha256": _sha(sqlite_path), "logicalDigest": candidate_logical},
-        "inventory": {"path": _relative(root, Path(inventory_path)), "sha256": _sha(Path(inventory_path)), "rows": len(items), "counts": counts},
+        "inventory": inventory,
     }
 
 
-def _validate_artifacts(root: Path, manifest_path: Path) -> dict[str, Any]:
+def _validate_artifact_manifest(manifest_path: Path) -> tuple[Path, list[dict[str, Any]]]:
     manifest_path = _require_file(manifest_path, "artifact manifest")
     manifest = _load_json(manifest_path, "artifact manifest")
     if not isinstance(manifest, dict) or manifest.get("schemaVersion") != 1:
@@ -211,19 +249,33 @@ def _validate_artifacts(root: Path, manifest_path: Path) -> dict[str, Any]:
     seen_paths: set[str] = set()
     members: list[dict[str, Any]] = []
     for item in entries:
-        if not isinstance(item, dict) or not isinstance(item.get("key"), str) or not isinstance(item.get("path"), str):
-            raise ReviewError("artifact manifest member is malformed")
-        key, relative = item["key"], item["path"].replace("\\", "/")
-        if key in seen_keys or relative in seen_paths or relative.startswith("/") or ".." in Path(relative).parts:
-            raise ReviewError("artifact manifest contains duplicate or unsafe member")
-        seen_keys.add(key); seen_paths.add(relative)
-        member = _require_file(manifest_path.parent / relative, f"artifact member {key}")
-        observed = {"bytes": member.stat().st_size, "sha256": _sha(member)}
-        if item.get("bytes") != observed["bytes"] or item.get("sha256") != observed["sha256"]:
-            raise ReviewError(f"artifact member hash mismatch: {key}")
-        members.append({"key": key, "path": relative, **observed})
+        members.append(_validate_artifact_member(manifest_path, item, seen_keys, seen_paths))
     if seen_keys != EXPECTED_ARTIFACT_KEYS:
         raise ReviewError("artifact manifest key set mismatch")
+    return manifest_path, members
+
+
+def _validate_artifact_member(
+    manifest_path: Path,
+    item: Any,
+    seen_keys: set[str],
+    seen_paths: set[str],
+) -> dict[str, Any]:
+    if not isinstance(item, dict) or not isinstance(item.get("key"), str) or not isinstance(item.get("path"), str):
+        raise ReviewError("artifact manifest member is malformed")
+    key, relative = item["key"], item["path"].replace("\\", "/")
+    if key in seen_keys or relative in seen_paths or relative.startswith("/") or ".." in Path(relative).parts:
+        raise ReviewError("artifact manifest contains duplicate or unsafe member")
+    seen_keys.add(key)
+    seen_paths.add(relative)
+    member = _require_file(manifest_path.parent / relative, f"artifact member {key}")
+    observed = {"bytes": member.stat().st_size, "sha256": _sha(member)}
+    if item.get("bytes") != observed["bytes"] or item.get("sha256") != observed["sha256"]:
+        raise ReviewError(f"artifact member hash mismatch: {key}")
+    return {"key": key, "path": relative, **observed}
+
+
+def _validate_review_artifact(manifest_path: Path, members: list[dict[str, Any]]) -> list[Any]:
     review_member = next(item for item in members if item["key"] == "data_review_manifest")
     review_payload = _load_json(manifest_path.parent / review_member["path"], "data review manifest")
     if not isinstance(review_payload, dict):
@@ -233,11 +285,21 @@ def _validate_artifacts(root: Path, manifest_path: Path) -> dict[str, Any]:
     if not isinstance(findings, list):
         raise ReviewError("data review findings are malformed")
     _reject_load_bearing_findings(findings)
+    return findings
+
+
+def _validate_provenance_artifact(manifest_path: Path, members: list[dict[str, Any]]) -> None:
     provenance = next(item for item in members if item["key"] == "image_provenance_review")
     provenance_payload = _load_json(manifest_path.parent / provenance["path"], "image provenance review")
     if not isinstance(provenance_payload, dict) or len(provenance_payload.get("records", [])) != EXPECTED_SCOPE["records"]:
         raise ReviewError("image provenance scope must contain 40 records")
     _read_only_marker(provenance_payload, "image provenance review")
+
+
+def _validate_artifacts(root: Path, manifest_path: Path) -> dict[str, Any]:
+    manifest_path, members = _validate_artifact_manifest(manifest_path)
+    findings = _validate_review_artifact(manifest_path, members)
+    _validate_provenance_artifact(manifest_path, members)
     return {"path": _relative(root, manifest_path), "sha256": _sha(manifest_path), "members": members, "findings": findings}
 
 
@@ -251,7 +313,7 @@ def _reject_load_bearing_findings(findings: list[Any]) -> None:
             raise ReviewError("open Critical/Important finding blocks owner review")
 
 
-def _validate_protected_and_backup(root: Path, backup_dir: Path, plan: Mapping[str, Any]) -> dict[str, Any]:
+def _validate_protected_sources(root: Path, plan: Mapping[str, Any]) -> tuple[Path, Path, str]:
     source_json = _require_file(root / PROTECTED_JSON, "protected JSON")
     source_sqlite = _require_file(root / PROTECTED_SQLITE, "protected SQLite")
     sidecars = [source_sqlite.with_name(source_sqlite.name + suffix) for suffix in ("-wal", "-shm", "-journal")]
@@ -263,8 +325,12 @@ def _validate_protected_and_backup(root: Path, backup_dir: Path, plan: Mapping[s
     source_sqlite_logical = sqlite_logical_digest(source_sqlite)
     with sqlite3.connect(source_sqlite) as conn:
         integrity = conn.execute("PRAGMA integrity_check").fetchone()
-        if not integrity or integrity[0] != "ok":
-            raise ReviewError("protected SQLite integrity check failed")
+    if not integrity or integrity[0] != "ok":
+        raise ReviewError("protected SQLite integrity check failed")
+    return source_json, source_sqlite, source_sqlite_logical
+
+
+def _validate_backup_files(backup_dir: Path, source_json: Path, source_sqlite: Path, source_sqlite_logical: str) -> tuple[Path, Path, Path, dict[str, Any], str]:
     backup_dir = Path(backup_dir).resolve()
     manifest_path = _require_file(backup_dir / "manifest.json", "backup manifest")
     manifest = _load_json(manifest_path, "backup manifest")
@@ -282,10 +348,20 @@ def _validate_protected_and_backup(root: Path, backup_dir: Path, plan: Mapping[s
             raise ReviewError("backup SQLite integrity check failed")
     if backup_sqlite_logical != source_sqlite_logical:
         raise ReviewError("backup SQLite logical digest mismatch")
+    return manifest_path, backup_json, backup_sqlite, manifest, backup_sqlite_logical
+
+
+def _validate_backup_manifest_hash(manifest: Mapping[str, Any], backup_json: Path) -> None:
     artifact = manifest.get("artifact") if isinstance(manifest, dict) else None
     declared_checksum = (artifact or {}).get("sha256") if isinstance(artifact, dict) else manifest.get("checksum")
     if declared_checksum != _sha(backup_json):
         raise ReviewError("backup manifest JSON hash mismatch")
+
+
+def _validate_protected_and_backup(root: Path, backup_dir: Path, plan: Mapping[str, Any]) -> dict[str, Any]:
+    source_json, source_sqlite, source_sqlite_logical = _validate_protected_sources(root, plan)
+    manifest_path, backup_json, backup_sqlite, manifest, backup_sqlite_logical = _validate_backup_files(backup_dir, source_json, source_sqlite, source_sqlite_logical)
+    _validate_backup_manifest_hash(manifest, backup_json)
     return {
         "manifest": {"path": _relative(root, manifest_path), "sha256": _sha(manifest_path)},
         "copiedFiles": {
@@ -299,14 +375,17 @@ def _validate_protected_and_backup(root: Path, backup_dir: Path, plan: Mapping[s
     }
 
 
-def _validate_test_evidence(root: Path, path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
-    path = _require_file(path, "test evidence")
+def _validate_evidence_schema(path: Path) -> dict[str, Any]:
     evidence = _load_json(path, "test evidence")
     if not isinstance(evidence, dict) or set(evidence) != {"schemaVersion", "commands", "knownBaseline", "openFindings", "generatedArtifacts"} or evidence.get("schemaVersion") != 1:
         raise ReviewError("test evidence schema mismatch")
     for key in ("mutationAllowed", "applyAuthorization", "authorized", "authorization"):
         if evidence.get(key) is True:
             raise ReviewError(f"test evidence contains an authorization marker: {key}")
+    return evidence
+
+
+def _validate_evidence_commands(evidence: Mapping[str, Any]) -> list[dict[str, Any]]:
     checks = evidence.get("commands")
     if not isinstance(checks, list) or not checks or any(
         not isinstance(item, dict)
@@ -318,15 +397,31 @@ def _validate_test_evidence(root: Path, path: Path) -> tuple[dict[str, Any], dic
         for item in checks
     ):
         raise ReviewError("test evidence commands are malformed")
+    return checks
+
+
+def _validate_evidence_markers(evidence: Mapping[str, Any]) -> None:
     markers = evidence.get("generatedArtifacts")
     if not isinstance(markers, dict) or any(markers.get(key) is not True for key in ("plan", "candidate", "inventory", "artifacts")):
         raise ReviewError("deterministic-generation markers are incomplete")
     if not isinstance(evidence.get("knownBaseline"), list) or not all(isinstance(item, str) for item in evidence["knownBaseline"]):
         raise ReviewError("knownBaseline must be a list of strings")
+
+
+def _validate_evidence_findings(evidence: Mapping[str, Any]) -> list[Any]:
     findings = evidence.get("openFindings", [])
     if not isinstance(findings, list):
         raise ReviewError("test evidence findings are malformed")
     _reject_load_bearing_findings(findings)
+    return findings
+
+
+def _validate_test_evidence(root: Path, path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    path = _require_file(path, "test evidence")
+    evidence = _validate_evidence_schema(path)
+    checks = _validate_evidence_commands(evidence)
+    _validate_evidence_markers(evidence)
+    _validate_evidence_findings(evidence)
     return evidence, {"path": _relative(root, path), "sha256": _sha(path), "checks": len(checks)}
 
 
