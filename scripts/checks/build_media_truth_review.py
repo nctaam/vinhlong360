@@ -72,10 +72,13 @@ def _load_json(path: Path, label: str) -> Any:
 
 
 def _require_file(path: Path, label: str) -> Path:
-    path = Path(path).resolve()
-    if not path.is_file() or path.is_symlink():
-        raise ReviewError(f"missing or unsafe {label}: {path}")
-    return path
+    raw = Path(path)
+    if raw.is_symlink() or not raw.is_file():
+        raise ReviewError(f"missing or unsafe {label}: {raw}")
+    resolved = raw.resolve()
+    if resolved != raw.absolute() and raw.is_symlink():
+        raise ReviewError(f"symlink is not allowed for {label}: {raw}")
+    return resolved
 
 
 def _relative(root: Path, path: Path) -> str:
@@ -176,6 +179,17 @@ def _validate_candidate(root: Path, plan: Mapping[str, Any], stage_result_path: 
     }
     if any(summary.get(key) != value for key, value in expected_summary.items()):
         raise ReviewError("plan scope summary mismatch")
+    expected_relationships = {
+        ("prov-1", "banh-xeo-mien-tay", "near"), ("prov-1", "com-tam-co-tuyet", "near"),
+        ("prov-1", "cong-ty-tnhh-mtv-quoc-thao", "near"), ("prov-1", "khu-du-lich-truong-huy", "near"),
+        ("prov-1", "mekong-pottery-homestay", "near"), ("prov-1", "vinh-long", "located_in"),
+    }
+    relationships = {
+        ((m.get("before") or {}).get("from"), (m.get("before") or {}).get("to"), (m.get("before") or {}).get("type"))
+        for m in plan.get("mutations", []) if m.get("recordType") == "relationship"
+    }
+    if relationships != expected_relationships:
+        raise ReviewError("plan relationship triples mismatch")
     return {
         "root": _relative(root, candidate),
         "stageResult": {"path": _relative(root, stage_result_path), "sha256": _sha(stage_result_path)},
@@ -288,7 +302,7 @@ def _validate_protected_and_backup(root: Path, backup_dir: Path, plan: Mapping[s
 def _validate_test_evidence(root: Path, path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     path = _require_file(path, "test evidence")
     evidence = _load_json(path, "test evidence")
-    if not isinstance(evidence, dict) or evidence.get("schemaVersion") != 1:
+    if not isinstance(evidence, dict) or set(evidence) != {"schemaVersion", "commands", "knownBaseline", "openFindings", "generatedArtifacts"} or evidence.get("schemaVersion") != 1:
         raise ReviewError("test evidence schema mismatch")
     for key in ("mutationAllowed", "applyAuthorization", "authorized", "authorization"):
         if evidence.get(key) is True:
@@ -300,12 +314,15 @@ def _validate_test_evidence(root: Path, path: Path) -> tuple[dict[str, Any], dic
         or not isinstance(item.get("exitCode"), int)
         or not isinstance(item.get("resultClassification"), str)
         or not isinstance(item.get("outputSha256"), str)
+        or (item["exitCode"] != 0 and item["resultClassification"] == "passed")
         for item in checks
     ):
         raise ReviewError("test evidence commands are malformed")
     markers = evidence.get("generatedArtifacts")
     if not isinstance(markers, dict) or any(markers.get(key) is not True for key in ("plan", "candidate", "inventory", "artifacts")):
         raise ReviewError("deterministic-generation markers are incomplete")
+    if not isinstance(evidence.get("knownBaseline"), list) or not all(isinstance(item, str) for item in evidence["knownBaseline"]):
+        raise ReviewError("knownBaseline must be a list of strings")
     findings = evidence.get("openFindings", [])
     if not isinstance(findings, list):
         raise ReviewError("test evidence findings are malformed")
@@ -332,7 +349,7 @@ def render_non_authorizing_apply_command(
         "python scripts/checks/apply_data_reconciliation.py "
         f"--plan {Path(approved_plan_path)} --sqlite {Path(sqlite_path)} --json {Path(json_path)} "
         f"--sqlite-backup {Path(sqlite_backup)} --json-backup {Path(json_backup)} "
-        f"--plan-sha256 {plan_sha256} --lock-path {Path(lock_path)} --journal-path {Path(journal_path)}"
+        f"--plan-sha256 {plan_sha256} --lock-path {Path(lock_path)} --journal-path {Path(journal_path)} --maintenance-window --confirm-phase-b --allow-live-protected-inputs"
     )
 
 
@@ -437,7 +454,8 @@ def main(argv: list[str] | None = None) -> int:
         if output in {(Path(args.root).resolve() / PROTECTED_JSON), (Path(args.root).resolve() / PROTECTED_SQLITE)}:
             raise ReviewError("review output collides with protected store")
         output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(json.dumps(package, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+        with output.open("w", encoding="utf-8", newline="\n") as stream:
+            stream.write(json.dumps(package, ensure_ascii=False, sort_keys=True, indent=2) + "\n")
         print(json.dumps({"output": str(output), "mutationAllowed": False, "status": package["status"]}, sort_keys=True))
         return 0
     except (ReviewError, OSError, sqlite3.Error, TypeError, ValueError) as exc:

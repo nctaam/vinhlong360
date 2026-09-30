@@ -27,7 +27,6 @@ def _evidence(path: Path, *, findings: list[dict] | None = None) -> Path:
         json.dumps(
             {
                 "schemaVersion": 1,
-                "mutationAllowed": False,
                 "commands": [{"command": "python -m pytest -q", "exitCode": 0, "resultClassification": "pass", "outputSha256": "a" * 64}],
                 "knownBaseline": [],
                 "openFindings": findings or [],
@@ -56,6 +55,9 @@ def test_command_renderers_are_explicitly_non_authorizing() -> None:
         assert "mutationAllowed=false" in command
         assert "doNotExecute=true" in command
         assert "owner_approval_required" in command
+    assert "--maintenance-window" in apply
+    assert "--confirm-phase-b" in apply
+    assert "--allow-live-protected-inputs" in apply
     assert "--plan-sha256 " + "a" * 64 in apply
     assert "--recover-phase-b-journal" in recovery
 
