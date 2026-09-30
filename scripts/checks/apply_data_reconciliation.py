@@ -581,8 +581,11 @@ def _parity(sqlite_path: Path, json_path: Path, connection: sqlite3.Connection |
 
 def _sqlite_parity_data(sqlite_path: Path, connection: sqlite3.Connection | None) -> tuple[set[str], list[tuple[Any, ...]]]:
     if connection is None:
-        with sqlite3.connect(sqlite_path) as conn:
-            return _sqlite_parity_data(sqlite_path, conn)
+        connection = sqlite3.connect(sqlite_path)
+        try:
+            return _sqlite_parity_data(sqlite_path, connection)
+        finally:
+            connection.close()
     entities = {row[0] for row in connection.execute("SELECT id FROM entities")}
     relationships = [tuple(row) for row in connection.execute("SELECT from_id, to_id, type FROM relationships")]
     return entities, relationships
@@ -649,8 +652,11 @@ def _targeted_media_verification(
     targets = _targeted_targets(verification)
     payload = _json_load(json_path)
     if connection is None:
-        with sqlite3.connect(sqlite_path) as conn:
-            return _targeted_media_verification(plan, sqlite_path, json_path, conn)
+        connection = sqlite3.connect(sqlite_path)
+        try:
+            return _targeted_media_verification(plan, sqlite_path, json_path, connection)
+        finally:
+            connection.close()
     connection.row_factory = sqlite3.Row
     sqlite_rows = {row["id"]: _sqlite_entity_projection(row) for row in connection.execute("SELECT rowid, * FROM entities")}
     json_rows = {row.get("id"): row for row in payload.get("entities", []) if isinstance(row, dict) and row.get("id")}
@@ -828,9 +834,9 @@ def _stage_apply_journal(
     journal_path.parent.mkdir(parents=True, exist_ok=True)
     temp_json: Path | None = None
     try:
-        with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=json_path.parent, delete=False) as handle:
-            json.dump(payload, handle, ensure_ascii=False, sort_keys=True, indent=2)
-            handle.write("\n")
+        rendered_json = (json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode("utf-8")
+        with tempfile.NamedTemporaryFile("wb", dir=json_path.parent, delete=False) as handle:
+            handle.write(rendered_json)
             handle.flush()
             os.fsync(handle.fileno())
             temp_json = Path(handle.name)
@@ -873,6 +879,8 @@ def _execute_apply_transaction(
         transaction_active = False
         state["phase"] = "sqlite_committed"
         write_journal(journal_path, state)
+        connection.close()
+        connection = None
         capture_path = _unique_json_artifact(json_path, "capture")
         state["json"]["capturedPath"] = str(capture_path)
         state["json"]["capturedSha256"] = expected_json

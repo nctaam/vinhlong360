@@ -46,6 +46,14 @@ def _fixture(tmp_path: Path):
     return db, json_path, sqlite_backup, json_backup
 
 
+def _wal_fixture(tmp_path: Path):
+    db, json_path, sqlite_backup, json_backup = _fixture(tmp_path)
+    with sqlite3.connect(db) as conn:
+        assert conn.execute("PRAGMA journal_mode=WAL").fetchone()[0] == "wal"
+    sqlite_backup.write_bytes(db.read_bytes())
+    return db, json_path, sqlite_backup, json_backup
+
+
 def _plan(db: Path, json_path: Path, *, deferred=None):
     plan = {
         "schemaVersion": 1,
@@ -96,6 +104,85 @@ def test_successful_fixture_apply_is_atomic_and_parity_clean(tmp_path):
         assert conn.execute("SELECT type FROM relationships").fetchone()[0] == "related_to"
     assert json.loads(data.read_text(encoding="utf-8"))["relationships"][0]["type"] == "related_to"
     assert result["parity"]["status"] == "clean"
+
+
+def test_wal_mode_apply_closes_its_connection_before_final_sidecar_check(tmp_path):
+    db, data, db_bak, data_bak = _wal_fixture(tmp_path)
+    plan = _plan(db, data)
+
+    result = apply_plan(
+        plan,
+        db,
+        data,
+        db_bak,
+        data_bak,
+        confirm=True,
+        plan_sha256=canonical_plan_sha256(plan),
+    )
+
+    assert result["status"] == "applied"
+    assert not any(db.with_name(db.name + suffix).exists() for suffix in ("-wal", "-shm", "-journal"))
+
+
+def test_applied_json_matches_reviewed_lf_only_bytes(tmp_path, monkeypatch):
+    db, data, db_bak, data_bak = _fixture(tmp_path)
+    plan = _plan(db, data)
+    staged_bytes = None
+    expected = b'''{
+  "entities": [
+    {
+      "attributes": {},
+      "coordinates": null,
+      "id": "a",
+      "images": [],
+      "name": "A",
+      "season": null,
+      "source": null,
+      "type": "place"
+    },
+    {
+      "attributes": {},
+      "coordinates": null,
+      "id": "b",
+      "images": [],
+      "name": "B",
+      "season": null,
+      "source": null,
+      "type": "place"
+    }
+  ],
+  "itineraries": [],
+  "relationships": [
+    {
+      "from": "a",
+      "to": "b",
+      "type": "related_to"
+    }
+  ]
+}
+'''
+
+    def capture_staged_bytes(candidate_path, _target_path):
+        nonlocal staged_bytes
+        staged_bytes = candidate_path.read_bytes()
+
+    monkeypatch.setitem(apply_module._RACE_HOOKS, "before_publish", capture_staged_bytes)
+    result = apply_plan(
+        plan,
+        db,
+        data,
+        db_bak,
+        data_bak,
+        confirm=True,
+        plan_sha256=canonical_plan_sha256(plan),
+    )
+
+    assert result["status"] == "applied"
+    assert staged_bytes == expected
+    assert data.read_bytes() == expected
+    assert b"\r\n" not in expected
+    assert expected.endswith(b"\n") and not expected.endswith(b"\n\n")
+    assert hashlib.sha256(expected).hexdigest() == "f10ae1b84e296e747d2f5fd1a0e8d2d4010ea8b6fc6b9ffc2aa3d0fd144aff10"
 
 
 def test_entity_delete_and_nested_remove_apply_to_both_fixture_stores(tmp_path):
@@ -391,6 +478,32 @@ def test_rejects_backup_aliases(tmp_path):
     os.link(db, hardlink)
     with pytest.raises(ApplyError, match="backup"):
         apply_plan(plan, db, data, hardlink, data_bak, confirm=True, plan_sha256=canonical_plan_sha256(plan))
+
+
+def test_rejects_logically_equal_but_byte_different_sqlite_backup(tmp_path):
+    db, data, _, data_bak = _fixture(tmp_path)
+    logical_backup = tmp_path / "logical-only.db.bak"
+    with sqlite3.connect(db) as source:
+        dump = "\n".join(source.iterdump())
+        expected_rows = source.execute("SELECT * FROM entities ORDER BY id").fetchall()
+    with sqlite3.connect(logical_backup) as destination:
+        destination.execute("PRAGMA page_size=8192")
+        destination.executescript(dump)
+        actual_rows = destination.execute("SELECT * FROM entities ORDER BY id").fetchall()
+
+    assert actual_rows == expected_rows
+    assert logical_backup.read_bytes() != db.read_bytes()
+    plan = _plan(db, data)
+    with pytest.raises(ApplyError, match="backup does not match current sqlite input"):
+        apply_plan(
+            plan,
+            db,
+            data,
+            logical_backup,
+            data_bak,
+            confirm=True,
+            plan_sha256=canonical_plan_sha256(plan),
+        )
 
 
 def test_post_validation_failure_restores_json_atomically_and_rolls_back_sqlite(tmp_path):
