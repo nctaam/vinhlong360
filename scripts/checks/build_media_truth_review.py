@@ -264,14 +264,24 @@ def _plan_mutations(plan: Mapping[str, Any]) -> list[Mapping[str, Any]]:
 
 
 def _validate_plan_targets(mutations: list[Mapping[str, Any]]) -> list[str]:
-    target_ids = sorted({item.get("recordId") for item in mutations if item.get("recordType") == "entity"})
+    raw_ids = [item.get("recordId") for item in mutations if item.get("recordType") == "entity"]
+    if any(not isinstance(record_id, str) for record_id in raw_ids):
+        raise ReviewError("plan entity target IDs are malformed")
+    target_ids = sorted(set(raw_ids))
     if target_ids != list(EXPECTED_TARGET_IDS):
         raise ReviewError("plan entity target ID set mismatch")
     return target_ids
 
 
+def _mutation_key(item: Mapping[str, Any]) -> tuple[str, str, str, str]:
+    values = (item.get("store"), item.get("recordType"), item.get("operation"), item.get("field"))
+    if any(not isinstance(value, str) for value in values):
+        raise ReviewError("plan mutation-count map is malformed")
+    return values
+
+
 def _validate_mutation_counts(mutations: list[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    observed = Counter((item.get("store"), item.get("recordType"), item.get("operation"), item.get("field")) for item in mutations)
+    observed = Counter(_mutation_key(item) for item in mutations)
     if dict(observed) != EXPECTED_MUTATION_COUNTS:
         raise ReviewError("plan mutation-count map mismatch")
     return [
