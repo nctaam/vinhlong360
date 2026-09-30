@@ -156,6 +156,27 @@ def _relative(root: Path, path: Path) -> str:
         return path.resolve().as_posix()
 
 
+def _sqlite_sidecars(path: Path) -> tuple[Path, ...]:
+    return tuple(Path(f"{path}{suffix}") for suffix in ("-wal", "-shm", "-journal"))
+
+
+def _reject_sqlite_sidecars(path: Path, label: str) -> None:
+    if any(sidecar.exists() for sidecar in _sqlite_sidecars(path)):
+        raise ReviewError(f"{label} SQLite sidecar is present")
+
+
+def _sqlite_integrity(path: Path) -> str:
+    connection = None
+    try:
+        uri = f"file:{path.resolve().as_posix()}?mode=ro&immutable=1"
+        connection = sqlite3.connect(uri, uri=True)
+        row = connection.execute("PRAGMA integrity_check").fetchone()
+    finally:
+        if connection is not None:
+            connection.close()
+    return str(row[0]) if row else ""
+
+
 def _read_only_marker(payload: Mapping[str, Any], label: str) -> None:
     if payload.get("mutationAllowed") is not False:
         raise ReviewError(f"{label} must set mutationAllowed=false")
@@ -247,10 +268,9 @@ def _validate_candidate_digests(plan: Mapping[str, Any], data_path: Path, sqlite
     candidate_logical = sqlite_logical_digest(sqlite_path)
     if expected.get("sqliteLogicalDigest") != candidate_logical:
         raise ReviewError("candidate SQLite logical digest does not match plan")
-    with sqlite3.connect(sqlite_path) as conn:
-        integrity = conn.execute("PRAGMA integrity_check").fetchone()
-        if not integrity or integrity[0] != "ok":
-            raise ReviewError("candidate SQLite integrity check failed")
+    if _sqlite_integrity(sqlite_path) != "ok":
+        raise ReviewError("candidate SQLite integrity check failed")
+    _validate_candidate_sidecars(sqlite_path.parent)
     return data_sha, candidate_logical
 
 
@@ -444,17 +464,14 @@ def _reject_load_bearing_findings(findings: list[Any]) -> None:
 def _validate_protected_sources(root: Path, plan: Mapping[str, Any]) -> tuple[Path, Path, str]:
     source_json = _require_file(root / PROTECTED_JSON, "protected JSON")
     source_sqlite = _require_file(root / PROTECTED_SQLITE, "protected SQLite")
-    sidecars = [source_sqlite.with_name(source_sqlite.name + suffix) for suffix in ("-wal", "-shm", "-journal")]
-    if any(path.exists() for path in sidecars):
-        raise ReviewError("protected SQLite sidecar is present")
+    _reject_sqlite_sidecars(source_sqlite, "protected")
     plan_inputs = plan.get("inputs")
     if not isinstance(plan_inputs, dict) or plan_inputs.get("json", {}).get("sha256") != _sha(source_json) or plan_inputs.get("sqlite", {}).get("sha256") != _sha(source_sqlite):
         raise ReviewError("protected input hash drift")
     source_sqlite_logical = sqlite_logical_digest(source_sqlite)
-    with sqlite3.connect(source_sqlite) as conn:
-        integrity = conn.execute("PRAGMA integrity_check").fetchone()
-    if not integrity or integrity[0] != "ok":
+    if _sqlite_integrity(source_sqlite) != "ok":
         raise ReviewError("protected SQLite integrity check failed")
+    _reject_sqlite_sidecars(source_sqlite, "protected")
     return source_json, source_sqlite, source_sqlite_logical
 
 
@@ -465,17 +482,27 @@ def _validate_backup_files(backup_dir: Path, source_json: Path, source_sqlite: P
     copied = manifest.get("copied") if isinstance(manifest, dict) else None
     if copied != ["web/data.json", "agent/data/vinhlong360.db"]:
         raise ReviewError("backup manifest copied-file list mismatch")
+    if manifest.get("sqlite_backup_mode") != "byte-exact-v1":
+        raise ReviewError("backup manifest requires sqlite_backup_mode=byte-exact-v1")
     backup_json = _require_file(backup_dir / "data.json", "backup JSON")
     backup_sqlite = _require_file(backup_dir / "vinhlong360.db", "backup SQLite")
-    if backup_json.read_bytes() != source_json.read_bytes():
+    _reject_sqlite_sidecars(backup_sqlite, "backup")
+    backup_json_sha = _sha(backup_json)
+    backup_sqlite_sha = _sha(backup_sqlite)
+    artifact_hashes = manifest.get("artifact_hashes")
+    if not isinstance(artifact_hashes, dict) or artifact_hashes.get("data.json") != backup_json_sha or artifact_hashes.get("vinhlong360.db") != backup_sqlite_sha:
+        raise ReviewError("backup manifest artifact hash mismatch")
+    if backup_json_sha != _sha(source_json):
         raise ReviewError("backup JSON is not byte-equal to protected JSON")
+    if backup_sqlite_sha != _sha(source_sqlite):
+        raise ReviewError("backup SQLite is not byte-equal to protected SQLite")
     backup_sqlite_logical = sqlite_logical_digest(backup_sqlite)
-    with sqlite3.connect(backup_sqlite) as conn:
-        integrity = conn.execute("PRAGMA integrity_check").fetchone()
-        if not integrity or integrity[0] != "ok":
-            raise ReviewError("backup SQLite integrity check failed")
+    if _sqlite_integrity(backup_sqlite) != "ok":
+        raise ReviewError("backup SQLite integrity check failed")
     if backup_sqlite_logical != source_sqlite_logical:
         raise ReviewError("backup SQLite logical digest mismatch")
+    _reject_sqlite_sidecars(backup_sqlite, "backup")
+    _reject_sqlite_sidecars(source_sqlite, "protected")
     return manifest_path, backup_json, backup_sqlite, manifest, backup_sqlite_logical
 
 
@@ -494,7 +521,7 @@ def _validate_protected_and_backup(root: Path, backup_dir: Path, plan: Mapping[s
         "manifest": {"path": _relative(root, manifest_path), "sha256": _sha(manifest_path)},
         "copiedFiles": {
             "json": {"path": _relative(root, backup_json), "sha256": _sha(backup_json), "byteEqualToProtected": True},
-            "sqlite": {"path": _relative(root, backup_sqlite), "sha256": _sha(backup_sqlite), "logicalDigest": backup_sqlite_logical, "integrity": "ok"},
+            "sqlite": {"path": _relative(root, backup_sqlite), "sha256": _sha(backup_sqlite), "logicalDigest": backup_sqlite_logical, "integrity": "ok", "byteEqualToProtected": True},
         },
         "protected": {
             "json": {"path": _relative(root, source_json), "sha256": _sha(source_json)},
