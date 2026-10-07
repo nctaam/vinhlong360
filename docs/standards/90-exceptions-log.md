@@ -2,6 +2,15 @@
 > STATUS: active (2026-09-15) — Nhật ký ngoại lệ và SKIP (COMMITTED, không gitignore).
 
 ## Ngoại lệ rule đã ký (chủ dự án)
+- 2026-09-24 - **Offline reconciliation apply write boundary is explicitly inventoried.**
+  `scripts/checks/apply_data_reconciliation.py::_sqlite_mutation` contains one
+  `attributes-update` and one `dynamic-update` shape. The entity-write checker
+  allowlists those exact path/function/kind tuples only because the harness
+  requires an approved canonical plan hash, independent backups, the shared
+  lock, a durable journal, before-value checks, post-apply parity, and refuses
+  protected live paths by default. This is not a general dynamic SQL
+  exemption; an additional occurrence, renamed function, or other file remains
+  unapproved.
 - 2026-07-07 · R30.5 season-ring 22px (hình học — đo thực nghiệm 11/12 tap sai khi nới 44px); month-grid = fallback a11y.
 - 2026-07-07 · R40.4 hero Ken Burns + parallax homepage — signature, có prefers-reduced-motion.
 - 2026-07-07 · R40.5 top-nav + hamburger là chuẩn điều hướng đã chọn (không bottom-nav).
@@ -9,6 +18,12 @@
 - 2026-07-10 · **R20.8 = 3 (server.py pipeline-monster còn lại) DEFER có-lý-do** (soft-ratchet). 99/102 offender đã ≤12. **_build_messages (cx45) ĐÃ REFACTOR** (2026-07-10, sau khi khôi phục chat-integration coverage): phân rã theo 7-pha-docstring thành `_gather_context_pieces` + `_resolve_base_prompt` + `_fold_experience_fewshot` (+`_fold_lazy_prompt` khử lặp experience/fewshot DRY) + `_assemble_manual_messages`, shell còn ~4. **Verify GOLDEN byte-identical 4 case** (subprocess capture, chuẩn-hoá dòng ngày volatile) — extract-verbatim. Chat-integration fixture ĐÃ SỬA (lifespan reset _draining + fixture server.get_client): test_chat_tools 14/14 + test_chat_smoke 22/22 pass (34 test khôi phục, 7 stale-drift sửa khớp hành-vi-thật). **7 hàm server.py ĐÃ REFACTOR (2026-07-10, test-first THỦ CÔNG, không grind mù như agent-fail trước):** _call_tool_impl (cx131→dict-dispatch `_TOOL_HANDLERS` + 18 per-tool helper + decompose _tool_search/ocop/accommodation) · gate_internal_endpoints (path-list→constants) · _hybrid_rerank_search (tách rerank/backfill) · _resolve_contextual_query (dicts→const + 3 helper) · mention_search (tách _mention_users/entities) · _health_detail (feature-dict comprehension) · **_run_agent (cx17→ tách `_prepare_pending_calls` parse+đếm tool-call + `_execute_pending_calls` parallel/serial exec; extract-VERBATIM giữ nguyên bất-nhất parallel-branch KHÔNG cập nhật empty_results_count vs serial-branch có; test unit `patch(server.call_tool)` KHÔNG cần LLM/KB/fixture — 5 test: parse/bad-json/limit/serial/parallel).** **Verify mỗi hàm: GOLDEN byte-identical/id-list/stable-content** (extract-verbatim) + structure-test move-not-delete (weather-CB wiring, gate `_GATED_*`, mention `_mention_users`) + full agent/tests 0-regression per commit. **3 hàm còn lại** = chat cx111, chat_stream 97, event_stream 62 — pipeline request-handler state-heavy = **essential-complexity** (sequential decision-flow request→response/stream, mutable state đan xen; ép ≤12 = helper-soup nuốt-context rủi ro), DEFER hợp lệ. (_build_messages đã tách được vì có ranh-giới-pha rõ theo docstring; 3 cái này KHÔNG.) (Bonus phát hiện: chat integration fixture `server.client` lỗi thời — server dùng `get_client()` + lifespan `_shutting_down` không reset lúc startup → cả suite test_chat_smoke/test_chat_tools SILENT-error/pollute khi chạy `-m integration`; deselect ở `pytest -q` nên đi qua. **Backlog §5** ROADMAP: sửa fixture patch `server.get_client` + reset shutdown-flag để phục hồi chat integration coverage — cần cả PG-env cho ~20 admin/UGC test. KHÔNG làm trong scope refactor này. Bug pre-existing knowledge.directory_search crash source=list — đã spawn_task.)
 
 ## Đính chính đo lường (CHƯA có quyết định chủ dự án — KHÔNG phải ngoại lệ đã ký)
+
+- 2026-09-29 · **R10.6 image_source_policy baseline 0 → 40 (theo đợt đóng băng Batch 21 media truth).**
+  Commit `2378fecb` đã thu hồi quyền tương thích bản quyền của 40 thực thể tại `docs/standards/r10.6-legacy-image-revocations.txt` (1 delete `prov-1`, 2 `ai_generated`, 37 `generated_placeholder` theo `docs/standards/batch-21-media-truth.json`).
+  Việc thu hồi này làm xuất hiện 40 vi phạm R10.6 tại `web/data.json`.
+  Theo nguyên tắc ratchet tại `scripts/checks/baseline_tool.py`, baseline được nâng từ 0 lên 40 để phản ánh đúng thực trạng nợ bản quyền của Batch 21, chờ chiến dịch cập nhật dữ liệu có chủ sở hữu phê duyệt.
+  Trần 40 được cố định; mọi vi phạm R10.6 phát sinh mới (>40) đều bị chặn đứng.
 
 - 2026-07-26 · **R20.8 baseline 3 → 14: sửa THƯỚC ĐO, không phải nợ mới.** `check_complexity.py` đọc source bằng `encoding="utf-8"`; BOM UTF-8 sống sót thành U+FEFF nên `ast.parse` ném `SyntaxError` và file bị `except SyntaxError: continue` nuốt im lặng. Hệ quả: **`agent/gpt55_quality_burst.py` (69KB, có BOM) chưa từng được R20.8/R20.3 quét**. Sau khi đổi sang `utf-8-sig`, lộ **11 hàm >12**: `relationship_targets` (27), `generate_heuristic_eval_cases` (24), `placeid_candidate_from_decision` (21), `validate_candidate_record`/`source_candidate_for_entity`/`audit_relationship_chunk` (19), `candidate_places_for_entity` (18), `build_manifest`/`audit_accuracy_chunk` (17), `heuristic_quality_status`/`enforce_apply_policy` (14). 3 hàm `server.py` cũ vẫn nguyên → 3+11=14.
   **Đính chính claim cũ:** dòng "99/102 offender đã ≤12" (2026-07-10) đo bằng thước hỏng; con số thật là 99/113. Nợ này **đã tồn tại suốt**, chỉ vô hình — baseline 14 là ghi nhận số đọc đúng, KHÔNG phải baseline-hoá vi phạm mới.

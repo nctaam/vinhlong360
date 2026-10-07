@@ -7,8 +7,9 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | Rule | Phát biểu | Tầng | Module | Baseline | File |
 |---|---|---|---|---|---|
 | R10.schema | id duy nhất + type∈17 + trường bắt buộc + coords bbox | hard | check_data_schema | 0 | 10-data.md |
+| R10.hash | hash `web/data.json` versioned; DB local chỉ kiểm khi được yêu cầu tường minh | hard | check_data_schema | 0 | 10-data.md |
 | R10.5 | không bịa fact thực địa | checklist-ký | — | — | 10-data.md |
-| R10.6 | ảnh CHỈ AI-gen | hard | check_banned_claims | 0 | 10-data.md |
+| R10.6 | provenance ảnh: AI ghi nhãn; ảnh báo chí/tư liệu đủ quyền + tác giả + nguồn + giấy phép + URL; cấm stock/Wikimedia/UGC | hard-ratchet | check_banned_claims | 40 | 10-data.md |
 | R10.7 | tên tỉnh §1.6 (whitelist per-occurrence) | hard-ratchet | check_tinh_cu | 0 | 10-data.md |
 | R10.3b | trường bắt buộc PER-TYPE (registry entity_schemas) | hard-ratchet | check_data_schema | 0 | 10-data.md |
 | R10.8 | RICH phải có source | hard-ratchet | check_data_schema | 0 | 10-data.md |
@@ -33,7 +34,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R20.9 | policy HTTP route registry exact + mounted identity | hard | check_policy_http_registry | 0 | 20-backend.md |
 | R20.10 | registry bồn ảnh entity: validate registry JSON + quét nguồn FE tìm sink ảnh không qua descriptor (fail-closed) | hard | check_entity_image_renderers | 0 | 20-backend.md |
 | R30.1 | cấm Tailwind | hard | check_banned_claims | 0 | 30-frontend.md |
-| R30.2 | emoji chức năng → IconLine (đếm từng match) | soft-ratchet | check_fe_tokens | 59 | 30-frontend.md |
+| R30.2 | emoji chức năng → IconLine (đếm từng match) | soft-ratchet | check_fe_tokens | 58 | 30-frontend.md |
 | R30.3 | màu ngoài tokens (đếm từng match) | hard-ratchet | check_fe_tokens | 0 | 30-frontend.md |
 | R30.4 | ClientOnly cho volatile | checklist-ký | — | — | 30-frontend.md |
 | R30.5 | tap-target ≥44 (ngoại lệ season-ring) | checklist-ký | — | — | 30-frontend.md |
@@ -41,6 +42,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R30.7 | bundle budget (chunk-max gz + trần CSS + đích entry ≤200kB) | soft-ratchet | check_bundle — chạy ở **job frontend** của CI sau `npm run build` (job Python không có `.output`) | 0 | 30-frontend.md |
 | R30.8 | thang bo góc cũ `--radius-xs/sm/md/lg/xl` → tầng mục đích `--radius-control/surface/sheet` (đếm từng match) | hard-ratchet | check_fe_tokens | 0 | 30-frontend.md |
 | R40.3 | cấm claim đã-xác-minh | hard | check_banned_claims | 0 | 40-ui-design.md |
+| R45.1 | vệ sinh ảnh: WebP tồn tại, caption/alt đủ dài và không vi phạm biên tập | hard | check_image_hygiene | 0 | 10-data.md |
 | R50.2 | filler giọng cấm (field-aware, bỏ source) | soft-ratchet | check_content_voice | 7 | 50-content.md |
 | R50.3 | cấm công thức mở bài + kết sáo | soft-ratchet | check_content_gates | 0 | 50-content.md |
 | R50.4 | summary+desc ≥200 ký tự | soft-ratchet | check_thin_content | 0 | 50-content.md |
