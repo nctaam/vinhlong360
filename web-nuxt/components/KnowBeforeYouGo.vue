@@ -144,12 +144,9 @@ const practicalItems = computed(() => {
   if (a.highlight) items.push({ icon: 'star', label: 'Điểm nhấn', value: String(a.highlight) })
   if (a.heritage_level) items.push({ icon: 'shield-check', label: 'Xếp hạng di sản', value: String(a.heritage_level) })
   if (a.booking_note) items.push({ icon: 'clipboard-list', label: 'Đặt trước', value: String(a.booking_note) })
-  if (a.admission || a.fee) items.push({ icon: 'tag', label: 'Vé / Phí vào cửa', value: String(a.admission || a.fee) })
   if (a.raw_material) items.push({ icon: 'leaf', label: 'Nguyên liệu', value: String(a.raw_material) })
   if (a.households) items.push({ icon: 'home', label: 'Quy mô làng nghề', value: String(a.households) })
-  if (a.transport) items.push({ icon: 'car', label: 'Di chuyển', value: String(a.transport) })
   if (a.parking) items.push({ icon: 'pin', label: 'Đậu xe', value: String(a.parking) })
-  if (a.vehicle_access) items.push({ icon: 'car', label: 'Tiếp cận xe', value: String(a.vehicle_access) })
   if (a.family_friendly || (Array.isArray(a.suitable_for) && a.suitable_for.includes('family'))) {
     if (!amenities.value.some(b => b.key === 'kid_friendly')) {
       items.push({ icon: 'users', label: 'Gia đình', value: 'Phù hợp cho gia đình có trẻ em' })
@@ -204,10 +201,11 @@ const hasContent = computed(() =>
 .kbyg {
   position: relative;
   margin: var(--space-6) 0;
-  padding: var(--space-5);
-  background: var(--card, var(--bg));
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sheet);
+  padding: var(--space-5) 0;
+  background: transparent;
+  border: 0;
+  border-block: 1px solid var(--line);
+  border-radius: 0;
   overflow: hidden;
 }
 .kbyg::before {
@@ -244,7 +242,7 @@ const hasContent = computed(() =>
 }
 .kbyg-badge {
   display: inline-flex; align-items: center; gap: var(--space-1);
-  padding: 5px 12px; border-radius: var(--radius-full);
+  padding: 5px 12px; border-radius: var(--radius-control);
   font-size: .8rem; font-weight: 500;
   background: var(--bg-alt);
   border: 1px solid var(--line);
@@ -254,31 +252,31 @@ const hasContent = computed(() =>
 .kbyg-badge:hover { border-color: var(--color-material-amber); transform: scale(1.04); }
 .kbyg-badge-icon { font-size: .9rem; background: transparent; padding: 0; min-width: 0; }
 
-/* Golden hours */
+/* Golden hours — Open Hairline Strip */
 .kbyg-golden {
-  display: flex; flex-wrap: wrap; gap: var(--space-3);
-  margin-bottom: var(--space-4);
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0 var(--space-5); margin-bottom: var(--space-4);
+  border-block: .5px solid var(--line);
 }
 .kbyg-golden-item {
   display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-1);
-  padding: 10px 14px; border-radius: var(--radius-surface);
-  background: rgba(var(--color-warning-rgb), .08);
-  flex: 1 1 160px; min-width: 160px;
+  padding: var(--space-2h, 10px) 0; border-radius: 0;
+  background: transparent;
 }
 .kbyg-golden-icon { font-size: 1.1rem; flex-shrink: 0; }
 .kbyg-golden-item dt { display: flex; align-items: center; gap: var(--space-2); font-size: .78rem; font-weight: var(--weight-semibold); color: var(--muted); }
 .kbyg-golden-item dd { margin: 0; font-size: .88rem; font-variant-numeric: tabular-nums; }
 .kbyg-evidence { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
 
-/* Practical facts */
+/* Practical facts — Open Specification Ledger */
 .kbyg-practical {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-3);
-  margin-bottom: var(--space-4);
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0 var(--space-5);
+  margin-bottom: var(--space-4); border-block-start: .5px solid var(--line);
 }
 .kbyg-practical-item {
   display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-1);
-  padding: 10px 14px; border-radius: var(--radius-surface);
-  background: var(--bg-alt); border: 1px solid var(--line);
+  padding: var(--space-2h, 10px) 0; border-radius: 0;
+  background: transparent; border: 0; border-block-end: .5px solid var(--line);
 }
 .kbyg-practical-item dt {
   display: flex; align-items: center; gap: var(--space-2);
@@ -288,15 +286,16 @@ const hasContent = computed(() =>
 .kbyg-practical-icon { font-size: 1rem; flex-shrink: 0; color: var(--color-action); }
 .kbyg-practical-item dd { margin: 0; font-size: .88rem; color: var(--ink); line-height: 1.4; }
 
-/* Tips */
+/* Tips — Left-Rule Editorial Marginalia Callout */
 .kbyg-tips {
   display: flex; flex-direction: column; gap: var(--space-2);
   margin-bottom: var(--space-4);
 }
 .kbyg-tip {
   display: flex; align-items: flex-start; gap: var(--space-2);
-  padding: var(--space-2) var(--space-3); border-radius: var(--radius-surface);
-  background: rgba(var(--color-success-rgb), .06);
+  padding: var(--space-1) 0 var(--space-1) var(--space-3); border-radius: 0;
+  border-inline-start: 2px solid var(--color-material-amber);
+  background: transparent;
   font-size: .88rem; line-height: 1.45;
 }
 .kbyg-tip-icon { flex-shrink: 0; font-size: .9rem; margin-top: 1px; }
@@ -324,11 +323,11 @@ const hasContent = computed(() =>
 .dark .kbyg::before { opacity: .08; }
 .dark .kbyg-badge { border-color: var(--line); }
 .dark .kbyg-badge:hover { border-color: var(--color-material-amber); }
-.dark .kbyg-golden-item { background: rgba(var(--color-warning-rgb), .12); }
-.dark .kbyg-tip { background: rgba(var(--color-success-rgb), .1); }
+.dark .kbyg-golden-item { background: transparent; }
+.dark .kbyg-tip { background: transparent; }
 
 @media (max-width: 540px) {
-  .kbyg { padding: var(--space-4); }
+  .kbyg { padding: var(--space-4) 0; }
   .kbyg-golden { flex-direction: column; }
 }
 

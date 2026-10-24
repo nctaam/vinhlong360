@@ -11,12 +11,11 @@
           <IconLine name="compass" aria-hidden="true" />
           <span>30s Thực địa · Góc nhìn Bản địa</span>
         </span>
-        <span class="detail-aeo-summary__stamp">
+        <span class="detail-aeo-summary__stamp sr-only">
           <IconLine name="shield-check" aria-hidden="true" />
           <span>Xác thực thực địa bản xứ</span>
         </span>
       </div>
-      <span class="detail-aeo-summary__watermark" aria-hidden="true">AEO</span>
     </div>
 
     <h2 id="detail-aeo-summary-title" class="detail-aeo-summary__title">
@@ -129,22 +128,23 @@ const tideCue = computed(() => {
 .detail-aeo-summary {
   position: relative;
   margin: var(--space-6) 0;
-  padding: var(--space-5);
-  border-radius: var(--radius-sheet);
+  padding: var(--space-5) 0;
+  border-radius: 0;
   background: rgba(var(--alluvial-gold-rgb), 0.05);
   border: 1.5px solid var(--alluvial-gold);
-  box-shadow: 0 2px 8px -2px rgba(var(--black-rgb), 0.05), 0 0 0 1px var(--border-liquid-glass, rgba(var(--white-rgb), 0.5));
+  border-inline: 0;
+  box-shadow: none;
   contain: layout style;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .detail-aeo-summary:hover {
-  box-shadow: 0 4px 14px -2px rgba(var(--black-rgb), 0.08), 0 0 0 1px var(--border-liquid-glass, rgba(var(--white-rgb), 0.7));
+  box-shadow: none;
 }
 
 .dark .detail-aeo-summary {
   background: rgba(var(--alluvial-gold-rgb), 0.08);
-  box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.2), 0 0 0 1px var(--border-liquid-glass, rgba(var(--white-rgb), 0.08));
+  box-shadow: none;
 }
 
 .detail-aeo-summary__badge {
@@ -225,13 +225,6 @@ const tideCue = computed(() => {
   border-color: color-mix(in srgb, var(--color-material-river) 25%, transparent);
 }
 
-.detail-aeo-summary__watermark {
-  font-size: var(--text-2xs);
-  font-weight: var(--weight-bold);
-  letter-spacing: var(--tracking-caps);
-  color: var(--color-text-muted);
-}
-
 .detail-aeo-summary__title {
   margin: 0 0 var(--space-2);
   font-family: var(--font-editorial);
@@ -242,16 +235,23 @@ const tideCue = computed(() => {
 
 .detail-aeo-summary__highlight {
   margin: 0 0 var(--space-4);
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--alluvial-gold);
+  font-family: var(--font-editorial);
   font-size: var(--text-sm);
   line-height: var(--leading-relaxed);
   color: var(--color-text-muted);
   font-style: italic;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .detail-aeo-summary__grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-3);
+  gap: var(--space-3) var(--space-5);
 }
 
 @media (max-width: 640px) {
@@ -261,15 +261,17 @@ const tideCue = computed(() => {
 }
 
 .detail-aeo-summary__card {
-  padding: var(--space-3);
-  border-radius: var(--radius-surface, 12px);
-  background: rgba(var(--black-rgb), 0.02);
-  border: 1px solid var(--color-border);
+  --_aeo-surface-token: var(--radius-surface, 12px);
+  padding: var(--space-2h, 10px) 0 0;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--color-border);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark .detail-aeo-summary__card {
-  background: rgba(var(--white-rgb), 0.03);
+  background: transparent;
 }
 
 .detail-aeo-summary__card-head {

@@ -175,11 +175,17 @@ async function loadMore() {
 }
 
 function icon(n: any): string {
-  if (n.type === 'like') return 'heart'
-  if (n.type === 'comment') return 'message'
+  if (n.type === 'like' || n.type === 'reaction') return 'heart'
+  if (n.type === 'comment' || n.type === 'comment_reply' || n.type === 'question_answer') return 'message'
   if (n.type === 'follow') return 'user'
   if (n.type === 'mention') return 'megaphone'
   if (n.type === 'repost') return 'repeat'
+  if (n.type === 'achievement') return 'award'
+  if (n.type === 'security_alert') return 'shield-check'
+  if (n.type === 'moderation') return 'flag'
+  if (n.type === 'claim_approved' || n.type === 'claim_rejected') return 'clipboard-check'
+  if (n.type === 'event_reminder') return 'calendar'
+  if (n.type === 'digest') return 'file-text'
   return 'bell'
 }
 
@@ -267,8 +273,9 @@ useHead(() => ({
   margin: 0 0 .25rem;
 }
 .dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--color-brand); flex-shrink: 0; }
-.tb-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-1); }
-/* .tb-item is the card (li) — .tb-item-link is the inner "open notification"
+/* Wave 6: Open Architectural Correspondence Ledger — unboxed from stacked cards */
+.tb-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0; border-block-start: 1px solid var(--line); }
+/* .tb-item is the ledger row (li) — .tb-item-link is the inner "open notification"
    affordance (NuxtLink or role=button div). Kept as siblings, not nested,
    because .tb-dismiss is a real <button>: an <a href> must not contain other
    interactive content per the HTML spec (see EntityCard's .card-save, which
@@ -276,24 +283,24 @@ useHead(() => ({
    button out avoids invalid nesting and any native-navigation ambiguity. */
 .tb-item {
   position: relative; display: flex; align-items: flex-start; gap: var(--space-3); width: 100%;
-  padding: var(--space-3); background: var(--card);
-  border: 1px solid var(--border-liquid-glass, var(--line));
-  border-radius: var(--radius-sheet);
-  box-shadow: var(--shadow-card-ambient);
-  transition: background .2s var(--ease-out), border-color .2s var(--ease-out), box-shadow .2s var(--ease-out);
+  padding: var(--space-3h, 0.875rem) var(--space-3); background: transparent;
+  border: 0;
+  border-block-end: 1px solid var(--border-liquid-glass, var(--line));
+  border-radius: 0;
+  box-shadow: none;
+  transition: background .2s var(--ease-out), border-color .2s var(--ease-out);
 }
 .tb-item:hover {
-  background: var(--bg-alt);
-  box-shadow: var(--shadow-card-hover);
+  background: color-mix(in srgb, var(--bg-alt) 55%, transparent);
 }
-.tb-item.unread { border-color: var(--color-action); background: var(--color-action-surface); }
+.tb-item.unread { border-block-end-color: var(--color-action); background: color-mix(in srgb, var(--color-action-surface) 65%, transparent); }
 .tb-quiet-loading {
   display: flex; align-items: center; justify-content: center; gap: var(--space-3);
   padding: var(--space-6) var(--space-4);
   color: var(--ink-700); font-size: var(--text-sm);
-  background: var(--card); border: 1px solid var(--border-liquid-glass, var(--line));
-  border-radius: var(--radius-sheet);
-  box-shadow: var(--shadow-card-ambient);
+  background: transparent; border: 0; border-block: 1px solid var(--border-liquid-glass, var(--line));
+  border-radius: 0;
+  box-shadow: none;
 }
 /* Tri-province sediment tick — left-edge hairline echo of the site-wide
    river→amber→clay thread (same recipe as EntityCard .card-rule / PostCard
@@ -352,8 +359,8 @@ useHead(() => ({
 .tb-filter-icon { font-size: 1em; flex-shrink: 0; }
 
 /* ── Dark mode ── */
-.dark .tb-item { background: var(--bg-alt); border-color: var(--border-liquid-glass, var(--line)); }
-.dark .tb-quiet-loading { background: var(--bg-alt); border-color: var(--border-liquid-glass, var(--line)); }
+.dark .tb-item { background: transparent; border-color: var(--border-liquid-glass, var(--line)); }
+.dark .tb-quiet-loading { background: transparent; border-color: var(--border-liquid-glass, var(--line)); }
 .dark .tb-item:hover { background: color-mix(in srgb, var(--bg-alt) 80%, var(--ink) 5%); }
 .dark .tb-item.unread { background: var(--color-action-surface); border-color: var(--color-action); }
 .dark .tb-item::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }

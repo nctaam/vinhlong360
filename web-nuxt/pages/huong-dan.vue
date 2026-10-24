@@ -103,7 +103,7 @@
           </li>
         </ol>
         <div class="tip-box">
-          <p class="tip-line"><IconLine name="bulb" class="callout-icon" aria-hidden="true" /> Nhấn nút <IconLine name="message" class="inline-chat-icon" aria-hidden="true" /> góc phải dưới bất kỳ trang nào để hỏi trợ lý AI — trả lời ngay về ẩm thực, du lịch, mùa vụ.</p>
+          <p class="tip-line"><IconLine name="bulb" class="callout-icon" aria-hidden="true" /> Nhấn nút <IconLine name="message" class="inline-chat-icon" aria-hidden="true" /> góc phải dưới bất kỳ trang nào để hỏi đáp nhanh — nhận thông tin tức thì về ẩm thực, du lịch, mùa vụ.</p>
         </div>
       </section>
 
@@ -191,7 +191,7 @@
       <section id="khac-phuc" class="guide-section reveal sediment-head">
         <h2><IconLine name="settings" class="gs-icon" aria-hidden="true" />Khắc phục sự cố</h2>
         <p class="section-intro">Gặp vấn đề khi sử dụng? Thử các giải pháp dưới đây trước khi liên hệ hỗ trợ.</p>
-        <p class="section-intro"><strong>Mẹo nhanh:</strong> phím <kbd>Esc</kbd> đóng lightbox/chat, phím <kbd>←</kbd> <kbd>→</kbd> (hoặc vuốt) chuyển ảnh, gõ <kbd>@</kbd> khi soạn bài để tag người/địa điểm.</p>
+        <p class="section-intro"><strong>Mẹo nhanh:</strong> phím <kbd>Esc</kbd> đóng lightbox/chat, phím <kbd>←</kbd> <kbd>→</kbd> (hoặc vuốt) chuyển ảnh, gõ <kbd>@</kbd> khi soạn bài để gắn thẻ người hoặc địa điểm.</p>
 
         <details v-for="issue in troubleshooting" :key="issue.title" class="guide-topic" open>
           <summary class="topic-summary">
@@ -322,9 +322,9 @@ const filteredSections = computed(() => {
 
 useSeoMeta({
   title: 'Hướng dẫn sử dụng — vinhlong360',
-  description: 'Cẩm nang đầy đủ cách sử dụng vinhlong360: tìm kiếm, bản đồ, lịch trình, cộng đồng, chat AI, cài đặt tài khoản và nhiều tính năng khác.',
+  description: 'Cẩm nang đầy đủ cách sử dụng vinhlong360: tìm kiếm, bản đồ số, lịch trình, cộng đồng, hỏi đáp thực địa, cài đặt tài khoản và nhiều tính năng khác.',
   ogTitle: 'Hướng dẫn sử dụng — vinhlong360',
-  ogDescription: 'Cẩm nang đầy đủ cách sử dụng vinhlong360: tìm kiếm, bản đồ, lịch trình, cộng đồng, chat AI, cài đặt tài khoản và nhiều tính năng khác.',
+  ogDescription: 'Cẩm nang đầy đủ cách sử dụng vinhlong360: tìm kiếm, bản đồ số, lịch trình, cộng đồng, hỏi đáp thực địa, cài đặt tài khoản và nhiều tính năng khác.',
   ogUrl: () => canonicalUrl('/huong-dan'),
   ogType: 'website',
   twitterCard: 'summary_large_image',
@@ -334,7 +334,7 @@ useSeoMeta({
 const guideSchema = computed(() =>
   buildGuideSchemaGraph({
     title: 'Hướng dẫn sử dụng vinhlong360',
-    description: 'Cẩm nang đầy đủ cách sử dụng vinhlong360: tìm kiếm, bản đồ, lịch trình, cộng đồng, chat AI, cài đặt tài khoản và nhiều tính năng khác.',
+    description: 'Cẩm nang đầy đủ cách sử dụng vinhlong360: tìm kiếm, bản đồ số, lịch trình, cộng đồng, hỏi đáp thực địa, cài đặt tài khoản và nhiều tính năng khác.',
     faqs: getCoreGuideFaqs(),
   })
 )
@@ -413,17 +413,16 @@ useHead({
 .bm-motif { width: clamp(64px, 6vw + 36px, 104px); height: auto; flex-shrink: 0; color: var(--clay-400); opacity: .8; }
 .bm-motif path, .bm-motif line, .bm-motif circle { stroke: currentColor; fill: none; }
 
-/* Quickstart */
-.quickstart-steps { list-style: none; padding: 0; margin: 0 0 var(--space-4); counter-reset: none; }
-.quickstart-steps > li + li { margin-top: var(--space-3); }
-.qs-step { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); }
+/* Quickstart — open 5-chapter editorial ledger */
+.quickstart-steps { list-style: none; padding: 0; margin: 0 0 var(--space-4); border-block-start: 1px solid var(--line); }
+.quickstart-steps > li + li { margin-top: 0; }
+.qs-step { display: flex; gap: var(--space-4); align-items: baseline; padding: var(--space-4) 0; background: transparent; border: 0; border-block-end: 1px solid var(--line); border-radius: 0; }
 .qs-num {
-  width: 2.2rem; height: 2.2rem; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--color-brand); color: var(--color-on-action, var(--white)); font-weight: var(--weight-bold);
-  font-size: var(--text-base); border-radius: 50%;
+  min-width: 2rem; flex-shrink: 0;
+  font-family: var(--font-editorial); font-style: italic; font-weight: 500;
+  font-size: var(--text-xl); line-height: 1; color: var(--color-brand);
 }
-.qs-step strong { display: block; margin-bottom: var(--space-1); font-size: var(--text-sm); }
+.qs-step strong { display: block; margin-bottom: var(--space-1); font-family: var(--font-editorial); font-size: var(--text-base); font-weight: 600; color: var(--ink); }
 .qs-step p { margin: 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 
 /* Sections — h2 typography (serif + tick) now comes from .sediment-head;
@@ -441,17 +440,23 @@ useHead({
 }
 .section-intro { color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-relaxed); margin: 0 0 var(--space-5); }
 
-/* Topics (collapsible) */
+/* Topics (collapsible — Open Editorial Accordion Ledger) */
 .guide-topic {
-  margin-bottom: var(--space-3); border: .5px solid var(--line);
-  border-radius: var(--radius-sheet); background: var(--card); overflow: hidden;
+  margin-bottom: 0; border: 0; border-block-end: 1px solid var(--line);
+  border-radius: 0; background: transparent; overflow: visible;
   scroll-margin-top: calc(var(--header-h) + 0.5rem);
 }
 .topic-summary {
   display: flex; align-items: center; gap: var(--space-2);
-  padding: var(--space-4); cursor: pointer; list-style: none;
+  min-height: 44px; padding: var(--space-3h, 14px) var(--space-1); cursor: pointer; list-style: none;
   font-size: var(--text-sm); font-weight: var(--weight-bold);
-  user-select: none;
+  user-select: none; border-radius: var(--radius-control);
+}
+.topic-summary:focus-visible,
+.faq-item > summary:focus-visible,
+.mobile-toc-toggle:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 .topic-summary::-webkit-details-marker { display: none; }
 .topic-icon {
@@ -462,7 +467,7 @@ useHead({
 .topic-title { flex: 1; }
 .topic-chevron { width: 14px; height: 14px; color: var(--muted); transition: transform .2s var(--ease-out-expo); flex-shrink: 0; }
 .guide-topic[open] > .topic-summary .topic-chevron { transform: rotate(180deg); }
-.topic-body { padding: 0 var(--space-4) var(--space-4); }
+.topic-body { padding: 0 var(--space-1) var(--space-4) var(--space-6); }
 .topic-desc { color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-relaxed); margin: 0 0 var(--space-3); }
 
 /* Steps */
@@ -486,27 +491,27 @@ useHead({
 .guide-steps--sub > li::before { background: var(--muted); }
 .guide-steps > li + li { border-top: .5px dashed var(--line); }
 
-/* Subtopics */
-.subtopics { margin: var(--space-3) 0; }
+/* Subtopics — Open Margin Ledger */
+.subtopics { margin: var(--space-3) 0; border-block-start: .5px solid var(--line); }
 .subtopic {
-  padding: var(--space-3) var(--space-4);
-  margin-bottom: var(--space-3); background: var(--bg-warm);
-  border: 1px solid color-mix(in srgb, var(--color-brand) 30%, var(--line));
-  border-radius: var(--radius-surface);
+  padding: var(--space-3) 0;
+  margin-bottom: 0; background: transparent;
+  border: 0; border-block-end: .5px solid var(--line);
+  border-radius: 0;
 }
 /* WCAG 1.3.1 fix: was h4, skipping h3 under the section's h2 — bumped to h3
    (font-size/weight/margin unchanged, so no visual difference from the level bump). */
 .subtopic > h3 { font-size: var(--text-sm); font-weight: var(--weight-bold); margin: 0 0 var(--space-1); }
 .subtopic > p { font-size: var(--text-sm); color: var(--muted); margin: 0; line-height: var(--leading-relaxed); }
 
-/* Tip, Warn, DYK, See-also */
+/* Tip, Warn, DYK, See-also — Left-Rule Editorial Callouts */
 .tip-box, .warn-box, .dyk-box {
-  margin-top: var(--space-3); padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sheet); font-size: var(--text-sm);
+  margin-top: var(--space-3); padding: var(--space-2) 0 var(--space-2) var(--space-4);
+  border: 0; border-radius: 0; font-size: var(--text-sm); background: transparent;
 }
-.tip-box { background: rgba(var(--color-action-rgb), .06); border: .5px solid rgba(var(--color-action-rgb), .15); }
-.warn-box { background: rgba(var(--warning-rgb), .06); border: .5px solid rgba(var(--warning-rgb), .2); }
-.dyk-box { background: rgba(var(--blue-rgb), .06); border: .5px solid rgba(var(--blue-rgb), .15); }
+.tip-box { border-inline-start: 2px solid var(--color-material-amber); }
+.warn-box { border-inline-start: 2px solid var(--color-material-clay); }
+.dyk-box { border-inline-start: 2px solid var(--color-material-river); }
 .tip-line, .warn-line { margin: 0; line-height: var(--leading-relaxed); color: var(--ink); }
 .tip-line + .tip-line, .warn-line + .warn-line { margin-top: var(--space-2); }
 .dyk-box p { margin: 0; line-height: var(--leading-relaxed); }
@@ -519,8 +524,9 @@ useHead({
 
 .see-also { margin-top: var(--space-3); display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; font-size: var(--text-xs); }
 .see-also-label { color: var(--muted); font-weight: var(--weight-semibold); }
-.see-also-link { color: var(--color-action); text-decoration: none; padding: 2px var(--space-2); background: rgba(var(--color-action-rgb), .06); border-radius: var(--radius-control); }
+.see-also-link { color: var(--color-action); text-decoration: none; padding: 4px var(--space-2); min-height: 28px; display: inline-flex; align-items: center; background: rgba(var(--color-action-rgb), .06); border-radius: var(--radius-control); }
 .see-also-link:hover { text-decoration: underline; }
+.see-also-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .topic-link {
   display: inline-flex; align-items: center; gap: var(--space-1); margin-top: var(--space-3);
@@ -542,19 +548,23 @@ useHead({
   margin: 0 0 var(--space-3);
 }
 .faq-item {
-  border: .5px solid var(--line); border-radius: var(--radius-sheet);
-  margin-bottom: var(--space-2); overflow: hidden;
+  border: 0; border-block-end: .5px solid var(--line); border-radius: 0;
+  margin-bottom: 0; overflow: visible;
 }
+.faq-item:first-of-type { border-block-start: .5px solid var(--line); }
 .faq-item > summary {
-  padding: var(--space-3) var(--space-4); cursor: pointer;
+  padding: var(--space-3) 0; min-height: 44px; cursor: pointer;
   font-size: var(--text-sm); font-weight: var(--weight-semibold);
   list-style: none; display: flex; align-items: center; gap: var(--space-2);
+}
+.faq-item > summary:focus-visible {
+  outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control);
 }
 .faq-item > summary::before { content: '▸'; transition: transform .2s; flex-shrink: 0; }
 .faq-item[open] > summary::before { transform: rotate(90deg); }
 .faq-item > summary::-webkit-details-marker { display: none; }
 .faq-item > p {
-  padding: 0 var(--space-4) var(--space-4); margin: 0;
+  padding: 0 0 var(--space-4) var(--space-4); margin: 0;
   font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed);
 }
 
@@ -581,12 +591,7 @@ useHead({
     linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--color-brand-rgb), .1) 120%);
 }
 .dark .bm-motif { color: var(--clay-400); opacity: .65; }
-.dark .guide-topic { background: var(--bg-alt); }
-.dark .qs-step { background: var(--bg-alt); }
-.dark .subtopic { background: rgba(var(--white-rgb),.03); }
-.dark .tip-box { background: rgba(var(--white-rgb),.03); border-color: rgba(var(--white-rgb),.08); }
-.dark .warn-box { background: rgba(var(--warning-rgb), .05); border-color: rgba(var(--warning-rgb), .12); }
-.dark .dyk-box { background: rgba(var(--blue-rgb), .04); border-color: rgba(var(--blue-rgb), .1); }
+.dark .guide-topic, .dark .subtopic, .dark .tip-box, .dark .warn-box, .dark .dyk-box { background: transparent; }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
@@ -631,8 +636,8 @@ useHead({
   .guide-hero .bm-inner { max-width: none; }
   .bm-eyebrow { justify-content: center; }
   .qs-step { flex-direction: column; align-items: center; text-align: center; }
-  .guide-topic { border-radius: var(--radius-sheet); }
-  .topic-body { padding: 0 var(--space-3) var(--space-3); }
-  .subtopic { padding: var(--space-2) var(--space-3); }
+  .guide-topic { border-radius: 0; }
+  .topic-body { padding: 0 0 var(--space-3); }
+  .subtopic { padding: var(--space-2) 0 var(--space-2) var(--space-3); }
 }
 </style>

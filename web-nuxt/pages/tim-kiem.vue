@@ -58,7 +58,7 @@
       <ClientOnly>
         <LazyAISearchAssist v-if="q" :query="q" color-recipe="tri-region-v1" />
         <template #fallback>
-          <div v-if="q" class="ai-loading ai-loading-padded" role="status" aria-label="Đang tải gợi ý AI"><div class="spinner spinner-center"></div></div>
+          <div v-if="q" class="ai-loading ai-loading-padded" role="status" aria-label="Đang tải gợi ý tìm kiếm"><div class="spinner spinner-center"></div></div>
         </template>
       </ClientOnly>
     </NuxtErrorBoundary>
@@ -667,8 +667,8 @@ useHead({
 .person-avatar { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--color-action); color: var(--color-on-action); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .person-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
 .person-meta { font-size: var(--text-xs); color: var(--muted); }
-.search-post-list { display: flex; flex-direction: column; gap: var(--space-2); }
-.search-post-item { display: block; padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out); }
+.search-post-list { display: flex; flex-direction: column; gap: 0; border-block-start: 1px solid var(--line); }
+.search-post-item { display: block; padding: var(--space-3) 0; background: transparent; border: 0; border-block-end: 1px solid var(--line); border-radius: 0; text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out); }
 .search-post-item:hover { border-color: var(--color-action); }
 .spi-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: .2rem; }
 .spi-head strong { font-size: var(--text-sm); }
@@ -951,6 +951,17 @@ useHead({
 .dark .recent-card { background: var(--bg-alt); border-color: var(--line); }
 .dark .recent-card:hover { border-color: var(--color-action); background: var(--color-action-surface); }
 
+.search-quick-culture { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-3); }
+.sqc-label { font-size: var(--text-xs); color: var(--muted); font-weight: var(--weight-medium); }
+.sqc-btn { position: relative; display: inline-flex; align-items: center; gap: var(--space-1); min-height: 44px; padding: 6px var(--space-3); font-size: var(--text-xs); color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-pill, 999px); cursor: pointer; touch-action: manipulation; transition: background-color .18s var(--ease-out), border-color .18s var(--ease-out), color .18s var(--ease-out), transform .12s var(--ease-spring); }
+.sqc-btn:hover { background: var(--bg-warm); border-color: var(--border); color: var(--color-brand); }
+.sqc-btn:active { transform: scale(0.97); }
+.sqc-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.zero-result-hub-shortcuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-3); margin: var(--space-4) 0; }
+.zrhs-card { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); transition: border-color .2s var(--ease-out), box-shadow .2s var(--ease-out), transform .2s var(--ease-out); }
+.zrhs-card:hover { border-color: var(--border); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.zrhs-card small { display: block; font-size: var(--text-xs); color: var(--muted); }
+
 /* Reduced motion — ticker interval itself never starts (see onMounted guard in script);
    these rules cover the remaining CSS-driven motion so nothing depends on JS alone. */
 @media (prefers-reduced-motion: reduce) {
@@ -964,18 +975,7 @@ useHead({
   .trending-dot { animation: none; box-shadow: none; }
   .trending-chip:hover { transform: none; }
   .trending-chip:active { transform: none; }
+  .sqc-btn:active { transform: none; }
+  .zrhs-card:hover { transform: none; }
 }
-.search-quick-culture { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-3); }
-.sqc-label { font-size: var(--text-xs); color: var(--muted); font-weight: var(--weight-medium); }
-.sqc-btn { position: relative; display: inline-flex; align-items: center; gap: var(--space-1); padding: 4px var(--space-3); font-size: var(--text-xs); color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-full); cursor: pointer; transition: all .2s var(--ease-out); }
-.sqc-btn::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); min-width: 44px; min-height: 44px; width: 100%; height: 100%; }
-.sqc-btn:hover { background: var(--bg-warm); border-color: var(--border); color: var(--color-brand); }
-.sqc-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-@media (pointer: coarse), (max-width: 840px) {
-  .sqc-btn { min-height: 44px; padding: var(--space-2) var(--space-3); }
-}
-.zero-result-hub-shortcuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-3); margin: var(--space-4) 0; }
-.zrhs-card { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); transition: all .2s var(--ease-out); }
-.zrhs-card:hover { border-color: var(--border); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
-.zrhs-card small { display: block; font-size: var(--text-xs); color: var(--muted); }
 </style>

@@ -212,7 +212,7 @@ const terroirSpecs = computed<TerroirSpec[]>(() => {
     return [
       {
         title: 'Bánh tráng nem Cù lao Mây',
-        desc: 'Bánh tráng ngọt bùi, bánh tráng nem và bánh tráng ớt cay nồng tráng thủ công nức tiếng cù lao ven sông Hậu.',
+        desc: 'Bánh tráng ngọt bùi, bánh tráng nem và bánh tráng ớt cay nồng tráng thủ công theo nếp nghề lâu đời trên cù lao ven sông Hậu.',
         badge: 'OCOP 4 sao',
         season: 'Quanh năm (rộ dịp Tết)',
       },
@@ -324,7 +324,7 @@ const terroirSpecs = computed<TerroirSpec[]>(() => {
     return [
       {
         title: 'Cam sành Tam Bình ruột vàng',
-        desc: 'Trái to vỏ sần mọng nước, tép cam vàng óng đậm đà nức tiếng khắp các tỉnh phía Nam.',
+        desc: 'Trái to vỏ sần mọng nước, tép cam vàng óng đậm đà được ưa chuộng khắp các tỉnh phía Nam.',
         badge: 'OCOP 4 sao',
       },
       {
@@ -404,7 +404,7 @@ const transitGuide = computed<TransitGuide>(() => {
     return {
       kicker: 'Sông nước & Cù lao',
       detail:
-        'Khu vực cù lao sông Cổ Chiên và sông Hậu: Cần qua phà An Bình (hoạt động 24/7), đò khách ven bến hoặc phà Đình Khao. Đường đan nông thôn 1.5–2.5m mát rượi rợp bóng cây; lý tưởng nhất cho xe máy và xe đạp dạo vườn trái cây.',
+        'Khu vực cù lao sông Cổ Chiên và sông Hậu: Cần qua phà An Bình (hoạt động 24/7), đò khách ven bến hoặc phà Đình Khao. Đường đan nông thôn 1.5–2.5m rợp bóng cây; thuận tiện nhất cho xe máy và xe đạp dạo vườn trái cây.',
       vehicle: 'Xe máy · Xe đạp · Đò máy',
       tide: 'Phà 24/7 · Nước lớn rằm',
     }
@@ -453,11 +453,12 @@ const transitGuide = computed<TransitGuide>(() => {
 <style scoped>
 .ward-terroir-digest {
   margin-block: var(--space-6);
-  padding: var(--space-6);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sheet);
-  box-shadow: var(--shadow-sm);
+  padding: var(--space-6) 0;
+  background: transparent;
+  border: 0;
+  border-block: 1px solid var(--color-border);
+  border-radius: 0;
+  box-shadow: none;
   transition: border-color 0.2s ease;
 }
 
@@ -483,10 +484,12 @@ const transitGuide = computed<TransitGuide>(() => {
 }
 
 .ward-terroir-digest__title {
-  font-size: 1.35rem;
-  font-weight: 700;
+  font-family: var(--font-editorial);
+  font-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
   color: var(--color-text);
-  line-height: 1.3;
+  line-height: 1.25;
   margin-block-end: var(--space-1);
 }
 
@@ -500,7 +503,8 @@ const transitGuide = computed<TransitGuide>(() => {
 .ward-terroir-digest__grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-4);
+  gap: 0;
+  border-block-start: 1px solid var(--color-border);
 }
 
 @media (min-width: 840px) {
@@ -512,16 +516,26 @@ const transitGuide = computed<TransitGuide>(() => {
 .ward-terroir-digest__card {
   display: flex;
   flex-direction: column;
-  padding: var(--space-4);
-  background: var(--color-canvas);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sheet);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  padding: var(--space-4) 0;
+  background: transparent;
+  border: 0;
+  border-block-end: 1px solid var(--color-border);
+  border-radius: 0;
 }
 
-.ward-terroir-digest__card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+@media (min-width: 840px) {
+  .ward-terroir-digest__card {
+    padding: var(--space-4) var(--space-4) var(--space-2);
+    border-block-end: 0;
+    border-inline-start: 1px solid var(--color-border);
+  }
+  .ward-terroir-digest__card:first-child {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+  }
+  .ward-terroir-digest__card:last-child {
+    padding-inline-end: 0;
+  }
 }
 
 .ward-terroir-digest__card-head {
@@ -561,8 +575,9 @@ const transitGuide = computed<TransitGuide>(() => {
 }
 
 .ward-terroir-digest__card-title {
+  font-family: var(--font-editorial);
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text);
   line-height: 1.3;
   margin: 0;
@@ -593,7 +608,8 @@ const transitGuide = computed<TransitGuide>(() => {
 }
 
 .ward-terroir-digest__spec-name {
-  font-size: 0.875rem;
+  font-family: var(--font-editorial);
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--color-text);
 }
@@ -760,6 +776,11 @@ const transitGuide = computed<TransitGuide>(() => {
   color: var(--color-on-action);
 }
 
+.ward-terroir-digest__call-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 .ward-terroir-digest__call-btn--urgent {
   background: var(--color-error);
   color: var(--color-on-action);
@@ -768,5 +789,16 @@ const transitGuide = computed<TransitGuide>(() => {
 
 .ward-terroir-digest__call-btn--urgent:hover {
   opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ward-terroir-digest,
+  .ward-terroir-digest__card,
+  .ward-terroir-digest__call-btn {
+    transition: none;
+  }
+  .ward-terroir-digest__card:hover {
+    transform: none;
+  }
 }
 </style>

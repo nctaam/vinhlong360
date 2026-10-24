@@ -39,8 +39,8 @@
            cùng dạng lỗi với .season-timeline ở theo-mua.vue. Nhãn ảnh minh hoạ
            nay do chính EntityHeroPlaceholder mang (nó đã có role="img" +
            aria-label từ descriptor), nên bỏ luôn aria-hidden của nó. -->
-      <NuxtImg v-if="hasEntityImages && heroDescriptor.url && isRemoteUrl(heroDescriptor.url)" :key="heroImageIdentity" ref="heroImage" :src="heroDescriptor.url" :alt="heroDescriptor.alt" :class="['dc-bg', { loaded: heroLoaded }]" :style="heroLoaded ? undefined : { opacity: 0, transition: 'none' }" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="revealHeroImage" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
-      <img v-else-if="hasEntityImages && heroDescriptor.url" :key="heroImageIdentity" ref="heroImage" :src="heroDescriptor.url" :alt="heroDescriptor.alt" :class="['dc-bg', { loaded: heroLoaded }]" :style="heroLoaded ? undefined : { opacity: 0, transition: 'none' }" loading="eager" fetchpriority="high" width="1200" height="600" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="revealHeroImage" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
+      <NuxtImg v-if="hasEntityImages && heroDescriptor.url && isRemoteUrl(heroDescriptor.url)" :key="heroImageIdentity" ref="heroImage" :src="heroDescriptor.url" :alt="heroDescriptor.alt" :class="['dc-bg', { loaded: heroLoaded }]" :style="heroLoaded ? undefined : { opacity: 0, transition: 'none' }" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`${heroDescriptor.alt} — Xem ảnh ${entity.name}`" @load="revealHeroImage" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
+      <img v-else-if="hasEntityImages && heroDescriptor.url" :key="heroImageIdentity" ref="heroImage" :src="heroDescriptor.url" :alt="heroDescriptor.alt" :class="['dc-bg', { loaded: heroLoaded }]" :style="heroLoaded ? undefined : { opacity: 0, transition: 'none' }" loading="eager" fetchpriority="high" decoding="async" width="1200" height="600" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`${heroDescriptor.alt} — Xem ảnh ${entity.name}`" @load="revealHeroImage" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
       <EntityHeroPlaceholder v-else :id="entity.id" :cat="typeMeta.cat" :label="typeMeta.label" :descriptor="heroDescriptor" :material-accent="detailMaterialAccent" class="dc-placeholder" />
       <div v-if="coverImage" class="dc-overlay"></div>
       <div v-if="coverImage" class="dc-vignette" aria-hidden="true"></div>
@@ -105,11 +105,11 @@
       <!-- Sidebar -->
       <aside class="detail-aside" aria-label="Thông tin bổ sung">
         <div class="detail-trust-region" data-detail-region="trust">
-          <p class="entity-byline"><IconLine name="user" /> {{ bylineText }} · <strong>Ban biên tập vinhlong360</strong> · <NuxtLink to="/gioi-thieu#ban-bien-tap">phương pháp biên tập</NuxtLink></p>
+          <p class="entity-byline sr-only"><IconLine name="user" /> {{ bylineText }} · <strong>Ban biên tập vinhlong360</strong> · <NuxtLink to="/gioi-thieu#ban-bien-tap">phương pháp biên tập</NuxtLink></p>
 
           <EntityTrustPanel
-            v-if="!trustVisible"
-            class="trust-card"
+            v-show="false"
+            class="trust-card sr-only"
             :tier="trustTier"
             :source-title="trustSourceTitle"
             :source-url="trustSourceUrl || undefined"
@@ -120,24 +120,17 @@
             :conflicts="trustConflicts"
           />
 
-          <section v-if="trustVisible" class="trust-card" aria-labelledby="trust-card-title">
-            <div class="trust-card-head">
-              <h2 id="trust-card-title" class="sediment-head">Độ tin cậy dữ liệu</h2>
-              <span :class="['trust-status', trustStatusTone]">{{ trustStatusLabel }}</span>
-            </div>
-            <p class="trust-source"><IconLine :name="trustSourceTier === 'community' ? 'users' : 'shield-check'" aria-hidden="true" /> {{ trustSourceTitle }}</p>
-            <button
-              type="button"
-              class="trust-open"
-              data-action="open-source-trust"
-              aria-haspopup="dialog"
-              :aria-expanded="trustDrawerOpen"
-              @click="trustDrawerOpen = true"
-            >
-              Xem nguồn và cách đánh giá
-              <IconLine name="panel-left-open" aria-hidden="true" />
-            </button>
-          </section>
+          <button
+            v-if="trustVisible"
+            type="button"
+            class="trust-open sr-only"
+            data-action="open-source-trust"
+            aria-haspopup="dialog"
+            :aria-expanded="trustDrawerOpen"
+            @click="trustDrawerOpen = true"
+          >
+            Xem nguồn và cách đánh giá
+          </button>
 
           <SourceTrustDrawer
             :open="trustDrawerOpen"
@@ -191,8 +184,13 @@
         </div>
 
         <!-- Rating -->
-        <div v-if="entity.attributes?.rating" class="rating-display">
-          <div class="rd-stars">
+        <div
+          v-if="entity.attributes?.rating"
+          class="rating-display"
+          role="region"
+          :aria-label="`Đánh giá trung bình ${entity.attributes.rating} trên 5 sao${entity.attributes?.review_count ? ` từ ${entity.attributes.review_count} đánh giá` : ''}`"
+        >
+          <div class="rd-stars" aria-hidden="true">
             <IconLine v-for="s in 5" :key="s" :class="['rd-star', { filled: s <= Math.round(Number(entity.attributes.rating)) }]" name="star" aria-hidden="true" />
           </div>
           <span class="rd-score">{{ entity.attributes.rating }}</span>
@@ -228,28 +226,12 @@
             </section>
 
             <section v-if="hasVisitFacts" class="fact-group">
-              <h3 class="fg-label">Tham quan</h3>
+              <h3 class="fg-label">Tham quan & Tiếp cận</h3>
               <div class="fact-evidence">
                 <SourceMark :tier="trustTier" compact />
                 <FreshnessLine :status="trustFreshnessStatus" :updated-label="trustUpdatedLabel" />
               </div>
               <dl>
-                <div v-if="entity.attributes?.hours" class="fact">
-                  <dt class="k"><IconLine class="fact-ic" name="clock" aria-hidden="true" /><span>{{ ss('labels.detail.fact_hours', 'Giờ mở cửa') }}</span></dt>
-                  <dd class="v">{{ entity.attributes.hours }}</dd>
-                </div>
-                <div v-if="entity.attributes?.admission" class="fact">
-                  <dt class="k"><IconLine class="fact-ic" name="tag" aria-hidden="true" /><span>Vé vào cửa</span></dt>
-                  <dd class="v">{{ entity.attributes.admission }}</dd>
-                </div>
-                <div v-if="entity.attributes?.fee && entity.attributes?.fee !== entity.attributes?.admission" class="fact">
-                  <dt class="k"><IconLine class="fact-ic" name="tag" aria-hidden="true" /><span>{{ ss('labels.detail.fact_fee', 'Phí vào cửa') }}</span></dt>
-                  <dd class="v">{{ entity.attributes.fee }}</dd>
-                </div>
-                <div v-if="entity.attributes?.price && entity.attributes?.price !== entity.attributes?.admission" class="fact">
-                  <dt class="k"><IconLine class="fact-ic" name="tag" aria-hidden="true" /><span>{{ ss('labels.detail.fact_price', 'Giá tham khảo') }}</span></dt>
-                  <dd class="v">{{ entity.attributes.price }}</dd>
-                </div>
                 <div v-if="entity.attributes?.suggested_duration" class="fact">
                   <dt class="k"><IconLine class="fact-ic" name="clock" aria-hidden="true" /><span>Thời gian tham quan</span></dt>
                   <dd class="v">{{ entity.attributes.suggested_duration }}</dd>
@@ -338,7 +320,7 @@
             :verified-at="trustVerifiedAt"
             compact
           />
-          <span class="article-sourcemark-label">SourceMark: <strong>Ban biên tập vinhlong360</strong></span>
+          <span class="article-sourcemark-label sr-only">SourceMark: <strong>Ban biên tập vinhlong360</strong></span>
         </div>
 
         <!-- Highlights quét nhanh (Baymard: 78% site thiếu; chống info bị chôn dưới fold) -->
@@ -346,8 +328,6 @@
           <a v-if="zaloLink" class="hl hl-action" data-color-role="action-secondary" data-contact-action="zalo" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`" @click="trackContact('zalo')"><IconLine name="message" aria-hidden="true" /> Zalo</a>
           <a v-if="entity.attributes?.phone" class="hl hl-action" data-color-role="action-secondary" data-contact-action="phone" :href="telHref(entity.attributes.phone)" :aria-label="`Gọi ${entity.name}`" @click="trackContact('phone')"><IconLine name="phone" aria-hidden="true" /> Gọi</a>
           <NuxtLink v-if="hasCoords" class="hl hl-action" data-color-role="action-secondary" data-contact-action="map" :to="mapUrl" :aria-label="`Xem ${entity.name} trên bản đồ`" @click="trackContact('map')"><IconLine name="map" aria-hidden="true" /> Bản đồ</NuxtLink>
-          <span v-if="entity.attributes?.hours" class="hl"><IconLine name="clock" aria-hidden="true" /> {{ entity.attributes.hours }}</span>
-          <span v-if="addressText" class="hl"><IconLine name="pin" aria-hidden="true" /> {{ addressText }}</span>
         </div>
 
         <!-- Editorial Dossier: Dải tóm lược thực địa nhanh -->
@@ -374,7 +354,7 @@
           {{ entity.summary }}
           <TufteSidenote
             v-if="trustSourceTitle"
-            note-number="1"
+            :number="1"
             :authority-tier="trustTier || 'official'"
             :source-title="trustSourceTitle"
             :source-url="trustSourceUrl || undefined"
@@ -707,37 +687,47 @@ onMounted(async () => {
   trackCurrentEntity()
 })
 
-const RELATIONSHIP_BATCH_SIZE = 24
-
 const goBack = () => goBackOr(journeyThread.returnPath.value || '/du-lich')
 
-const { data: entity, error: fetchError, status: entityStatus, refresh: refreshEntityData } = await useAsyncData(
-  computed(() => `entity-${id.value}`),
-  async () => {
-    const generation = entityLaunchGeneration.current()
-    const requestId = id.value
-    const carrier = await apiFetch<Entity>(`/api/entities/${encodedId.value}`)
-    return { ...carrier, __launchGeneration: generation, __launchRequestId: requestId } satisfies LaunchEntityCarrier
-  },
-  { watch: [id, () => route.fullPath], deep: false }
-)
+type JsonLdPayload = Record<string, unknown> | Record<string, unknown>[]
 
-const { data: galleryCarrier, refresh: refreshGalleryData } = await useAsyncData(
-  computed(() => `entity-gallery-${id.value}`),
-  async (): Promise<DetailGalleryCarrier> => {
-    const requestId = id.value
-    try {
-      const response = await apiFetch<GalleryResponse>(`/api/entities/${encodedId.value}/gallery`)
-      if (!response || !Array.isArray(response.images)) return { requestId, descriptors: [], failed: true }
-      const descriptors = response.images.flatMap((raw) => {
-        const descriptor = parseGalleryDescriptor(raw)
-        return descriptor && descriptor.source_class !== 'user-uploaded' ? [descriptor] : []
-      })
-      return { requestId, descriptors, failed: false }
-    } catch { return { requestId, descriptors: [], failed: true } }
-  },
-  { watch: [id], deep: false },
-)
+const [
+  { data: entity, error: fetchError, status: entityStatus, refresh: refreshEntityData },
+  { data: galleryCarrier, refresh: refreshGalleryData },
+  { data: backendJsonLd },
+] = await Promise.all([
+  useAsyncData(
+    computed(() => `entity-${id.value}`),
+    async () => {
+      const generation = entityLaunchGeneration.current()
+      const requestId = id.value
+      const carrier = await apiFetch<Entity>(`/api/entities/${encodedId.value}`)
+      return { ...carrier, __launchGeneration: generation, __launchRequestId: requestId } satisfies LaunchEntityCarrier
+    },
+    { watch: [id, () => route.fullPath], deep: false }
+  ),
+  useAsyncData(
+    computed(() => `entity-gallery-${id.value}`),
+    async (): Promise<DetailGalleryCarrier> => {
+      const requestId = id.value
+      try {
+        const response = await apiFetch<GalleryResponse>(`/api/entities/${encodedId.value}/gallery`)
+        if (!response || !Array.isArray(response.images)) return { requestId, descriptors: [], failed: true }
+        const descriptors = response.images.flatMap((raw) => {
+          const descriptor = parseGalleryDescriptor(raw)
+          return descriptor && descriptor.source_class !== 'user-uploaded' ? [descriptor] : []
+        })
+        return { requestId, descriptors, failed: false }
+      } catch { return { requestId, descriptors: [], failed: true } }
+    },
+    { watch: [id], deep: false },
+  ),
+  useAsyncData(
+    computed(() => `entity-jsonld-${id.value}`),
+    () => apiFetch<JsonLdPayload>(`/seo/jsonld/${encodedId.value}`).catch(() => null),
+    { watch: [id], deep: false }
+  ),
+])
 
 const galleryDescriptors = computed(() => currentGalleryDescriptors(galleryCarrier.value, id.value))
 const galleryPartial = computed(() => galleryCarrier.value?.requestId === id.value && galleryCarrier.value.failed)
@@ -777,14 +767,6 @@ watch(
   [entity, entityStatus, fetchError],
   () => { void refineCurrentEntityLaunchDecision() },
   { flush: 'post' },
-)
-
-type JsonLdPayload = Record<string, unknown> | Record<string, unknown>[]
-
-const { data: backendJsonLd } = await useAsyncData(
-  computed(() => `entity-jsonld-${id.value}`),
-  () => apiFetch<JsonLdPayload>(`/seo/jsonld/${encodedId.value}`).catch(() => null),
-  { watch: [id], deep: false }
 )
 
 // SSR: throw 404 so the server responds with proper status code.
@@ -992,27 +974,12 @@ const trustUpdatedLabel = computed(() => trustUpdatedAt.value ? formatDateVN(tru
 const trustFreshnessStatus = computed(() => resolveFreshnessStatus(sourceFreshness.value?.freshness_status))
 const trustSourceTier = computed(() => trustTier.value)
 const trustStatus = computed(() => trustFreshnessStatus.value)
-// Retained as a text contract for integrations; FreshnessLine owns its visible status label.
-const trustStatusLabel = computed(() => {
-  if (trustFreshnessStatus.value === 'fresh') return 'Mới cập nhật'
-  if (trustFreshnessStatus.value === 'aging') return 'Cần kiểm tra định kỳ'
-  if (trustFreshnessStatus.value === 'stale') return 'Có thể đã cũ'
-  if (trustFreshnessStatus.value === 'conflict') return 'Thông tin có mâu thuẫn'
-  return 'Chưa rõ'
-})
 const trustNote = computed(() => {
   if (trustFreshnessStatus.value === 'fresh') return 'Thông tin này có tín hiệu cập nhật gần đây.'
   if (trustFreshnessStatus.value === 'aging') return 'Thông tin vẫn dùng được nhưng nên kiểm tra lại nếu bạn sắp đi.'
   if (trustFreshnessStatus.value === 'stale') return 'Thông tin có thể đã cũ; hãy báo sai nếu bạn thấy khác thực tế.'
   if (trustFreshnessStatus.value === 'conflict') return 'Các nguồn đang ghi khác nhau; xem từng giá trị và thời điểm trước khi quyết định.'
   return 'Hệ thống chưa có đủ tín hiệu nguồn/ngày cập nhật cho mục này.'
-})
-const trustStatusTone = computed(() => {
-  if (trustStatus.value === 'fresh') return 'fresh'
-  if (trustStatus.value === 'aging') return 'aging'
-  if (trustStatus.value === 'stale') return 'stale'
-  if (trustStatus.value === 'conflict') return 'conflict'
-  return 'unknown'
 })
 const trustConflicts = computed(() => {
   const raw = entity.value?.attributes?.source_conflicts
@@ -1131,33 +1098,34 @@ useHead({
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  margin: var(--space-4) 0;
-  border-radius: var(--radius-control);
-  background: var(--color-surface-subtle);
-  border: 1px solid var(--color-border);
+  padding: var(--space-2) var(--space-3);
+  margin: var(--space-3) 0 var(--space-4);
+  border-radius: var(--radius-surface);
+  background: color-mix(in srgb, var(--color-material-leaf) 6%, transparent);
+  border: .5px solid color-mix(in srgb, var(--color-material-leaf) 24%, var(--line));
   max-width: var(--measure-read);
 }
 .green-tourism-badge .gt-icon {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  color: var(--color-brand);
+  width: 20px;
+  height: 20px;
+  color: var(--color-material-leaf);
 }
 .green-tourism-badge .gt-content {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 .green-tourism-badge .gt-label {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-  color: var(--color-text);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: .01em;
+  color: var(--ink);
 }
 .green-tourism-badge .gt-sub {
   margin: 0;
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
+  font-size: var(--text-2xs);
+  color: var(--muted);
   line-height: var(--leading-normal);
 }
 </style>

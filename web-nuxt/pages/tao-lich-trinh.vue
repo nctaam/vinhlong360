@@ -974,14 +974,14 @@ await plannerAsyncData
 .dark .stop-connector { background: var(--mangthit-500, var(--color-material-clay)); opacity: .45; }
 .stop-mangthit-badge { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-2xs); font-weight: var(--weight-semibold); color: var(--mangthit-600); background: color-mix(in srgb, var(--mangthit-600) 10%, transparent); border: 1px solid color-mix(in srgb, var(--mangthit-600) 25%, transparent); border-radius: var(--radius-pill, 999px); padding: 1px var(--space-2); margin-top: var(--space-1); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dark .stop-mangthit-badge { background: color-mix(in srgb, var(--mangthit-600) 16%, transparent); border-color: color-mix(in srgb, var(--mangthit-600) 35%, transparent); }
-.stop-card { flex: 1; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3); transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo), transform .35s var(--ease-out-expo); }
-.stop-card:hover { border-color: var(--border); box-shadow: var(--shadow-sm); }
+.stop-card { flex: 1; background: transparent; border: 0; border-block-end: 1px solid var(--line); border-radius: 0; padding: var(--space-3) 0 var(--space-4); margin-bottom: 0; box-shadow: none; transition: border-color .25s var(--ease-out), background-color .25s var(--ease-out); }
+.stop-card:hover { border-color: var(--border); box-shadow: none; }
 .stop-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .stop-card-head { display: flex; align-items: center; gap: var(--space-3); }
 .stop-emoji { font-size: var(--text-lg); }
 .stop-card-info { flex: 1; min-width: 0; }
-.stop-card-info strong { display: block; font-size: var(--text-sm); }
-.stop-card-info small { color: var(--muted); font-size: var(--text-xs); }
+.stop-card-info strong { display: block; font-size: var(--text-sm); overflow-wrap: break-word; word-break: break-word; }
+.stop-card-info small { color: var(--muted); font-size: var(--text-xs); overflow-wrap: break-word; }
 .stop-access-fact { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-2xs); color: var(--color-material-river); background: color-mix(in srgb, var(--color-material-river) 10%, transparent); border: 1px solid color-mix(in srgb, var(--color-material-river) 22%, transparent); border-radius: var(--radius-pill, 999px); padding: 1px var(--space-2); margin-top: var(--space-1); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stop-access-fact.is-restricted { color: var(--color-warning); background: color-mix(in srgb, var(--color-warning) 12%, transparent); border-color: color-mix(in srgb, var(--color-warning) 30%, transparent); font-weight: var(--weight-semibold); }
 .dark .stop-access-fact { color: var(--night-river); background: color-mix(in srgb, var(--night-river) 14%, transparent); border-color: color-mix(in srgb, var(--night-river) 25%, transparent); }
@@ -990,14 +990,11 @@ await plannerAsyncData
 .stop-card-actions { display: flex; gap: var(--space-1); }
 .stop-list { margin-bottom: var(--space-4); }
 .stop-card-actions button { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-control); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo); }
-.stop-card-actions button:hover { background: var(--bg-warm); }
-.stop-card-actions button:active { transform: scale(.88); transition-duration: .08s; }
-.stop-card-actions button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.stop-card-actions button:hover { background: var(--bg-warm); } .stop-card-actions button:active { transform: scale(.88); transition-duration: .08s; } .stop-card-actions button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dark .picker-item:hover { background: var(--glass-light); }
-.dark .stop-card { background: var(--card); border-color: var(--line); }
+.dark .stop-card { background: transparent; border-color: var(--line); }
 .dark .stop-card-actions button:hover { background: rgba(var(--white-rgb),.06); }
 .dark .stop-card:hover { border-color: var(--border); }
-.dark .stop-connector { background: var(--mangthit-500, var(--color-material-clay)); opacity: .45; }
 .dark .picker-list::-webkit-scrollbar-thumb { background: var(--glass-medium); }
 .dark .picker-list::-webkit-scrollbar-thumb:hover { background: rgba(var(--white-rgb),.2); }
 .dark .route-leg-info, .dark .route-total { background: rgba(var(--white-rgb),.04); }
@@ -1006,9 +1003,12 @@ await plannerAsyncData
 /* ── Mobile-first 3-step wizard stepper ── */
 .planner-wizard-nav { display: none; }
 @media (max-width: 900px) {
-  .planner-wizard-nav { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); overflow-x: auto; }
-  .pw-tab { flex: 1; min-height: 44px; padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); border: 1px solid var(--line); background: var(--card); color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-medium); white-space: nowrap; cursor: pointer; }
-  .pw-tab.active { background: var(--color-action); color: var(--color-on-action); border-color: var(--color-action); font-weight: var(--weight-bold); }
+  .planner-wizard-nav { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); overflow-x: auto; scrollbar-width: none; }
+  .planner-wizard-nav::-webkit-scrollbar { display: none; }
+  .pw-tab { flex: 1; min-height: 44px; padding: var(--space-2) var(--space-3); border-radius: var(--radius-surface-refined, 14px); border: 1px solid var(--border-liquid-glass, var(--line)); background: var(--card); color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-medium); white-space: nowrap; cursor: pointer; box-shadow: var(--shadow-card-ambient, var(--shadow-xs)); transition: background 0.25s var(--ease-out), color 0.25s var(--ease-out), border-color 0.25s var(--ease-out), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+  .pw-tab:hover { border-color: color-mix(in srgb, var(--color-action) 35%, var(--line)); color: var(--ink); }
+  .pw-tab:active { transform: scale(0.97); }
+  .pw-tab.active { background: var(--color-action); color: var(--color-on-action, var(--surface-white)); border-color: var(--color-action); font-weight: var(--weight-bold); box-shadow: 0 4px 14px rgba(var(--color-action-rgb), 0.28); }
   .planner-wizard-step-action { padding: var(--space-3) 0; }
   .planner-wizard-step-action .btn-wizard-next { width: 100%; min-height: 44px; }
   .planner-layout[data-active-step="1"] .planner-builder { display: none; }

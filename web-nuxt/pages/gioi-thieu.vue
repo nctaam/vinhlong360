@@ -177,58 +177,8 @@ useHead(() => ({
 }))
 </script>
 
+<style src="~/assets/css/legal.css"></style>
 <style scoped>
-/* Mobile-first baseline; scaled up on wider screens below. */
-.legal-page { max-width: 760px; margin: 0 auto; padding: 0 var(--space-4) var(--space-10); line-height: var(--leading-relaxed); }
-
-/* ── Brand masthead ────────────────────────────────────────────────
-   The ONLY place on the site this specific river→clay wash appears —
-   deliberately distinct from .catalog-hero so brand pages never read
-   as catalog pages. Full-bleed via negative margin against the page's
-   own inline padding, grain overlay + gradient wash, no photography. */
-.brand-masthead {
-  position: relative;
-  overflow: clip;
-  isolation: isolate;
-  margin: 0 calc(-1 * var(--space-4)) var(--space-8);
-  padding: var(--space-8) var(--space-4) var(--space-6);
-  display: flex;
-  align-items: center;
-  gap: var(--space-6);
-  background:
-    var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--color-material-river) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--color-brand-rgb), .16) 120%);
-  background-blend-mode: overlay, normal;
-}
-.bm-inner { flex: 1 1 auto; min-width: 0; max-width: var(--measure-read); }
-.bm-header-seal {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  margin: 0 0 var(--space-3);
-}
-.bm-header-seal .bm-eyebrow { margin: 0; }
-.bm-eyebrow {
-  display: flex; align-items: center; gap: var(--space-2);
-  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
-  text-transform: uppercase; letter-spacing: var(--tracking-caps);
-  color: var(--color-brand); margin: 0 0 var(--space-3);
-}
-.bm-tick { width: 14px; height: 1.5px; background: var(--color-material-amber); flex-shrink: 0; }
-.brand-masthead h1 {
-  font-family: var(--font-editorial); font-weight: 600;
-  font-size: clamp(2rem, 1.6rem + 2vw, 3rem);
-  line-height: var(--leading-tight); letter-spacing: var(--tracking-tight);
-  color: var(--ink); margin: 0 0 var(--space-2); text-wrap: balance;
-}
-.bm-sub {
-  font-family: var(--font-editorial); font-style: italic;
-  font-size: clamp(1rem, .92rem + .4vw, 1.2rem);
-  line-height: var(--leading-snug); color: var(--ink-secondary, var(--muted));
-  margin: 0; max-width: 46ch;
-}
 .bm-motif { width: clamp(84px, 9vw + 40px, 140px); height: auto; flex-shrink: 0; color: var(--clay-400); opacity: .85; }
 .bm-motif path, .bm-motif circle { stroke: currentColor; fill: none; }
 .bm-motif circle { fill: currentColor; stroke: none; }
@@ -238,59 +188,34 @@ useHead(() => ({
 .legal-updated { color: var(--ink-tertiary); font-size: var(--text-sm); margin-bottom: var(--space-6); }
 .about-intro { margin-bottom: var(--space-8); }
 
-/* ── Section rhythm: number badge + content zone ──────────────────── */
+/* ── Section rhythm: open editorial chapter spreads ──────────────────── */
 .about-section {
   display: flex;
   align-items: flex-start;
   gap: var(--space-5);
   margin: var(--space-6) 0 0;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sheet);
+  padding: var(--space-5) 0 0;
+  border-block-start: 1px solid var(--line);
 }
-/* Odd/even background-tint alternation — scrolling reads as turning a page. */
-.about-section.tint-alt { background: var(--bg-warm); }
-.about-section-num {
-  flex: 0 0 auto;
-  width: var(--space-8);
-  font-family: var(--font-editorial);
-  font-size: var(--text-2xl);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums oldstyle-nums;
-  line-height: 1.1;
-  /* Bỏ opacity: nó trộn --ink-tertiary với nền tối thành một sắc xám mờ, axe đo
-     2.38–2.55:1 trên 3 trang legal (2026-08-06). Số thứ tự mục là nội dung đọc
-     được, không phải hoạ tiết — hạ độ nổi bằng token màu, không bằng opacity.
-     Bỏ hẳn cho ratio 5.77:1. */
-  color: var(--ink-tertiary);
-  letter-spacing: var(--tracking-tight);
-}
-.about-section-content { flex: 1 1 auto; min-width: 0; }
-/* h2 typography (serif + weight) now comes from .sediment-head on the
-   article; we only keep the spacing/border here. */
+.about-section.tint-alt { background: transparent; }
 .about-section h2 {
   font-size: var(--text-lg);
   margin: 0 0 var(--space-3);
-  padding-bottom: var(--space-2);
-  border-bottom: .5px solid var(--line);
 }
 
-/* Sections 1-3 read as trust callouts. */
+/* Sections 1-3 read as open editorial callouts. */
 .highlight-badge {
-  background: var(--bg-warm);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sheet);
-  padding: var(--space-6);
-  margin-top: var(--space-5);
+  background: transparent;
+  border-block-start: 1.5px solid var(--color-brand);
+  padding: var(--space-5) 0 0;
+  margin-top: var(--space-6);
 }
-.highlight-badge h2 { border-bottom: none; padding-bottom: 0; }
-/* highlight-badge already tints via --bg-warm; don't double-tint. */
-.highlight-badge.tint-alt { background: var(--bg-warm); }
+.highlight-badge.tint-alt { background: transparent; }
 
 /* Section 1 — Mission emphasis (pull-quote spread lives inside). */
 .mission-section {
-  border: 1px solid var(--color-action-border);
-  border-radius: var(--radius-sheet);
-  background: var(--color-action-surface);
+  border-block-start: 2px solid var(--color-action);
+  background: transparent;
 }
 .about-mission-quote { margin: var(--space-4) 0 var(--space-5); }
 .about-mission-quote :deep(cite) { font-style: normal; }
@@ -332,11 +257,13 @@ useHead(() => ({
 }
 .editors-infobox {
   margin: var(--space-8) 0;
-  padding: var(--space-6);
-  background: var(--bg-warm);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sheet);
-  box-shadow: var(--shadow-xs);
+  padding: var(--space-6) 0;
+  background: transparent;
+  border: 0;
+  border-block-start: 2px solid var(--color-brand);
+  border-block-end: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
 }
 .editors-infobox h2 {
   display: flex; align-items: center; gap: var(--space-2);
@@ -359,7 +286,6 @@ useHead(() => ({
 .editors-infobox .legal-body ul { margin: var(--space-2) 0 var(--space-4); padding-inline-start: var(--space-5); }
 .editors-infobox .legal-body li { margin: var(--space-2) 0; font-size: var(--text-sm); }
 .editors-infobox .legal-body code { font-family: var(--font-mono); font-size: 0.85em; background: var(--bg-alt); padding: 1px 4px; border-radius: var(--radius-control); }
-.dark .editors-infobox { background: var(--bg-alt); border-color: var(--line); }
 
 /* ── Closing CTA — About should never dead-end. ───────────────────── */
 .about-cta {
@@ -377,49 +303,17 @@ useHead(() => ({
 .about-cta .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Body typography ──────────────────────────────────────────────── */
-.legal-page :deep(p) { font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); }
-/* Override AFTER the rule above (same specificity — source order decides):
-   the intro lede is the one place .editorial-body's larger clamp() size
-   should win over the blanket --text-sm legal-body rule. */
+.legal-page :deep(p) { font-size: var(--text-sm); }
 .about-intro :deep(p) { font-size: inherit; color: inherit; }
-.legal-page :deep(ul) { padding-inline-start: var(--space-5); }
-.legal-page :deep(li) { margin: var(--space-2) 0; font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); }
-.legal-page :deep(a) { color: var(--color-action); font-weight: var(--weight-semibold); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out); }
-.legal-page :deep(a:hover) { text-decoration-color: var(--color-action); }
-.legal-page :deep(a:visited) { color: var(--color-action); opacity: .85; }
-.legal-page :deep(a:focus-visible) { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
-/* ── Responsive scale-up ──────────────────────────────────────────── */
-@media (min-width: 640px) {
-  .legal-page { padding: 0 var(--space-5) var(--space-16); }
-  .brand-masthead { margin-inline: calc(-1 * var(--space-5)); padding-inline: var(--space-8); }
-}
 @media (max-width: 600px) {
   .about-section { flex-direction: column; gap: var(--space-2); }
-  .about-section-num { font-size: var(--text-lg); width: auto; }
-  .brand-masthead { flex-direction: column; text-align: center; padding-block: var(--space-6); }
-  .bm-inner { max-width: none; }
 }
 
-/* ── Dark mode ────────────────────────────────────────────────────── */
-.dark .brand-masthead {
-  background:
-    var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--color-brand-rgb), .12) 120%);
-}
 .dark .bm-motif { color: var(--clay-400); opacity: .7; }
-.dark .highlight-badge { background: var(--bg-alt); border-color: var(--line); }
-.dark .about-section.tint-alt { background: rgba(var(--white-rgb),.025); }
-.dark .mission-section { border-color: var(--color-action-border); background: var(--color-action-surface); }
-.dark .legal-page :deep(a) { text-decoration-color: transparent; }
-.dark .legal-page :deep(a:hover) { text-decoration-color: var(--color-action); }
 
-/* ── Reduced motion ───────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .bm-river, .bm-river--2 { animation: none; stroke-dasharray: none; }
   .about-cta .btn:active { transform: none; }
 }
-
-/* Reveal stagger + reduced-motion fallback are provided by the global
-   .reveal infrastructure in base.css. */
 </style>

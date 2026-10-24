@@ -292,7 +292,7 @@ function syncMarkers() {
     element.dataset.materialAccent = resolveRegionalAccent(result.type)
     element.setAttribute('aria-label', `Chọn ${result.name}`)
     element.addEventListener('click', () => selectFromMarker(result, coordinates))
-    const marker = new maplibregl.Marker({ element, anchor: 'center' })
+    const marker = new maplibregl.Marker({ element, anchor: 'bottom' })
       .setLngLat([coordinates[1], coordinates[0]])
       .addTo(map)
     markers.set(result.id, { marker, element })
@@ -331,7 +331,12 @@ function syncExternalViewport(viewport?: MapViewport, isPending = props.viewport
   if (!map || sameViewport(lastMapViewport, target)) return
   lastMapViewport = { center: [...target.center], zoom: target.zoom }
   suppressNextMoveEnd = true
-  map.jumpTo?.({ center: target.center, zoom: target.zoom })
+  const reduced = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (!reduced && typeof map.easeTo === 'function') {
+    map.easeTo({ center: target.center, zoom: target.zoom, duration: 260, essential: true })
+  } else {
+    map.jumpTo?.({ center: target.center, zoom: target.zoom })
+  }
 }
 
 function commitSearchArea() {

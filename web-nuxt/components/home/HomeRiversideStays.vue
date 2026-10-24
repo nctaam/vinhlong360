@@ -6,7 +6,7 @@
           <IconLine name="home" aria-hidden="true" />
           <span>Lưu trú sinh thái & Điền dã Nam Bộ</span>
         </span>
-        <h2>Homestay Sông Nước & <em class="editorial-italic-accent" aria-hidden="true">Đêm Trăng Tài Tử</em></h2>
+        <h2>Homestay ven sông & <em class="editorial-italic-accent" aria-hidden="true">đêm trăng tài tử</em></h2>
         <p class="sh-sub">Thức giấc giữa tiếng chim hót miệt vườn, cùng chủ nhà bơi xuồng hái trái cây và lắng nghe tiếng đàn kìm réo rắt bên bến sông Cổ Chiên.</p>
       </div>
       <NuxtLink to="/luu-tru" class="see-all">
@@ -76,7 +76,7 @@
           </h3>
           <p class="home-stay-card__desc">{{ stay.desc }}</p>
 
-          <div class="home-stay-card__perks">
+          <div class="home-stay-card__perks sr-only">
             <span v-for="perk in stay.perks" :key="perk" class="home-stay-card__perk">
               <IconLine name="check" aria-hidden="true" />
               <span>{{ perk }}</span>
@@ -95,11 +95,11 @@
     </div>
 
     <!-- Folk Art & Living Fieldwork Strip -->
-    <div class="home-riverside-stays__experiences sr-only">
+    <div class="home-riverside-stays__experiences">
       <div class="home-riverside-stays__exp-header">
         <h3 class="home-riverside-stays__exp-title">
           <IconLine name="route" />
-          <span>Trải Nghiệm Điền Dã & Di Sản Dân Gian Đặc Sắc</span>
+          <span>Trải nghiệm bản địa & di sản dân gian</span>
         </h3>
       </div>
 
@@ -161,7 +161,7 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
     typeLabel: 'Nhà Rường Nam Bộ',
     desc: 'Nhà rường gỗ quý cổ kính dưới bóng nhãn cù lao An Bình, trải nghiệm nấu bánh xèo và nghe đờn ca bến sông.',
     perks: ['Cơm gia đình cù lao', 'Chèo xuồng mương rạch', 'Xe đạp làng quê'],
-    coverSrc: '/img/entities/homestay-ut-trinh.webp',
+    coverSrc: '/img/spread/cu-lao-an-binh.webp',
     to: '/dia-diem/homestay-ut-trinh',
     coordinates: "10°17'N · 105°59'E",
   },
@@ -176,7 +176,7 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
     typeLabel: 'Eco-Lodge Ven Sông',
     desc: 'Eco-lodge ven sông Hậu lộng gió, đón khách bằng cano riêng và ngắm hoàng hôn rực rỡ bên bến đò Bình Minh.',
     perks: ['Bến đón cano riêng', 'Câu cá bờ sông', 'Ngắm hoàng hôn sông Hậu'],
-    coverSrc: '/img/entities/mekong-riverside-homestay.webp',
+    coverSrc: '/img/spread/song-nuoc.webp',
     to: '/dia-diem/mekong-riverside-homestay',
     coordinates: "10°05'N · 105°49'E",
   },
@@ -191,7 +191,7 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
     typeLabel: 'Vườn Trái Cây Gia Đình',
     desc: 'Nhà vườn truyền thống rợp bóng dừa nước, mâm cơm miệt vườn mẹ nấu và những đêm trăng thanh bình cù lao.',
     perks: ['Vườn trái cây tự hái', 'Võng ngắm mương liếp', 'Đờn ca tài tử'],
-    coverSrc: '/img/entities/ba-linh-homestay.webp',
+    coverSrc: '/img/entities/nha-vuon-tu-hien.webp',
     to: '/dia-diem/ba-linh-homestay',
     coordinates: "10°16'N · 105°59'E",
   },
@@ -246,26 +246,27 @@ function onImgFallback(e: Event) {
 
 .home-riverside-stays__stays-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-fib-4);
   margin-block-start: var(--space-fib-4);
 }
 
 @media (min-width: 960px) {
+  /* Asymmetric Panorama + Twin Portrait Architectural Row (prevents orphan 3rd card) */
   .home-riverside-stays__stays-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: minmax(0, 1.38fr) minmax(0, 0.81fr) minmax(0, 0.81fr);
+    align-items: stretch;
   }
 
   .home-stay-card--lead {
-    grid-column: span 2;
-    min-height: 520px;
+    grid-column: span 1;
+    min-height: 500px;
   }
 }
 
 /* Full-Bleed Photographic Lookbook Card (100% photo visual area) */
 .home-stay-card {
   position: relative;
-  aspect-ratio: 16 / 9;
   min-height: 480px;
   display: flex;
   flex-direction: column;
@@ -348,13 +349,12 @@ function onImgFallback(e: Event) {
   display: inline-flex;
   align-items: center;
   padding: 3px 10px;
-  background: rgba(var(--black-rgb), 0.78);
+  background: rgba(var(--black-rgb), 0.86);
   color: var(--alluvial-gold);
-  backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
-  font-size: 11px;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-bold);
 }
 
@@ -370,13 +370,12 @@ function onImgFallback(e: Event) {
   display: inline-flex;
   align-items: center;
   padding: 3px 10px;
-  background: rgba(var(--black-rgb), 0.78);
+  background: rgba(var(--black-rgb), 0.86);
   color: var(--surface-white); /* WCAG 2.2 AAA >= 11:1 compliant */
-  backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
-  font-size: 11px;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-bold);
 }
 
@@ -385,19 +384,18 @@ function onImgFallback(e: Event) {
   align-items: center;
   gap: 4px;
   padding: 3px 10px;
-  background: rgba(var(--black-rgb), 0.78);
+  background: rgba(var(--black-rgb), 0.86);
   color: var(--alluvial-gold);
-  backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
-  font-size: 11px;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-bold);
 }
 
 .home-stay-card__eco-badge .line-icon {
   color: var(--alluvial-gold);
-  font-size: 10px;
+  font-size: var(--text-2xs);
 }
 
 /* Bottom Content Overlay (<= 25% card height) */
@@ -409,13 +407,17 @@ function onImgFallback(e: Event) {
   flex-direction: column;
   gap: var(--space-2h);
   color: var(--surface-white);
+  min-width: 0;
 }
 
 .home-stay-card__meta {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
   font-size: var(--text-xs);
+  min-width: 0;
 }
 
 .home-stay-card__area {
@@ -424,6 +426,8 @@ function onImgFallback(e: Event) {
   gap: 4px;
   color: var(--surface-white);
   font-weight: var(--weight-bold);
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .home-stay-card__area .line-icon {
@@ -443,6 +447,8 @@ function onImgFallback(e: Event) {
   font-size: var(--text-xs);
   color: var(--alluvial-gold);
   font-weight: var(--weight-bold);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .home-stay-card__title {
@@ -450,6 +456,8 @@ function onImgFallback(e: Event) {
   font-family: var(--font-editorial-display);
   font-size: var(--text-base);
   line-height: 1.35;
+  text-wrap: pretty;
+  min-width: 0;
 }
 
 .home-stay-card__title a {
@@ -457,6 +465,8 @@ function onImgFallback(e: Event) {
   text-decoration: none;
   text-shadow: 0 1px 3px rgba(var(--black-rgb), 0.5);
   transition: opacity 0.2s ease;
+  display: inline-block;
+  max-width: 100%;
 }
 
 .home-stay-card__title a:hover {
@@ -474,6 +484,8 @@ function onImgFallback(e: Event) {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-wrap: pretty;
+  min-width: 0;
 }
 
 .home-stay-card__perks {
@@ -488,18 +500,17 @@ function onImgFallback(e: Event) {
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  background: rgba(var(--black-rgb), 0.65);
-  backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(var(--black-rgb), 0.80);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
-  font-size: 11px;
+  font-size: var(--text-2xs);
   color: var(--surface-white);
 }
 
 .home-stay-card__perk .line-icon {
   color: var(--surface-white);
-  font-size: 10px;
+  font-size: var(--text-2xs);
 }
 
 .home-stay-card__action {
@@ -546,14 +557,11 @@ function onImgFallback(e: Event) {
   outline-offset: 2px;
 }
 
-/* Folk Experiences Strip */
+/* Folk Experiences Strip — Editorial Hairline Ledger (no nested card-in-card) */
 .home-riverside-stays__experiences {
   margin-block-start: var(--space-fib-5);
-  padding: var(--space-5);
-  background: var(--color-surface);
-  border: 1px solid var(--border-liquid-glass, var(--color-border));
-  border-radius: var(--radius-surface);
-  box-shadow: var(--shadow-card-ambient);
+  padding-block-start: var(--space-5);
+  border-top: 1px solid var(--border-liquid-glass, var(--color-border));
 }
 
 .home-riverside-stays__exp-header {
@@ -572,26 +580,39 @@ function onImgFallback(e: Event) {
 
 .home-riverside-stays__exp-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--space-fib-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: var(--space-6);
+  counter-reset: folk-exp;
 }
 
 .home-exp-card {
+  counter-increment: folk-exp;
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
-  padding: var(--space-3);
-  background: var(--color-canvas);
-  border: 1px solid var(--border-liquid-glass, var(--color-border));
-  border-radius: var(--radius-surface);
-  box-shadow: var(--shadow-card-ambient);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.25s ease;
+  padding: var(--space-1) 0 var(--space-1) var(--space-5);
+  background: transparent;
+  border: 0;
+  border-inline-start: 1px solid color-mix(in srgb, var(--color-material-river) 38%, var(--color-border));
+  border-radius: 0;
+  box-shadow: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.home-exp-card::before {
+  content: counter(folk-exp, decimal-leading-zero);
+  font-family: var(--font-editorial-display);
+  font-style: italic;
+  font-size: 1.45rem;
+  font-weight: var(--weight-semibold);
+  color: var(--color-brand);
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .home-exp-card:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--color-material-river) 40%, var(--color-border));
-  box-shadow: 0 8px 20px rgba(var(--black-rgb), 0.08);
+  transform: translateX(3px);
+  border-color: var(--color-material-river);
 }
 
 .home-exp-card:active {
@@ -599,41 +620,44 @@ function onImgFallback(e: Event) {
 }
 
 .home-exp-card__icon {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  width: auto;
+  height: auto;
   flex-shrink: 0;
-  border-radius: var(--radius-control);
-  background: color-mix(in srgb, var(--color-material-river) 12%, transparent);
+  border-radius: 0;
+  background: transparent;
   color: var(--color-material-river);
   font-size: 1.15rem;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+  margin-block-start: 2px;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
 }
 
 .home-exp-card:hover .home-exp-card__icon {
   transform: scale(1.08);
-  background: color-mix(in srgb, var(--color-material-river) 20%, transparent);
+  color: var(--color-brand);
 }
 
 .home-exp-card__content {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .home-exp-card__title {
   margin: 0;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
+  font-family: var(--font-editorial-display);
+  font-size: clamp(1.04rem, 1.3vw, 1.18rem);
+  font-weight: var(--weight-semibold);
   color: var(--color-text);
+  line-height: 1.3;
 }
 
 .home-exp-card__desc {
   margin: 0;
   font-size: var(--text-xs);
   color: var(--color-text-muted);
-  line-height: 1.45;
+  line-height: 1.5;
 }
 </style>

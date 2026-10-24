@@ -14,11 +14,11 @@
       <div v-if="totalWards" class="catalog-stats">
         <div class="stat-item">
           <CountUp :value="totalWards" class="stat-num" />
-          <span class="stat-label">xã/phường</span>
+          <span class="stat-label">xã, phường toàn tỉnh</span>
         </div>
-        <div v-for="g in wardGroups" :key="g.area" class="stat-item">
-          <CountUp :value="g.wards.length" class="stat-num" />
-          <span class="stat-label">{{ g.label }}</span>
+        <div class="stat-item">
+          <span class="stat-num">1</span>
+          <span class="stat-label">tỉnh Vĩnh Long thống nhất</span>
         </div>
       </div>
     </section>
@@ -141,9 +141,9 @@
       aria-label="Nghệ nhân & Làng nghề truyền thống"
     >
       <div class="gazetteer-panel-header">
-        <h3 class="gazetteer-panel-title">Hồ sơ Nghệ nhân &amp; Làng nghề Di sản</h3>
+        <h3 class="gazetteer-panel-title">Di sản, Làng nghề &amp; Ẩm thực Lâu đời</h3>
         <p class="gazetteer-panel-dek">
-          Lưu giữ tinh hoa đất sét nung đỏ, đan lát lục bình, chằm nón lá và tráng bánh truyền thống châu thổ sông Tiền.
+          Hồ sơ liên lạc của các di tích lịch sử - văn hóa cấp quốc gia, nghệ nhân làng nghề di sản và các cơ sở ẩm thực truyền thống hoạt động lâu năm tại địa phương.
         </p>
       </div>
 
@@ -291,9 +291,9 @@
       <!-- Region quick-picks -->
       <section v-if="!placesError" class="block band reveal">
         <div class="section-head">
-          <h3 class="sediment-head">Chọn khu vực</h3>
+          <h3 class="sediment-head">Địa bàn tỉnh Vĩnh Long</h3>
         </div>
-        <div class="quick-picks region-quick-picks district-filter-tabs" role="group" aria-label="Chọn khu vực">
+        <div class="quick-picks region-quick-picks district-filter-tabs" role="group" aria-label="Địa bàn tỉnh Vĩnh Long">
           <button type="button"
             v-for="g in wardGroups" :key="g.area"
             :class="['quick-pick', { active: selectedArea === g.area }]"
@@ -311,15 +311,15 @@
       <!-- Ward picker -->
       <section ref="wardSection" class="block reveal">
         <label class="ward-pick">
-          <span class="control-label">Chọn xã / phường:</span>
+          <span class="control-label">Chọn xã, phường (124 xã/phường toàn tỉnh):</span>
           <select v-model="wardId" aria-label="Chọn xã/phường">
-            <option value="">— Chọn —</option>
-            <optgroup v-for="g in filteredGroups" :key="g.area" :label="g.label">
+            <option value="">— Chọn trong 124 xã/phường —</option>
+            <optgroup v-for="g in filteredGroups" :key="g.area" :label="`Tỉnh Vĩnh Long — ${g.label}`">
               <option v-for="w in g.wards" :key="w.id" :value="w.id">{{ w.name }}</option>
             </optgroup>
           </select>
         </label>
-        <p class="ward-caveat">Sau sáp nhập, hệ thống xã/phường đang điều chỉnh — thông tin có thể chưa đầy đủ, vui lòng kiểm chứng trực tiếp với cơ quan khi cần.</p>
+        <p class="ward-caveat">Sau sáp nhập, toàn bộ 124 xã/phường thuộc 1 tỉnh Vĩnh Long thống nhất — thông tin đang được cập nhật liên tục từ cổng hành chính chính thống.</p>
       </section>
 
       <p class="sr-only" role="status" aria-live="polite">{{ statusAnnouncement }}</p>
@@ -367,7 +367,12 @@
             <button type="button" class="btn btn-outline btn-sm" @click="loadFacilities">Thử lại</button>
           </template>
         </EmptyState>
-        <EmptyState v-else icon-name="list" title="Chưa có danh bạ" message="Chưa có dữ liệu danh bạ cho xã/phường này. Dữ liệu đang được bổ sung từ nguồn chính thống." />
+        <EmptyState v-else icon-name="list" title="Chưa có danh bạ" message="Chưa có dữ liệu danh bạ cho xã/phường này. Dữ liệu đang được bổ sung từ nguồn chính thống.">
+          <template #actions>
+            <NuxtLink :to="`/xa-phuong/${wardId}`" class="btn btn-primary btn-sm"><IconLine name="compass" aria-hidden="true" /> Khám phá hồ sơ thực địa xã/phường</NuxtLink>
+            <NuxtLink to="/ban-do" class="btn btn-outline btn-sm"><IconLine name="map" aria-hidden="true" /> Xem trên bản đồ</NuxtLink>
+          </template>
+        </EmptyState>
       </template>
     </section>
 
@@ -378,7 +383,7 @@
 
 <script setup lang="ts">
 import type { Entity, EntitySource } from '~/types'
-import { OFFICE_KIND, AREA_META } from '~/composables/useConstants'
+import { OFFICE_KIND, AREA_META, CURRENT_AREA_META } from '~/composables/useConstants'
 import { trackContactView } from '~/composables/useContactBeacon'
 import { telHref } from '~/utils/safe'
 
@@ -400,7 +405,7 @@ const { data: places, error: placesError } = placesAsyncData
 
 const areaFromQuery = computed(() => {
   const a = route.query.area as string
-  return a && AREA_META[a] ? a : ''
+  return a && isCurrentProvinceArea(a) ? 'vinh-long' : ''
 })
 
 const selectedArea = ref(areaFromQuery.value)
@@ -413,12 +418,12 @@ watch(selectedArea, () => {
 const wardGroups = computed(() => {
   const grouped: Record<string, Entity[]> = {}
   for (const p of (places.value || [])) {
-    const area = p.area
+    const area = isCurrentProvinceArea(p.area) ? 'vinh-long' : p.area
     if (!p.level || !ADMIN_LEVELS.includes(p.level) || !area || !AREA_META[area]) continue
     if (!grouped[area]) grouped[area] = []
     grouped[area].push(p)
   }
-  return Object.keys(AREA_META)
+  return Object.keys(CURRENT_AREA_META)
     .filter(area => grouped[area]?.length)
     .map(area => {
       const meta = AREA_META[area]
@@ -602,12 +607,12 @@ const craftArtisans: GazetteerEntry[] = [
   },
   {
     id: 'craft-banhtrang-lucsi',
-    name: 'Làng Bánh tráng nem Cù lao Lục Sĩ Thành',
-    lead: 'Cơ sở Bánh tráng truyền thống Lục Sĩ',
+    name: 'HTX Bánh tráng Cù lao Mây Lục Sĩ Thành (OCOP 3 sao)',
+    lead: 'Ông Lương Văn Thông — Giám đốc HTX Bánh tráng Cù lao Mây',
     locality: 'Xã Lục Sĩ Thành, tỉnh Vĩnh Long',
-    address: 'Cù lao Mây ven sông Hậu, Xã Lục Sĩ Thành',
+    address: 'Ấp Tân Thạnh, Xã Lục Sĩ Thành, Cù lao Mây',
     phone: '0270 3772 135',
-    notes: 'Bánh tráng nem, bánh tráng ớt phơi sương tráng thủ công trên vỉ tre, danh vị ẩm thực Nam Bộ.',
+    notes: 'Làng nghề trên 100 năm tuổi với hơn 70 hộ làm bánh tráng nem, bánh tráng ngọt tráng thủ công từ 100% bột gạo.',
     tag: 'Bánh tráng Cù lao Mây',
   },
   {
@@ -617,17 +622,237 @@ const craftArtisans: GazetteerEntry[] = [
     locality: 'Xã Mỹ Hòa, TX Bình Minh, tỉnh Vĩnh Long',
     address: 'Chân cầu Cần Thơ, Xã Mỹ Hòa',
     phone: '0270 3750 682',
-    notes: 'Lò củi đun nước đậu nành vớt từng màng váng tạo nên đặc sản tàu hũ ky giòn thơm nổi tiếng.',
+    notes: 'Lò củi đun nước đậu nành vớt từng màng váng tạo nên đặc sản tàu hũ ky béo bùi truyền thống phương Nam.',
     tag: 'Tàu hũ ky PGI',
+  },
+  {
+    id: 'craft-bakhanh-food',
+    name: 'Cơ sở Sản xuất Bún tươi & Bánh phở Ba Khánh',
+    lead: 'Doanh nghiệp Thực phẩm Truyền thống Ba Khánh',
+    locality: 'Phường Trường An, TP. Vĩnh Long',
+    address: '24D Tân Quới Tây, Phường Trường An',
+    phone: '0270 3815 066',
+    notes: 'Thương hiệu sản xuất bún tươi, bánh phở, bún bò truyền thống uy tín lâu năm của TP. Vĩnh Long.',
+    tag: 'Bún tươi truyền thống',
+  },
+  {
+    id: 'dining-tan-tan-vinhlong',
+    name: 'Quán ăn Gia đình Tân Tân (Hoạt động từ 1946)',
+    lead: 'Bếp gia đình truyền thống Tân Tân',
+    locality: 'Phường 1, TP. Vĩnh Long',
+    address: '6/1 Trưng Nữ Vương, Phường 1',
+    phone: '0270 3822 950',
+    notes: 'Quán ăn gia đình lâu đời bên bờ sông Tiền, trứ danh với món cá cóc kho nước dừa và canh chua cá đồng theo ngày.',
+    tag: 'Ẩm thực gia đình 1946',
+  },
+  {
+    id: 'dining-phuong-thuy-vinhlong',
+    name: 'Nhà hàng Bờ sông Phương Thủy',
+    lead: 'Doanh nghiệp Dịch vụ Du lịch Phương Thủy',
+    locality: 'Phường 1, TP. Vĩnh Long',
+    address: 'Số 1 Phan Bội Châu, Phường 1',
+    phone: '0270 3824 786',
+    notes: 'Không gian ẩm thực bờ sông Tiền lộng gió đối diện Khách sạn Cửu Long, phục vụ đặc sản cá tai tượng chiên xù và tôm càng sông.',
+    tag: 'Nhà hàng bờ sông',
+  },
+  {
+    id: 'dining-bun-nuoc-leo-huong-tra',
+    name: 'Quán Bún Nước Lèo Hương Trà (Đặc sản Khmer)',
+    lead: 'Bếp gia truyền Bún nước lèo Hương Trà',
+    locality: 'Phường 1, TP. Trà Vinh',
+    address: '260 Phạm Ngũ Lão, Phường 1',
+    phone: '0294 3851 188',
+    notes: 'Địa chỉ bún nước lèo nấu từ mắm bò hóc và củ ngải bún lâu đời của người Khmer khi đến Trà Vinh.',
+    tag: 'Bún nước lèo Trà Vinh',
+  },
+  {
+    id: 'dining-pho-hong-cuc-bentre',
+    name: 'Quán Phở Bò Gia truyền Hồng Cúc Bến Tre',
+    lead: 'Hệ thống Bếp gia truyền Hồng Cúc',
+    locality: 'Phường An Hội, TP. Bến Tre',
+    address: '106 Đường 3/2, Phường An Hội',
+    phone: '0902 331 665',
+    notes: 'Thương hiệu phở bò và lẩu xí quách hầm xương truyền thống nổi tiếng lâu năm tại trung tâm xứ dừa Bến Tre.',
+    tag: 'Phở bò gia truyền',
+  },
+  {
+    id: 'heritage-cai-ngang-tambinh',
+    name: 'Khu Di tích Lịch sử Cách mạng Căn cứ Cái Ngang',
+    lead: 'Bảo tàng Tỉnh Vĩnh Long quản lý & hướng dẫn thuyết minh',
+    locality: 'Xã Phú Lộc, tỉnh Vĩnh Long',
+    address: 'Ấp 4, Xã Phú Lộc, vùng Tam Bình (Liên hệ Bảo tàng: Số 1 Phan Bội Châu, P. 1)',
+    phone: '0270 3823 181',
+    notes: 'Căn cứ Tỉnh ủy Vĩnh Long giai đoạn 1966–1975, Di tích Lịch sử cấp Quốc gia với hệ thống công sự hầm hào kháng chiến nguyên bản.',
+    tag: 'Di tích Quốc gia',
+  },
+  {
+    id: 'heritage-vo-van-kiet-vungliem',
+    name: 'Khu Lưu niệm Cố Thủ tướng Chính phủ Võ Văn Kiệt',
+    lead: 'Ban Quản lý Khu Lưu niệm Thủ tướng Võ Văn Kiệt',
+    locality: 'Xã Trung Hiếu, vùng Vũng Liêm, tỉnh Vĩnh Long',
+    address: 'Số 10 Nam Kỳ Khởi Nghĩa, Khóm 2, TT. Vũng Liêm',
+    phone: '0270 3971 111',
+    notes: 'Công trình văn hóa tưởng niệm Thủ tướng Võ Văn Kiệt, trưng bày tư liệu Khởi nghĩa Nam Kỳ và hiện vật cuộc đời hoạt động cách mạng.',
+    tag: 'Khu lưu niệm Quốc gia',
+  },
+  {
+    id: 'heritage-phat-ngoc-xa-loi',
+    name: 'Chùa Phật Ngọc Xá Lợi Vĩnh Long',
+    lead: 'Ban Trị sự Giáo hội Phật giáo Việt Nam Tỉnh Vĩnh Long',
+    locality: 'Xã Tân Ngãi, tỉnh Vĩnh Long',
+    address: '287A Ấp Vĩnh Hòa, Xã Tân Ngãi (Chân cầu Mỹ Thuận)',
+    phone: '0937 486 940',
+    notes: 'Bảo tháp Xá lợi cao 54m và tượng Quan Thế Âm Bồ Tát lộ thiên cao 32m nhìn ra dòng sông Tiền, trung tâm Phật giáo tiêu biểu của tỉnh.',
+    tag: 'Trung tâm Phật giáo',
+  },
+  {
+    id: 'heritage-nguyen-van-ton-traon',
+    name: 'Lăng Ông Tiền quân Thống chế Điều bát Nguyễn Văn Tồn',
+    lead: 'Ban Quản trị Di tích Lăng Ông Trà Ôn',
+    locality: 'Xã Thiện Mỹ, tỉnh Vĩnh Long',
+    address: 'Giồng Thanh Bạch, Ấp Mỹ Hòa, Xã Thiện Mỹ, Trà Ôn',
+    phone: '0270 3823 181',
+    notes: 'Di tích Lịch sử - Văn hóa cấp Quốc gia thờ vị danh tướng có công khai khẩn đất Trà Ôn - Cầu Kè, biểu tượng đoàn kết 3 dân tộc Kinh - Hoa - Khmer.',
+    tag: 'Di tích Quốc gia',
+  },
+  {
+    id: 'heritage-bao-tang-ben-tre',
+    name: 'Bảo tàng Bến Tre (Địa hạt Bến Tre trước 7-2025)',
+    lead: 'Sở Văn hóa, Thể thao và Du lịch (Khu vực Bến Tre)',
+    locality: 'Phường An Hội, tỉnh Vĩnh Long',
+    address: 'Số 146 Hùng Vương, Phường An Hội',
+    phone: '0275 3823 580',
+    notes: 'Tòa nhà kiến trúc Pháp cổ nhìn ra sông Bến Tre, nơi lưu giữ hơn 20.000 hiện vật lịch sử Phong trào Đồng Khởi và văn hóa xứ dừa.',
+    tag: 'Bảo tàng địa hạt',
+  },
+  {
+    id: 'dining-lau-tai-co-vinhlong',
+    name: 'Quán Lẩu Gia truyền Tài Có (Thương hiệu lâu đời)',
+    lead: 'Bếp gia truyền Lẩu Tài Có',
+    locality: 'Phường 4, tỉnh Vĩnh Long',
+    address: 'Số 7 Trần Đại Nghĩa, Phường 4 (Dốc cầu Hưng Đạo Vương)',
+    phone: '0270 3824 845',
+    notes: 'Thương hiệu lẩu lâu đời của người Hoa tại Vĩnh Long, quen thuộc với món lẩu cá chẽm nước dùng ngọt thanh gia truyền.',
+    tag: 'Lẩu truyền thống',
+  },
+  {
+    id: 'heritage-tran-dai-nghia-tambinh',
+    name: 'Khu Lưu niệm Giáo sư, Viện sĩ Trần Đại Nghĩa',
+    lead: 'Bảo tàng Tỉnh Vĩnh Long quản lý & thuyết minh',
+    locality: 'Xã Tường Lộc, tỉnh Vĩnh Long',
+    address: 'Ấp Mỹ Phú 1, Xã Tường Lộc, Tam Bình (Liên hệ Bảo tàng: Số 1 Phan Bội Châu, P. 1)',
+    phone: '0270 3823 181',
+    notes: 'Công trình tưởng niệm nhà khoa học quân sự kiệt xuất, Anh hùng Lao động Trần Đại Nghĩa, trưng bày các sáng chế vũ khí súng Bazooka và SKZ thời kháng chiến.',
+    tag: 'Khu lưu niệm Quốc gia',
+  },
+  {
+    id: 'heritage-dong-khoi-bentre',
+    name: 'Khu Di tích Quốc gia Đặc biệt Đồng Khởi (Địa hạt Bến Tre)',
+    lead: 'Ban Quản lý Di tích Đồng Khởi Định Thủy',
+    locality: 'Xã Định Thủy, tỉnh Vĩnh Long',
+    address: 'Đường Hà Huy Giáp, Xã Định Thủy, vùng Mỏ Cày Nam',
+    phone: '0275 3842 239',
+    notes: 'Di tích Quốc gia Đặc biệt nơi nổ ra phát súng đầu tiên của phong trào Đồng Khởi năm 1960, lưu giữ Nhà truyền thống, Đình Rắn và biểu tượng Đội quân tóc dài.',
+    tag: 'Di tích Đặc biệt',
+  },
+  {
+    id: 'craft-banhphong-sondoc',
+    name: 'HTX Bánh phồng Sơn Đốc (Di sản Văn hóa Phi vật thể Quốc gia & OCOP 3 sao)',
+    lead: 'Ban Giám đốc Hợp tác xã Bánh phồng Sơn Đốc',
+    locality: 'Xã Hưng Nhượng, tỉnh Vĩnh Long',
+    address: 'Ngã ba Sơn Đốc, Ấp 1, Xã Hưng Nhượng, vùng Giồng Trôm',
+    phone: '0981 708 867',
+    notes: 'Làng nghề trên 100 năm tuổi làm bánh phồng nếp sáp, bánh phồng mì quết thủ công với nước cốt dừa béo thơm nức danh Nam Bộ.',
+    tag: 'Bánh phồng Sơn Đốc',
+  },
+  {
+    id: 'craft-banhtet-tracuon-haily',
+    name: 'Cơ sở Bánh tét Trà Cuôn Hai Lý (OCOP 3 sao, 4 sao)',
+    lead: 'Bà Thạch Thị Lý & Cơ sở Bánh tét Hai Lý',
+    locality: 'Xã Kim Hòa, tỉnh Vĩnh Long',
+    address: 'Ấp Trà Cuôn, Xã Kim Hòa, vùng Cầu Ngang (Quốc lộ 53)',
+    phone: '0913 826 002',
+    notes: 'Thương hiệu trên 40 năm của làng nghề Trà Cuôn, trứ danh với bánh tét ba màu, bánh tét bồ ngót nhân thịt mỡ trứng muối gói lá chuối truyền thống.',
+    tag: 'Bánh tét Trà Cuôn',
+  },
+  {
+    id: 'heritage-chua-tien-chau',
+    name: 'Chùa Tiên Châu (Di tích Lịch sử - Kiến trúc Nghệ thuật Quốc gia)',
+    lead: 'Ban Trị sự Chùa Tiên Châu',
+    locality: 'Xã An Bình, tỉnh Vĩnh Long',
+    address: 'Ấp Bình Lương, Xã An Bình, Cù lao An Bình',
+    phone: '0270 3858 965',
+    notes: 'Ngôi cổ tự hơn 250 năm tuổi bên dòng sông Cổ Chiên, kiến trúc kết hợp truyền thống Nam Bộ và hoa văn chạm khắc gỗ tinh xảo.',
+    tag: 'Di tích Quốc gia',
+  },
+  {
+    id: 'heritage-chua-phuoc-hau-tambinh',
+    name: 'Tổ đình Chùa Phước Hậu (Vườn Kinh bằng đá)',
+    lead: 'Ban Trụ trì Tổ đình Phước Hậu',
+    locality: 'Xã Ngãi Tứ, tỉnh Vĩnh Long',
+    address: 'Ấp Đông Hậu, Xã Ngãi Tứ, vùng Tam Bình (Ven sông Hậu & QL54)',
+    phone: '0984 232 821',
+    notes: 'Di tích Lịch sử Cách mạng cấp Quốc gia, nổi tiếng với Vườn kinh Pháp Cú khắc trên 213 phiến đá xếp hình 8 lá bồ đề Bát Chánh Đạo.',
+    tag: 'Di tích Quốc gia',
+  },
+  {
+    id: 'heritage-con-phung-bentre',
+    name: 'Khu Du lịch Sinh thái & Di tích Cồn Phụng (Địa hạt Bến Tre)',
+    lead: 'Phòng Điều hành Du lịch Cồn Phụng',
+    locality: 'Xã An Khánh, tỉnh Vĩnh Long',
+    address: '199 Ấp An Thới A, Xã An Khánh, vùng Châu Thành (Chân cầu Rạch Miễu)',
+    phone: '0917 424 039',
+    notes: 'Khu du lịch sinh thái cù lao sông Tiền, bảo tồn Di tích Đạo Dừa với tháp Cửu Trùng Đài và sân rồng chín cột độc đáo.',
+    tag: 'Điểm đến sinh thái',
+  },
+  {
+    id: 'heritage-chua-hang-tra-vinh',
+    name: 'Chùa Kompongnikrodha (Chùa Hang Trà Vinh)',
+    lead: 'Ban Quản trị Chùa Kompongnikrodha',
+    locality: 'Thị trấn Châu Thành, tỉnh Vĩnh Long',
+    address: 'Khóm 4, Thị trấn Châu Thành, vùng Trà Vinh (Cổng vòm hình hang động cổ kính)',
+    phone: '0294 3872 384',
+    notes: 'Ngôi chùa Khmer cổ khởi lập năm 1637, nổi tiếng với xưởng điêu khắc gỗ thủ công của các chư tăng và đàn chim di trú trong rừng cây sao dầu cổ thụ.',
+    tag: 'Chùa Khmer cổ tự',
+  },
+  {
+    id: 'heritage-van-thanh-mieu-vinhlong',
+    name: 'Văn Thánh Miếu Vĩnh Long (Di tích Lịch sử - Văn hóa Quốc gia)',
+    lead: 'Bảo tàng Tỉnh Vĩnh Long & Ban Quản trị Văn Thánh Miếu',
+    locality: 'Phường 4, tỉnh Vĩnh Long',
+    address: 'Đường Trần Phú, Phường 4, TP. Vĩnh Long (Ven sông Long Hồ)',
+    phone: '0270 3823 181',
+    notes: 'Xây dựng năm 1864 do Đốc học Nguyễn Thông chủ xướng cùng Phan Thanh Giản, một trong ba Văn Thánh Miếu lớn nhất Nam Bộ thời triều Nguyễn.',
+    tag: 'Di tích Quốc gia',
   },
 ]
 
 const orchardOwners: GazetteerEntry[] = [
   {
+    id: 'orchard-cocohome-anbinh',
+    name: 'Nhà dừa CocoHome Cù lao An Bình',
+    lead: 'Khu Trải nghiệm Sinh thái & Homestay CocoHome',
+    locality: 'Xã Hòa Ninh, tỉnh Vĩnh Long',
+    address: '203A/12 Tổ 10, Ấp Hòa Quí, Xã Hòa Ninh, Cù lao An Bình',
+    phone: '0270 3505 356',
+    notes: 'Công trình kiến trúc 3 gian 2 chái xây dựng từ hơn 4.000 cây dừa cổ thụ, kết hợp trải nghiệm làm bánh dân gian và vườn cây ăn trái.',
+    tag: 'Nhà dừa sinh thái',
+  },
+  {
+    id: 'orchard-vinhsang-ecotour',
+    name: 'Khu Du lịch Sinh thái & Vườn trái cây Vinh Sang',
+    lead: 'Công ty Cổ phần Du lịch Vinh Sang',
+    locality: 'Xã An Bình, tỉnh Vĩnh Long',
+    address: 'Tổ 14, Ấp An Thuận, Xã An Bình, Cù lao An Bình',
+    phone: '0270 6277 277',
+    notes: 'Khu sinh thái miệt vườn ven sông Tiền, vườn chôm chôm, dâu da, bưởi trĩu quả cùng các hoạt động tát mương bắt cá, chèo xuồng ba lá.',
+    tag: 'Du lịch miệt vườn',
+  },
+  {
     id: 'orchard-buoinamroi-myhoa',
     name: 'Vườn Bưởi Năm Roi Hoàng Gia Mỹ Hòa (Chỉ dẫn Địa lý PGI)',
     lead: 'Ông Hai Sáng — HTX Bưởi Năm Roi Mỹ Hòa',
-    locality: 'Xã Mỹ Hòa, TX Bình Minh, tỉnh Vĩnh Long',
+    locality: 'Xã Mỹ Hòa, tỉnh Vĩnh Long',
     address: 'Ven sông Hậu, Xã Mỹ Hòa',
     phone: '0270 3851 123',
     notes: 'Vựa bưởi Năm Roi không hạt ruột vàng mọng nước trĩu cành phù sa bãi bồi ven sông Hậu.',
@@ -640,7 +865,7 @@ const orchardOwners: GazetteerEntry[] = [
     locality: 'Xã Quới Thiện, tỉnh Vĩnh Long',
     address: 'Cù lao Cổ Chiên, Xã Quới Thiện',
     phone: '0270 3829 456',
-    notes: 'Đất phù sa cồn bãi tạo nên giống sầu riêng Ri6 cơm vàng hạt lép ngọt béo nức tiếng ĐBSCL.',
+    notes: 'Đất phù sa cồn bãi tạo nên giống sầu riêng Ri6 cơm vàng hạt lép ngọt béo trứ danh ĐBSCL.',
     tag: 'Sầu riêng Ri6',
   },
   {
@@ -709,7 +934,7 @@ const boatPiers: GazetteerEntry[] = [
 ]
 
 const gazetteerTabs = computed(() => [
-  { id: 'artisans' as const, label: 'Nghệ nhân & Làng nghề', icon: 'vase', count: craftArtisans.length },
+  { id: 'artisans' as const, label: 'Di sản & Nghệ nhân', icon: 'vase', count: craftArtisans.length },
   { id: 'orchards' as const, label: 'Nhà vườn & Cây ăn trái', icon: 'fruit', count: orchardOwners.length },
   { id: 'piers' as const, label: 'Bến phà & Bến tàu', icon: 'compass', count: boatPiers.length },
   { id: 'facilities' as const, label: 'Cơ quan 124 xã/phường', icon: 'landmark', count: totalWards.value },
@@ -786,7 +1011,7 @@ useHead(() => ({
 .empty-hint-title { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); }
 .empty-hint p { margin: 0; font-size: var(--text-sm); max-width: 38ch; }
 .muted { color: var(--muted); }
-.ward-pick { display: flex; flex-direction: column; gap: var(--space-2); max-width: 420px; padding: var(--space-4); border: .5px solid var(--line); border-radius: var(--radius-sheet); background: var(--card); box-shadow: var(--shadow-xs); }
+.ward-pick { display: flex; flex-direction: column; gap: var(--space-2); max-width: 420px; padding: var(--space-3) 0; border: 0; border-block: .5px solid var(--line); border-radius: 0; background: transparent; box-shadow: none; }
 .ward-pick .control-label { font-weight: var(--weight-semibold); }
 .ward-pick select { padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-surface); font-size: 1rem; min-height: 44px; background: var(--bg-alt); transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
 .ward-pick select:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; border-color: var(--color-focus); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .15), var(--shadow-xs); }
@@ -794,15 +1019,15 @@ useHead(() => ({
 .dir-report-link { font-size: var(--text-sm); color: var(--muted); margin: var(--space-6) 0 var(--space-5); }
 .dir-report-link a { color: var(--color-action); font-weight: var(--weight-semibold); }
 .dir-report-link a:hover { text-decoration: underline; }
-.fac-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
+.fac-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; border-block-start: 1px solid var(--line); }
 
-.fac { position: relative; overflow: hidden; border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-5); background: linear-gradient(180deg, rgba(var(--color-brand-rgb), .04), transparent 60%), var(--card); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.fac { position: relative; overflow: hidden; border: 0; border-block-end: 1px solid var(--line); border-radius: 0; padding: var(--space-4) 0 var(--space-4) var(--space-4); background: transparent; box-shadow: none; transition: background-color .25s var(--ease-out); }
 .fac::before {
   content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
   background: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
 }
 .dark .fac::before { background: linear-gradient(180deg, var(--night-river) 0%, var(--night-amber) 52%, var(--night-clay) 100%); }
-.fac:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
+.fac:hover { background: var(--overlay-subtle); }
 .fac-head { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); margin-bottom: var(--space-2); }
 .fac strong { font-family: var(--font-editorial); font-weight: 600; font-size: var(--text-base); color: var(--ink); }
 .fac-kind { align-self: flex-start; font-size: var(--text-xs); color: var(--color-brand); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); background: rgba(var(--color-brand-rgb), .12); border-radius: var(--radius-control); padding: 2px var(--space-2); line-height: 1.5; }
@@ -812,7 +1037,7 @@ useHead(() => ({
 .fac-row a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .fac-row a[href^="tel:"] { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-action); font-weight: var(--weight-semibold); border-radius: var(--radius-control); }
 .fac-row a[href^="tel:"]:hover { color: var(--color-action-hover); text-decoration: underline; }
-.fac-src { color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: var(--space-3) calc(-1 * var(--space-5)) 0; padding: var(--space-2) var(--space-5); font-size: var(--text-xs); background: var(--overlay-subtle, rgba(var(--black-rgb),.02)); border-top: .5px solid var(--line); }
+.fac-src { color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: var(--space-3) 0 0; padding: var(--space-2) 0 0; font-size: var(--text-xs); background: transparent; border-top: .5px solid var(--line); }
 .fac-src a { color: var(--ink-secondary); text-decoration: underline; transition: color .3s var(--ease-out); }
 .fac-src a:hover { color: var(--color-action); }
 .fac-verified { font-size: var(--text-2xs); display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-right: 2px; border-radius: 50%; background: var(--color-source-verified-surface); color: var(--color-source-verified); font-weight: var(--weight-bold); vertical-align: middle; }
@@ -827,7 +1052,7 @@ useHead(() => ({
 .fac-report:active:not(:disabled) { transform: scale(.97); }
 .fac-report:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
-.fac-loading { display: flex; align-items: center; justify-content: center; gap: var(--space-3); padding: var(--space-8) var(--space-4); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-sheet); color: var(--muted); font-size: var(--text-sm); }
+.fac-loading { display: flex; align-items: center; justify-content: center; gap: var(--space-3); padding: var(--space-8) var(--space-4); background: transparent; border: 0; border-block: 1px solid var(--line); border-radius: 0; color: var(--muted); font-size: var(--text-sm); }
 
 /* ── 24/7 Emergency Tourism Hotline — Authoritative Priority Layout ── */
 .dir-emergency {
@@ -861,41 +1086,50 @@ useHead(() => ({
 .dir-emergency-leads {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-4);
+  gap: 0;
+  border-block-start: 1px solid var(--line);
 }
 @media (min-width: 640px) {
   .dir-emergency-leads {
     grid-template-columns: repeat(2, 1fr);
+    gap: 0 var(--space-6);
   }
 }
 .dir-emergency-support {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-3);
+  gap: 0;
+  border-block-start: 1px solid var(--line);
 }
 @media (min-width: 640px) {
   .dir-emergency-support {
     grid-template-columns: repeat(3, 1fr);
+    gap: 0 var(--space-5);
   }
 }
 .dir-emergency-card {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: var(--space-4);
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sheet);
-  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+  padding: var(--space-4) 0;
+  background: transparent;
+  border: 0;
+  border-block-end: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
+  transition: transform 0.2s var(--ease-out);
 }
 .dir-emergency-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 .dir-emergency-card--lead {
-  border: 1.5px solid var(--alluvial-gold);
-  background: linear-gradient(180deg, rgba(var(--color-brand-rgb), 0.05), var(--card) 45%);
-  box-shadow: var(--shadow-sm);
+  padding-inline-start: var(--space-4);
+  border: 0;
+  border-inline-start: 2px solid var(--alluvial-gold);
+  border-block-end: 1px solid var(--line);
+  background: transparent;
+  box-shadow: none;
 }
 .dir-emergency-card-top {
   display: flex;
@@ -1006,6 +1240,18 @@ useHead(() => ({
   border-bottom: 1px solid var(--line);
   padding-bottom: var(--space-3);
 }
+@media (max-width: 640px) {
+  .gazetteer-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: var(--space-2);
+    scrollbar-width: none;
+  }
+  .gazetteer-tab {
+    flex-shrink: 0;
+  }
+}
 .gazetteer-tab {
   display: inline-flex;
   align-items: center;
@@ -1020,12 +1266,16 @@ useHead(() => ({
   border: 1px solid var(--line);
   border-radius: var(--radius-control);
   cursor: pointer;
-  transition: all 0.2s var(--ease-out);
+  transition: color 0.2s var(--ease-out), background-color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
 }
 .gazetteer-tab:hover {
   color: var(--ink);
   border-color: var(--border);
   background: var(--card);
+}
+.gazetteer-tab:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 .gazetteer-tab.active {
   color: var(--color-on-action, var(--white));
@@ -1069,28 +1319,35 @@ useHead(() => ({
 .gazetteer-card-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-4);
+  gap: 0 var(--space-6);
+  counter-reset: gazetteer-entry;
+  border-block-start: 1px solid var(--line);
 }
 @media (min-width: 640px) {
   .gazetteer-card-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .gazetteer-card-grid > .gazetteer-entry-card:first-child:nth-last-child(n + 3) {
+    grid-column: span 2;
+    padding-inline-start: var(--space-4);
+    border-inline-start: 3px solid var(--color-brand);
   }
 }
 .gazetteer-entry-card {
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: var(--space-5);
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sheet);
-  box-shadow: var(--shadow-xs);
-  transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+  padding: var(--space-5) 0;
+  background: transparent;
+  border: 0;
+  border-block-end: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
+  counter-increment: gazetteer-entry;
+  transition: background-color 0.2s var(--ease-out);
 }
 .gazetteer-entry-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--border);
+  background: var(--overlay-subtle);
 }
 .entry-header {
   display: flex;
@@ -1099,13 +1356,22 @@ useHead(() => ({
   gap: var(--space-2);
   margin-block-end: var(--space-2);
 }
+.entry-header::before {
+  content: "MỤC " counter(gazetteer-entry, decimal-leading-zero);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-brand);
+  letter-spacing: 0.04em;
+}
 .entry-tag {
   display: inline-block;
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
-  color: var(--mangthit-500);
+  color: var(--color-brand);
   background: rgba(var(--clay-rgb), 0.1);
   padding: 0.15rem 0.5rem;
   border-radius: var(--radius-control);
@@ -1173,11 +1439,17 @@ useHead(() => ({
   border: 1px solid var(--color-action-border);
   border-radius: var(--radius-control);
   text-decoration: none;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 .gazetteer-call-btn:hover {
   background: var(--color-action);
   color: var(--color-on-action);
+}
+.gazetteer-call-btn:focus-visible,
+.gazetteer-report-link:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
 }
 .gazetteer-report-link {
   display: inline-flex;
@@ -1194,16 +1466,9 @@ useHead(() => ({
 }
 
 /* Dark mode */
-.dark .fac { background: var(--bg-alt); border-color: var(--line); }
-.dark .fac:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb),.1); }
-.dark .ward-pick select { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
-.dark .ward-pick select:focus-visible { border-color: var(--color-focus); }
-.dark .empty-hint { color: var(--muted); border-color: rgba(var(--white-rgb),.08); background: radial-gradient(120% 100% at 50% 0%, rgba(var(--color-brand-rgb), .1), transparent 70%); }
-.dark .empty-hint-title { color: var(--ink); }
-.dark .fac-src { background: rgba(var(--white-rgb),.03); border-top-color: rgba(var(--white-rgb),.08); }
-.dark .fac-report:hover:not(:disabled) { color: var(--color-action); }
-.dark .gazetteer-tab { background: var(--surface); border-color: var(--line); color: var(--ink); }
-.dark .gazetteer-entry-card { background: var(--card); border-color: var(--line); }
+.dark .fac,
+.dark .gazetteer-entry-card { background: transparent; border-color: var(--line); }
+.dark .fac-src { background: transparent; border-top-color: var(--line); }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

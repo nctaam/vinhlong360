@@ -81,9 +81,9 @@ defineEmits<{
 .tag-banner { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .5rem .75rem; margin-bottom: var(--space-3); background: color-mix(in srgb, var(--color-action) 10%, var(--bg-alt)); border-radius: var(--radius-surface); font-size: var(--text-sm); }
 .tag-clear { border: none; background: none; color: var(--color-action); cursor: pointer; font-size: var(--text-sm); min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
 
-.search-users-section { margin-bottom: var(--space-4); }
-.search-users-grid { display: flex; gap: var(--space-2); overflow-x: auto; padding-bottom: var(--space-1); }
-.search-user-card { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); min-width: 180px; flex-shrink: 0; text-decoration: none; }
+.search-users-section { margin-bottom: var(--space-4); padding-block: var(--space-2); border-block: 1px solid var(--line); }
+.search-users-grid { display: flex; gap: var(--space-4); overflow-x: auto; padding-bottom: var(--space-1); }
+.search-user-card { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0; min-width: 170px; flex-shrink: 0; text-decoration: none; background: transparent; border: 0; border-radius: 0; box-shadow: none; }
 .suc-info { min-width: 0; }
 .suc-info strong { display: block; font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
 .suc-meta { font-size: 0.75rem; color: var(--muted); }

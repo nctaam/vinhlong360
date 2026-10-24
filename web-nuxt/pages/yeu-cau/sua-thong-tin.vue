@@ -4,7 +4,7 @@
 // The page holds the receipt only while it is on screen. The moment the reader
 // confirms they saved the one-time key — or navigates away — it is forgotten;
 // everything afterwards runs on the HttpOnly cookie the backend set.
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 
 import CaseReceiptCard from '../../components/cases/CaseReceiptCard.vue'
 import CorrectionIntakeForm from '../../components/cases/CorrectionIntakeForm.vue'
@@ -55,6 +55,7 @@ const { data: entity, error: entityError, refresh: refreshEntity } = await useAs
 const busy = ref(false)
 const verificationBusy = ref(false)
 const receipt = ref<CaseReceipt | null>(null)
+const receiptPanelRef = ref<HTMLElement | null>(null)
 const failure = ref('')
 const problem = ref<CorrectionProblemDetail | null>(null)
 const verificationReceipt = cases.verificationReceipt
@@ -68,6 +69,8 @@ async function submit(submission: CorrectionSubmission) {
   problem.value = null
   try {
     receipt.value = await cases.createCorrection(submission)
+    await nextTick()
+    receiptPanelRef.value?.focus()
   } catch (error) {
     if (error instanceof CorrectionProblemError) {
       problem.value = error.problem
@@ -159,7 +162,7 @@ useHead(() => ({
         <span v-if="problem.field">Trường cần kiểm tra: {{ problem.field }}</span>
       </div>
 
-      <div v-if="receipt" class="receipt-panel">
+      <div v-if="receipt" ref="receiptPanelRef" class="receipt-panel" tabindex="-1">
         <CaseReceiptCard
           :receipt="receipt"
           @forget="cases.forgetCapability()"
@@ -212,13 +215,23 @@ useHead(() => ({
   color: var(--ink);
   font-size: var(--text-sm);
 }
+.case-problem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-surface);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
 .case-missing {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-5);
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-surface);
+  padding: var(--space-5) 0;
+  background: transparent;
+  border: 0;
+  border-block: 1px solid var(--line);
+  border-radius: 0;
 }
 .case-missing p {
   margin: 0;
@@ -228,9 +241,13 @@ useHead(() => ({
 .receipt-panel {
   display: grid;
   gap: var(--space-4);
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-surface);
-  padding: var(--space-4);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+.receipt-panel:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
 }
 </style>

@@ -160,7 +160,7 @@
         </EmptyState>
         <template v-else>
           <div v-if="postsError && !postsLoading" class="saved-inline-warning" role="status">
-            Chưa thể tải bookmark bài viết. Bạn có thể thử đồng bộ lại.
+            Chưa thể tải bài viết đã lưu. Bạn có thể thử đồng bộ lại.
           </div>
           <div v-if="postsLoading" class="saved-quiet-loading" role="status" aria-live="polite">
             <span class="spinner spinner-sm" aria-hidden="true"></span>
@@ -185,7 +185,7 @@
             </div>
           </div>
           <div v-else class="saved-empty">
-            <p>{{ savedQuery ? 'Không tìm thấy bài viết phù hợp trong bookmark.' : 'Chưa bookmark bài viết nào.' }}</p>
+            <p>{{ savedQuery ? 'Không tìm thấy bài viết đã lưu phù hợp.' : 'Chưa lưu bài viết nào.' }}</p>
             <div v-if="savedQuery" class="saved-empty-actions">
               <button type="button" class="btn btn-ghost btn-sm" @click="savedQuery = ''">
                 <IconLine name="repeat" /> Xóa bộ lọc
@@ -593,17 +593,18 @@ useHead(() => ({
 .saved-title { font-size: 1.5rem; margin: 0; }
 .saved-overview {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: .75rem; margin-bottom: 1rem;
+  gap: 0; margin-bottom: var(--space-5);
+  border-block: 1px solid var(--line);
 }
 .saved-overview-item {
-  min-height: 88px; padding: .85rem 1rem;
-  border: 1px solid var(--border-liquid-glass, var(--line));
-  border-radius: var(--radius-sheet); background: var(--card);
-  box-shadow: var(--shadow-card-ambient);
-  display: flex; flex-direction: column; justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-inline-start: 1px solid var(--border-liquid-glass, var(--line));
+  background: transparent;
+  display: flex; flex-direction: column; gap: var(--space-1);
 }
-.saved-overview-item span { color: var(--muted); font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
-.saved-overview-item strong { font-size: 1.25rem; line-height: 1.1; }
+.saved-overview-item:first-child { border-inline-start: 0; padding-inline-start: 0; }
+.saved-overview-item span { color: var(--muted); font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.saved-overview-item strong { font-family: var(--font-editorial); font-style: italic; font-size: 1.35rem; font-weight: 600; line-height: 1.1; color: var(--ink); }
 .saved-tools { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .75rem; align-items: center; margin-bottom: 1rem; }
 .saved-search input {
   width: 100%; min-height: 44px; padding: .65rem .85rem; border: 1px solid var(--border-input);
@@ -622,6 +623,7 @@ useHead(() => ({
   padding: .5rem 1rem; background: none; border: none; cursor: pointer;
   font-weight: 500; font-size: .9rem; color: var(--muted);
   border-bottom: 2px solid transparent; margin-bottom: -2px;
+  white-space: nowrap;
   transition: color var(--duration-fast) var(--ease-out),
               border-color var(--duration-fast) var(--ease-out),
               transform var(--duration-fast) var(--ease-out);
@@ -634,6 +636,7 @@ useHead(() => ({
   display: inline-block; margin-left: .35rem;
   background: var(--bg-alt); padding: 0 5px; border-radius: var(--radius-pill, 999px);
   font-size: .75rem; font-weight: 600; color: var(--muted);
+  white-space: nowrap;
 }
 .saved-tab.active .saved-tab-count { background: rgba(var(--color-action-rgb), .12); color: var(--color-action); }
 
@@ -655,18 +658,26 @@ useHead(() => ({
 .saved-remove:active { transform: scale(.92); }
 .saved-remove:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
-/* Posts list */
-.saved-posts-list { display: flex; flex-direction: column; gap: .5rem; }
+/* Posts list — open numbered personal dossier ledger */
+.saved-posts-list { display: flex; flex-direction: column; gap: 0; counter-reset: saved-ledger; border-block-start: 1px solid var(--line); }
 .saved-post {
-  padding: .75rem 1rem; display: flex; align-items: center; gap: .5rem;
-  border: 1px solid var(--border-liquid-glass, var(--line));
-  border-radius: var(--radius-surface);
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+  counter-increment: saved-ledger;
+  padding: var(--space-3) 0; display: flex; align-items: center; gap: var(--space-3);
+  background: transparent; border: 0;
+  border-block-end: 1px solid var(--line);
+  border-radius: 0; box-shadow: none;
+  transition: background-color var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-spring);
+}
+.saved-post::before {
+  content: counter(saved-ledger, decimal-leading-zero);
+  font-family: var(--font-editorial); font-style: italic; font-weight: 500;
+  font-size: var(--text-base); color: var(--color-brand); min-width: 1.8rem;
 }
 .saved-post:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-card-hover);
+  background: color-mix(in srgb, var(--bg-warm) 55%, transparent);
+}
+.saved-post:active:not(:has(.saved-remove:active)) {
+  transform: scale(0.985);
 }
 .saved-post-link {
   text-decoration: none; color: var(--ink); display: block; flex: 1; min-width: 0;
@@ -851,8 +862,8 @@ useHead(() => ({
 }
 
 /* Dark */
-.dark .saved-overview-item, .dark .saved-search input { background: var(--bg-alt); border-color: var(--line); }
-.dark .saved-post { background: var(--bg-alt); }
+.dark .saved-search input { background: var(--bg-alt); border-color: var(--line); }
+.dark .saved-post { background: transparent; }
 
 /* Mobile */
 @media (max-width: 600px) {
@@ -868,6 +879,7 @@ useHead(() => ({
 @media (prefers-reduced-motion: reduce) {
   .saved-tab,
   .saved-remove,
+  .saved-post,
   .saved-post-link,
   .saved-sugg-card {
     transition: none !important;

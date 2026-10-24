@@ -95,7 +95,7 @@
             <section class="search-drawer-filter-group" aria-labelledby="filter-season-label">
               <h3 id="filter-season-label" class="search-drawer-filter-label">
                 <VernacularGlyph name="water-lily" :size="16" accent="culao" />
-                <span>Mùa Vụ Sông Nước</span>
+                <span>Mùa vụ trong năm</span>
               </h3>
               <div class="search-drawer-chips" role="group" aria-label="Chọn mùa">
                 <button
@@ -116,7 +116,7 @@
             <section class="search-drawer-filter-group" aria-labelledby="filter-tide-label">
               <h3 id="filter-tide-label" class="search-drawer-filter-label">
                 <VernacularGlyph name="three-plank-sampan" :size="16" accent="cochien" />
-                <span>Nhịp Con Nước Triều Sông</span>
+                <span>Nhịp con nước trong ngày</span>
               </h3>
               <div class="search-drawer-chips" role="group" aria-label="Chọn con nước">
                 <button
@@ -627,9 +627,9 @@ onUnmounted(() => {
   color: var(--color-text);
   background: var(--color-surface-subtle);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
   user-select: none;
 }
 
@@ -651,7 +651,7 @@ onUnmounted(() => {
 .tide-dot {
   width: 8px;
   height: 8px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: var(--color-text-muted);
 }
 
@@ -794,17 +794,26 @@ onUnmounted(() => {
   justify-content: center;
   gap: var(--space-fib-1);
   background: var(--color-action);
-  color: var(--sand-50);
+  color: var(--color-on-action);
   border: none;
   border-radius: var(--radius-control);
   font-weight: var(--weight-title-sm);
   font-size: var(--font-size-body);
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .search-drawer-submit-btn:hover {
   opacity: 0.92;
+}
+
+.search-drawer-submit-btn:active {
+  transform: scale(0.98);
+}
+
+.search-drawer-submit-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .search-drawer-empty-state {
@@ -815,9 +824,10 @@ onUnmounted(() => {
   text-align: center;
   padding: var(--space-fib-4) var(--space-fib-3);
   margin: var(--space-fib-2) 0;
-  background: var(--color-surface-subtle);
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-surface);
+  background: transparent;
+  border: 0;
+  border-block: 1px solid var(--color-border);
+  border-radius: 0;
   gap: var(--space-fib-2);
 }
 
@@ -827,7 +837,7 @@ onUnmounted(() => {
   justify-content: center;
   width: 56px;
   height: 56px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: color-mix(in srgb, var(--color-material-clay) 12%, transparent);
   color: var(--color-material-clay);
 }
@@ -862,7 +872,7 @@ onUnmounted(() => {
   min-height: 44px;
   padding: 0 var(--space-fib-3);
   background: var(--color-action);
-  color: var(--sand-50);
+  color: var(--color-on-action);
   border: none;
   border-radius: var(--radius-control);
   font-size: var(--font-size-label);

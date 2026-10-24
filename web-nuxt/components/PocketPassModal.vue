@@ -428,10 +428,18 @@ onUnmounted(() => {
   background: var(--color-surface);
   color: var(--color-text);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   cursor: pointer;
   z-index: var(--z-modal);
   box-shadow: var(--shadow-sm);
+  transition: background 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pocket-pass-close-btn:active {
+  transform: scale(0.98);
+}
+.pocket-pass-close-btn:focus-visible {
+  outline: 2px solid var(--alluvial-gold);
+  outline-offset: 2px;
 }
 
 .pocket-pass-card {
@@ -552,7 +560,7 @@ onUnmounted(() => {
   width: 28px;
   height: 28px;
   min-width: 28px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: var(--color-material-clay);
   color: var(--sand-50);
   display: flex;
@@ -620,7 +628,7 @@ onUnmounted(() => {
 .wax-seal-ring {
   width: 90px;
   height: 90px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   border: 2px dashed var(--color-material-clay);
   background: color-mix(in srgb, var(--color-material-clay) 12%, transparent);
   display: flex;
@@ -700,10 +708,12 @@ onUnmounted(() => {
   color: var(--color-text-muted);
 }
 
+/* Wave 10: Open Architectural Emergency Hotline Ledger — unboxed from 5 nested cards */
 .emergency-contacts-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-fib-1);
+  gap: 0;
+  border-block-start: 1px solid var(--color-border);
 }
 
 .emergency-contact-card {
@@ -711,19 +721,24 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   min-height: 44px;
-  padding: var(--space-fib-1) var(--space-fib-2);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
+  padding: var(--space-fib-1) 0;
+  background: transparent;
+  border: 0;
+  border-block-end: 1px solid var(--color-border);
+  border-radius: 0;
   text-decoration: none;
   color: var(--color-text);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .emergency-contact-card:hover {
-  background: var(--color-surface-raised);
-  border-color: var(--alluvial-gold);
-  transform: translateY(-1px);
+  background: transparent;
+  border-block-end-color: var(--alluvial-gold);
+  transform: translateX(2px);
+}
+
+.emergency-contact-card:active {
+  transform: scale(0.98);
 }
 
 .emergency-contact-card:focus-visible {
@@ -779,11 +794,22 @@ onUnmounted(() => {
   font-weight: var(--weight-title-sm);
   font-size: var(--font-size-body);
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .pocket-pass-print-btn:hover {
   opacity: 0.92;
+}
+
+.pocket-pass-print-btn:active,
+.pocket-pass-done-btn:active {
+  transform: scale(0.98);
+}
+
+.pocket-pass-print-btn:focus-visible,
+.pocket-pass-done-btn:focus-visible {
+  outline: 2px solid var(--alluvial-gold);
+  outline-offset: 2px;
 }
 
 .pocket-pass-done-btn {
@@ -798,17 +824,52 @@ onUnmounted(() => {
   border-radius: var(--radius-control);
   font-size: var(--font-size-body);
   cursor: pointer;
+  transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Animations */
-.modal-fade-enter-active,
+/* Animations — Asymmetric Spatial Enter/Exit (Emil Kowalski Craft) */
+.modal-fade-enter-active {
+  transition: opacity 0.22s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+}
 .modal-fade-leave-active {
-  transition: opacity 0.25s ease;
+  transition: opacity 0.15s var(--ease-out, ease-out);
+}
+.modal-fade-enter-active .pocket-pass-container {
+  transition: transform 0.22s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+}
+.modal-fade-leave-active .pocket-pass-container {
+  transition: transform 0.15s var(--ease-out, ease-out);
 }
 
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
+}
+.modal-fade-enter-from .pocket-pass-container,
+.modal-fade-leave-to .pocket-pass-container {
+  transform: scale(0.96) translateY(10px);
+}
+@media (max-width: 640px) {
+  .modal-fade-enter-from .pocket-pass-container,
+  .modal-fade-leave-to .pocket-pass-container {
+    transform: translateY(28px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pocket-pass-close-btn,
+  .emergency-contact-card,
+  .pocket-pass-print-btn,
+  .pocket-pass-done-btn,
+  .modal-fade-enter-active,
+  .modal-fade-leave-active,
+  .modal-fade-enter-active .pocket-pass-container,
+  .modal-fade-leave-active .pocket-pass-container,
+  .modal-fade-enter-from .pocket-pass-container,
+  .modal-fade-leave-to .pocket-pass-container {
+    transition: none;
+    transform: none;
+  }
 }
 
 /* Responsive Safe Framing trên Mobile & Small Viewports */

@@ -78,9 +78,12 @@ function confirmSaved() {
 
 <style scoped>
 .receipt-card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-surface);
-  padding: 1.25rem;
+  border: 0;
+  border-block-start: 2px solid var(--color-brand);
+  border-block-end: 1px solid var(--border, var(--line));
+  border-radius: 0;
+  padding: var(--space-5, 1.25rem) 0;
+  background: transparent;
   display: grid;
   gap: 0.9rem;
 }
@@ -97,9 +100,10 @@ function confirmSaved() {
 }
 .receipt-warning {
   margin: 0.5rem 0 0;
-  padding: 0.6rem 0.8rem;
-  border-radius: var(--radius-control);
-  background: var(--bg-warm);
+  padding: 0.6rem 0 0.6rem var(--space-4, 1rem);
+  border-inline-start: 2px solid var(--color-warning);
+  border-radius: 0;
+  background: transparent;
   color: var(--color-warning);
 }
 .receipt-actions {

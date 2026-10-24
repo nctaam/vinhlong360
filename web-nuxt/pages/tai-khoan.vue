@@ -19,7 +19,7 @@
     <template v-else>
       <section class="cp-hero">
         <NuxtLink :to="profileUrl" class="cp-avatar-link" aria-label="Xem hồ sơ công khai">
-          <img v-if="profileData.avatar_url" :src="profileData.avatar_url" alt="" class="cp-avatar" width="80" height="80" loading="lazy" />
+          <img v-if="profileData.avatar_url" :src="profileData.avatar_url" alt="" class="cp-avatar" width="80" height="80" loading="lazy" decoding="async" />
           <span v-else class="cp-avatar-fallback"><AvatarPlaceholder :initial="initial" /></span>
         </NuxtLink>
         <div class="cp-identity">
@@ -501,7 +501,9 @@ useHead(() => ({
 .cp-mini-link:hover { opacity: .85; }
 .cp-progress { height: 8px; border-radius: var(--radius-pill, 999px); overflow: hidden; background: var(--bg-alt); margin-bottom: .75rem; }
 .cp-progress span { display: block; height: 100%; border-radius: inherit; background: var(--color-action); }
-.cp-checks, .cp-action-list, .cp-data-list { display: flex; flex-direction: column; gap: .45rem; }
+/* Wave 7: Open Architectural Account & Activity Ledgers — unboxed from stacked pill rows */
+.cp-checks { display: flex; flex-direction: column; gap: .45rem; }
+.cp-action-list, .cp-data-list { display: flex; flex-direction: column; gap: 0; border-block-start: 1px solid var(--line); }
 .cp-check { display: flex; align-items: center; gap: .45rem; color: var(--muted); font-size: .84rem; text-decoration: none; border-radius: var(--radius-control); }
 .cp-check:hover { color: var(--ink); }
 .cp-avatar-link:focus-visible,
@@ -521,15 +523,15 @@ useHead(() => ({
 .cp-check-dot { display: inline-block; width: 6px; height: 6px; margin: 0 4px; border-radius: 50%; background: var(--muted); opacity: .6; flex-shrink: 0; }
 .cp-action-item, .cp-data-row {
   display: flex; align-items: center; justify-content: space-between; gap: .65rem;
-  min-height: 44px; padding: .55rem .75rem; border-radius: var(--radius-surface);
-  text-decoration: none; color: var(--ink); background: var(--bg-alt);
-  border: 1px solid transparent;
-  transition: background-color var(--duration-fast) var(--ease-out),
+  min-height: 44px; padding: .55rem 0; border-radius: 0;
+  text-decoration: none; color: var(--ink); background: transparent;
+  border: 0; border-block-end: 1px solid var(--line);
+  transition: color var(--duration-fast) var(--ease-out),
               border-color var(--duration-fast) var(--ease-out),
               transform var(--duration-fast) var(--ease-out);
 }
 .cp-action-item:hover, .cp-data-row:hover {
-  background: var(--color-action-surface);
+  color: var(--color-action);
   border-color: var(--color-action-border);
 }
 .cp-action-item:active, .cp-data-row:active {
@@ -546,12 +548,13 @@ useHead(() => ({
 .cp-main-grid { grid-template-columns: minmax(0, 1fr) 280px; align-items: start; }
 .cp-section, .cp-side-panel { padding: 1rem; }
 .cp-privacy-cert-badge {
-  padding: var(--space-3);
+  padding: 0 0 var(--space-3);
   margin-bottom: var(--space-3);
-  background: var(--bg-alt);
-  border: 1px solid var(--border-liquid-glass, var(--line));
-  border-radius: var(--radius-surface);
-  box-shadow: var(--shadow-xs);
+  background: transparent;
+  border: 0;
+  border-block-end: 1px solid var(--border-liquid-glass, var(--line));
+  border-radius: 0;
+  box-shadow: none;
 }
 .cp-pcb-top {
   display: flex;
@@ -596,18 +599,18 @@ useHead(() => ({
   gap: var(--space-2);
   margin-top: .75rem;
 }
-.cp-activity-list { display: flex; flex-direction: column; gap: .55rem; }
+.cp-activity-list { display: flex; flex-direction: column; gap: 0; border-block-start: 1px solid var(--line); }
 .cp-activity-item {
-  display: flex; gap: .65rem; align-items: flex-start; padding: .75rem .85rem;
-  border-radius: var(--radius-surface); border: 1px solid var(--line);
-  background: var(--bg-alt); color: inherit; text-decoration: none; min-height: 44px;
-  transition: background-color var(--duration-fast) var(--ease-out),
+  display: flex; gap: .65rem; align-items: flex-start; padding: .75rem 0;
+  border-radius: 0; border: 0; border-block-end: 1px solid var(--line);
+  background: transparent; color: inherit; text-decoration: none; min-height: 44px;
+  transition: color var(--duration-fast) var(--ease-out),
               border-color var(--duration-fast) var(--ease-out),
               transform var(--duration-fast) var(--ease-out);
 }
 .cp-activity-link:hover {
   border-color: var(--color-action);
-  background: var(--color-action-surface);
+  color: var(--color-action);
 }
 .cp-activity-link:active {
   transform: scale(.99);
@@ -638,7 +641,8 @@ useHead(() => ({
 .cp-data-row strong { font-variant-numeric: tabular-nums; }
 
 .dark .cp-hero, .dark .cp-panel, .dark .cp-section, .dark .cp-side-panel { background: var(--bg-alt); border-color: var(--line); }
-.dark .cp-action-item, .dark .cp-data-row, .dark .cp-activity-item, .dark .cp-score { background: var(--bg); }
+.dark .cp-action-item, .dark .cp-data-row, .dark .cp-activity-item { background: transparent; }
+.dark .cp-score { background: var(--bg); }
 
 @media (max-width: 860px) {
   .cp-summary-grid, .cp-main-grid { grid-template-columns: 1fr; }

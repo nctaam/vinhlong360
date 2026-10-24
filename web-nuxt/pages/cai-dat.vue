@@ -176,7 +176,7 @@
         </template>
         <template v-else-if="setupData">
           <p class="sf-hint">Quét mã QR bằng Google Authenticator / Authy, rồi nhập mã 6 số.</p>
-          <img :src="setupData.qr" alt="QR 2FA" class="qr-img" width="180" height="180" />
+          <img :src="setupData.qr" alt="QR 2FA" class="qr-img" width="180" height="180" loading="lazy" decoding="async" />
           <p class="sf-hint">Hoặc nhập khoá thủ công: <code>{{ setupData.secret }}</code></p>
           <label class="sf-field">
             <span class="sf-label">Mã xác nhận</span>
@@ -764,8 +764,11 @@ onUnmounted(() => {
 .privacy-cert-title-group { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-1); }
 .privacy-cert-title-group h2 { margin: 0; }
 .privacy-cert-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: var(--radius-control); background: var(--color-action-surface); color: var(--color-action); font-size: var(--text-xs); font-weight: 600; border: 1px solid var(--border-liquid-glass, var(--line)); }
-.privacy-cert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-3); margin-bottom: var(--space-5); }
-.privacy-cert-card { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3); border: 1px solid var(--border-liquid-glass, var(--line)); border-radius: var(--radius-surface); background: var(--bg-warm); box-shadow: var(--shadow-xs); }
+/* Wave 7: Open Architectural Decree-13 Charter Strip — unboxed from 3 cards */
+.privacy-cert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0; margin-bottom: var(--space-5); border-block: 1px solid var(--border-liquid-glass, var(--line)); }
+.privacy-cert-card { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4); border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.privacy-cert-card:first-child { padding-inline-start: 0; }
+.privacy-cert-card + .privacy-cert-card { border-inline-start: 1px solid var(--border-liquid-glass, var(--line)); }
 .pcc-head { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
 .pcc-icon { color: var(--color-brand); font-size: 1.1rem; flex-shrink: 0; }
 .pcc-status { display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-xs); font-weight: 600; color: var(--color-action); margin-top: auto; }
@@ -841,9 +844,10 @@ onUnmounted(() => {
 .btn-sm { padding: .3rem .7rem; font-size: var(--text-sm); }
 .settings-card h2 { margin: 0 0 1rem; font-size: var(--text-lg); padding-bottom: var(--space-3); border-bottom: 1px solid var(--line); }
 .settings-card + .settings-card { margin-top: 1.25rem; }
-.sessions-list { display: flex; flex-direction: column; gap: .5rem; }
-.session-item { display: flex; align-items: center; gap: .75rem; padding: .6rem .8rem; border: 1px solid var(--border-input); border-radius: var(--radius-surface); }
-.session-item.current { border-color: var(--color-action); background: var(--color-action-surface); }
+/* Wave 7: Open Architectural Sessions, Notifications & Consent Ledgers */
+.sessions-list { display: flex; flex-direction: column; gap: 0; border-block-start: 1px solid var(--border-input); }
+.session-item { display: flex; align-items: center; gap: .75rem; padding: .65rem 0; border: 0; border-block-end: 1px solid var(--border-input); border-radius: 0; }
+.session-item.current { border-block-end-color: var(--color-action); background: color-mix(in srgb, var(--color-action-surface) 55%, transparent); padding-inline: .6rem; }
 .session-info { flex: 1; display: flex; flex-direction: column; gap: .15rem; }
 .session-ua { font-weight: 600; font-size: var(--text-sm); }
 .session-badge { font-size: .75rem; font-weight: 600; color: var(--color-action); background: var(--color-action-surface); padding: .15rem .5rem; border-radius: var(--radius-pill, 999px); }
@@ -857,11 +861,11 @@ onUnmounted(() => {
 .danger-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .danger-item p { margin: 0; }
 .btn-danger-text { color: var(--danger) !important; }
-.notif-prefs { display: flex; flex-direction: column; gap: .5rem; }
+.notif-prefs { display: flex; flex-direction: column; gap: 0; border-block-start: 1px solid var(--border-input); }
 .notif-pref-item {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-  padding: .75rem .8rem; border: 1px solid var(--border-input);
-  border-radius: var(--radius-surface); cursor: pointer;
+  padding: .75rem 0; border: 0; border-block-end: 1px solid var(--border-input);
+  border-radius: 0; cursor: pointer;
   transition: background var(--duration-fast), transform var(--duration-fast) var(--ease-out);
 }
 .notif-pref-item:hover { background: var(--bg-warm); }
@@ -897,8 +901,8 @@ onUnmounted(() => {
 /* ── Data & legal ── */
 .dl-section { margin-bottom: 1.25rem; }
 .dl-section h3 { font-size: var(--text-base); margin: 0 0 .3rem; }
-.dl-consent-list { display: flex; flex-direction: column; gap: .35rem; margin-top: .5rem; }
-.dl-consent-item { display: flex; gap: .75rem; align-items: center; padding: .4rem .6rem; border: 1px solid var(--border-input); border-radius: var(--radius-surface); }
+.dl-consent-list { display: flex; flex-direction: column; gap: 0; margin-top: .5rem; border-block-start: 1px solid var(--border-input); }
+.dl-consent-item { display: flex; gap: .75rem; align-items: center; padding: .5rem 0; border: 0; border-block-end: 1px solid var(--border-input); border-radius: 0; }
 .dl-consent-ver { font-weight: 600; font-size: var(--text-sm); }
 .dl-consent-time { font-size: var(--text-xs); color: var(--ink-700); }
 [data-action="load-consent-history"] { min-height: 44px; }
@@ -929,7 +933,7 @@ onUnmounted(() => {
 
 /* ── Dark mode ── */
 .dark .sf-input { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
-.dark .session-item { border-color: var(--line); background: var(--bg-alt); }
+.dark .session-item { border-color: var(--line); background: transparent; }
 .dark .session-item.current { border-color: var(--color-action); background: var(--color-action-surface); }
 .dark .settings-danger { border-color: rgba(var(--danger-rgb), .3); }
 .dark .sf-avatar-preview { border-color: var(--line); }

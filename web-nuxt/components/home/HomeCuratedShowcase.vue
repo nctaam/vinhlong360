@@ -396,9 +396,8 @@ function onImgFallback(e: Event) {
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-1h) var(--space-3);
-  background: rgba(var(--black-rgb), 0.75);
+  background: rgba(var(--black-rgb), 0.86);
   color: var(--surface-white);
-  backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
@@ -418,10 +417,9 @@ function onImgFallback(e: Event) {
   min-width: 44px;
   min-height: 44px;
   border-radius: 50%;
-  background: rgba(var(--black-rgb), 0.75);
+  background: rgba(var(--black-rgb), 0.86);
   color: var(--surface-white);
   border: 1px solid var(--border-liquid-glass);
-  backdrop-filter: blur(20px) saturate(180%);
   box-shadow: var(--shadow-card-ambient);
   cursor: pointer;
   font-size: 1.1rem;
@@ -653,13 +651,12 @@ function onImgFallback(e: Event) {
 
 .home-curated-satellite__terroir-badge {
   padding: 3px 8px;
-  background: rgba(var(--black-rgb), 0.78);
+  background: rgba(var(--black-rgb), 0.86);
   color: var(--alluvial-gold);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
-  font-size: 11px;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
-  backdrop-filter: blur(20px) saturate(180%);
   box-shadow: var(--shadow-card-ambient);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
 }
@@ -670,13 +667,12 @@ function onImgFallback(e: Event) {
 
 .home-curated-satellite__tag {
   padding: 3px 10px;
-  background: rgba(var(--black-rgb), 0.78);
+  background: rgba(var(--black-rgb), 0.86);
   color: var(--surface-white);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
-  font-size: 11px;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-bold);
-  backdrop-filter: blur(20px) saturate(180%);
   box-shadow: var(--shadow-card-ambient);
 }
 
@@ -722,7 +718,7 @@ function onImgFallback(e: Event) {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: var(--text-2xs);
   color: var(--surface-white);
   font-weight: var(--weight-bold);
 }

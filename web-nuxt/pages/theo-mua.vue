@@ -136,7 +136,7 @@
           >
             <span v-if="isPeak(e)" class="season-badge peak">Cao điểm</span>
             <span v-else class="season-badge">Đang mùa</span>
-            <small class="season-when"><IconLine name="calendar" class="season-when-icon" aria-hidden="true" />{{ seasonText(e.season) }}</small>
+
             <EntityCard :entity="e" color-recipe="tri-region-v1" />
           </div>
         </div>

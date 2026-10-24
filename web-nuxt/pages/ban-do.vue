@@ -4,6 +4,7 @@
     data-color-system="tri-region-v1"
     data-page-recipe="map"
     :data-outdoor-contrast="outdoorContrast ? 'high' : 'normal'"
+    :data-panel="searchView.state.value.panel"
     :class="{ 'is-fullbleed': isFullBleed }"
   >
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Bản đồ' }]" :json-ld="true" />
@@ -31,7 +32,12 @@
           aria-label="Lọc theo loại địa điểm"
           @update:model-value="onTypeFilterChange"
         />
-        <div class="map-field-dock map-floating-thumb-dock map-floating-dock" role="toolbar" aria-label="Tiện ích thực địa & lọc chuyên đề">
+        <div
+          v-show="searchView.state.value.panel !== 'list'"
+          class="map-field-dock map-floating-thumb-dock map-floating-dock"
+          role="toolbar"
+          aria-label="Tiện ích thực địa & lọc chuyên đề"
+        >
           <div class="map-quick-presets" role="group" aria-label="Lọc theo đặc trưng sông nước">
             <button
               v-for="preset in quickWaterPresets"
@@ -334,7 +340,7 @@ const filteredPins = computed(() => mapPins.value.filter((pin) => {
   return (
     (!savedMode.value || savedPinIds.value.has(String(pin.id)))
     && (activeTypeArray.value.includes('all') || activeTypeArray.value.includes(pin.type))
-    && (!areaQuery.value || pin.place_area === areaQuery.value || pin.area === areaQuery.value)
+    && (!areaQuery.value || entityMatchesAreaScope(pin, areaQuery.value))
     && matchesQuery
     && matchesViewport
     && (activeWaterPreset.value === 'all' || (() => {
@@ -449,26 +455,36 @@ useHead({
   justify-content: space-between;
   gap: var(--space-2);
   margin-top: var(--space-3);
-  padding-top: var(--space-3);
-  border-top: 1px dashed var(--line);
+  padding-top: var(--space-2);
+  border-top: none;
 }
 @media (max-width: 768px) {
   .map-floating-thumb-dock {
     position: fixed;
-    bottom: calc(env(safe-area-inset-bottom) + 72px);
-    right: 16px;
+    bottom: calc(env(safe-area-inset-bottom) + 64px);
+    left: 12px;
+    right: 12px;
     z-index: var(--z-overlay-raised);
-    max-width: min(calc(100vw - 32px), 480px);
-    background: color-mix(in srgb, var(--card) 95%, transparent);
+    max-width: calc(100vw - 24px);
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    scrollbar-width: none;
+    background: color-mix(in srgb, var(--card) 92%, transparent);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sheet);
-    box-shadow: var(--shadow-lg), 0 8px 30px rgba(var(--black-rgb), 0.18);
-    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border-liquid-glass, var(--line));
+    border-radius: var(--radius-pill, 999px);
+    box-shadow: var(--shadow-card-hover, var(--shadow-lg)), 0 8px 30px rgba(var(--black-rgb), 0.16);
+    padding: 6px var(--space-3);
     margin-top: 0;
-    border-top: 1px solid var(--line);
   }
+  .map-floating-thumb-dock::-webkit-scrollbar {
+    display: none;
+  }
+}
+[data-panel="list"] .map-floating-thumb-dock {
+  display: none !important;
 }
 .is-fullbleed,
 .page.is-fullbleed {
@@ -508,12 +524,12 @@ useHead({
     bottom: calc(env(safe-area-inset-bottom) + 72px);
     right: 16px;
     z-index: var(--z-overlay-raised);
-    background: color-mix(in srgb, var(--card) 95%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--card) 90%, transparent);
+    backdrop-filter: var(--glass-frosted-nav, saturate(1.8) blur(20px));
+    -webkit-backdrop-filter: var(--glass-frosted-nav, saturate(1.8) blur(20px));
+    border: 1px solid var(--border-liquid-glass, var(--line));
     border-radius: var(--radius-sheet);
-    box-shadow: var(--shadow-lg), 0 8px 30px rgba(var(--black-rgb), 0.18);
+    box-shadow: var(--shadow-card-hover, var(--shadow-lg));
     padding: var(--space-2) var(--space-3);
     margin-top: 0;
   }
@@ -527,6 +543,7 @@ useHead({
   padding: var(--space-1) var(--space-3);
   font-size: var(--text-xs);
   font-weight: var(--weight-medium);
+  white-space: nowrap;
   color: var(--muted);
   background: var(--card);
   border: 1px solid var(--line);
@@ -535,6 +552,8 @@ useHead({
   transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .map-quick-preset-btn:hover { background: var(--bg-warm); border-color: var(--border); color: var(--ink); transform: translateY(-1px); }
+.map-quick-preset-btn:active { transform: scale(0.98); }
+.map-quick-preset-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .map-quick-preset-btn.is-active {
   background: color-mix(in srgb, var(--color-brand) 12%, var(--card));
   border-color: var(--color-brand);
@@ -548,14 +567,17 @@ useHead({
   min-height: 44px;
   padding: var(--space-1) var(--space-3);
   font-size: var(--text-xs);
+  white-space: nowrap;
   color: var(--muted);
   background: transparent;
   border: 1px solid var(--line);
   border-radius: var(--radius-pill, 999px);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .map-contrast-toggle:hover { background: var(--bg-warm); color: var(--ink); }
+.map-contrast-toggle:active { transform: scale(0.98); }
+.map-contrast-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .map-contrast-toggle.is-high {
   background: var(--color-brand);
   border-color: var(--color-brand);
@@ -569,14 +591,17 @@ useHead({
   min-height: 44px;
   padding: var(--space-1) var(--space-3);
   font-size: var(--text-xs);
+  white-space: nowrap;
   color: var(--muted);
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius-pill, 999px);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .map-fullbleed-toggle:hover { background: var(--bg-warm); color: var(--ink); }
+.map-fullbleed-toggle:active { transform: scale(0.98); }
+.map-fullbleed-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .map-fullbleed-toggle.is-active {
   background: color-mix(in srgb, var(--color-brand) 15%, var(--card));
   border-color: var(--color-brand);
@@ -593,37 +618,39 @@ useHead({
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 46px;
+  min-height: 46px;
   padding: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--muted);
+  font-size: var(--text-base);
+  color: var(--color-text);
   background: var(--card);
-  border: 1px solid var(--line);
+  border: 1.5px solid var(--border-liquid-glass, var(--line));
   border-radius: var(--radius-pill, 999px);
+  box-shadow: 0 2px 8px rgba(var(--black-rgb), 0.08);
   cursor: pointer;
-  transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.map-zoom-btn:hover { background: var(--bg-warm); border-color: var(--border); color: var(--ink); transform: translateY(-1px); }
-.map-zoom-btn:active { transform: scale(0.96); }
+.map-zoom-btn:hover { background: var(--bg-warm); border-color: var(--color-brand); color: var(--color-brand); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(var(--black-rgb), 0.12); }
+.map-zoom-btn:active { transform: scale(0.94); }
 
 .map-terroir-gps-btn {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  min-height: 44px;
-  padding: var(--space-1) var(--space-3);
+  min-height: 46px;
+  padding: var(--space-2) var(--space-3);
   font-size: var(--text-xs);
   font-family: var(--font-mono, monospace);
-  color: var(--muted);
+  color: var(--color-text);
   background: var(--card);
-  border: 1px solid var(--line);
+  border: 1.5px solid var(--border-liquid-glass, var(--line));
   border-radius: var(--radius-pill, 999px);
+  box-shadow: 0 2px 8px rgba(var(--black-rgb), 0.08);
   cursor: pointer;
-  transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.map-terroir-gps-btn:hover { background: var(--bg-warm); border-color: var(--border); color: var(--ink); transform: translateY(-1px); }
-.map-terroir-gps-btn:active { transform: scale(0.96); }
+.map-terroir-gps-btn:hover { background: var(--bg-warm); border-color: var(--color-brand); color: var(--color-brand); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(var(--black-rgb), 0.12); }
+.map-terroir-gps-btn:active { transform: scale(0.95); }
 
 [data-outdoor-contrast="high"] .map-filters {
   border: 2px solid var(--color-brand);
@@ -664,5 +691,15 @@ useHead({
   border: 2px solid var(--color-brand);
   box-shadow: 0 8px 24px rgba(var(--black-rgb), 0.5);
   background: var(--card);
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-quick-preset-btn,
+  .map-contrast-toggle,
+  .map-fullbleed-toggle,
+  .map-zoom-btn,
+  .map-terroir-gps-btn {
+    transition: none;
+    transform: none;
+  }
 }
 </style>

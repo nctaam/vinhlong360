@@ -38,7 +38,7 @@
     />
 
     <!-- Spotlight nổi bật -->
-    <CatalogSpotlight :items="allEntities" />
+    <CatalogSpotlight :items="allEntities" color-recipe="tri-region-v1" />
 
     <!-- Ba kiểu qua đêm — the decision tree made visible, replaces prose-only "loại hình lưu trú" -->
     <section class="block band reveal">
@@ -65,7 +65,7 @@
       </div>
       <div class="region-windows" role="group" aria-label="Chọn nhanh theo khu vực">
         <button type="button"
-          v-for="(meta, key) in AREA_META"
+          v-for="(meta, key) in CURRENT_AREA_META"
           :key="key"
           :class="['region-window', { active: areaFilter === key }]"
           :aria-pressed="areaFilter === key"
@@ -169,7 +169,7 @@
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
-import { AREA_META } from '~/composables/useConstants'
+import { AREA_META, CURRENT_AREA_META } from '~/composables/useConstants'
 import { generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { STAY_CATALOG_FAQS } from '~/composables/useSeoHelpers'
 
@@ -203,7 +203,7 @@ const catalogAeoEntries = [
     text: 'Không gian nghỉ dưỡng khoáng đạt hướng trọn tầm nhìn sông lớn, đón ngọn gió mát lành và ngắm bình minh rạng rỡ trên những chuyến phà châu thổ.',
   },
   {
-    heading: 'Khách sạn trung tâm thành phố Vĩnh Long & Bình Minh',
+    heading: 'Khách sạn trung tâm đô thị Vĩnh Long & Bình Minh',
     text: 'Vị trí thuận tiện kết nối các trục quốc lộ huyết mạch, gần chợ đêm bờ kè, phố ẩm thực và bến tàu du lịch đường thủy.',
   },
 ]
@@ -248,29 +248,24 @@ const allEntities = computed(() => {
   return raw.entities || []
 })
 
-const areaCountMap = computed(() => {
-  const counts: Record<string, number> = {}
-  for (const e of allEntities.value) {
-    const area = getEntityArea(e)
-    if (area) counts[area] = (counts[area] || 0) + 1
-  }
-  return counts
-})
-
 const areaCounts = computed(() =>
-  Object.entries(AREA_META)
-    .filter(([key]) => areaCountMap.value[key])
-    .map(([key, meta]) => ({ key, name: meta.name, count: areaCountMap.value[key] || 0 }))
+  Object.entries(CURRENT_AREA_META)
+    .map(([key, meta]) => ({
+      key,
+      name: meta.name,
+      count: allEntities.value.filter((e: Entity) => entityMatchesAreaScope(e, key)).length,
+    }))
+    .filter(item => item.count > 0)
 )
 
 function countByArea(key: string) {
-  return areaCountMap.value[key] || 0
+  return allEntities.value.filter((e: Entity) => entityMatchesAreaScope(e, key)).length
 }
 
 // FilterChips options for the grid's area filter (single-select, mirrors du-lich.vue's typeFilterOptions pattern)
 const areaFilterOptions = computed(() => [
   { key: 'all', label: 'Tất cả khu vực' },
-  ...Object.entries(AREA_META).map(([key, meta]) => ({ key, label: meta.name })),
+  ...Object.entries(CURRENT_AREA_META).map(([key, meta]) => ({ key, label: meta.name })),
 ])
 
 // Data-driven accommodation type breakdown for hero confidence (no fabricated values):
@@ -331,7 +326,7 @@ const filtered = computed(() => {
   let list = allEntities.value
 
   if (areaFilter.value !== 'all') {
-    list = list.filter((e: Entity) => getEntityArea(e) === areaFilter.value)
+    list = list.filter((e: Entity) => entityMatchesAreaScope(e, areaFilter.value))
   }
 
   if (q.value.trim()) {
@@ -416,67 +411,7 @@ useHead(() => {
   .type-pill:hover { transform: none; }
 }
 
-/* ══════════════════════════════════════════════════════════════════════
-   WAKE-UP HERO — the flagship moment. Cool dawn-blue register (accommodation
-   = rest/calm), single moving element: a horizon sweep that shifts the scrim
-   from night-blue to dawn-amber to day-sand once on load, then settles.
-   ══════════════════════════════════════════════════════════════════════ */
-.wake-hero {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--radius-surface);
-  padding: clamp(var(--space-8), 4vw + var(--space-6), 3.5rem) var(--space-6) var(--space-6);
-  margin-bottom: var(--space-6);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-subtle);
-}
-
-.wake-hero-inner { position: relative; z-index: 1; max-width: 65ch; }
-.wake-hero-eyebrow {
-  margin: 0 0 var(--space-3);
-  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: var(--weight-bold);
-  text-transform: uppercase; letter-spacing: var(--tracking-caps);
-  color: var(--color-brand);
-}
-.wake-hero-title {
-  margin: 0 0 var(--space-3);
-  font-family: var(--font-editorial-display); font-weight: var(--weight-semibold);
-  font-size: clamp(var(--text-3xl), 4.5vw, var(--text-5xl));
-  line-height: 1.15; letter-spacing: var(--tracking-tight);
-  color: var(--color-text); text-wrap: balance;
-}
-.wake-hero-sub {
-  margin: 0; color: var(--color-text-muted);
-  font-size: var(--text-base); line-height: var(--leading-relaxed);
-  max-width: 60ch;
-}
-.wake-hero-stats {
-  position: relative; z-index: 1;
-  display: flex; gap: var(--space-6); margin-top: var(--space-6); padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border); flex-wrap: wrap;
-}
-.wake-hero-stats .stat-item {
-  padding: var(--space-2) var(--space-3); border-radius: var(--radius-control);
-  background: var(--color-surface); border: 1px solid var(--color-border);
-}
-.wake-hero-stats .stat-item:hover { background: var(--color-surface-raised); }
-.wake-hero-stats .stat-num {
-  font-variant-numeric: tabular-nums; font-weight: var(--weight-bold);
-  color: var(--color-text); margin-right: var(--space-1);
-}
-.wake-hero-stats .stat-label { color: var(--color-text-muted); font-size: var(--text-sm); }
-.wake-hero .catalog-type-breakdown { position: relative; z-index: 1; }
-.wake-hero .type-pill {
-  background: var(--color-surface); border-color: var(--color-border);
-}
-.wake-hero .type-pill:hover { background: var(--color-surface-raised); border-color: var(--color-border-strong); }
-.wake-hero .type-count { color: var(--color-brand); }
-.wake-hero .type-name { color: var(--color-text-muted); }
-
-@media (max-width: 640px) {
-  .wake-hero { padding: var(--space-6) var(--space-4); }
-  .wake-hero-title { font-size: var(--text-xl); }
-}
+/* .wake-hero* shared in assets/css/catalog.css */
 
 /* ══════════════════════════════════════════════════════════════════════
    BA KIỂU QUA ĐÊM — editorial triad (decision tree made visible)
@@ -484,19 +419,37 @@ useHead(() => {
 .stay-triad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-5);
+  gap: 0;
+  counter-reset: stay-triad;
+  border-block: 1px solid var(--line);
 }
 .stay-tile {
+  counter-increment: stay-triad;
   position: relative;
   overflow: hidden;
   isolation: isolate;
   padding: var(--space-6) var(--space-5) var(--space-5);
-  border-radius: var(--radius-sheet);
-  background: var(--card);
-  border: .5px solid var(--line);
-  transition: transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  border-inline-start: 1px solid var(--line);
+  box-shadow: none;
+  transition: background-color .25s var(--ease-out);
 }
-.stay-tile:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--border); }
+.stay-tile:first-child { border-inline-start: 0; padding-inline-start: 0; }
+.stay-tile:last-child { padding-inline-end: 0; }
+.stay-tile::before {
+  content: counter(stay-triad, decimal-leading-zero);
+  display: block;
+  margin-bottom: var(--space-2);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-weight: 500;
+  font-size: var(--text-2xl);
+  line-height: 1;
+  color: var(--color-brand);
+}
+.stay-tile:hover { background: color-mix(in srgb, var(--bg-warm) 55%, transparent); }
 .stay-tile-motif {
   position: absolute; right: -10%; bottom: -12%; z-index: 0;
   width: 96px; height: 96px; opacity: .1; color: var(--color-brand);
@@ -515,31 +468,34 @@ useHead(() => {
   font-family: var(--font-editorial); font-weight: 600;
   font-size: var(--text-xl); line-height: var(--leading-tight);
   color: var(--ink);
+  overflow-wrap: break-word; word-break: break-word; text-wrap: pretty;
 }
 .stay-tile-body {
   position: relative; z-index: 1; margin: 0 0 var(--space-3);
   color: var(--ink); font-size: var(--text-sm); line-height: var(--leading-relaxed);
+  overflow-wrap: break-word; word-break: break-word;
 }
 .stay-tile-persona {
   position: relative; z-index: 1; margin: 0 0 var(--space-3);
   padding-top: var(--space-3); border-top: .5px solid var(--line);
   color: var(--muted); font-size: var(--text-sm); font-style: italic;
+  overflow-wrap: break-word; word-break: break-word;
 }
 .stay-tile-price {
   position: relative; z-index: 1; margin: 0;
   color: var(--muted); font-size: var(--text-xs); font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
-.dark .stay-tile { background: var(--card); border-color: var(--line); }
-.dark .stay-tile:hover { border-color: rgba(var(--white-rgb),.1); }
+.dark .stay-tile { background: transparent; border-color: var(--line); }
+.dark .stay-tile:hover { background: rgba(var(--white-rgb), .02); }
 
 @media (max-width: 900px) and (min-width: 601px) {
   .stay-triad { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 600px) {
   .stay-triad { grid-template-columns: 1fr; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .stay-tile:hover { transform: none; }
+  .stay-tile { border-inline-start: 0; border-block-start: 1px solid var(--line); padding-inline: 0; }
+  .stay-tile:first-child { border-block-start: 0; }
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -557,12 +513,13 @@ useHead(() => {
   display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1);
   text-align: left;
   padding: var(--space-5); border-radius: var(--radius-sheet);
-  background: var(--card); border: .5px solid var(--line);
+  background: var(--card); border: 1px solid var(--border-liquid-glass, var(--line));
+  box-shadow: var(--shadow-card-ambient, var(--shadow-xs));
   cursor: pointer; min-height: 44px;
   transition: transform .3s var(--ease-out-expo), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
 }
-.region-window:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: rgba(var(--color-action-rgb), .4); }
-.region-window:active { transform: scale(.98); transition-duration: .08s; }
+.region-window:hover { transform: translateY(-4px); box-shadow: var(--shadow-card-hover, var(--shadow-md)); border-color: color-mix(in srgb, var(--alluvial-gold) 45%, var(--border-liquid-glass)); }
+.region-window:active { transform: translateY(1px) scale(.98); transition-duration: .08s; }
 .region-window:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 /* Active state = tri-province gradient underline (river→amber→clay), matching
    FilterChips.vue's ::after treatment, instead of a flat single-tone border. */
@@ -592,15 +549,18 @@ useHead(() => {
 .rw-name {
   font-family: var(--font-editorial); font-weight: 600;
   font-size: var(--text-lg); color: var(--ink);
+  overflow-wrap: break-word; word-break: break-word;
 }
 .rw-count {
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
   color: var(--color-brand);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .rw-blurb {
   margin-top: var(--space-2);
   font-size: var(--text-xs); color: var(--muted); line-height: var(--leading-relaxed);
+  overflow-wrap: break-word; word-break: break-word;
 }
 .dark .region-window { background: var(--card); border-color: var(--line); }
 .dark .region-window.active { background: rgba(var(--color-action-rgb), .12); }

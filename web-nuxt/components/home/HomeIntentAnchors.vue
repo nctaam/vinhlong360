@@ -3,7 +3,6 @@
     <div class="home-intent-anchors__inner">
       <div class="home-intent-anchors__header">
         <div class="home-intent-anchors__eyebrow-row">
-          <span class="editorial-folio-tag" aria-hidden="true">FOLIO I · CHỌN GU TRẢI NGHIỆM</span>
           <span class="archival-gps-badge sr-only" aria-label="Tọa độ địa lý Vĩnh Long">
             <IconLine name="pin" aria-hidden="true" />
             <span>10°15'07"N 105°58'34"E · CỔ CHIÊN BASIN</span>
@@ -17,12 +16,6 @@
               <span>Lối rẽ lữ hành theo gu</span>
             </span>
             <h2 class="home-intent-anchors__title" aria-label="Lối rẽ khám phá nhanh">Lối rẽ <em class="editorial-italic-accent" aria-hidden="true">khám phá nhanh</em></h2>
-          </div>
-
-          <div class="artisanal-terroir-seal sr-only" aria-hidden="true">
-            <span class="artisanal-terroir-seal__ring">
-              <span class="artisanal-terroir-seal__inner">BẢN ĐỊA<br>CHỨNG THỰC</span>
-            </span>
           </div>
         </div>
       </div>
@@ -67,7 +60,7 @@
       <!-- Curator's Fast Persona Capsule -->
       <aside
         v-if="currentPersona"
-        class="home-persona-capsule cinema-glass-plate alluvial-sheen"
+        class="home-persona-capsule"
         :aria-label="`Tuyển tập tiêu biểu cho gu ${currentPersona.label}`"
       >
         <div class="home-persona-capsule__header">
@@ -173,7 +166,7 @@ const INTENT_ANCHORS: readonly IntentAnchor[] = [
         title: 'Di sản Đương đại Mang Thít',
         distance: '12 km từ trung tâm',
         duration: '2–3 giờ',
-        highlight: 'Hàng ngàn lò gạch cổ thế kỷ bên dòng kênh Thầy Cai huyền ảo',
+        highlight: 'Hàng ngàn lò gạch cổ thế kỷ bên dòng kênh Thầy Cai trầm tích',
         to: '/dia-diem/de-an-di-san-duong-dai-mang-thit',
       },
       {
@@ -251,7 +244,7 @@ const INTENT_ANCHORS: readonly IntentAnchor[] = [
         title: 'Khoai lang Bình Tân & Cam sành Tam Bình',
         distance: 'Xứ rau màu phù sa',
         duration: 'Thức quà mua về',
-        highlight: 'Đặc sản nức tiếng củ bùi ngọt lịm, múi cam mọng nước mát lành',
+        highlight: 'Nông sản trứ danh củ bùi ngọt bở, múi cam mọng nước thanh mát',
         to: '/ocop',
       },
     ],
@@ -538,18 +531,19 @@ function onAvatarFallback(e: Event) {
   color: var(--color-brand);
 }
 
-/* Curator's Fast Persona Capsule */
+/* Curator's Fast Persona Capsule — Open Architectural Ledger (Zero Card-in-Card) */
 .home-persona-capsule {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border-radius: var(--radius-surface, 20px);
-  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
-  box-shadow: 0 8px 30px rgba(var(--black-rgb), 0.08);
+  gap: var(--space-4);
+  padding: var(--space-5) 0;
+  border-radius: 0;
+  border: 0;
+  border-block: 1px solid color-mix(in srgb, var(--color-border) 85%, transparent);
+  background: transparent;
+  box-shadow: none;
   margin-top: var(--space-2);
   position: relative;
-  overflow: hidden;
 }
 
 .home-persona-capsule__header {
@@ -558,7 +552,7 @@ function onAvatarFallback(e: Event) {
   justify-content: space-between;
   gap: var(--space-3);
   padding-bottom: var(--space-2);
-  border-bottom: 1px dashed color-mix(in srgb, var(--color-border) 70%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
 }
 
 .home-persona-capsule__tag {
@@ -590,30 +584,29 @@ function onAvatarFallback(e: Event) {
 .home-persona-capsule__spots {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-3);
+  gap: var(--space-5);
+  counter-reset: persona-spot;
 }
 
 .home-persona-spot {
+  counter-increment: persona-spot;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: var(--space-3);
-  border-radius: var(--radius-control, 12px);
-  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+  gap: 6px;
+  padding: var(--space-1) 0 var(--space-1) var(--space-4);
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  border-inline-start: 1px solid color-mix(in srgb, var(--mangthit-600) 35%, var(--color-border));
   color: var(--color-text);
   text-decoration: none;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-              background 0.2s ease,
-              border-color 0.2s ease,
-              box-shadow 0.2s ease;
+              border-color 0.2s ease;
 }
 
 .home-persona-spot:hover {
-  transform: translateY(-2px);
-  background: var(--color-surface);
-  border-color: color-mix(in srgb, var(--mangthit-600) 40%, transparent);
-  box-shadow: 0 4px 14px rgba(var(--black-rgb), 0.06);
+  transform: translateX(3px);
+  border-color: var(--mangthit-600);
 }
 
 .home-persona-spot:active {
@@ -622,10 +615,20 @@ function onAvatarFallback(e: Event) {
 
 .home-persona-spot__meta {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: var(--space-2);
   font-size: 11px;
+}
+
+.home-persona-spot__meta::before {
+  content: counter(persona-spot, decimal-leading-zero);
+  font-family: var(--font-editorial-display);
+  font-style: italic;
+  font-size: 1.05rem;
+  font-weight: var(--weight-semibold);
+  color: var(--mangthit-600);
+  line-height: 1;
 }
 
 .home-persona-spot__distance {
@@ -642,8 +645,9 @@ function onAvatarFallback(e: Event) {
 }
 
 .home-persona-spot__title {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
+  font-family: var(--font-editorial-display);
+  font-size: clamp(1rem, 1.25vw, 1.12rem);
+  font-weight: var(--weight-semibold);
   color: var(--color-text);
   line-height: 1.3;
 }
@@ -651,7 +655,7 @@ function onAvatarFallback(e: Event) {
 .home-persona-spot__highlight {
   font-size: var(--text-xs);
   color: var(--color-text-muted);
-  line-height: 1.4;
+  line-height: 1.45;
   margin: 0;
 }
 

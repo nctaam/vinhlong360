@@ -7,7 +7,7 @@
           <span>Ký sự Ẩm thực Cửu Long · Vị ngon đất phù sa</span>
         </span>
         <h2 aria-label="Thức ngon miệt vườn">Thức ngon <em class="editorial-italic-accent" aria-hidden="true">miệt vườn</em></h2>
-        <p class="sh-sub">Năm thức ngon nức tiếng miệt Cửu Long, đượm vị tôm cá sông Cổ Chiên cùng mớ rau vườn tươi rói bến phù sa.</p>
+        <p class="sh-sub">Năm thức ngon nếp xưa miệt Cửu Long, đượm vị tôm cá sông Cổ Chiên cùng mớ rau vườn tươi rói bến phù sa.</p>
       </div>
       <NuxtLink to="/am-thuc" class="see-all">
         <span>120 món ngon di sản</span>
@@ -42,7 +42,6 @@
         <!-- Floating Top Bar -->
         <div class="home-culinary-card__top">
           <div class="home-culinary-card__top-left">
-            <span class="home-culinary-card__rank">#0{{ index + 1 }}</span>
             <span class="home-culinary-card__terroir">{{ dish.terroir }}</span>
             <span class="home-culinary-card__badge sr-only">{{ dish.badge }}</span>
           </div>
@@ -112,7 +111,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     origin: 'Cá tai tượng sông Tiền',
     reputableVenue: 'Quán Chín Thảo · KDL Vinh Sang · Homestay Út Trinh',
     priceRange: '150.000đ – 250.000đ/con',
-    coverSrc: '/img/entities/ca-tai-tuong-chien-xu.webp',
+    coverSrc: '/img/cat-am-thuc.webp',
     to: '/dia-diem/ca-tai-tuong-chien-xu',
     mapTo: '/ban-do?selected=ca-tai-tuong-chien-xu',
     coordinates: "10°17'N · 105°59'E",
@@ -125,7 +124,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     origin: 'Hến cào Vũng Liêm',
     reputableVenue: 'Quán Bánh Xèo Hến Ba Năm · Các nhà vườn Cù Lao Dài',
     priceRange: '45.000đ – 70.000đ/cái',
-    coverSrc: '/img/entities/banh-xeo-hen-cu-lao-dai.webp',
+    coverSrc: '/img/entities/banh-xeo-long-binh-2.webp',
     to: '/dia-diem/banh-xeo-hen-cu-lao-dai',
     mapTo: '/ban-do?selected=banh-xeo-hen-cu-lao-dai',
     coordinates: "10°07'N · 106°11'E",
@@ -138,7 +137,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     origin: 'Khoai lang tím Bình Tân OCOP 4 sao',
     reputableVenue: 'Điểm dừng chân Bình Tân · Nhà Dừa Cocohome Cù Lao',
     priceRange: '30.000đ – 50.000đ/phần',
-    coverSrc: '/img/entities/khoai-lang-mam-song-cuon-la-cach.webp',
+    coverSrc: '/img/entities/ca-phi-sa-ot-thanh-phuoc.webp',
     to: '/dia-diem/khoai-lang-mam-song-cuon-la-cach',
     mapTo: '/ban-do?selected=khoai-lang-mam-song-cuon-la-cach',
     coordinates: "10°05'N · 105°49'E",
@@ -151,7 +150,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     origin: 'Cua đồng Tam Bình',
     reputableVenue: 'Phố ẩm thực Bờ kè Phường 1 · Quán cá đồng Long Hồ',
     priceRange: '120.000đ – 180.000đ/nồi',
-    coverSrc: '/img/entities/chao-cua-dong.webp',
+    coverSrc: '/img/entities/chao-ech-tran-nam.webp',
     to: '/dia-diem/chao-cua-dong',
     mapTo: '/ban-do?selected=chao-cua-dong',
     coordinates: "10°16'N · 105°58'E",
@@ -164,7 +163,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     origin: 'Bờ kè sông Cổ Chiên',
     reputableVenue: 'Phố ăn vặt bờ kè sông Cổ Chiên · Bến phà Đình Khao',
     priceRange: '50.000đ – 80.000đ/dĩa',
-    coverSrc: '/img/entities/oc-lac-hap-la-gung.webp',
+    coverSrc: '/img/entities/oc-gao-con-phu-da-hap-sa.webp',
     to: '/dia-diem/oc-lac-hap-la-gung',
     mapTo: '/ban-do?selected=oc-lac-hap-la-gung',
     coordinates: "10°15'N · 105°58'E",
@@ -202,18 +201,34 @@ function onImgFallback(e: Event) {
 
 .home-culinary-trail__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   gap: var(--space-fib-4);
   margin-block-start: var(--space-fib-4);
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 900px) {
+  .home-culinary-trail__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-6);
+    align-items: start;
+    padding-block-bottom: var(--space-6);
+  }
+
   .home-culinary-card--lead {
-    grid-column: span 2;
+    grid-column: span 1;
+  }
+
+  /* Staggered Gallery Triptych Rhythm (breaks uniform row monotony) */
+  .home-culinary-card:nth-child(2) {
+    transform: translateY(var(--space-6));
+  }
+
+  .home-culinary-card:nth-child(2):hover {
+    transform: translateY(calc(var(--space-6) - 4px));
   }
 }
 
-/* Full-Bleed Photographic Food Card (100% photo visual area) */
+/* Full-Bleed Photographic Food Card with Archival Inset Hairline */
 .home-culinary-card {
   position: relative;
   min-height: 440px;
@@ -226,6 +241,16 @@ function onImgFallback(e: Event) {
   box-shadow: var(--shadow-card-ambient);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.25s ease;
   background: var(--color-canvas);
+}
+
+.home-culinary-card::after {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgba(var(--white-rgb), 0.16);
+  border-radius: calc(var(--radius-surface) - 6px);
+  pointer-events: none;
+  z-index: 2;
 }
 
 @media (min-width: 1024px) {
@@ -289,51 +314,53 @@ function onImgFallback(e: Event) {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-4) var(--space-5);
 }
 
 .home-culinary-card__top-left {
   display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
+  align-items: baseline;
+  gap: var(--space-3);
 }
 
+/* Sculptural Fraunces Italic Display Numeral (Replaces SaaS Pill) */
 .home-culinary-card__rank {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
-  padding: 3px 10px;
-  background: rgba(var(--black-rgb), 0.78);
+  padding: 0;
+  background: transparent;
   color: var(--surface-white);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid var(--border-liquid-glass);
-  border-radius: var(--radius-pill, 9999px);
-  box-shadow: var(--shadow-card-ambient);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: var(--font-editorial-display);
+  font-style: italic;
+  font-size: clamp(1.75rem, 2.4vw, 2.2rem);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  text-shadow: 0 2px 12px rgba(var(--black-rgb), 0.65);
 }
 
 .home-culinary-card__terroir {
   padding: 3px 8px;
-  background: rgba(var(--black-rgb), 0.78);
+  background: rgba(var(--black-rgb), 0.86);
   color: var(--alluvial-gold);
-  backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
-  font-size: 11px;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-bold);
 }
 
 .home-culinary-card__badge {
   padding: 3px 10px;
-  background: rgba(var(--black-rgb), 0.78);
+  background: rgba(var(--black-rgb), 0.86);
   color: var(--surface-white);
-  backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
-  font-size: 11px;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
 }
 
@@ -349,14 +376,13 @@ function onImgFallback(e: Event) {
   display: inline-flex;
   align-items: center;
   padding: 3px 10px;
-  background: rgba(var(--black-rgb), 0.78);
+  background: rgba(var(--black-rgb), 0.86);
   color: var(--alluvial-gold);
-  backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
   font-variant-numeric: tabular-nums;
-  font-size: 11px;
+  font-size: var(--text-2xs);
   font-weight: var(--weight-bold);
   letter-spacing: 0.02em;
 }
@@ -370,6 +396,7 @@ function onImgFallback(e: Event) {
   flex-direction: column;
   gap: var(--space-2);
   color: var(--surface-white);
+  min-width: 0;
 }
 
 .home-culinary-card__origin {
@@ -379,6 +406,7 @@ function onImgFallback(e: Event) {
   font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: var(--tracking-caps);
+  min-width: 0;
 }
 
 .home-culinary-card__title {
@@ -386,6 +414,8 @@ function onImgFallback(e: Event) {
   font-family: var(--font-editorial-display);
   font-size: var(--text-base);
   line-height: 1.35;
+  text-wrap: pretty;
+  min-width: 0;
 }
 
 .home-culinary-card__title a {
@@ -393,6 +423,8 @@ function onImgFallback(e: Event) {
   text-decoration: none;
   text-shadow: 0 1px 3px rgba(var(--black-rgb), 0.5);
   transition: opacity 0.2s ease;
+  display: inline-block;
+  max-width: 100%;
 }
 
 .home-culinary-card__title a:hover {
@@ -410,12 +442,11 @@ function onImgFallback(e: Event) {
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  background: rgba(var(--black-rgb), 0.70);
+  background: rgba(var(--black-rgb), 0.82);
   border: 1px solid var(--border-liquid-glass);
-  backdrop-filter: blur(20px) saturate(180%);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
-  font-size: 11px;
+  font-size: var(--text-2xs);
   color: var(--surface-white);
   width: fit-content;
   transition: transform 0.2s ease, border-color 0.2s ease;

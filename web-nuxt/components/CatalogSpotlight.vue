@@ -71,19 +71,20 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 <style scoped>
 .cspot {
   display: grid; grid-template-columns: 1.05fr 1fr; gap: var(--space-6);
-  align-items: stretch; background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-sheet); overflow: hidden;
-  box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.05), 0 0 0 1px rgba(var(--white-rgb), 0.5);
+  align-items: stretch; background: transparent; border: 0;
+  border-block: 1px solid var(--line); border-radius: 0;
+  padding-block: var(--space-6); overflow: hidden; box-shadow: none;
   contain: layout style paint;
 }
 .dark .cspot {
-  box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.2), 0 0 0 1px rgba(var(--white-rgb), 0.08);
+  box-shadow: none;
 }
 @media (max-width: 760px) { .cspot { grid-template-columns: 1fr; } }
 .cspot-visual {
   position: relative; min-height: 260px;
   background-size: cover; background-position: center;
   display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-surface);
   overflow: hidden; text-decoration: none; isolation: isolate;
 }
 @media (max-width: 760px) { .cspot-visual { min-height: 170px; } }
@@ -97,15 +98,14 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 .cspot-icon :deep(svg) { width: 100%; height: 100%; display: block; }
 .cspot-region {
   position: absolute; top: var(--space-4); left: var(--space-4);
-  padding: var(--space-1) var(--space-3); background: rgba(var(--black-rgb),.5); color: var(--text-on-dark, var(--white));
-  border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: var(--weight-semibold);
-  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  padding: var(--space-1) var(--space-3); background: rgba(var(--black-rgb),.82); color: var(--text-on-dark, var(--white));
+  border-radius: var(--radius-pill, 999px); font-size: var(--text-xs); font-weight: var(--weight-semibold);
 }
 .cspot-body {
-  padding: var(--space-8) var(--space-8) var(--space-8) 0;
+  padding: var(--space-4) 0;
   display: flex; flex-direction: column; justify-content: center; gap: var(--space-3); min-width: 0;
 }
-@media (max-width: 760px) { .cspot-body { padding: var(--space-5); } }
+@media (max-width: 760px) { .cspot-body { padding: var(--space-2) 0 0; } }
 .cspot-kicker { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .05em; color: var(--catalog-legacy-primary-fg-strong); }
 .cspot[data-color-recipe='tri-region-v1'] .cspot-kicker { color: var(--color-brand); }
 /* editorial title — serif, matching the Story Card idiom (§2 narrative system) instead of

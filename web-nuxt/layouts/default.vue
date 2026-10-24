@@ -331,7 +331,7 @@ function isActive(g: { to?: string; children?: { to: string }[] }) {
   return !!g.children?.some(c => route.path === c.to || route.path.startsWith(c.to + '/'))
 }
 
-watch(() => route.path, () => {
+watch(() => route.fullPath, () => {
   closeAll()
   // T4 a11y: move focus to main content on route change so screen readers
   // announce the new page. nextTick waits for DOM update after navigation.

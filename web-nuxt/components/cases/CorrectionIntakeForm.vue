@@ -476,14 +476,17 @@ function submit() {
 }
 .intake-safety {
   margin: 0;
-  padding: 0.6rem 0.8rem;
-  border-radius: var(--radius-control);
-  background: var(--bg-alt);
+  padding: 0.35rem 0 0.35rem 0.75rem;
+  border-radius: 0;
+  border-inline-start: 2px solid var(--color-brand);
+  background: transparent;
 }
 .intake-errors {
-  border: 1px solid var(--color-error);
-  border-radius: var(--radius-control);
-  padding: 0.75rem 1rem;
+  border: 0;
+  border-inline-start: 2px solid var(--color-error);
+  border-radius: 0;
+  padding: 0.5rem 0 0.5rem 1rem;
+  background: transparent;
 }
 .intake-errors h3 {
   margin: 0 0 0.4rem;
@@ -493,12 +496,33 @@ function submit() {
   padding-left: 1.1rem;
 }
 fieldset {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-surface);
-  padding: 0.9rem 1rem;
+  border: 0;
+  border-block-start: 1px solid var(--border, var(--line));
+  border-radius: 0;
+  padding: 0.9rem 0 0.25rem;
+  margin: 0;
   display: grid;
   gap: 0.7rem;
   min-inline-size: 0;
+}
+.intake-review {
+  border-block: 1.5px solid var(--color-brand);
+  padding: 1rem 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.intake-review-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-block-start: 1px solid var(--border, var(--line));
+}
+.intake-review-list li {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.65rem 0;
+  border-block-end: 1px solid var(--border, var(--line));
+  font-size: var(--text-sm);
 }
 .intake-field-error {
   margin: var(--space-1) 0 0;

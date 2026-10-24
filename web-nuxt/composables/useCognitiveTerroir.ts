@@ -443,6 +443,11 @@ export function useCognitiveTerroir() {
   }
 
   if (getCurrentInstance()) {
+    let batteryManager: {
+      addEventListener?: (t: string, fn: () => void) => void
+      removeEventListener?: (t: string, fn: () => void) => void
+    } | null = null
+
     onMounted(() => {
       // 1. Initial updates
       updateTide()
@@ -480,11 +485,17 @@ export function useCognitiveTerroir() {
         const navAny = navigator as unknown as { connection?: { addEventListener: (t: string, fn: () => void) => void } }
         navAny.connection?.addEventListener?.('change', updateNetwork)
 
-        const navBattery = navigator as unknown as { getBattery?: () => Promise<{ addEventListener: (t: string, fn: () => void) => void }> }
+        const navBattery = navigator as unknown as {
+          getBattery?: () => Promise<{
+            addEventListener?: (t: string, fn: () => void) => void
+            removeEventListener?: (t: string, fn: () => void) => void
+          }>
+        }
         if (typeof navBattery.getBattery === 'function') {
           navBattery.getBattery().then((bm) => {
-            bm?.addEventListener?.('levelchange', updateBattery)
-            bm?.addEventListener?.('chargingchange', updateBattery)
+            batteryManager = bm || null
+            batteryManager?.addEventListener?.('levelchange', updateBattery)
+            batteryManager?.addEventListener?.('chargingchange', updateBattery)
           }).catch(() => {})
         }
       }
@@ -496,6 +507,9 @@ export function useCognitiveTerroir() {
         window.removeEventListener('offline', updateNetwork)
         const navAny = navigator as unknown as { connection?: { removeEventListener?: (t: string, fn: () => void) => void } }
         navAny.connection?.removeEventListener?.('change', updateNetwork)
+        batteryManager?.removeEventListener?.('levelchange', updateBattery)
+        batteryManager?.removeEventListener?.('chargingchange', updateBattery)
+        batteryManager = null
         globalTerroirListenersCount = Math.max(0, globalTerroirListenersCount - 1)
         if (globalTerroirListenersCount === 0 && activeKeydownListener) {
           window.removeEventListener('keydown', activeKeydownListener)
