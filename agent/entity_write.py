@@ -80,6 +80,38 @@ class EntityWriteResult:
     cache_mutations: tuple = field(default_factory=tuple)
 
 
+def _hydrate_loaded_attributes(item: dict):
+    raw_attrs = item.get("attributes")
+    if isinstance(raw_attrs, str):
+        try:
+            raw_attrs = json.loads(raw_attrs)
+        except (ValueError, TypeError):
+            raw_attrs = {}
+    if not isinstance(raw_attrs, dict):
+        return raw_attrs
+    has_uni = any(item.get(col) is not None for col in _entity_details.UNIVERSAL)
+    if _entity_details.reads_enabled() or has_uni:
+        return _entity_details.rebuild_attributes(
+            str(item.get("type") or ""), raw_attrs, item
+        )
+    return raw_attrs
+
+
+def _prepare_stored_patch(conn, snapshot: EntitySnapshot, patch: dict) -> tuple[bool, str, dict]:
+    real_conn = hasattr(conn, "cursor")
+    etype = str(patch.get("type") or snapshot.values.get("type") or "")
+    stored_patch = dict(patch)
+    if (
+        real_conn
+        and isinstance(stored_patch.get("attributes"), dict)
+        and _entity_details.reads_enabled()
+    ):
+        stored_patch["attributes"] = _entity_details.strip_synced_keys(
+            etype, stored_patch["attributes"]
+        )
+    return real_conn, etype, stored_patch
+
+
 class EntityWriteService:
     """Caller-owned entity mutation. Opens no connection, commits nothing."""
 
@@ -94,20 +126,23 @@ class EntityWriteService:
         lock = " FOR UPDATE" if self._db._use_pg else ""
         row = self._db._fetchone(
             conn,
-            f"SELECT id, name, type, summary, description, attributes, revision"
+            f"SELECT id, name, type, summary, description, attributes, revision,"
+            f" address, phone, website, hours, price_range, sub_category, best_time, highlight"
             f" FROM entities WHERE id = {ph}{lock}",
             (entity_id,),
         )
         if row is None:
             raise EntityWriteRejected("entity_not_found", "That entry does not exist.")
         item = self._db._row_to_dict(row)
+        values = {
+            key: item.get(key)
+            for key in ("name", "type", "summary", "description")
+        }
+        values["attributes"] = _hydrate_loaded_attributes(item)
         return EntitySnapshot(
             entity_id=str(item["id"]),
             revision=int(item["revision"] or 1),
-            values={
-                key: item.get(key)
-                for key in ("name", "type", "summary", "description", "attributes")
-            },
+            values=values,
         )
 
     def upsert(self, conn, entity: dict) -> tuple:
@@ -181,8 +216,9 @@ class EntityWriteService:
             )
 
         ph = self._placeholder()
+        real_conn, etype, stored_patch = _prepare_stored_patch(conn, snapshot, patch)
         assignments = ", ".join(f"{name} = {ph}" for name in changed)
-        params = tuple(_as_parameter(name, patch[name]) for name in changed) + (
+        params = tuple(_as_parameter(name, stored_patch[name]) for name in changed) + (
             entity_id, expected_revision)
         row = self._db._fetchone(
             conn,
@@ -195,14 +231,37 @@ class EntityWriteService:
             raise EntityWriteRejected(
                 "entity_revision_conflict", "That entry changed while it was being written."
             )
+        cache_mutations = self._sync_patched_details(
+            conn, real_conn, entity_id, etype, snapshot, patch, changed
+        )
         return EntityWriteResult(
             entity_id=entity_id,
             revision=int(self._db._row_to_dict(row)["revision"]),
             changed_fields=changed,
             before=before,
             after={name: patch[name] for name in changed},
-            cache_mutations=(),
+            cache_mutations=cache_mutations,
         )
+
+    def _sync_patched_details(
+        self, conn, real_conn: bool, entity_id: str, etype: str,
+        snapshot: EntitySnapshot, patch: dict, changed: tuple[str, ...]
+    ) -> tuple:
+        if not real_conn or ("attributes" not in changed and "type" not in changed):
+            return ()
+        full_attrs = (
+            patch["attributes"]
+            if "attributes" in patch
+            else snapshot.values.get("attributes")
+        )
+        mutation = _entity_details.sync_entity_details(
+            conn,
+            self._db._use_pg,
+            entity_id,
+            etype,
+            full_attrs if isinstance(full_attrs, dict) else {},
+        )
+        return (mutation,)
 
     def write_change_audit(
         self, conn, result: EntityWriteResult, *, actor: str, provenance: str

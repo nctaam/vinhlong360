@@ -15,3 +15,5 @@ data/
 ssl/
 web-nuxt/.nuxt
 web-nuxt/.output
+*.tar.gz
+*.zip

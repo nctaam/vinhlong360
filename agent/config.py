@@ -222,7 +222,7 @@ class Settings(BaseSettings):
 
     @property
     def is_production(self) -> bool:
-        return self.ENVIRONMENT.strip().lower() == "production"
+        return self.ENVIRONMENT.strip().lower() in ("production", "prod", "prd")
 
     @property
     def cors_origins_list(self) -> list[str]:

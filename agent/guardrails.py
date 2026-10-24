@@ -26,10 +26,38 @@ import html
 import unicodedata
 from urllib.parse import unquote_plus
 from dataclasses import dataclass
+from contextlib import contextmanager
 from pathlib import Path
 from threading import Lock
 
 from owner_write_gate import owner_write_gate
+
+
+@contextmanager
+def _interprocess_file_lock(path: Path):
+    """Serialize guardrail session budget reads/writes across worker processes."""
+    lock_path = path.with_suffix(path.suffix + ".lock")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+b") as handle:
+        if os.name == "nt":
+            import msvcrt
+            handle.seek(0)
+            handle.write(b"0")
+            handle.flush()
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+            try:
+                yield
+            finally:
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
 logger = logging.getLogger(__name__)
 
@@ -210,7 +238,9 @@ def _prompt_variants(text: str) -> tuple[str, ...]:
     )
     variants = [normalized, url_decoded, html.unescape(url_decoded), escaped]
     folded = "".join(
-        char for char in unicodedata.normalize("NFKD", variants[-1])
+        char for char in unicodedata.normalize(
+            "NFKD", variants[-1].replace("đ", "d").replace("Đ", "D")
+        )
         if not unicodedata.combining(char)
     )
     variants.append(re.sub(r"[^a-z0-9]+", " ", folded.lower()))
@@ -858,26 +888,33 @@ class SessionBudgetManager:
 
     def _load_persisted(self):
         """Doc sessions tu file."""
-        if self._persistence_file.exists():
-            try:
-                with open(self._persistence_file, encoding="utf-8") as f:
-                    data = json.load(f)
-                self._sessions = data.get("sessions", {})
-                logger.info("Loaded %d persisted sessions", len(self._sessions))
-            except (json.JSONDecodeError, OSError) as e:
-                logger.warning("Failed to load budget data: %s", e)
-                self._sessions = {}
+        with _interprocess_file_lock(self._persistence_file):
+            if self._persistence_file.exists():
+                try:
+                    with open(self._persistence_file, encoding="utf-8") as f:
+                        data = json.load(f)
+                    self._sessions = data.get("sessions", {})
+                    logger.info("Loaded %d persisted sessions", len(self._sessions))
+                except (json.JSONDecodeError, OSError) as e:
+                    logger.warning("Failed to load budget data: %s", e)
+                    self._sessions = {}
 
     def _save_persisted(self):
-        """Luu sessions ra file."""
-        try:
-            tmp = Path(str(self._persistence_file) + ".tmp")
-            with open(tmp, "w", encoding="utf-8") as f:
-                json.dump({"sessions": self._sessions, "updated": time.time()},
-                          f, ensure_ascii=False, indent=2)
-            tmp.replace(self._persistence_file)
-        except OSError as e:
-            logger.warning("Failed to save budget data: %s", e)
+        """Luu sessions ra file duoi interprocess lock."""
+        tmp: Path | None = None
+        with _interprocess_file_lock(self._persistence_file):
+            try:
+                self._persistence_file.parent.mkdir(parents=True, exist_ok=True)
+                tmp = Path(f"{self._persistence_file}.{os.getpid()}.{time.time_ns()}.tmp")
+                with open(tmp, "w", encoding="utf-8") as f:
+                    json.dump({"sessions": self._sessions, "updated": time.time()},
+                              f, ensure_ascii=False, indent=2)
+                tmp.replace(self._persistence_file)
+            except OSError as e:
+                logger.warning("Failed to save budget data: %s", e)
+            finally:
+                if tmp is not None:
+                    tmp.unlink(missing_ok=True)
 
     def _ensure_session(self, session_id: str):
         """Tao session moi neu chua co."""
@@ -995,7 +1032,7 @@ class SessionBudgetManager:
             return removed
 
     def verify_owner_absent(self, owner_key: str) -> bool:
-        with self._lock:
+        with self._lock, _interprocess_file_lock(self._persistence_file):
             if owner_key in self._sessions:
                 return False
             if not self._persistence_file.exists():

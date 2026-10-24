@@ -96,7 +96,7 @@ _ROUTE_PATTERNS = _build_patterns()
 
 def _strip_diacritics(text: str) -> str:
     """Remove Vietnamese diacritics for fuzzy matching fallback."""
-    nfkd = unicodedata.normalize("NFKD", text)
+    nfkd = unicodedata.normalize("NFKD", text.replace("đ", "d").replace("Đ", "D"))
     return "".join(c for c in nfkd if not unicodedata.combining(c))
 
 
@@ -196,7 +196,9 @@ RECOMMEND_AGENT = AgentSpec(
         "để ưu tiên trải nghiệm đang mùa. Gọi suggest_followups cuối cùng."
     ),
     allowed_tools=[
-        "search", "entity_detail", "seasonal_now", "suggest_followups",
+        "search", "entity_detail", "seasonal_now", "ocop_products",
+        "accommodation_search", "community_reviews", "trending_posts",
+        "suggest_followups",
     ],
     max_rounds=4,
     temperature=0.4,
@@ -245,7 +247,9 @@ GENERAL_AGENT = AgentSpec(
     allowed_tools=[
         "search", "entity_detail", "seasonal_now", "list_itineraries",
         "itinerary_detail", "places_in_area", "stats", "compare_areas",
-        "nearby_entities", "web_search", "suggest_followups",
+        "nearby_entities", "ocop_products", "accommodation_search",
+        "community_reviews", "trending_posts", "directory_lookup",
+        "web_search", "suggest_followups",
         "generate_itinerary", "weather",
     ],
     max_rounds=4,

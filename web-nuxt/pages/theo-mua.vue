@@ -35,11 +35,7 @@
           <strong>Tháng {{ month }} — <em>{{ seasonQuarter.tag }}</em></strong>
           <p>{{ seasonQuarter.note }}</p>
           <div class="season-tide-wrap">
-            <MekongWaterBadge :lunar-month="month" :lunar-day="15" />
-            <span class="season-tide-cue">
-              <IconLine name="ship" aria-hidden="true" />
-              <span>{{ seasonalTideCue }}</span>
-            </span>
+            <MekongWaterBadge :lunar-month="month" :lunar-day="15" compact />
           </div>
         </div>
       </div>
@@ -71,7 +67,7 @@
     />
 
     <!-- Spotlight nổi bật (entity đang mùa có summary dài nhất) -->
-    <CatalogSpotlight :items="inSeasonItems" />
+    <CatalogSpotlight :items="inSeasonItems" color-recipe="tri-region-v1" />
 
     <!-- Month selector — the ring above is now the primary control; this grid
          stays as a compact, scannable fallback (mobile / no-JS-hover users). -->
@@ -117,7 +113,7 @@
           :style="{ animationDelay: `${i * 50}ms` }"
         >
           <span class="season-badge peak">Cao điểm</span>
-          <EntityCard :entity="e" />
+          <EntityCard :entity="e" color-recipe="tri-region-v1" />
         </div>
       </div>
     </section>
@@ -126,7 +122,7 @@
     <template v-for="(cat, ci) in typeSections" :key="cat.type">
       <div v-if="ci > 0" class="type-section-divider" aria-hidden="true" />
       <section :class="['block', 'reveal', { band: ci % 2 === 0 }]">
-        <div class="section-eyebrow">{{ cat.emoji }} {{ cat.eyebrow }}</div>
+        <div class="section-eyebrow"><IconLine :name="cat.icon" aria-hidden="true" /> {{ cat.eyebrow }}</div>
         <div class="section-head sediment-head">
           <h2>{{ cat.label }}</h2>
           <span class="see-all-count">{{ cat.items.length }} mục</span>
@@ -140,8 +136,8 @@
           >
             <span v-if="isPeak(e)" class="season-badge peak">Cao điểm</span>
             <span v-else class="season-badge">Đang mùa</span>
-            <EntityCard :entity="e" />
             <small class="season-when"><IconLine name="calendar" class="season-when-icon" aria-hidden="true" />{{ seasonText(e.season) }}</small>
+            <EntityCard :entity="e" color-recipe="tri-region-v1" />
           </div>
         </div>
       </section>
@@ -151,7 +147,7 @@
     <section v-if="data && emptyTypes.length" class="block reveal">
       <div class="empty-type-grid">
         <div v-for="t in emptyTypes" :key="t.type" class="empty-type-card">
-          <span class="empty-type-icon" aria-hidden="true">{{ t.emoji }}</span>
+          <span class="empty-type-icon" aria-hidden="true"><IconLine :name="t.icon" /></span>
           <strong>Chưa có {{ t.label.toLowerCase() }} vào mùa tháng {{ month }}</strong>
           <p>Dữ liệu đang được cập nhật. Thử chọn tháng khác để tìm mục phù hợp.</p>
         </div>
@@ -171,7 +167,7 @@
     <!-- Editorial -->
     <section v-once class="page-article reveal">
       <div class="sediment-head"><h2>Khí hậu Vĩnh Long và du lịch theo mùa</h2></div>
-      <p>Vùng đồng bằng sông Cửu Long có khí hậu nhiệt đới gió mùa với hai mùa rõ rệt. <strong>Mùa khô</strong> (tháng 12–4) trời nắng ấm, ít mưa, nhiệt độ 25–32°C — đây là thời gian lý tưởng nhất để du lịch, đạp xe và tham quan làng nghề. <strong>Mùa mưa</strong> (tháng 5–11) có những cơn mưa rào buổi chiều nhưng sáng thường còn nắng đẹp, và đây lại là mùa trái cây rộ nhất.</p>
+      <p>Vùng đồng bằng sông Cửu Long có khí hậu nhiệt đới gió mùa với hai mùa rõ rệt. <strong>Mùa khô</strong> (tháng 12–4) trời nắng ấm, ít mưa, nhiệt độ 25–32°C — đây là thời điểm thuận tiện nhất để đi lại, đạp xe xuyên vườn và tham quan xóm nghề. <strong>Mùa mưa</strong> (tháng 5–11) có những cơn mưa rào buổi chiều nhưng sáng thường còn nắng đẹp, và đây lại là mùa trái cây rộ nhất.</p>
 
       <div class="sediment-head"><h2>Mùa nước nổi — trải nghiệm độc đáo</h2></div>
       <blockquote class="pull-quote">
@@ -229,7 +225,7 @@
 
     <!-- Full grid -->
     <section v-if="ranked.length" class="block reveal">
-      <div class="grid">
+      <div class="grid grid--asymmetric">
         <div
           v-for="(e, i) in visibleRanked" :key="e.id"
           class="season-item"
@@ -237,8 +233,7 @@
         >
           <span v-if="isPeak(e)" class="season-badge peak">Cao điểm</span>
           <span v-else-if="isInSeason(e)" class="season-badge">Đang mùa</span>
-          <EntityCard :entity="e" />
-          <small class="season-when"><IconLine name="calendar" class="season-when-icon" />{{ seasonText(e.season) }}</small>
+          <EntityCard :entity="e" color-recipe="tri-region-v1" />
         </div>
       </div>
       <button
@@ -272,7 +267,7 @@
 const catalogAeoEntries = [
   {
     heading: 'Tháng 5 – 7: Đại tiệc trái cây hè chính vụ',
-    text: 'Mùa rộ nhất của chôm chôm, sầu riêng, măng cụt, dâu da trên khắp các dải cù lao Long Hồ; trái ngọt đậm đà nhất và giá tốt nhất năm.',
+    text: 'Mùa rộ nhất của chôm chôm, sầu riêng, măng cụt, dâu da trên khắp các dải cù lao Long Hồ; trái chín mọng ngọt thanh và giá tốt nhất năm.',
   },
   {
     heading: 'Tháng 8 – 10: Mùa nước nổi phù sa & ẩm thực đồng chiêm',
@@ -403,7 +398,7 @@ const typeSections = computed(() =>
   WEDGE_TYPES
     .map(t => ({
       type: t,
-      emoji: TYPE_META[t]?.emoji || '',
+      icon: TYPE_META[t]?.icon || 'sprout',
       label: TYPE_META[t]?.label || t,
       eyebrow: TYPE_EYEBROW[t] || TYPE_META[t]?.label || t,
       desc: TYPE_DESC[t] || '',
@@ -418,7 +413,7 @@ const emptyTypes = computed(() =>
     .filter(t => ranked.value.filter((e: Entity) => e.type === t).length === 0)
     .map(t => ({
       type: t,
-      emoji: TYPE_META[t]?.emoji || '🌿',
+      icon: TYPE_META[t]?.icon || 'sprout',
       label: TYPE_META[t]?.label || t,
     }))
 )
@@ -586,9 +581,25 @@ useHead(() => {
 .ring-notch.is-current .ring-notch-tick { transform: translateX(-50%) scaleY(1.44) scaleX(1.5); background: var(--card); box-shadow: 0 0 0 1px rgba(var(--black-rgb), .12); }
 .ring-notch:focus-visible { outline: 2px solid var(--card); outline-offset: 1px; }
 
-.season-moment-text strong { display: block; font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); }
+.season-moment-text strong {
+  display: block;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--ink);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-wrap: pretty;
+}
 .season-moment-text strong em { font-family: var(--font-editorial); font-style: italic; font-weight: 500; color: var(--color-brand); }
-.season-moment-text p { margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
+.season-moment-text p {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  line-height: var(--leading-relaxed);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-wrap: pretty;
+}
 
 .season-tide-wrap {
   display: flex;
@@ -678,6 +689,7 @@ useHead(() => {
   z-index: -1; pointer-events: none;
 }
 /* Stagger on month change / reveal */
+.season-item { position: relative; display: flex; flex-direction: column; min-width: 0; }
 .scroll-row > .season-item,
 .grid > .season-item { animation: seasonItemIn .5s var(--ease-out-expo) both; }
 @keyframes seasonItemIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -688,7 +700,8 @@ useHead(() => {
   background: linear-gradient(135deg, rgba(var(--black-rgb), .65), rgba(var(--black-rgb), .78));
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   color: var(--text-on-dark, var(--white));
-  font-size: .72rem; font-weight: var(--weight-semibold);
+  font-size: var(--text-2xs); font-weight: var(--weight-semibold);
+  white-space: nowrap;
   padding: 3px var(--space-3); border-radius: var(--radius-pill, 999px);
   box-shadow: 0 1px 3px rgba(var(--black-rgb), .35), inset 0 1px 0 rgba(var(--white-rgb), .08);
 }
@@ -704,6 +717,7 @@ useHead(() => {
   color: var(--muted); margin-top: var(--space-1); font-size: var(--text-xs);
   display: inline-flex; align-items: center; gap: var(--space-1);
   font-weight: var(--weight-medium); letter-spacing: .01em;
+  white-space: nowrap;
 }
 
 /* Per-type empty states */
@@ -711,8 +725,9 @@ useHead(() => {
 .empty-type-card {
   text-align: center; padding: var(--space-6) var(--space-4);
   background: var(--color-surface-subtle);
-  border: .5px dashed var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--line));
   border-radius: var(--radius-sheet);
+  box-shadow: var(--shadow-card-ambient, none);
 }
 .empty-type-icon { display: block; font-size: 2rem; margin-bottom: var(--space-2); opacity: .85; }
 .empty-type-card strong { display: block; font-size: var(--text-sm); color: var(--ink); }
@@ -723,9 +738,15 @@ useHead(() => {
   display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-4);
   align-items: center; position: relative; overflow: hidden;
   background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .06), transparent);
-  border: .5px solid var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
+  box-shadow: var(--shadow-card-ambient, var(--shadow-xs));
   border-radius: var(--radius-sheet); padding: var(--space-4) var(--space-5);
   margin: var(--space-6) 0;
+  transition: border-color .3s var(--ease-out), box-shadow .3s var(--ease-out);
+}
+.b2b-callout:hover {
+  border-color: color-mix(in srgb, var(--alluvial-gold) 45%, var(--border-liquid-glass));
+  box-shadow: var(--shadow-card-hover, var(--shadow-sm));
 }
 .b2b-callout::before {
   content: ''; position: absolute; inset: -1px; z-index: -1;

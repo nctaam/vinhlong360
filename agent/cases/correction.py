@@ -319,6 +319,8 @@ def live_value_at(values: dict, field_path: str):
     for part in field_path.split("."):
         node = node.get(part) if isinstance(node, dict) else None
         if node is None:
+            if field_path == "attributes.opening_hours":
+                return live_value_at(values, "attributes.hours")
             return None
     return node
 

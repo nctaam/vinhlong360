@@ -46,11 +46,25 @@ export const OFFICE_KIND: Record<string, { emoji: string; icon: string; label: s
   khac: { emoji: '🏢', icon: 'building', label: 'Cơ quan khác' },
 }
 
-export const AREA_META: Record<string, { name: string; emoji: string; icon: string; blurb: string; distance?: string; hub?: string }> = {
+export interface AreaMeta {
+  name: string
+  emoji: string
+  icon: string
+  blurb: string
+  distance?: string
+  hub?: string
+}
+
+export const AREA_META: Record<string, AreaMeta> = {
   'vinh-long': { name: 'Vĩnh Long', emoji: '🍊', icon: 'fruit', blurb: 'Miệt vườn cam sành, khoai lang, bưởi Năm Roi và làng gốm Mang Thít.', distance: 'Trung tâm', hub: 'TP. Vĩnh Long' },
   'ben-tre': { name: 'Bến Tre', emoji: '🥥', icon: 'leaf', blurb: 'Xứ dừa: kẹo dừa, mật hoa dừa, bưởi da xanh và những rẫy dừa bạt ngàn.', distance: '~35km', hub: 'Cầu Cổ Chiên' },
   'tra-vinh': { name: 'Trà Vinh', emoji: '🛕', icon: 'landmark', blurb: 'Văn hóa Khmer: ao Bà Om, chùa cổ, dừa sáp Cầu Kè và bún nước lèo.', distance: '~48km', hub: 'QL53 / Ao Bà Om' },
-  'lien-vung': { name: 'Liên vùng', emoji: '🧭', icon: 'compass', blurb: 'Tuyến kết nối nhiều điểm đến giữa Vĩnh Long, Bến Tre và Trà Vinh.', distance: 'Hành trình mở', hub: 'Tam giác Phù sa' },
+  'lien-vung': { name: 'Liên vùng', emoji: '🧭', icon: 'compass', blurb: 'Tuyến kết nối nhiều tiểu vùng văn hóa - sinh thái trên toàn tỉnh Vĩnh Long.', distance: 'Hành trình mở', hub: 'Tam giác Phù sa' },
+}
+
+// Current administrative scope; AREA_META retains legacy provenance labels for content rendering.
+export const CURRENT_AREA_META: Record<string, AreaMeta> = {
+  'vinh-long': AREA_META['vinh-long']!,
 }
 
 // Interest landing pages (/kham-pha/<slug>). Overridable via metadata.interests.
@@ -106,9 +120,15 @@ function mergeInto(
   overrides: unknown,
 ) {
   // Restore known keys to their pristine default first (idempotent re-apply).
+  for (const k of Object.keys(target)) {
+    if (!Object.prototype.hasOwnProperty.call(base, k)) delete target[k]
+  }
   for (const k of Object.keys(base)) {
-    if (target[k]) Object.assign(target[k], base[k])
-    else target[k] = { ...base[k] }
+    target[k] = { ...base[k] }
+  }
+  if (false) {
+    target[k] = { ...base[k] }
+    // pristine clone restored above
   }
   // Apply admin overrides on top (partial — only the fields provided).
   if (overrides && typeof overrides === 'object') {
@@ -139,5 +159,5 @@ export function applySiteOverrides(opts: {
 }
 
 export function useConstants() {
-  return { TYPE_META, AREA_META, OFFICE_KIND, INTEREST_META, CARD_TYPES, TOURISM_TYPES, PRODUCT_TYPES, REL_FWD, REL_BWD, FLOOD_MONTHS }
+  return { TYPE_META, AREA_META, CURRENT_AREA_META, OFFICE_KIND, INTEREST_META, CARD_TYPES, TOURISM_TYPES, PRODUCT_TYPES, REL_FWD, REL_BWD, FLOOD_MONTHS }
 }

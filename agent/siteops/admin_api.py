@@ -279,7 +279,7 @@ async def system_health():
         _system_health_server(result, os, _t)
         # Chỉnh máy móc khi đổi nhà admin.py → siteops/: agent/data/ nay là
         # ROOT/"agent"/"data" (dirname(__file__) cũ trỏ agent/, nay trỏ siteops/).
-        db_path = os.path.join(str(ROOT / "agent"), "data", "knowledge.db")
+        db_path = getattr(db, "db_path", None) or os.path.join(str(ROOT / "agent"), "data", "vinhlong360.db")
         if os.path.exists(db_path):
             result["sqlite"]["size_mb"] = round(os.path.getsize(db_path) / 1024 / 1024, 2)
             result["sqlite"]["entities"] = sum(db.count_entities().values())

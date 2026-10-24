@@ -826,7 +826,7 @@ def _coord_decode_str(value):
             return _COORD_INVALID
         try:
             current = json.loads(text)
-        except Exception:
+        except (json.JSONDecodeError, ValueError):
             return _COORD_INVALID
     return current
 
@@ -859,6 +859,24 @@ def _append_type_filter(conditions: list, params: list, ph: str,
 def _append_area_filter(conditions: list, params: list, ph: str,
                         use_pg: bool, area) -> None:
     place_col = 'e."placeId"' if use_pg else "e.placeId"
+    if area == "vinh-long":
+        # Current scope is one province; legacy area values remain provenance only.
+        level_col = '"level"' if use_pg else "level"
+        parent_col = '"parentId"' if use_pg else "parentId"
+        conditions.append(f"""
+                (e.area IN ({ph}, {ph}, {ph}) OR {place_col} IN (
+                    SELECT id FROM entities
+                    WHERE type = 'place'
+                      AND {level_col} IN ({ph}, {ph})
+                      AND ({parent_col} = {ph} OR area IN ({ph}, {ph}, {ph}))
+                ))
+            """)
+        params.extend([
+            "vinh-long", "ben-tre", "tra-vinh",
+            "xa", "phuong", "vinh-long",
+            "vinh-long", "ben-tre", "tra-vinh",
+        ])
+        return
     conditions.append(f"""
                 (e.area = {ph} OR {place_col} IN (
                     SELECT id FROM entities WHERE type = 'place' AND area = {ph}
@@ -1233,7 +1251,9 @@ class Database:
                 create_function("f_unaccent", 1, normalize_search_text)
             conn.execute("PRAGMA journal_mode=WAL")
             conn.execute("PRAGMA foreign_keys=ON")
-            conn.execute("PRAGMA busy_timeout=5000")
+            conn.execute("PRAGMA busy_timeout=30000")
+            conn.execute("PRAGMA synchronous=NORMAL")
+            conn.execute("PRAGMA temp_store=MEMORY")
             yield conn
             try:
                 self._finalize_connection(conn, commit_on_success)
@@ -1527,6 +1547,8 @@ class Database:
             for idx_sql in [
                 "CREATE INDEX IF NOT EXISTS idx_entities_status ON entities(status)",
                 "CREATE INDEX IF NOT EXISTS idx_entities_verified ON entities(verified)",
+                "CREATE INDEX IF NOT EXISTS idx_entities_type_status_verified ON entities(type, status, verified)",
+                "CREATE INDEX IF NOT EXISTS idx_relationships_from_type ON relationships(from_id, type)",
             ]:
                 try:
                     conn.execute(idx_sql)

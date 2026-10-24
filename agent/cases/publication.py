@@ -165,6 +165,8 @@ def _entity_patch(after_patch: dict, stored_attributes) -> dict:
             if attributes is None:
                 attributes = dict(stored)
             attributes[key] = value
+            if key == "opening_hours":
+                attributes["hours"] = value
         else:
             patch[path] = value
     if attributes is not None:
@@ -347,6 +349,8 @@ def _read_path(projection: dict, path: str):
         if not isinstance(node, dict):
             return None
         node = node.get(part)
+    if node is None and path == "attributes.opening_hours":
+        return _read_path(projection, "attributes.hours")
     return node
 
 

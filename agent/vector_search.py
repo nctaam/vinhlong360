@@ -20,6 +20,7 @@ import math
 import re
 import sys
 import time
+import unicodedata
 from collections import Counter
 from pathlib import Path
 from threading import Lock
@@ -57,6 +58,15 @@ STOP_WORDS = {
 #  VIETNAMESE TEXT PROCESSING
 # ══════════════════════════════════════════════════
 
+def _strip_vietnamese_diacritics(text: str) -> str:
+    """Fold Vietnamese diacritics (including đ/Đ) to ASCII base characters."""
+    nfkd = unicodedata.normalize("NFKD", text.replace("đ", "d").replace("Đ", "D"))
+    return "".join(c for c in nfkd if not unicodedata.combining(c))
+
+
+_STOP_WORDS_FOLDED = {_strip_vietnamese_diacritics(w) for w in STOP_WORDS}
+
+
 def normalize_vietnamese(text: str) -> str:
     """Normalize Vietnamese text for tokenization."""
     text = text.lower().strip()
@@ -68,13 +78,29 @@ def normalize_vietnamese(text: str) -> str:
 _normalize_vietnamese = normalize_vietnamese
 
 
+def _append_folded_tokens(tokens: list[str], words: list[str]) -> None:
+    folded_words = [_strip_vietnamese_diacritics(w) for w in words]
+    if folded_words == words:
+        return
+    for fw, orig in zip(folded_words, words):
+        if fw != orig and len(fw) > 1:
+            tokens.append(fw)
+    for i in range(len(folded_words) - 1):
+        fb = f"{folded_words[i]}_{folded_words[i+1]}"
+        if fb != f"{words[i]}_{words[i+1]}":
+            tokens.append(fb)
+
+
 def tokenize(text: str) -> list[str]:
     """
-    Tokenize Vietnamese text into unigrams + bigrams.
+    Tokenize Vietnamese text into unigrams + bigrams + unaccented fallback tokens.
     Bigrams help capture compound words (e.g., 'cù lao', 'bún nước').
     """
     text = normalize_vietnamese(text)
-    words = [w for w in text.split() if w not in STOP_WORDS and len(w) > 1]
+    words = [
+        w for w in text.split()
+        if w not in STOP_WORDS and _strip_vietnamese_diacritics(w) not in _STOP_WORDS_FOLDED and len(w) > 1
+    ]
 
     # Unigrams
     tokens = list(words)
@@ -83,6 +109,7 @@ def tokenize(text: str) -> list[str]:
     for i in range(len(words) - 1):
         tokens.append(f"{words[i]}_{words[i+1]}")
 
+    _append_folded_tokens(tokens, words)
     return tokens
 
 _tokenize = tokenize
@@ -221,12 +248,9 @@ class TFIDFStore:
                 "vectors": self._vectors,
                 "texts": self._texts,
             }
-            tmp = EMBEDDINGS_FILE.with_suffix(".tmp")
-            tmp.write_text(
-                json.dumps(data, ensure_ascii=False),
-                encoding="utf-8"
-            )
-            tmp.replace(EMBEDDINGS_FILE)
+            from versioned_json_store import atomic_write_json
+
+            atomic_write_json(EMBEDDINGS_FILE, data, indent=None)
         except Exception:
             logger.error("Failed to save embeddings to %s", EMBEDDINGS_FILE, exc_info=True)
 

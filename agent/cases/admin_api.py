@@ -13,6 +13,7 @@ queue never carries it at all.
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 
 import sys
@@ -291,7 +292,8 @@ async def list_case_queue(request: Request, kind: str | None = None):
     from . import work_control
 
     try:
-        page = work_control.list_queue(
+        page = await asyncio.to_thread(
+            work_control.list_queue,
             _actor(request), {"kind": kind} if kind else None, now=_now()
         )
     except Exception as error:  # noqa: BLE001 - re-raised as a domain problem
@@ -315,14 +317,20 @@ async def list_case_queue(request: Request, kind: str | None = None):
     }
 
 
+def _load_case_workbench_state(case_id: str):
+    with _store().transaction() as transaction:
+        return (
+            transaction.load_case(case_id),
+            transaction.load_correction_items(case_id),
+            transaction.latest_change_set_for_case(case_id),
+        )
+
+
 @case_admin_router.get("/{case_id}", dependencies=[_guard("case.view")])
 async def get_case_workbench(request: Request, case_id: str):
     """The safe summary: what kind of work this is, never what was written."""
     try:
-        with _store().transaction() as transaction:
-            snapshot = transaction.load_case(case_id)
-            items = transaction.load_correction_items(case_id)
-            change_set = transaction.latest_change_set_for_case(case_id)
+        snapshot, items, change_set = await asyncio.to_thread(_load_case_workbench_state, case_id)
     except Exception as error:  # noqa: BLE001
         raise _fail(error) from error
     return {
@@ -363,7 +371,9 @@ class StepUpBody(BaseModel):
 @case_admin_router.post("/access/step-up", dependencies=[_guard("access.stepup")])
 async def open_private_evidence(request: Request, body: StepUpBody):
     try:
-        grant = grant_private_evidence_access(body.case_id, _actor(request), now=_now())
+        grant = await asyncio.to_thread(
+            grant_private_evidence_access, body.case_id, _actor(request), now=_now()
+        )
     except StepUpRefused as error:
         raise _fail(error) from error
     return {"case_id": grant.case_id, "access": grant.secret,
@@ -372,7 +382,9 @@ async def open_private_evidence(request: Request, body: StepUpBody):
 
 @case_admin_router.delete("/access/step-up", dependencies=[_guard("access.revoke")])
 async def close_private_evidence(request: Request, case_id: str):
-    revoke_private_evidence_access(case_id, _actor(request), now=_now())
+    await asyncio.to_thread(
+        revoke_private_evidence_access, case_id, _actor(request), now=_now()
+    )
     return {"status": "revoked"}
 
 
@@ -403,7 +415,8 @@ def _work_reply(item) -> dict:
 @case_admin_router.post("/work/claim", dependencies=[_guard("work.claim")])
 async def claim_work(request: Request, body: WorkBody):
     try:
-        item = _work_control().claim_work_item(
+        item = await asyncio.to_thread(
+            _work_control().claim_work_item,
             body.work_item_id, _actor(request), body.expected_revision or 0, now=_now())
     except Exception as error:  # noqa: BLE001
         raise _fail(error) from error
@@ -413,7 +426,9 @@ async def claim_work(request: Request, body: WorkBody):
 @case_admin_router.post("/work/heartbeat", dependencies=[_guard("work.heartbeat")])
 async def heartbeat_work(request: Request, body: WorkBody):
     try:
-        item = _work_control().heartbeat_lease(body.work_item_id, _actor(request), now=_now())
+        item = await asyncio.to_thread(
+            _work_control().heartbeat_lease, body.work_item_id, _actor(request), now=_now()
+        )
     except Exception as error:  # noqa: BLE001
         raise _fail(error) from error
     return _work_reply(item)
@@ -422,7 +437,9 @@ async def heartbeat_work(request: Request, body: WorkBody):
 @case_admin_router.post("/work/release", dependencies=[_guard("work.release")])
 async def release_work(request: Request, body: WorkBody):
     try:
-        item = _work_control().release_work_item(body.work_item_id, _actor(request), now=_now())
+        item = await asyncio.to_thread(
+            _work_control().release_work_item, body.work_item_id, _actor(request), now=_now()
+        )
     except Exception as error:  # noqa: BLE001
         raise _fail(error) from error
     return _work_reply(item)
@@ -432,7 +449,8 @@ async def release_work(request: Request, body: WorkBody):
 async def takeover_work(request: Request, body: WorkBody):
     """Supervisor only, and the risk guards underneath still apply."""
     try:
-        item = _work_control().takeover_work_item(
+        item = await asyncio.to_thread(
+            _work_control().takeover_work_item,
             body.work_item_id, _actor(request), body.reason or "", now=_now())
     except Exception as error:  # noqa: BLE001
         raise _fail(error) from error
@@ -442,7 +460,8 @@ async def takeover_work(request: Request, body: WorkBody):
 @case_admin_router.post("/work/recuse", dependencies=[_guard("work.recuse")])
 async def recuse_work(request: Request, body: WorkBody):
     try:
-        item = _work_control().recuse_actor(
+        item = await asyncio.to_thread(
+            _work_control().recuse_actor,
             body.work_item_id, _actor(request), body.reason or "", now=_now())
     except Exception as error:  # noqa: BLE001
         raise _fail(error) from error
@@ -464,7 +483,8 @@ async def apply_change_set_route(request: Request, body: ChangeSetBody):
     from .publication import ApplyChangeSetCommand, apply_change_set
 
     try:
-        result = apply_change_set(
+        result = await asyncio.to_thread(
+            apply_change_set,
             ApplyChangeSetCommand(
                 case_id=body.case_id, change_set_id=body.change_set_id,
                 actor=_actor(request), expected_case_revision=body.expected_case_revision,
@@ -486,7 +506,8 @@ async def rollback_change_set_route(request: Request, body: ChangeSetBody):
     from .publication import RollbackChangeSetCommand, rollback_change_set
 
     try:
-        result = rollback_change_set(
+        result = await asyncio.to_thread(
+            rollback_change_set,
             RollbackChangeSetCommand(
                 case_id=body.case_id, change_set_id=body.change_set_id,
                 actor=_actor(request), reason_code=body.reason_code or "operator_request",
@@ -581,7 +602,8 @@ async def create_assisted_correction(request: Request, body: AssistedCorrectionB
                                          "detail": "Case intake is not configured."})
     actor = _actor(request)
     try:
-        result = _SERVICE.create_assisted_correction(
+        result = await asyncio.to_thread(
+            _SERVICE.create_assisted_correction,
             items=tuple(
                 CorrectionItemInput(
                     entity_id=item.entity_id, field_path=item.field_path,
@@ -670,7 +692,8 @@ async def add_case_evidence(request: Request, body: EvidenceBody):
     from .domain import EvidenceLevel
 
     try:
-        record = add_evidence(
+        record = await asyncio.to_thread(
+            add_evidence,
             AddEvidenceCommand(
                 case_id=body.case_id, item_id=body.item_id,
                 level=EvidenceLevel(body.level), source_scope=body.source_scope,
@@ -710,7 +733,7 @@ async def decide_case_item(request: Request, body: DecisionBody):
         # Read the evidence back out of storage rather than trusting the caller
         # to say what supported their own ruling — and the risk class likewise:
         # a caller-supplied risk would let any decision be judged by R1's rules.
-        evidence = load_evidence_records(body.case_id, body.item_id)
+        evidence = await asyncio.to_thread(load_evidence_records, body.case_id, body.item_id)
         with _store().transaction() as transaction:
             stored = {
                 item.item_id: item
@@ -719,7 +742,8 @@ async def decide_case_item(request: Request, body: DecisionBody):
         if stored is None:
             raise StepUpRefused("correction_item_not_found",
                                 "That item is not on this case.", status=404)
-        outcome = decide_item(
+        outcome = await asyncio.to_thread(
+            decide_item,
             DecideItemCommand(
                 case_id=body.case_id, item_id=body.item_id,
                 outcome_code=CorrectionOutcome(body.outcome_code),
@@ -764,7 +788,8 @@ async def build_case_change_set(request: Request, body: BuildChangeSetBody):
             for item_id in body.item_ids
             for record in load_evidence_records(body.case_id, item_id)
         )
-        draft = build_change_set(
+        draft = await asyncio.to_thread(
+            build_change_set,
             body.case_id, tuple(body.item_ids), _actor(request), body.expected_revision,
             evidence_refs=evidence_refs, now=_now(),
         )
@@ -785,6 +810,7 @@ class VerifyBody(BaseModel):
 
 @case_admin_router.post("/change-sets/verify", dependencies=[_guard("changeset.verify")])
 async def verify_case_projection(request: Request, body: VerifyBody):
+    import asyncio
     from .publication import VerifyProjectionCommand, verify_public_projection
 
     fetcher = _PROJECTION_FETCHER
@@ -797,7 +823,11 @@ async def verify_case_projection(request: Request, body: VerifyBody):
             "detail": "No public projection reader is configured.",
         })
     try:
-        result = verify_public_projection(
+        # Offload synchronous HTTP + DB verification from the event loop so a
+        # single-worker Uvicorn process never self-deadlocks when PinnedHTTPClient
+        # dials back into /api/entities/{entity_id} on the same origin.
+        result = await asyncio.to_thread(
+            verify_public_projection,
             VerifyProjectionCommand(case_id=body.case_id, change_set_id=body.change_set_id,
                                     actor=_actor(request)),
             fetcher, now=_now(),

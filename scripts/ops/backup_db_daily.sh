@@ -54,6 +54,16 @@ with open(manifest_path, "x", encoding="utf-8") as stream:
     stream.write("\n")
 PY
 
+# Sao lưu kèm các tệp trạng thái JSON/JSONL trong agent/data/ (memory, reflexion, semantic_cache, v.v.)
+if [ -d /opt/vinhlong360/agent/data ]; then
+  tar -czf "$DIR/state-daily-$TS.tar.gz" -C /opt/vinhlong360/agent/data --exclude='*.db*' . 2>/dev/null || true
+  ls -t "$DIR"/state-daily-*.tar.gz 2>/dev/null | tail -n +8 | while read -r old_state; do rm -f "$old_state"; done
+fi
+
 # Xoay vòng: giữ 7 bản daily mới nhất (KHÔNG đụng backups/ cấp trên — milestone/pre-deploy)
 ls -t "$DIR"/db-daily-*.sql.gz 2>/dev/null | tail -n +8 | while read -r old; do rm -f "$old" "$old.manifest.json"; done
+
+# Bảo vệ đĩa cứng VPS: Dọn dẹp các tệp pre-deploy cũ hơn 30 ngày trong thư mục gốc /opt/vinhlong360/backups/
+find /opt/vinhlong360/backups/ -maxdepth 1 -name "pre-deploy-*.tar.gz" -mtime +30 -delete 2>/dev/null || true
+
 echo "$(date -Is) OK $OUT ($SIZE), giữ $(ls "$DIR"/db-daily-*.sql.gz | wc -l) bản" >> /var/log/vl-backup.log

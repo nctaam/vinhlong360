@@ -323,6 +323,21 @@ def _backfill_from_keyword(out: list, keyword_results: list, limit: int) -> None
                 break
 
 
+def _resolve_rerank_allowed_ids(
+    keyword_results: list[dict], has_filters: bool, entity_type, area, month, ocop_only
+) -> set[str] | None:
+    if keyword_results:
+        return {e["id"] for e in keyword_results}
+    if not has_filters:
+        return set()
+    filtered_pool = knowledge.search_entities(
+        q=None, entity_type=entity_type, area=area, month=month,
+        ocop_only=ocop_only, limit=2000,
+    )
+    allowed = {e["id"] for e in filtered_pool}
+    return allowed if allowed else None
+
+
 def _hybrid_rerank_search(args: dict) -> list[dict]:
     """Run the KB search with hybrid reranking (BM25 + semantic + contextual).
 
@@ -333,7 +348,7 @@ def _hybrid_rerank_search(args: dict) -> list[dict]:
     """
     q = args.get("q")
     entity_type = args.get("entity_type")
-    area = args.get("area")
+    area = knowledge.normalize_current_area(args.get("area"))
     month = args.get("month")
     ocop_only = args.get("ocop_only", False)
     limit = args.get("limit", 10)
@@ -346,12 +361,16 @@ def _hybrid_rerank_search(args: dict) -> list[dict]:
         ocop_only=ocop_only, limit=max(limit * 3, 30),
     )
 
-    # Plain path: no text query, no hybrid infra, or empty pool.
-    if not q or not HAS_CONTEXTUAL or not keyword_results:
+    # Plain path: no text query or no hybrid infra.
+    if not q or not HAS_CONTEXTUAL:
         return keyword_results[:limit]
 
     try:
-        allowed_ids = {e["id"] for e in keyword_results}
+        allowed_ids = _resolve_rerank_allowed_ids(
+            keyword_results, has_filters, entity_type, area, month, ocop_only
+        )
+        if allowed_ids is None:
+            return []
         reranked = enhanced_hybrid_search(
             query=q,
             keyword_results=keyword_results,
@@ -402,6 +421,9 @@ _ACCOM_FAMILY_KW = ["gia đình", "trẻ em", "vườn", "sân chơi", "an toàn
 def _area_matches(e: dict, attrs: dict, area) -> bool:
     if not area:
         return True
+    if area == "vinh-long":
+        # The current province contains the three historical provenance buckets.
+        return knowledge.current_scope_matches(e)
     place = knowledge.get_place(e["id"])
     prov = attrs.get("province_old", "")
     prov_name = _PROV_NAMES.get(area)
@@ -587,7 +609,7 @@ def _tool_seasonal_now(args: dict) -> str:
 
 
 def _tool_list_itineraries(args: dict) -> str:
-    result = knowledge.list_itineraries(args.get("area"))
+    result = knowledge.list_itineraries(knowledge.normalize_current_area(args.get("area")))
     return json.dumps([{
         "id": it["id"], "title": it["title"],
         "area": it.get("area"), "duration": it.get("duration"),
@@ -613,7 +635,8 @@ def _tool_itinerary_detail(args: dict) -> str:
 
 
 def _tool_places_in_area(args: dict) -> str:
-    ps = knowledge.places(args["area"])
+    area = knowledge.normalize_current_area(args["area"])
+    ps = knowledge.current_places() if area == "vinh-long" else knowledge.places(area)
     content_counts = {}
     for e in knowledge._entities.values():
         pid = e.get("placeId")
@@ -654,7 +677,7 @@ def _tool_nearby_entities(args: dict) -> str:
 
 
 def _tool_ocop_products(args: dict) -> str:
-    area = args.get("area")
+    area = knowledge.normalize_current_area(args.get("area"))
     min_stars = args.get("min_stars", 3)
     category = args.get("category", "all")
     limit = args.get("limit", 12)
@@ -682,7 +705,7 @@ def _tool_ocop_products(args: dict) -> str:
 
 
 def _tool_accommodation_search(args: dict) -> str:
-    area = args.get("area")
+    area = knowledge.normalize_current_area(args.get("area"))
     acc_type = args.get("type", "all")
     family = args.get("family_friendly", False)
     limit = args.get("limit", 8)
@@ -699,11 +722,42 @@ def _tool_accommodation_search(args: dict) -> str:
     return json.dumps(results[:limit], ensure_ascii=False)
 
 
+_INJECTION_MARKERS_RE = re.compile(
+    r"(<\|im_start\|>|<\|im_end\|>|\[INST\]|\[/INST\]|<<SYS>>|<</SYS>>|"
+    r"ignore\s+(?:all\s+)?(?:previous|prior)\s+instructions|"
+    r"bỏ\s+qua\s+(?:mọi\s+)?chỉ\s+dẫn\s+trước)",
+    re.I,
+)
+
+
+def _sanitize_untrusted_str(val: object) -> str:
+    raw = str(val or "")
+    cleaned = _INJECTION_MARKERS_RE.sub("[filtered]", raw)
+    try:
+        return str(redact_text(cleaned))
+    except Exception:
+        return cleaned
+
+
+def _sanitize_untrusted_records(records: list, fields: tuple[str, ...]) -> list[dict]:
+    sanitized = []
+    for item in records:
+        if not isinstance(item, dict):
+            continue
+        row = dict(item)
+        for f in fields:
+            if isinstance(row.get(f), str):
+                row[f] = _sanitize_untrusted_str(row[f])
+        sanitized.append(row)
+    return sanitized
+
+
 def _tool_web_search(args: dict) -> str:
     results = web_search(args["query"])
     if not results:
         return json.dumps({"results": [], "note": "Không tìm thấy kết quả"})
-    return json.dumps({"results": results}, ensure_ascii=False)
+    safe_results = _sanitize_untrusted_records(results, ("title", "snippet"))
+    return json.dumps({"results": safe_results}, ensure_ascii=False)
 
 
 def _tool_suggest_followups(args: dict, usage_accumulator=None) -> str:
@@ -712,10 +766,11 @@ def _tool_suggest_followups(args: dict, usage_accumulator=None) -> str:
 
 
 def _tool_generate_itinerary(args: dict) -> str:
+    areas = knowledge.normalize_current_areas(args.get("areas"))
     result = generate_itinerary(
         days=args.get("days", 1),
         interests=args.get("interests"),
-        areas=args.get("areas"),
+        areas=areas,
         month=args.get("month"),
         budget=args.get("budget", "trung_binh"),
     )
@@ -730,7 +785,8 @@ def _tool_community_reviews(args: dict) -> str:
         reviews = get_community_reviews(entity_id, limit)
         if not reviews:
             return json.dumps({"reviews": [], "note": f"Chưa có đánh giá cộng đồng cho '{entity_id}'"}, ensure_ascii=False)
-        return json.dumps({"reviews": reviews, "count": len(reviews)}, ensure_ascii=False, default=str)
+        safe_reviews = _sanitize_untrusted_records(reviews, ("content", "comment", "text"))
+        return json.dumps({"reviews": safe_reviews, "count": len(safe_reviews)}, ensure_ascii=False, default=str)
     except Exception as e:
         logger.warning("community_reviews tool error", error=str(e))
         return json.dumps({"reviews": [], "error": "Không thể tải đánh giá"})
@@ -744,7 +800,8 @@ def _tool_trending_posts(args: dict) -> str:
         posts = get_trending_posts(limit, entity_type)
         if not posts:
             return json.dumps({"posts": [], "note": "Chưa có bài viết nổi bật"}, ensure_ascii=False)
-        return json.dumps({"posts": posts, "count": len(posts)}, ensure_ascii=False, default=str)
+        safe_posts = _sanitize_untrusted_records(posts, ("content", "title"))
+        return json.dumps({"posts": safe_posts, "count": len(safe_posts)}, ensure_ascii=False, default=str)
     except Exception as e:
         logger.warning("trending_posts tool error", error=str(e))
         return json.dumps({"posts": [], "error": "Không thể tải bài viết"})
@@ -752,7 +809,7 @@ def _tool_trending_posts(args: dict) -> str:
 
 def _tool_weather(args: dict) -> str:
     if HAS_REALTIME:
-        area = args.get("area", "vinh-long")
+        area = knowledge.normalize_current_area(args.get("area", "vinh-long"))
         # P0-7: wrap weather call with circuit breaker — after 3 failures,
         # skip weather for 120s and return fallback instead of hanging.
         def _do_weather():
@@ -2075,7 +2132,7 @@ def _kb_fallback_reply(corrected_message: str) -> tuple[str | None, list, set, b
                     "Xin lỗi, hệ thống AI đang bảo trì và mình chưa tìm thấy thông tin "
                     "xác thực về câu hỏi này trong cơ sở dữ liệu Vĩnh Long 360. "
                     "Bạn thử hỏi về điểm tham quan, ẩm thực, đặc sản, lễ hội hoặc lịch trình "
-                    "ở Vĩnh Long, Bến Tre, Trà Vinh nhé!"
+                    "trên toàn tỉnh Vĩnh Long (gồm cả vùng Bến Tre và Trà Vinh trước 7-2025) nhé!"
                 )
                 return reply, ["abstain (kb-fallback)"], set(), False
             kb_data = _relevant
@@ -2207,6 +2264,25 @@ async def _run_chat_round(
     return reply, tools_used, suggestions
 
 
+_PRIVACY_BLOCKED_MESSAGES = {
+    "INVALID_CHAT_HISTORY": (
+        "Xin lỗi, lịch sử hội thoại không hợp lệ hoặc đã vượt giới hạn phiên. "
+        "Vui lòng làm mới cuộc trò chuyện để tiếp tục."
+    ),
+    "INVALID_CHAT_INPUT": (
+        "Xin lỗi, tin nhắn đầu vào chưa hợp lệ hoặc quá dài. "
+        "Vui lòng rút gọn nội dung và thử lại."
+    ),
+}
+_DEFAULT_PRIVACY_BLOCKED_MESSAGE = (
+    "Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại."
+)
+
+
+def _privacy_blocked_message(code: str) -> str:
+    return _PRIVACY_BLOCKED_MESSAGES.get(code, _DEFAULT_PRIVACY_BLOCKED_MESSAGE)
+
+
 def _prepared_chat_input(req: "ChatRequest", owner_key: str, session_id: str):
     """(safe_input, None) hoặc (None, ChatResponse-từ-chối) — biên riêng tư đầu vào."""
     try:
@@ -2222,7 +2298,7 @@ def _prepared_chat_input(req: "ChatRequest", owner_key: str, session_id: str):
             session_id=session_id,
         )
         return None, ChatResponse(
-            reply="Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại.",
+            reply=_privacy_blocked_message(exc.code),
             tool_calls=[], suggestions=[], session_id=session_id,
         )
     except PrivacyBoundaryUnavailable as exc:
@@ -2516,7 +2592,7 @@ def _maybe_cache_reply(
                 dedup_key=semantic_dedup_key,
             )
         except Exception:
-            pass
+            logger.debug("Semantic cache store failed", exc_info=True)
     if HAS_METRICS:
         track_cache("set")
 
@@ -2700,6 +2776,9 @@ def _stream_failure_frames(
     ctx: "_StreamContext", raw_reply: str, tools_used: list
 ) -> list[str]:
     """Cặp frame text+done khi vòng decision thất bại — dùng chung 2 nhánh lỗi."""
+    raw_reply, tools_used, _ = _apply_kb_fallback(
+        raw_reply, tools_used, [], ctx.message, ctx.verified_public_contacts
+    )
     fallback = _prepare_stream_fallback(ctx, raw_reply)
     fallback_ready = fallback is not None
     if fallback is None:
@@ -2737,7 +2816,7 @@ async def _run_stream_tool_round(
     round_state['abort']=True khi biên riêng tư sập); suggestions cập nhật vào
     round_state. Không thread/finally nhạy cảm — an toàn để lồng async-for."""
     ctx.messages.append(msg)
-    for tc in msg.tool_calls:
+    for tc in msg.tool_calls[:15]:
         fn_name = tc.function.name
         try:
             fn_args = json.loads(tc.function.arguments)
@@ -3411,7 +3490,7 @@ def _prepared_stream_input(req: "ChatRequest", owner_key: str, sid: str):
             code=exc.code,
             session_id=sid,
         )
-        return None, "Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại."
+        return None, _privacy_blocked_message(exc.code)
     except PrivacyBoundaryUnavailable as exc:
         logger.warning(
             "Privacy boundary unavailable for stream",

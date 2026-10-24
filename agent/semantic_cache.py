@@ -474,11 +474,11 @@ class MultiTierCache:
                     self._merge_dirty_record(merged, local_records, key)
 
                 self._replace_l2_state(merged)
-                tmp = ENTRIES_FILE.with_suffix(".tmp")
+                from versioned_json_store import atomic_write_json
+
                 records = dict(self._l2)
                 records.update(self._tombstones)
-                tmp.write_text(json.dumps(records, ensure_ascii=False), encoding="utf-8")
-                tmp.replace(ENTRIES_FILE)
+                atomic_write_json(ENTRIES_FILE, records, indent=None)
                 self._l2_mtime_ns = ENTRIES_FILE.stat().st_mtime_ns
                 self._known_versions = _split_l2_records(records)[2]
                 self._dirty_keys.clear()
@@ -500,6 +500,11 @@ class MultiTierCache:
     def _evict_l2(self):
         while len(self._l2) > self._l2_max:
             removed_key, _ = self._l2.popitem(last=False)
+            self._tombstones[removed_key] = {
+                "deleted": True,
+                "version": self._next_version(),
+            }
+            self._dirty_keys.add(removed_key)
             self._matcher.remove(removed_key)
 
     def _promote_to_l1(self, key: str, entry: dict):

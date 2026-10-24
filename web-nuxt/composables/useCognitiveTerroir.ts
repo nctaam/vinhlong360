@@ -114,8 +114,9 @@ export function calculateAstronomicalTide(date: Date = new Date()): TideCalculat
     tidePhaseDesc = 'Dòng chảy êm, biên độ nhỏ (Mùng bảy & Hăm ba)'
   }
 
-  // 2. Real-Time Water Elevation Curve h(t)
-  const hours = date.getHours() + date.getMinutes() / 60 + date.getSeconds() / 3600
+  // 2. Real-Time Water Elevation Curve h(t) (Vietnam Time UTC+7 for SSR/Client hydration parity)
+  const vnHours = (date.getUTCHours() + 7) % 24
+  const hours = vnHours + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600
   const alpha = calculateTidalAmplitudeFactor(dL)
   const a1 = 0.65 * alpha
   const a2 = 0.45 * alpha
@@ -319,6 +320,8 @@ export async function detectBatteryCondition(): Promise<BatteryCondition> {
 const isElderMode = ref(false)
 const isHighGlare = ref(false)
 const isEcoMode = ref(false)
+let globalTerroirListenersCount = 0
+let activeKeydownListener: ((e: KeyboardEvent) => void) | null = null
 
 /**
  * Master Cognitive Terroir Composable.
@@ -464,11 +467,15 @@ export function useCognitiveTerroir() {
         // Ignore
       }
 
-      // 3. Register network event listeners
+      // 3. Register network & singleton keyboard event listeners
       if (typeof window !== 'undefined') {
         window.addEventListener('online', updateNetwork)
         window.addEventListener('offline', updateNetwork)
-        window.addEventListener('keydown', onKeydown)
+        globalTerroirListenersCount += 1
+        if (globalTerroirListenersCount === 1) {
+          activeKeydownListener = onKeydown
+          window.addEventListener('keydown', activeKeydownListener)
+        }
 
         const navAny = navigator as unknown as { connection?: { addEventListener: (t: string, fn: () => void) => void } }
         navAny.connection?.addEventListener?.('change', updateNetwork)
@@ -487,7 +494,13 @@ export function useCognitiveTerroir() {
       if (typeof window !== 'undefined') {
         window.removeEventListener('online', updateNetwork)
         window.removeEventListener('offline', updateNetwork)
-        window.removeEventListener('keydown', onKeydown)
+        const navAny = navigator as unknown as { connection?: { removeEventListener?: (t: string, fn: () => void) => void } }
+        navAny.connection?.removeEventListener?.('change', updateNetwork)
+        globalTerroirListenersCount = Math.max(0, globalTerroirListenersCount - 1)
+        if (globalTerroirListenersCount === 0 && activeKeydownListener) {
+          window.removeEventListener('keydown', activeKeydownListener)
+          activeKeydownListener = null
+        }
       }
     })
   }

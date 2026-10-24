@@ -111,14 +111,34 @@ const publicationByItem = computed(() => new Map(
   display: grid;
   gap: 1rem;
 }
+/* Wave 7: Open Architectural 3-Step Civic Progress Ledger */
 .timeline-steps {
   display: grid;
-  gap: 0.9rem;
+  gap: 0;
   margin: 0;
-  padding-left: 1.25rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: case-step;
+  border-block-start: 1px solid var(--color-border, var(--line));
+}
+.timeline-steps li {
+  padding: 0.85rem 0;
+  border-block-end: 1px solid var(--color-border, var(--line));
+  counter-increment: case-step;
+}
+.timeline-steps li::before {
+  content: "BƯỚC " counter(case-step, decimal-leading-zero);
+  display: block;
+  margin-bottom: 0.2rem;
+  font-family: var(--font-editorial, serif);
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--color-material-amber, var(--color-brand));
+  font-variant-numeric: tabular-nums;
 }
 .timeline-steps h3 {
   margin: 0 0 0.2rem;
+  font-family: var(--font-editorial, serif);
   font-size: 1rem;
 }
 .timeline-steps p {

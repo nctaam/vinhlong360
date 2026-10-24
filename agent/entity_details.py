@@ -114,6 +114,12 @@ def _split_typed_field(f: dict, attrs: dict) -> tuple[str | None, str | None, An
     return "det", col, coerced, None
 
 
+def _apply_hours_alias(uni: dict, attrs: dict) -> None:
+    raw = attrs.get("opening_hours")
+    if "hours" not in uni and isinstance(raw, str) and raw.strip():
+        uni["hours"] = raw.strip()
+
+
 def split_typed(etype: str, attrs: dict | None) -> tuple[dict, dict, list[str]]:
     """→ (universal {key: str}, detail {column: value}, skipped [key=value]).
 
@@ -133,6 +139,7 @@ def split_typed(etype: str, attrs: dict | None) -> tuple[dict, dict, list[str]]:
             uni[col_or_key] = value
         elif bucket == "det":
             det[col_or_key] = value
+    _apply_hours_alias(uni, attrs)
     return uni, det, skipped
 
 

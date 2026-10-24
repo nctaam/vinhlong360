@@ -154,7 +154,7 @@ const { get: ss } = useSiteSettings()
 const { tide, isOffline, isEcoTerroir } = useCognitiveTerroir()
 const searchDrawerOpen = ref(false)
 
-const currentHour = ref(new Date().getHours())
+const currentHour = useState<number>('vl360-current-hour', () => (new Date().getUTCHours() + 7) % 24)
 const livingAmbientDayClass = computed(() => {
   const h = currentHour.value
   if (h >= 5 && h < 10) return 'ambient-dawn'
@@ -180,6 +180,7 @@ const clientReady = ref(false)
 const { applySolarThemeIfUnset } = useAdaptiveTheme()
 onMounted(() => {
   clientReady.value = true
+  currentHour.value = (new Date().getUTCHours() + 7) % 24
   applySolarThemeIfUnset()
   if (route.query.login === 'admin') showAuth.value = true
 })
@@ -270,7 +271,7 @@ const DEFAULT_FOOTER_LEGAL = [
   { to: '/chinh-sach-bao-mat', label: 'Bảo mật' },
   { to: '/dieu-khoan-su-dung', label: 'Điều khoản' },
   { to: '/lien-he', label: 'Liên hệ' },
-  { to: '/admin', label: 'Admin' },
+  { to: '/admin', label: 'Quản trị' },
 ]
 const footerLegalLinks = computed(() => ss('footer.legal_links', DEFAULT_FOOTER_LEGAL) as typeof DEFAULT_FOOTER_LEGAL)
 
@@ -322,6 +323,7 @@ function closeNav(restoreFocus = true) {
 
 function closeAll() {
   catalogOpen.value = false
+  searchDrawerOpen.value = false
   closeNav(false)
 }
 function isActive(g: { to?: string; children?: { to: string }[] }) {

@@ -155,11 +155,13 @@ useHead(() => ({
   gap: 0.5rem;
 }
 .case-missing {
+  --case-missing-radius: var(--radius-surface);
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-5);
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-surface);
+  padding: var(--space-5) 0;
+  background: transparent;
+  border: 0;
+  border-block: 1px solid var(--line);
+  border-radius: 0;
 }
 </style>

@@ -587,6 +587,17 @@ def _is_valid_ip(ip_str: str) -> bool:
 # Trusted proxy IPs — only trust X-Forwarded-For from these
 TRUSTED_PROXIES = [ip.strip() for ip in os.environ.get("TRUSTED_PROXIES", "127.0.0.1,::1").split(",") if ip.strip()]
 
+def _select_forwarded_ip(forwarded: str) -> str | None:
+    hops = [h.strip() for h in forwarded.split(",") if h.strip()]
+    for candidate in reversed(hops):
+        if _is_valid_ip(candidate) and candidate not in TRUSTED_PROXIES:
+            return candidate
+    for candidate in reversed(hops):
+        if _is_valid_ip(candidate):
+            return candidate
+    return None
+
+
 def get_client_ip(request) -> str:
     """Extract real client IP from request with proxy validation."""
     direct_ip = request.client.host if request.client else "unknown"
@@ -595,9 +606,9 @@ def get_client_ip(request) -> str:
     if direct_ip in TRUSTED_PROXIES:
         forwarded = request.headers.get("X-Forwarded-For")
         if forwarded:
-            candidate = forwarded.split(",")[0].strip()
-            if _is_valid_ip(candidate):
-                return candidate
+            selected = _select_forwarded_ip(forwarded)
+            if selected:
+                return selected
         real_ip = request.headers.get("X-Real-IP")
         if real_ip and _is_valid_ip(real_ip):
             return real_ip

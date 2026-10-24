@@ -272,7 +272,7 @@
           </div>
           <div v-else-if="timelineItems.length" class="timeline-feed">
             <article v-for="item in timelineItems" :key="item.type + '-' + (item.data?.id || item.data?.target_id) + '-' + item.created_at" class="timeline-item">
-              <span class="tl-icon" aria-hidden="true"><IconLine :name="timelineIconName(item.type)" /></span>
+              <span class="tl-icon" aria-hidden="true"><IconLine :name="timelineIcon(item.type)" /></span>
               <div class="tl-body">
                 <p class="tl-text">
                   <template v-if="item.type === 'post'">
@@ -516,13 +516,6 @@ function badgeIconName(badgeId?: string): string { return (badgeId && badgeIconM
 const achIconMap: Record<string, string> = { first_post: 'pencil', writer_10: 'file-text', reviewer_5: 'list', review_master: 'award', photographer: 'camera', explorer_5: 'compass', explorer_20: 'map', local_3: 'home', social_10: 'users', social_50: 'heart', helpful_5: 'bulb', streak_7: 'flame', streak_30: 'shield-check', veteran_6m: 'trophy', allrounder: 'award' }
 function achievementIconName(achId?: string): string { return (achId && achIconMap[achId]) || 'award' }
 
-function timelineIconName(type: string): string {
-  if (type === 'post') return 'pencil'
-  if (type === 'review') return 'star'
-  if (type === 'follow') return 'users'
-  return 'pin'
-}
-
 const {
   posts, loading, postsFetchFailed, filteredPosts,
   fetchPosts, toggleLike, toggleBookmark, deletePost,
@@ -724,10 +717,10 @@ useHead(() => {
 .bs-title { font-weight: var(--weight-semibold); font-size: var(--text-sm); cursor: pointer; padding: var(--space-2) 0; color: var(--ink); }
 .bs-cat { margin-top: var(--space-3); }
 .bs-cat-title { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 var(--space-2); }
-.bs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-2); margin-top: var(--space-2); }
-.bs-card { display: flex; align-items: flex-start; gap: var(--space-2); padding: var(--space-2); border-radius: var(--radius); border: 1px solid var(--line); text-align: left; background: var(--surface); }
-.bs-card.bs-earned { border-color: var(--color-brand); transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
-.bs-card.bs-earned:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.bs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0 var(--space-5); margin-top: var(--space-2); border-block-start: 1px solid var(--line); }
+.bs-card { display: flex; align-items: flex-start; gap: var(--space-2); padding: var(--space-2h, 10px) 0; border-radius: 0; border: 0; border-block-end: 1px solid var(--line); text-align: left; background: transparent; }
+.bs-card.bs-earned { border-block-end-color: var(--color-brand); transition: transform .2s var(--ease-out); }
+.bs-card.bs-earned:hover { transform: translateX(2px); }
 .bs-card.bs-earned:active { transform: scale(.98); }
 .bs-card.bs-locked { opacity: 0.55; }
 .bs-icon { font-size: 1.5rem; line-height: 1; flex-shrink: 0; }
@@ -793,17 +786,20 @@ useHead(() => {
 }
 .dark .hairline-phusa { background: linear-gradient(90deg, transparent 0%, var(--river-legacy-dark) 15%, var(--amber-500) 50%, var(--clay-400) 85%, transparent 100%); }
 
-.profile-stats { display: flex; gap: var(--space-6); margin-top: var(--space-4); }
-.stat-item { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-warm); border: .5px solid var(--line); border-radius: var(--radius-surface); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out), border-color .3s var(--ease-out); }
-.stat-item:hover { background: var(--card); transform: translateY(-1px); box-shadow: var(--shadow-sm); border-color: var(--border, var(--line)); }
+/* Wave 6: Open Architectural 5-Metric Strip — unboxed from 5 rounded pill boxes */
+.profile-stats { display: flex; flex-wrap: wrap; gap: 0; margin-top: var(--space-4); border-block: 1px solid var(--line); }
+.stat-item { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); padding: var(--space-3) var(--space-4); background: transparent; border: 0; border-radius: 0; transition: color .2s var(--ease-out), transform .2s var(--ease-out); }
+.stat-item + .stat-item { border-inline-start: 1px solid var(--line); }
+.stat-item:hover { background: transparent; transform: translateY(-1px); }
 .stat-item:active { transform: scale(.95); transition-duration: .08s; }
 .stat-item:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.stat-item strong { font-size: var(--text-lg); font-weight: var(--weight-bold); user-select: all; }
+.stat-item strong { font-family: var(--font-editorial, serif); font-size: var(--text-lg); font-weight: var(--weight-bold); user-select: all; }
 .stat-item span { font-size: var(--text-xs); color: var(--muted); }
 .stat-clickable { cursor: pointer; font: inherit; min-height: 44px; }
-.stat-clickable:hover { border-color: color-mix(in srgb, var(--color-action) 35%, var(--line)); }
+.stat-clickable:hover strong { color: var(--color-action); }
 .stat-clickable:active { transform: scale(.96); transition-duration: .08s; }
-.profile-insight { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-4); padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-surface); background: color-mix(in srgb, var(--bg-warm) 82%, var(--card)); }
+/* Wave 6: Open Editorial Status Line — unboxed from bordered card */
+.profile-insight { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-3); padding: var(--space-3) 0; border: 0; border-block-end: 1px solid var(--line); border-radius: 0; background: transparent; }
 .profile-insight-copy { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
 .profile-insight-copy span { color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: .04em; }
 .profile-insight-copy strong { color: var(--ink); font-size: var(--text-sm); line-height: var(--leading-snug); overflow-wrap: anywhere; }
@@ -979,7 +975,7 @@ useHead(() => {
 /* Dark mode */
 .dark .profile-cover { border-color: var(--line); }
 .dark .profile-avatar-wrap .avatar { border-color: var(--bg-warm); }
-.dark .stat-item:hover { background: var(--card); box-shadow: var(--shadow-sm); }
+.dark .stat-item:hover { background: transparent; box-shadow: none; }
 .dark .profile-tabs { border-bottom-color: var(--line); }
 
 /* Mobile: stack follow/edit button below name */
@@ -1018,9 +1014,9 @@ useHead(() => {
 .pc-hint { font-size: .72rem; color: var(--muted); padding: var(--space-half) var(--space-2); border: 1px solid var(--border-input); border-radius: var(--radius-pill, 999px); }
 
 
-/* Hoạt động (timeline) tab */
-.timeline-feed { display: flex; flex-direction: column; gap: var(--space-2); }
-.timeline-item { display: flex; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); }
+/* Hoạt động (timeline) tab — Wave 6: Open Field Activity Ledger */
+.timeline-feed { display: flex; flex-direction: column; gap: 0; border-block-start: 1px solid var(--line); }
+.timeline-item { display: flex; gap: var(--space-3); padding: var(--space-3) 0; border: 0; border-block-end: 1px solid var(--line); border-radius: 0; background: transparent; }
 .tl-icon { font-size: 1.25rem; flex-shrink: 0; width: 2rem; text-align: center; }
 .tl-body { flex: 1; min-width: 0; }
 .tl-text { margin: 0; color: var(--ink); font-size: 0.9375rem; }

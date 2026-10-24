@@ -2,6 +2,9 @@
 
 from dataclasses import dataclass
 import hashlib
+import logging
+
+_logger = logging.getLogger("privacy_boundary")
 from typing import Any, Literal, Mapping, Sequence
 
 from guardrails import (
@@ -334,6 +337,16 @@ def _protect_verified_contacts(
     return protected, tuple(restorations)
 
 
+def _log_output_guard_warning(guard: Mapping[str, Any]) -> None:
+    if not guard.get("valid", True) or float(guard.get("hallucination_score", 0.0) or 0.0) > 0.5:
+        _logger.warning(
+            "Output guard flagged chat reply (valid=%s, hallucination_score=%s, issues=%s)",
+            guard.get("valid", True),
+            guard.get("hallucination_score", 0.0),
+            guard.get("issues", []),
+        )
+
+
 def prepare_chat_output(
     reply: str,
     *,
@@ -368,6 +381,7 @@ def prepare_chat_output(
     if not isinstance(guard, Mapping) or not isinstance(guard.get("cleaned_reply"), str):
         raise PrivacyBoundaryUnavailable("INVALID_OUTPUT_GUARD_RESULT")
 
+    _log_output_guard_warning(guard)
     cleaned_reply = guard["cleaned_reply"]
     for placeholder, raw_value in restorations:
         cleaned_reply = cleaned_reply.replace(placeholder, raw_value)

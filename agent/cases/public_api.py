@@ -288,7 +288,11 @@ def _validate_correction_contract(items, request: Request, *, version: str = "1"
 
 
 def _rate_subject(request: Request) -> str:
-    return request.client.host if request.client else "unknown"
+    try:
+        from middleware import get_client_ip
+    except ModuleNotFoundError:
+        from ..middleware import get_client_ip
+    return get_client_ip(request)
 
 
 def _map_domain_error(exc: Exception) -> JSONResponse | None:
@@ -520,7 +524,9 @@ async def create_correction(request: Request):
     body, invalid = await _parse_correction_intake(request, version)
     if invalid is not None:
         return invalid
-    result, mapped = _create_correction_service_result(request, body, idempotency_key)
+    result, mapped = await asyncio.to_thread(
+        _create_correction_service_result, request, body, idempotency_key
+    )
     if mapped is not None:
         return mapped
     return _correction_response(result)
@@ -536,7 +542,8 @@ async def exchange_receipt(request: Request):
         return invalid
 
     try:
-        grant = _service().exchange_receipt(
+        grant = await asyncio.to_thread(
+            _service().exchange_receipt,
             public_reference=body.public_reference,
             capability=body.capability,
             rate_subject=_rate_subject(request),
@@ -559,7 +566,7 @@ async def read_status(request: Request):
     if not token:
         return _problem(401, *_CREDENTIAL)
     try:
-        status = _service().public_status(access_token=token)
+        status = await asyncio.to_thread(_service().public_status, access_token=token)
     except Exception as exc:  # noqa: BLE001
         mapped = _map_domain_error(exc)
         if mapped is None:
@@ -578,7 +585,8 @@ async def rotate_receipt(request: Request):
     if blocked is not None:
         return blocked
     try:
-        grant = _service().rotate_receipt(
+        grant = await asyncio.to_thread(
+            _service().rotate_receipt,
             access_token=request.cookies.get(ACCESS_COOKIE),
             rate_subject=_rate_subject(request),
         )
@@ -620,7 +628,8 @@ async def open_review(request: Request):
         return invalid
 
     try:
-        review = _service().open_review(
+        review = await asyncio.to_thread(
+            _service().open_review,
             access_token=request.cookies.get(ACCESS_COOKIE),
             reason=body.reason,
             expected_revision=body.expected_revision,
@@ -755,7 +764,9 @@ async def verify_contact(request: Request):
     use_access, blocked = _contact_verify_lane(request, body, has_access)
     if blocked is not None:
         return blocked
-    verified, verified_receipt, error = _perform_contact_verification(request, body, use_access)
+    verified, verified_receipt, error = await asyncio.to_thread(
+        _perform_contact_verification, request, body, use_access
+    )
     if error is not None:
         return error
     return _verified_contact_response(use_access, verified_receipt)

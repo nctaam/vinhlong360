@@ -156,17 +156,14 @@ class ContextualRetrieval:
 
     def _save_cache(self):
         try:
+            from versioned_json_store import atomic_write_json
+
             data = {
                 "updated_at": time.strftime("%Y-%m-%d %H:%M"),
                 "count": len(self._cache),
                 "texts": self._cache,
             }
-            tmp = CONTEXTUAL_FILE.with_suffix(".tmp")
-            tmp.write_text(
-                json.dumps(data, ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
-            tmp.replace(CONTEXTUAL_FILE)
+            atomic_write_json(CONTEXTUAL_FILE, data, indent=2)
         except Exception as exc:
             logger.warning("contextual cache save failed: %s", exc)
 
@@ -714,16 +711,15 @@ def enhanced_hybrid_search(
     else:
         merged = merged[:top_k]
 
-    # Attach degradation metadata so callers know which signals contributed.
-    for item in merged:
-        item["_search_meta"] = {
-            "has_bm25": has_bm25,
-            "has_semantic": has_semantic,
-            "has_contextual": has_ctx,
-            "reranked": reranked,
-        }
-
-    return merged
+    # Attach degradation metadata on shallow copies so shared knowledge._entities
+    # dicts are never mutated in-place across concurrent search requests.
+    search_meta = {
+        "has_bm25": has_bm25,
+        "has_semantic": has_semantic,
+        "has_contextual": has_ctx,
+        "reranked": reranked,
+    }
+    return [{**item, "_search_meta": dict(search_meta)} for item in merged]
 
 
 # =====================================================================

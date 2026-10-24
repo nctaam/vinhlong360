@@ -1443,6 +1443,12 @@ class CaseTransaction:
                 provenance,
                 correlation_id or actor,
             )
+            mutations = list(result.cache_mutations)
+            if mutations:
+                import entity_details as _entity_details
+                self.on_commit(
+                    lambda: _entity_details.apply_detail_cache_mutations(mutations)
+                )
             self.on_commit(
                 lambda: invalidate_entity(
                     entity_id, reason=provenance, generation=ref.generation

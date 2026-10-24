@@ -32,14 +32,12 @@ if __package__:
     from .image_descriptor import ImageDescriptor, describe_entity_images
     from .index_policy import decide_entity
     from .launch_evidence import PolicyEvidence, current_policy_evidence
-    from .media_provenance import is_public_provenance_url
     from .media_policy import is_renderable_entity_descriptor
 else:
     from ai_disclosure import LoadedAiDisclosure, load_ai_disclosure
     from image_descriptor import ImageDescriptor, describe_entity_images
     from index_policy import decide_entity
     from launch_evidence import PolicyEvidence, current_policy_evidence
-    from media_provenance import is_public_provenance_url
     from media_policy import is_renderable_entity_descriptor
 
 router = APIRouter()
@@ -132,10 +130,10 @@ TYPE_BREADCRUMB_LABEL = {
 COLLECTIONS: dict[str, dict[str, Any]] = {
     "du-lich": {
         "types": {"experience", "attraction", "nature", "craft_village", "history", "dish"},
-        "name": "Du lịch — Trải nghiệm miền Tây",
+        "name": "Du lịch — Trải nghiệm Vĩnh Long",
         "description": (
             "Khám phá điểm tham quan, trải nghiệm, vườn cây trái, làng nghề và "
-            "di tích ở Vĩnh Long, Bến Tre, Trà Vinh."
+            "di tích trên toàn tỉnh Vĩnh Long (gồm vùng Vĩnh Long, Bến Tre, Trà Vinh trước 7-2025)."
         ),
     },
     "ocop": {
@@ -152,14 +150,14 @@ COLLECTIONS: dict[str, dict[str, Any]] = {
         "types": {"product", "dish", "drink"},
         "name": "Đặc sản & Sản phẩm địa phương",
         "description": (
-            "Các sản phẩm đặc trưng của vùng đất miền Tây: đặc sản, thủ công mỹ "
+            "Các sản phẩm đặc trưng của ba dải phù sa Vĩnh Long: đặc sản, thủ công mỹ "
             "nghệ, ẩm thực và đồ uống địa phương."
         ),
     },
     "luu-tru": {
         "types": {"accommodation"},
         "name": "Lưu trú & Nơi ở",
-        "description": "Khách sạn, homestay, resort, nhà vườn lưu trú ở Vĩnh Long, Bến Tre, Trà Vinh.",
+        "description": "Khách sạn, homestay, resort, nhà vườn lưu trú trên toàn tỉnh Vĩnh Long (gồm vùng Bến Tre, Trà Vinh trước 7-2025).",
     },
     "le-hoi": {
         "types": {"event"},
@@ -233,6 +231,16 @@ def _load_db_data() -> dict[str, Any] | None:
         logger.debug("SEO DB load failed; falling back to data.json", exc_info=True)
         return None
 
+def invalidate_db_snapshot() -> None:
+    """Clear the cached DB snapshot so SEO/JSON-LD endpoints reflect entity mutations immediately."""
+    global _db_snapshot, _db_snapshot_ts, _by_id_cache, _by_id_cache_key
+    with _db_snapshot_lock:
+        _db_snapshot = None
+        _db_snapshot_ts = 0.0
+        _by_id_cache = None
+        _by_id_cache_key = None
+
+
 def _load_seo_data() -> dict[str, Any]:
     return _load_db_data() or _load()
 
@@ -241,7 +249,7 @@ _by_id_lock = threading.Lock()
 
 def _by_id(data: dict[str, Any] | None = None) -> dict[str, dict[str, Any]]:
     global _by_id_cache, _by_id_cache_key
-    data = data or _load()
+    data = data or _load_seo_data()
     data_key = id(data)
     if _by_id_cache is None or _by_id_cache_key != data_key:
         with _by_id_lock:
@@ -380,15 +388,13 @@ def _image_url(value: Any) -> str | None:
 def _build_image_objects(
     images: Any, entity_name: str, attrs: dict[str, Any]
 ) -> list[dict[str, Any]]:
-    """Legacy raw media cannot establish AI provenance.
+    """Legacy raw media lists cannot establish image provenance by themselves.
 
     Cụm ghi-công/cấp-phép ảnh từng sống dưới hàm này (LICENSE_URL_ALIASES,
     _normalise_license_url, _image_credit_direct, _image_credit_for_url) đã gỡ
-    2026-08-30: hàm này là cửa vào DUY NHẤT của chúng và nó trả [] vô điều kiện
-    kể từ khi dự án chốt CHỈ dùng ảnh AI-gen (CLAUDE.md §1.5). Bảng alias CC-BY/
-    CC0 là di tích thời Wikimedia/stock — thứ chốt đó đã cấm. Đừng dựng lại: ảnh
-    AI không cần giấy phép nguồn, và giữ mã chết ở đây làm người đọc tưởng dự án
-    vẫn nhận ảnh ngoài.
+    2026-08-30: danh sách URL thô không đủ chứng minh tác giả/quyền sử dụng nên
+    hàm này vẫn trả [] vô điều kiện. Metadata ảnh tư liệu hợp lệ được xử lý ở
+    `_enrich_image_license_fields`; đừng dựng lại bảng alias giấy phép suy đoán.
     """
     del images, entity_name, attrs
     return []
@@ -409,6 +415,7 @@ def _is_jsonld_entity_image_identity(
     descriptor: object,
     disclosure: LoadedAiDisclosure,
 ) -> bool:
+    copy = disclosure.entity_ai
     if type(descriptor) is not ImageDescriptor:
         return False
     if type(descriptor.url) is not str or type(descriptor.alt) is not str:
@@ -417,34 +424,11 @@ def _is_jsonld_entity_image_identity(
         return False
     if not is_renderable_entity_descriptor(asdict(descriptor)):
         return False
-    identity = _jsonld_descriptor_identity(descriptor, disclosure)
-    if identity is None:
-        return False
-    copy, provenance_is_valid = identity
     if descriptor.short_label != copy.short_label:
         return False
     if descriptor.full_disclosure != copy.full_disclosure:
         return False
-    return provenance_is_valid
-
-
-def _jsonld_descriptor_identity(
-    descriptor: ImageDescriptor,
-    disclosure: LoadedAiDisclosure,
-) -> tuple[object, bool] | None:
-    if descriptor.source_class == "ai-generated":
-        return (
-            disclosure.entity_ai,
-            descriptor.credit is None and descriptor.source_url is None,
-        )
-    if descriptor.source_class == "rights-cleared":
-        return (
-            disclosure.sourced_photo,
-            type(descriptor.credit) is str
-            and bool(descriptor.credit.strip())
-            and is_public_provenance_url(descriptor.source_url),
-        )
-    return None
+    return descriptor.credit is None
 
 
 def _is_jsonld_entity_image_descriptor(
@@ -571,6 +555,9 @@ def _admin_unit_source(
     return entity.get("place_name"), entity.get("place_level")
 
 
+EXTERNAL_GATEWAY_PLACE_IDS: frozenset[str] = frozenset({"gateway-hcm"})
+
+
 def _admin_unit_crumb(
     entity: dict[str, Any],
     by_id: dict[str, dict[str, Any]],
@@ -582,6 +569,8 @@ def _admin_unit_crumb(
     - entity `type=place` → None: nó ĐÃ LÀ đơn vị hành chính, không đội một đơn
       vị khác lên chính nó. Guard bắt buộc vì 39/125 place trong dữ liệu có
       `placeId` ≠ `id` (32 trỏ nhầm `p-long-chau`).
+    - `placeId` thuộc `EXTERNAL_GATEWAY_PLACE_IDS` (ví dụ `gateway-hcm`) → None:
+      điểm đầu mối giao thông liên vùng ngoại tỉnh không thuộc 124 xã/phường.
     - `placeId` trỏ về chính nó → None (cùng lý do).
     - thiếu `placeId`, hoặc `placeId` trỏ tới id không tồn tại → None = BỎ HẲN
       mắt xích, thay vì rơi về `area` (vùng CŨ, không còn là cấp hành chính từ
@@ -592,6 +581,8 @@ def _admin_unit_crumb(
         return None
 
     place_id = str(entity.get("placeId") or "").strip()
+    if place_id in EXTERNAL_GATEWAY_PLACE_IDS:
+        return None
     self_id = str(entity.get("id") or "").strip()
     if place_id and self_id and place_id == self_id:
         return None
@@ -1234,7 +1225,7 @@ def build_area_jsonld(area_slug: str, data: dict[str, Any] | None = None) -> dic
         "@id": area_url,
         "name": name,
         "url": area_url,
-        "description": f"Khám phá {name} — điểm đến, ẩm thực, sản phẩm OCOP, lưu trú và trải nghiệm miền Tây.",
+        "description": f"Khám phá {name} — điểm đến, ẩm thực, sản phẩm OCOP, lưu trú và trải nghiệm Vĩnh Long.",
         "containedInPlace": {"@type": "Country", "name": "Việt Nam"},
         "inLanguage": "vi-VN",
     }
@@ -1549,8 +1540,8 @@ def build_og_meta(entity: dict[str, Any] | None = None) -> dict[str, str]:
         "twitter:site": "@vinhlong360",
     }
     if not entity:
-        title = "VinhLong360 — Khám phá Vĩnh Long, Bến Tre, Trà Vinh"
-        desc = "Điểm đến, ẩm thực, OCOP, lưu trú và cộng đồng miền Tây."
+        title = "VinhLong360 — Khám phá toàn tỉnh Vĩnh Long (Vĩnh Long, Bến Tre, Trà Vinh trước 7-2025)"
+        desc = "Điểm đến, ẩm thực, OCOP, lưu trú và cộng đồng toàn tỉnh Vĩnh Long."
         meta["og:title"] = title
         meta["og:description"] = desc
         meta["og:url"] = SITE

@@ -34,19 +34,8 @@ const props = defineProps<{
 const areaLabel = computed(() => AREA_META[props.area]?.name || props.area)
 const sameTypeLabel = computed(() => TYPE_META[props.entityType]?.label || props.entityType)
 
-const { data } = await useAsyncData(`nearby-${props.area}`, () =>
-  apiFetch<any>(`/api/entities?area=${encodeURIComponent(props.area)}&limit=80`)
-)
-
-const nearby = computed(() => {
-  if (!data.value) return []
-  const list = (data.value.entities || [])
-    .filter((e: Entity) =>
-      (e.place_area || e.area) === props.area &&
-      e.id !== props.entityId &&
-      e.type !== props.entityType
-    )
-  const byType: Record<string, any[]> = {}
+function pickDiverseNearby(list: Entity[]): Entity[] {
+  const byType: Record<string, Entity[]> = {}
   for (const e of list) {
     if (!byType[e.type]) byType[e.type] = []
     byType[e.type]!.push(e)
@@ -56,15 +45,36 @@ const nearby = computed(() => {
     picked.push(byType[type]![0]!)
     if (picked.length >= 6) break
   }
-  if (picked.length < 6) {
-    for (const e of list) {
-      if (!picked.find(p => p.id === e.id)) {
-        picked.push(e)
-        if (picked.length >= 6) break
-      }
-    }
+  for (const e of list) {
+    if (picked.length >= 6) break
+    if (!picked.some(p => p.id === e.id)) picked.push(e)
   }
   return picked
+}
+
+const { data } = await useAsyncData(
+  () => `nearby-${props.area}-${props.entityId}`,
+  () => apiFetch<any>(`/api/entities?area=${encodeURIComponent(props.area)}&limit=80`),
+  {
+    watch: [() => props.area, () => props.entityId],
+    transform: (res: any) => {
+      const all = (res?.entities || []).filter(
+        (e: Entity) => (e.place_area || e.area) === props.area && e.id !== props.entityId
+      )
+      const picked = pickDiverseNearby(all.filter((e: Entity) => e.type !== props.entityType))
+      const same = all.filter((e: Entity) => e.type === props.entityType).slice(0, 4)
+      const stripHeavy = ({ description, ...rest }: any) => rest as Entity
+      return { entities: [...picked.map(stripHeavy), ...same.map(stripHeavy)] }
+    },
+  }
+)
+
+const nearby = computed(() => {
+  if (!data.value) return []
+  const list = (data.value.entities || []).filter(
+    (e: Entity) => (e.place_area || e.area) === props.area && e.id !== props.entityId && e.type !== props.entityType
+  )
+  return pickDiverseNearby(list)
 })
 
 const sameType = computed(() => {
@@ -91,6 +101,11 @@ const sameType = computed(() => {
   margin: 0;
 }
 .nearby-sametype { margin-top: var(--space-6); }
+.scroll-row:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
+  border-radius: var(--radius-surface);
+}
 
 /* Tri-province sediment rule — card-scale hairline echo of the site-wide
    river→amber→clay thread (same idiom as PostCard.vue's .thread-rule),

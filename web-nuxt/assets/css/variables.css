@@ -315,6 +315,7 @@
   --wake-ember-rgb: 200, 140, 50;
   --wake-dust-rgb: 160, 140, 100;
   --nocturne-ink-rgb: 8, 9, 12;
+  --mekong-ink-rgb: 8, 26, 22;
   --sys-green-rgb: 52, 199, 89;    /* systemGreen  #34C759 */
   --sys-pink-rgb: 255, 55, 95;     /* systemPink   #FF375F */
   --sys-brown-rgb: 162, 132, 94;   /* systemBrown  #A2845E */
@@ -323,10 +324,9 @@
   --gray-rgb: 142, 142, 147;   /* Apple systemGray — theme-invariant neutral */
   --focus-ring: 0 0 0 4px rgba(var(--primary-rgb), .12);
   --focus-outline: var(--color-focus);
-  --shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 6px 20px rgba(0, 0, 0, .06);
-  --shadow-card-ambient: 0 2px 10px -2px rgba(var(--mekong-ink-rgb, 8, 26, 22), 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
-  --shadow-card-hover: 0 8px 24px -4px rgba(var(--mekong-ink-rgb, 8, 26, 22), 0.09), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
-  --glass-frosted-nav: saturate(180%) blur(16px);
+  --shadow-card-ambient: 0 1px 3px rgba(var(--mekong-ink-rgb, 8, 26, 22), 0.03), 0 6px 20px -4px rgba(var(--mekong-ink-rgb, 8, 26, 22), 0.05), 0 0 0 1px rgba(var(--mekong-ink-rgb, 8, 26, 22), 0.03);
+  --shadow-card-hover: 0 4px 12px rgba(var(--mekong-ink-rgb, 8, 26, 22), 0.03), 0 20px 44px -8px rgba(var(--mekong-ink-rgb, 8, 26, 22), 0.10), 0 0 0 1px color-mix(in srgb, var(--alluvial-gold) 35%, var(--border-liquid-glass));
+  --glass-frosted-nav: saturate(190%) blur(20px);
 
   /* ── Overlay / scrim tokens ── */
   --overlay-dark: rgba(0,0,0,.72);
@@ -965,9 +965,9 @@
   /* Skeleton (dark) */
   --sk-base: var(--bg-warm);
   --sk-highlight: var(--line);
-  /* Surface elevation: primary-tinted (M3 tonal elevation) */
-  --surface-2: color-mix(in oklch, #2c2c2e 94%, var(--primary) 6%);
-  --surface-3: color-mix(in oklch, #3a3a3c 92%, var(--primary) 8%);
+  /* Surface elevation: primary-tinted (Nocturne alluvial elevation) */
+  --surface-2: color-mix(in oklch, var(--night-surface) 94%, var(--primary) 6%);
+  --surface-3: color-mix(in oklch, var(--night-raised) 92%, var(--primary) 8%);
   /* Dark mode semantic overrides */
   --text-high: var(--ink);
   --text-medium: var(--muted);
@@ -979,9 +979,9 @@
   --on-inverse-surface: var(--ink-900);
   --inverse-primary: var(--clay-600);
   --scrim: rgba(0,0,0,0.82);
-  --surface-container-low: #282830;
-  --surface-container: #343438;
-  --surface-container-high: #424248;
+  --surface-container-low: var(--night-surface);
+  --surface-container: color-mix(in oklch, var(--night-surface) 50%, var(--night-raised) 50%);
+  --surface-container-high: var(--night-raised);
   --divider-subtle: 1px solid rgba(255,255,255,.06);
   --divider-default: 1px solid var(--line);
   --divider-strong: 1px solid rgba(255,255,255,.15);

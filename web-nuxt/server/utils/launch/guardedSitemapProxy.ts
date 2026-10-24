@@ -264,7 +264,7 @@ function normalizePrivateApiBase(value: unknown): string {
   const hostIsPrivateIpv4 = isIpv4Address(hostname) && isPrivateIpv4(hostname)
   const hostIsLoopbackIpv6 = normalizedIpv6 === '::1'
   const hostIsAllowed = hostIsReviewedService || hostIsLoopbackIpv4 || hostIsPrivateIpv4 || hostIsLoopbackIpv6
-  const expectedPort = parsed.protocol === 'https:' ? new Set(['443', '8360']) : new Set(['8360'])
+  const expectedPort = parsed.protocol === 'https:' ? new Set(['443', '8360', '8000']) : new Set(['8360', '8000'])
   if (
     (parsed.protocol !== 'http:' && parsed.protocol !== 'https:')
     || parsed.username !== ''
