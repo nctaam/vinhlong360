@@ -258,7 +258,7 @@ const catalogAeoEntries = [
   },
   {
     heading: 'Cam sành Tam Bình & Khoai lang tím Bình Tân',
-    text: 'Thổ nhưỡng đất phù sa kết hợp phèn nhẹ đặc thù tạo ra khoai lang tím xuất khẩu danh tiếng và những vườn cam sành mọng nước ngọt đậm đà.',
+    text: 'Thổ nhưỡng đất phù sa kết hợp phèn nhẹ đặc thù tạo ra khoai lang tím xuất khẩu danh tiếng và những vườn cam sành mọng nước ngọt thanh đậm vị.',
   },
   {
     heading: 'Bánh tráng Cù lao Mây & Tàu hũ ky Mỹ Hòa',
@@ -512,35 +512,49 @@ useHead(() => {
   padding: var(--space-1) var(--space-3);
   min-height: 44px;
   cursor: pointer;
+  white-space: nowrap;
+  line-height: var(--leading-normal);
   transition: background .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .25s var(--ease-out);
 }
 .season-reset-chip:hover { background: rgba(var(--color-brand-rgb), .18); box-shadow: var(--shadow-xs); transform: translateY(-1px); }
 .season-reset-chip:active { transform: scale(.95); }
+.season-reset-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dark .season-reset-chip { color: var(--color-brand); background: rgba(var(--color-brand-rgb), .14); border-color: rgba(var(--color-brand-rgb), .4); }
 
-/* OCOP teaser strip — slim signpost outward to /ocop (not a competing
-   deep-dive rail); information-scent card, contact-only site, no CTA verb. */
+/* OCOP teaser strip — Open Architectural Hairline Signpost outward to /ocop */
 .ocop-teaser-strip { padding-block: 0; }
 .ocop-teaser-link {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-4) var(--space-5);
-  border: .5px solid var(--line);
-  border-radius: var(--radius-sheet);
-  background: linear-gradient(90deg, rgba(var(--color-brand-rgb), .06), transparent);
+  padding: var(--space-4) 0;
+  border: 0;
+  border-block: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
   text-decoration: none;
   color: var(--ink);
-  transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: none;
+  transition: border-color .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .ocop-teaser-link:hover {
-  border-color: rgba(var(--color-brand-rgb), .5);
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-2px);
+  border-block-color: var(--color-brand);
+  box-shadow: none;
+  transform: translateX(3px);
+}
+.ocop-teaser-link:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
 }
 .ocop-teaser-icon { font-size: 1.3rem; flex-shrink: 0; }
-.ocop-teaser-copy { flex: 1; font-size: var(--text-sm); color: var(--muted); }
-.ocop-teaser-copy strong { color: var(--ink); font-weight: var(--weight-semibold); }
+.ocop-teaser-copy {
+  flex: 1;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+.ocop-teaser-copy strong { font-family: var(--font-editorial); color: var(--ink); font-weight: var(--weight-semibold); }
 .ocop-teaser-arrow {
   color: var(--color-brand);
   flex-shrink: 0;
@@ -551,7 +565,7 @@ useHead(() => {
 .ocop-teaser-link:hover .ocop-teaser-arrow {
   transform: translateX(3px);
 }
-.dark .ocop-teaser-link { background: linear-gradient(90deg, rgba(var(--color-brand-rgb), .1), transparent); }
+.dark .ocop-teaser-link { background: transparent; border-block-color: var(--line); }
 
 @media (prefers-reduced-motion: reduce) {
   .seasonal-banner-live .seasonal-banner-icon { animation: none; }
@@ -561,6 +575,6 @@ useHead(() => {
 }
 
 @media (max-width: 640px) {
-  .ocop-teaser-link { padding: var(--space-3) var(--space-4); }
+  .ocop-teaser-link { padding: var(--space-3) 0; }
 }
 </style>

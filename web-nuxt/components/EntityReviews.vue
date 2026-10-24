@@ -22,7 +22,7 @@
             @blur="hoverRating = 0"
             @keydown.arrow-right.prevent="formRating = Math.min(5, (formRating || 0) + 1)"
             @keydown.arrow-left.prevent="formRating = Math.max(1, (formRating || 2) - 1)"
-          >★</button>
+          ><IconLine name="star" aria-hidden="true" /></button>
           <span v-if="hoverRating || formRating" class="rf-rating-hint" aria-hidden="true">{{ hoverRating || formRating }}/5</span>
         </span>
       </div>
@@ -362,7 +362,7 @@ onMounted(() => fetchReviews())
   position: absolute; top: 2px; inset-inline-end: 2px;
   width: 20px; height: 20px; line-height: 1;
   display: inline-flex; align-items: center; justify-content: center;
-  border: none; border-radius: var(--radius-full);
+  border: none; border-radius: var(--radius-pill, 999px);
   background: rgba(var(--black-rgb), .6); color: var(--text-on-dark, var(--white)); font-size: var(--text-sm);
   cursor: pointer; padding: 0;
   transition: background .15s var(--ease-soft);
@@ -394,10 +394,10 @@ onMounted(() => fetchReviews())
 .rf-image-input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .rf-error { font-size: var(--text-sm); color: var(--error); margin-top: var(--space-1); }
 
-.review-loading { display: flex; flex-direction: column; gap: var(--space-4); }
-.review-skeleton { padding: var(--space-4); border-radius: var(--radius-surface); background: var(--card); border: .5px solid var(--line); }
+.review-loading { display: flex; flex-direction: column; gap: 0; border-block-start: 1px solid var(--line); }
+.review-skeleton { padding: var(--space-4) 0; border-radius: 0; background: transparent; border: 0; border-block-end: 1px solid var(--line); }
 .rsk-head { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
-.rsk-avatar { width: 32px; height: 32px; border-radius: var(--radius-full); background: var(--bg-warm); animation: rskShimmer 1.5s infinite; }
+.rsk-avatar { width: 32px; height: 32px; border-radius: var(--radius-pill, 999px); background: var(--bg-warm); animation: rskShimmer 1.5s infinite; }
 .rsk-name { width: 100px; height: 14px; border-radius: var(--radius-control); background: var(--bg-warm); animation: rskShimmer 1.5s infinite; }
 .rsk-line { width: 100%; height: 12px; border-radius: var(--radius-control); background: var(--bg-warm); margin-bottom: var(--space-2); animation: rskShimmer 1.5s infinite; }
 .rsk-line.short { width: 60%; }
@@ -413,17 +413,19 @@ onMounted(() => fetchReviews())
 <style>
 .reviews-section { margin-top: var(--space-8); }
 .reviews-header { display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
-.reviews-header h2 { font-size: var(--text-xl); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); margin: 0; }
+.reviews-header h2 { font-family: var(--font-editorial); font-size: var(--text-xl); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); margin: 0; }
 .reviews-summary { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
 .review-count { color: var(--muted); }
 
+/* Wave 12: Open Editorial Review Form & Ledger */
 .review-form {
-  background: var(--season-tint);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: var(--space-5);
+  background: transparent;
+  border: 0;
+  border-block: 1px solid var(--line);
+  border-radius: 0;
+  padding: var(--space-5) 0;
   margin-bottom: var(--space-5);
-  box-shadow: 0 0 0 1px rgba(var(--color-action-rgb), .06);
+  box-shadow: none;
 }
 .rf-rating { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
 .rf-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); }
@@ -431,13 +433,13 @@ onMounted(() => fetchReviews())
 .review-login-hint { font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-4); }
 .review-login-hint a { color: var(--color-action); font-weight: var(--weight-semibold); }
 
-.review-form { transition: border-color .35s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
-.review-form:focus-within { border-color: var(--color-action); box-shadow: 0 0 0 4px rgba(var(--color-action-rgb), .12), var(--shadow-sm); }
+.review-form { transition: border-color .35s var(--ease-out); }
+.review-form:focus-within { border-color: var(--color-action); box-shadow: none; }
 .review-form .btn:active { transform: scale(.95); transition-duration: .08s; }
 
-.review-list { display: flex; flex-direction: column; gap: var(--space-4); }
-.review-item { border-bottom: .5px solid var(--line); padding: var(--space-3) var(--space-3) var(--space-4); margin: 0 calc(var(--space-3) * -1); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo); border-radius: var(--radius-control); }
-.review-item:hover { background: var(--overlay-subtle); transform: translateX(2px); }
+.review-list { display: flex; flex-direction: column; gap: 0; border-block-start: 1px solid var(--line); }
+.review-item { border-bottom: 1px solid var(--line); padding: var(--space-4) 0; margin: 0; transition: border-color .25s var(--ease-out), transform .35s var(--ease-out-expo); border-radius: 0; }
+.review-item:hover { background: transparent; border-bottom-color: var(--color-action); transform: translateX(2px); }
 .review-item:last-child { border-bottom: none; }
 .ri-head { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-2); }
 .ri-author { display: flex; align-items: center; gap: var(--space-2); text-decoration: none; color: inherit; min-height: 44px; }
@@ -460,10 +462,10 @@ onMounted(() => fetchReviews())
   .ri-date { margin-inline-start: 0; }
 }
 .dark .review-form {
-  background: var(--season-tint);
-  border-color: rgba(var(--white-rgb), .06);
+  background: transparent;
+  border-color: var(--line);
 }
-.dark .review-form:focus-within { box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .18); }
-.dark .review-item:hover { background: rgba(var(--white-rgb),.03); }
+.dark .review-form:focus-within { border-color: var(--color-action); box-shadow: none; }
+.dark .review-item:hover { background: transparent; border-bottom-color: var(--color-action); }
 .dark .ri-avatar-placeholder { background: rgba(var(--color-action-rgb), .3); }
 </style>

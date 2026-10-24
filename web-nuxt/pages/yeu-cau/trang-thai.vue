@@ -138,10 +138,11 @@ useHead(() => ({
   color: var(--muted);
 }
 .case-failure {
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 0 0.75rem 1rem;
   border-radius: var(--radius-control);
-  border: 1px solid var(--color-error);
-  background: color-mix(in srgb, var(--color-error) 8%, transparent);
+  border: 0;
+  border-inline-start: 2px solid var(--color-error);
+  background: transparent;
   color: var(--ink);
   font-size: var(--text-sm);
 }

@@ -186,7 +186,7 @@
       />
 
       <div class="sediment-head"><h2>Mười hai tháng, một nhịp sông</h2></div>
-      <p class="timeline-caption">Cuộn để xem tháng nào có gì — vệt sáng đánh dấu tháng {{ month }}, tháng bạn đang đứng trên vòng quay này.</p>
+      <p class="timeline-caption"><IconLine name="calendar" class="season-when-icon" aria-hidden="true" />Cuộn để xem tháng nào có gì — vệt sáng đánh dấu tháng {{ month }}, tháng bạn đang đứng trên vòng quay này.</p>
 
       <!-- NEW: season timeline — turns the closing almanac summary into a
            visual instrument that echoes the ring's logic in linear form
@@ -616,10 +616,10 @@ useHead(() => {
   line-height: var(--leading-snug);
   color: var(--ink);
   border-left: 3px solid var(--alluvial-gold);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) 0 var(--space-2) var(--space-4);
   margin: var(--space-editorial, 2rem) 0;
-  background: color-mix(in srgb, var(--alluvial-gold) 4%, transparent);
-  border-radius: var(--radius-control);
+  background: transparent;
+  border-radius: 0;
 }
 
 .pull-quote cite {
@@ -694,11 +694,10 @@ useHead(() => {
 .grid > .season-item { animation: seasonItemIn .5s var(--ease-out-expo) both; }
 @keyframes seasonItemIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Badges — gradient + gloss */
+/* Badges — crisp high-contrast pill without GPU scroll blur */
 .season-badge {
   position: absolute; top: var(--space-2); left: var(--space-2); z-index: 2;
-  background: linear-gradient(135deg, rgba(var(--black-rgb), .65), rgba(var(--black-rgb), .78));
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  background: rgba(var(--black-rgb), .82);
   color: var(--text-on-dark, var(--white));
   font-size: var(--text-2xs); font-weight: var(--weight-semibold);
   white-space: nowrap;
@@ -720,41 +719,40 @@ useHead(() => {
   white-space: nowrap;
 }
 
-/* Per-type empty states */
+/* Per-type empty states — Open Architectural Hairline Ledger */
 .empty-type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); }
 .empty-type-card {
-  text-align: center; padding: var(--space-6) var(--space-4);
-  background: var(--color-surface-subtle);
-  border: 1px solid var(--border-liquid-glass, var(--line));
-  border-radius: var(--radius-sheet);
-  box-shadow: var(--shadow-card-ambient, none);
+  text-align: left; padding: var(--space-4) 0;
+  background: transparent;
+  border: 0;
+  border-block: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
 }
-.empty-type-icon { display: block; font-size: 2rem; margin-bottom: var(--space-2); opacity: .85; }
-.empty-type-card strong { display: block; font-size: var(--text-sm); color: var(--ink); }
+.empty-type-icon { display: block; font-size: 1.5rem; margin-bottom: var(--space-2); opacity: .85; }
+.empty-type-card strong { display: block; font-family: var(--font-editorial); font-size: var(--text-base); color: var(--ink); }
 .empty-type-card p { margin: var(--space-2) 0 0; font-size: var(--text-xs); color: var(--muted); line-height: var(--leading-relaxed); }
 
-/* B2B callout (§1.4: contact only, no order form) */
+/* B2B callout (§1.4: contact only, no order form — Open Architectural Strip) */
 .b2b-callout {
   display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-4);
-  align-items: center; position: relative; overflow: hidden;
-  background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .06), transparent);
-  border: 1px solid var(--border-liquid-glass, var(--color-border));
-  box-shadow: var(--shadow-card-ambient, var(--shadow-xs));
-  border-radius: var(--radius-sheet); padding: var(--space-4) var(--space-5);
+  align-items: center; position: relative; overflow: visible;
+  background: transparent;
+  border: 0;
+  border-block: 1px solid var(--line);
+  border-inline-start: 2px solid var(--color-brand);
+  box-shadow: none;
+  border-radius: 0; padding: var(--space-4) 0 var(--space-4) var(--space-4);
   margin: var(--space-6) 0;
-  transition: border-color .3s var(--ease-out), box-shadow .3s var(--ease-out);
+  transition: border-color .3s var(--ease-out);
 }
 .b2b-callout:hover {
-  border-color: color-mix(in srgb, var(--alluvial-gold) 45%, var(--border-liquid-glass));
-  box-shadow: var(--shadow-card-hover, var(--shadow-sm));
+  border-inline-start-color: var(--alluvial-gold);
+  box-shadow: none;
 }
-.b2b-callout::before {
-  content: ''; position: absolute; inset: -1px; z-index: -1;
-  background: radial-gradient(circle at 100% 0%, rgba(var(--color-brand-rgb), .08), transparent 70%);
-}
-.b2b-callout-icon { font-size: 1.6rem; flex-shrink: 0; }
+.b2b-callout-icon { font-size: 1.5rem; flex-shrink: 0; }
 .b2b-callout-text { font-size: var(--text-sm); line-height: var(--leading-relaxed); }
-.b2b-callout-text strong { color: var(--color-brand); }
+.b2b-callout-text strong { font-family: var(--font-editorial); color: var(--color-brand); }
 .b2b-callout-link {
   display: inline-flex; align-items: center; gap: var(--space-1);
   padding: var(--space-2) var(--space-3); border-radius: var(--radius-control);
@@ -853,8 +851,8 @@ useHead(() => {
   color: var(--color-on-action);
   box-shadow: 0 1px 3px rgba(var(--color-action-rgb), .6), 0 0 12px rgba(var(--color-action-rgb), .25);
 }
-.dark .empty-type-card { background: var(--color-surface-subtle); border-color: var(--color-border); }
-.dark .b2b-callout { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .1), transparent); border-color: var(--color-border); }
+.dark .empty-type-card { background: transparent; border-color: var(--line); }
+.dark .b2b-callout { background: transparent; border-block-color: var(--line); border-inline-start-color: var(--color-brand); }
 .dark .month-grid .quick-pick { background: var(--bg-alt); border-color: var(--line); }
 .dark .month-grid .quick-pick:hover { border-color: rgba(var(--white-rgb), .15); }
 .dark .ring-notch-tick { background: rgba(var(--white-rgb), .4); }

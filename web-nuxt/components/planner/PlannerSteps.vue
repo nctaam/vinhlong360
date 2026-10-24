@@ -1,14 +1,14 @@
 <template>
   <ol class="planner-steps" aria-label="Các bước tạo lịch trình">
-    <li :class="['planner-step', 'planner-wizard-step', { active: currentStep === 1, done: currentStep > 1 || stopCount > 0 }]" role="button" tabindex="0" @click="$emit('select-step', 1)" @keydown.enter="$emit('select-step', 1)">
+    <li :class="['planner-step', 'planner-wizard-step', { active: currentStep === 1, done: currentStep > 1 || stopCount > 0 }]" role="button" tabindex="0" @click="$emit('select-step', 1)" @keydown.enter="$emit('select-step', 1)" @keydown.space.prevent="$emit('select-step', 1)">
       <span class="step-dot">1</span><span class="step-label">Chọn điểm</span>
     </li>
     <li class="planner-step-sep" aria-hidden="true"></li>
-    <li :class="['planner-step', 'planner-wizard-step', { active: currentStep === 2, done: currentStep > 2 || stopCount >= 2 }]" role="button" tabindex="0" @click="$emit('select-step', 2)" @keydown.enter="$emit('select-step', 2)">
+    <li :class="['planner-step', 'planner-wizard-step', { active: currentStep === 2, done: currentStep > 2 || stopCount >= 2 }]" role="button" tabindex="0" @click="$emit('select-step', 2)" @keydown.enter="$emit('select-step', 2)" @keydown.space.prevent="$emit('select-step', 2)">
       <span class="step-dot">2</span><span class="step-label">Sắp xếp</span>
     </li>
     <li class="planner-step-sep" aria-hidden="true"></li>
-    <li :class="['planner-step', 'planner-wizard-step', { active: currentStep === 3, done: currentStep === 3 && stopCount >= 2 }]" role="button" tabindex="0" @click="$emit('select-step', 3)" @keydown.enter="$emit('select-step', 3)">
+    <li :class="['planner-step', 'planner-wizard-step', { active: currentStep === 3, done: currentStep === 3 && stopCount >= 2 }]" role="button" tabindex="0" @click="$emit('select-step', 3)" @keydown.enter="$emit('select-step', 3)" @keydown.space.prevent="$emit('select-step', 3)">
       <span class="step-dot">3</span><span class="step-label">Xem & lưu</span>
     </li>
   </ol>
@@ -35,9 +35,18 @@ const currentStep = computed(() => props.activeStep || (props.stopCount >= 2 ? 3
   display: flex; align-items: center; gap: var(--space-2);
   flex-wrap: wrap;
 }
-.planner-step { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--muted); font-size: var(--text-sm); transition: color .3s var(--ease-out); }
+.planner-step {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  min-height: 44px; padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill, 999px);
+  color: var(--muted); font-size: var(--text-sm);
+  cursor: pointer;
+  transition: color .2s cubic-bezier(0.16, 1, 0.3, 1), transform .16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.planner-step:active { transform: scale(0.98); }
+.planner-step:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .planner-step .step-dot {
-  width: 26px; height: 26px; border-radius: 50%;
+  width: 26px; height: 26px; border-radius: var(--radius-pill, 999px);
   display: inline-flex; align-items: center; justify-content: center;
   font-size: var(--text-xs); font-weight: var(--weight-bold);
   background: var(--bg-alt); color: var(--muted);
@@ -48,10 +57,12 @@ const currentStep = computed(() => props.activeStep || (props.stopCount >= 2 ? 3
 .planner-step.active .step-dot { background: var(--color-action); color: var(--color-on-action); border-color: var(--color-action); box-shadow: 0 0 0 4px rgba(var(--color-action-rgb), .18); transform: scale(1.05); }
 .planner-step.done .step-dot { background: rgba(var(--color-success-rgb), .14); color: var(--color-success); border-color: rgba(var(--color-success-rgb), .3); }
 .planner-step.done .step-label { color: var(--ink); }
-.planner-step-sep { flex: 1 1 18px; min-width: 18px; max-width: 48px; height: 2px; border-radius: 1px; background: var(--line); }
-.dark .planner-step .step-dot { background: var(--bg-alt); border-color: var(--line); }
+.planner-step-sep { flex: 1 1 18px; min-width: 18px; max-width: 48px; height: 2px; border-radius: var(--radius-pill, 999px); background: var(--line); }
 
 @media (prefers-reduced-motion: reduce) {
-  .planner-step.active .step-dot { transform: none; }
+  .planner-step,
+  .planner-step:active,
+  .planner-step .step-dot,
+  .planner-step.active .step-dot { transition: none; transform: none; }
 }
 </style>

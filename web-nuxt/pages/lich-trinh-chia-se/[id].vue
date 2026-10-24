@@ -131,7 +131,7 @@ useHead({
       </template>
     </Breadcrumb>
 
-    <div v-if="plan" class="shared-plan card">
+    <div v-if="plan" class="shared-plan">
       <header class="sp-header">
         <span class="sp-eyebrow">Sổ Hành Trình Du Ký Cửu Long · Bản Chia Sẻ Thực Địa</span>
         <h1 class="sp-title">{{ plan.title }}</h1>
@@ -208,20 +208,24 @@ useHead({
 </template>
 
 <style scoped>
+/* Open Architectural Shared Field Journal */
 .shared-plan-page {
   max-width: 680px;
   margin: 0 auto;
   padding-bottom: var(--space-8);
 }
 .shared-plan {
-  padding: var(--space-6);
-  border-radius: var(--radius-surface, 12px);
-  border: 1px solid var(--line);
-  background: var(--card);
-  box-shadow: var(--shadow-sm);
+  padding: var(--space-5) 0;
+  border-radius: 0;
+  border: 0;
+  border-block-start: 2px solid var(--ink);
+  background: transparent;
+  box-shadow: none;
 }
 .sp-header {
   margin-bottom: var(--space-6);
+  padding-bottom: var(--space-5);
+  border-block-end: 1px solid var(--line);
 }
 .sp-eyebrow {
   display: block;
@@ -230,7 +234,7 @@ useHead({
   font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: var(--tracking-caps);
-  color: var(--mangthit-500, var(--muted));
+  color: var(--mangthit-600, var(--muted));
   margin-bottom: var(--space-2);
 }
 .sp-title {
@@ -265,23 +269,16 @@ useHead({
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: 0;
+  border-block-start: 1px solid var(--line);
 }
 .sp-stop {
   display: flex;
-  gap: var(--space-3);
+  gap: var(--space-4);
   position: relative;
   align-items: flex-start;
-}
-.sp-stop:not(:last-child)::before {
-  content: '';
-  position: absolute;
-  top: 44px;
-  bottom: -16px;
-  left: 21px;
-  width: 2px;
-  background: var(--mangthit-500, var(--line));
-  opacity: .35;
+  padding: var(--space-4) 0;
+  border-block-end: 1px solid var(--line);
 }
 .sp-num {
   flex-shrink: 0;
@@ -289,15 +286,21 @@ useHead({
   height: 44px;
   min-width: 44px;
   min-height: 44px;
-  border-radius: var(--radius-pill, 999px);
-  background: var(--mangthit-600);
-  color: var(--white);
+  border-radius: 0;
+  background: transparent;
+  color: var(--mangthit-600);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: var(--weight-bold);
-  font-size: var(--text-sm);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mangthit-600) 25%, transparent), var(--shadow-sm);
+  align-items: baseline;
+  justify-content: flex-start;
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-2xl);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  box-shadow: none;
+  border-inline-end: 1px solid var(--line);
+  padding-inline-end: var(--space-3);
   position: relative;
   z-index: 1;
 }
@@ -323,6 +326,11 @@ useHead({
 }
 .sp-stop-name:hover {
   color: var(--color-action);
+}
+.sp-stop-name:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control, 8px);
 }
 .sp-mangthit-badge,
 .stop-mangthit-badge {
@@ -357,13 +365,14 @@ useHead({
   gap: var(--space-1);
 }
 .sp-stop-notes {
-  margin: var(--space-1) 0 0;
+  margin: var(--space-1h, 0.375rem) 0 0;
   font-size: var(--text-sm);
-  color: var(--ink);
+  color: var(--ink-secondary, var(--ink));
   line-height: var(--leading-relaxed);
-  background: var(--bg-warm);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-control);
+  background: transparent;
+  padding: var(--space-1) 0 var(--space-1) var(--space-3);
+  border-radius: 0;
+  border-inline-start: 2px solid var(--mangthit-500, var(--line));
 }
 .sp-actions {
   display: flex;
@@ -400,8 +409,16 @@ useHead({
   outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {
+  .sp-stop-name,
+  .sp-btn-pass,
+  .sp-btn-pass:hover,
+  .sp-btn-pass:active,
   .sp-btn-share,
-  .sp-btn-create {
+  .sp-btn-share:hover,
+  .sp-btn-share:active,
+  .sp-btn-create,
+  .sp-btn-create:hover,
+  .sp-btn-create:active {
     transition: none;
     transform: none;
   }

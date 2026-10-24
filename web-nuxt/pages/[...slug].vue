@@ -177,7 +177,7 @@ const discoveryLinks = [
 .nf-suggestions {
   margin-top: var(--space-8);
   padding-top: var(--space-6);
-  border-top: 1px dashed var(--line);
+  border-top: 1px solid var(--line);
 }
 
 .nf-suggestions__title {
@@ -235,7 +235,9 @@ const discoveryLinks = [
 
 @media (prefers-reduced-motion: reduce) {
   .nf-inner { animation: none; }
-  .nf-emoji { transition: none; }
-  .nf-pill { transition: none; }
+  .nf-emoji,
+  .nf-btn,
+  .nf-search button,
+  .nf-pill { transition: none; transform: none; }
 }
 </style>

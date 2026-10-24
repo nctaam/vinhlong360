@@ -92,7 +92,7 @@ const sameType = computed(() => {
 </script>
 
 <style scoped>
-.nearby-section { margin-top: var(--space-8); }
+.nearby-section { margin-top: var(--space-8); padding-top: var(--space-6); border-block-start: 1px solid var(--line); }
 .nb-head { margin: 0 0 var(--space-2); }
 .nearby-section h2 {
   font-family: var(--font-editorial);
@@ -114,7 +114,7 @@ const sameType = computed(() => {
   display: block;
   width: 48px;
   height: 2px;
-  border-radius: var(--radius-full);
+  border-radius: 0;
   margin: 0 0 var(--space-3);
   background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
 }

@@ -41,10 +41,9 @@
   background: color-mix(in srgb, var(--card) 85%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: .5px solid var(--line);
-  border-top: 1px solid rgba(var(--white-rgb), .2);
+  border: 1px solid var(--border-liquid-glass, var(--line));
   border-radius: var(--radius-pill, 999px);
-  box-shadow: 0 4px 20px -4px rgba(var(--black-rgb), .08);
+  box-shadow: var(--shadow-card-ambient, 0 4px 20px -4px rgba(var(--black-rgb), .08));
 }
 .lunar-ribbon-moon {
   flex-shrink: 0;
@@ -151,18 +150,6 @@
   transform: translateX(-50%) translateY(0);
 }
 
-@media (max-width: 640px) {
-  .lunar-ribbon { flex-wrap: wrap; }
-  .lunar-ribbon-label { order: -1; width: 100%; }
-  .lunar-ribbon-tip { max-width: 60vw; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lunar-ribbon-tick:hover,
-  .lunar-ribbon-tick:focus-visible { transform: translate(-50%, -50%); }
-  .lunar-ribbon-tip { transition: none; }
-}
-
 /* ── Live "đang diễn ra" banner — supersedes stat-chips when something is ≤3 days out ── */
 .now-banner {
   position: relative;
@@ -180,6 +167,7 @@
   transition: box-shadow .25s var(--ease-out), transform .25s var(--ease-out-expo);
 }
 .now-banner:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.now-banner:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .register-su-kien .now-banner {
   background: color-mix(in srgb, var(--color-material-amber) 12%, transparent);
   border-color: color-mix(in srgb, var(--color-material-amber) 32%, transparent);
@@ -197,7 +185,14 @@
 .register-su-kien .now-banner-dot {
   background: var(--color-material-amber);
 }
-.now-banner-text { flex: 1; min-width: 0; font-size: var(--text-sm); }
+.now-banner-text {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-sm);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-wrap: pretty;
+}
 .now-banner-text strong { font-family: var(--font-editorial); font-weight: 600; }
 .now-banner-countdown {
   flex-shrink: 0;
@@ -210,11 +205,6 @@
 }
 .register-su-kien .now-banner-countdown { color: var(--color-material-amber); }
 
-@media (prefers-reduced-motion: reduce) {
-  .now-banner-dot { animation: none; }
-  .now-banner:hover { transform: none; }
-}
-
 /* ── Ceremonial ledger (vertical, full-width rows) replaces the horizontal scroll-row ── */
 .ledger {
   list-style: none;
@@ -222,27 +212,38 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  border-block-start: 1px solid var(--line);
+  counter-reset: ceremonial-ledger;
 }
-/* <li> chỉ là vỏ ngữ nghĩa: .ledger là flex-column, nên nếu không khai gì thì <li>
-   thành flex item còn .ledger-row co lại theo nội dung. display:flex trên vỏ giữ
-   .ledger-row trải hết chiều rộng đúng như khi nó là con trực tiếp. */
 .ledger-item { display: flex; }
 .ledger-item > .ledger-row { flex: 1 1 auto; }
 .ledger-row {
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  background: var(--card);
-  border: .5px solid var(--line);
-  border-radius: var(--radius-sheet);
+  padding: var(--space-3) var(--space-2);
+  background: transparent;
+  border: 0;
+  border-block-end: 1px solid var(--line);
+  border-radius: 0;
   color: var(--ink);
   text-decoration: none;
-  transition: var(--transition-card);
+  box-shadow: none;
+  counter-increment: ceremonial-ledger;
+  transition: transform .25s var(--ease-out-expo), border-color .25s var(--ease-out);
 }
-.ledger-row:hover { transform: translateX(4px); box-shadow: var(--shadow-md); border-color: var(--border); }
+.ledger-row::before {
+  content: counter(ceremonial-ledger, decimal-leading-zero);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: var(--text-sm);
+  color: var(--color-brand);
+  opacity: 0.72;
+  min-width: 1.5rem;
+}
+.ledger-row:hover { transform: translateX(4px); border-block-end-color: var(--color-brand); }
 .ledger-row:active { transform: scale(.99); transition-duration: .1s; }
+.ledger-row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .ledger-status {
   flex-shrink: 0;
   width: 108px;
@@ -251,6 +252,7 @@
   text-transform: uppercase;
   letter-spacing: var(--tracking-caps);
   color: var(--muted);
+  white-space: nowrap;
 }
 .ledger-status.is-now { color: var(--color-success); }
 .ledger-status.is-soon { color: var(--color-material-amber); }
@@ -263,6 +265,9 @@
   font-weight: 600;
   font-size: var(--text-base);
   line-height: var(--leading-snug);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-wrap: pretty;
 }
 .ledger-place {
   flex: 1;
@@ -278,11 +283,6 @@
   .ledger-row { flex-wrap: wrap; gap: var(--space-2) var(--space-4); }
   .ledger-status { width: auto; }
   .ledger-place { flex-basis: 100%; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ledger-row:hover { transform: none; }
-  .ledger-row:active { transform: none; }
 }
 
 /* ── Register toggle (leaf ↔ amber tab switch, replaces soft cross-link) ── */
@@ -321,17 +321,18 @@
 .dark .register-toggle { background: rgba(var(--white-rgb), .05); }
 .dark .register-toggle-tab.is-active { background: var(--card); }
 
-/* ── Etiquette callout ("Đi lễ hội — cần biết gì?") ── */
+/* ── Etiquette callout ("Đi lễ hội — cần biết gì?" — Open Left-Rule Editorial Callout) ── */
 .etiquette-box {
   margin: var(--space-4) 0 0;
-  padding: var(--space-4) var(--space-5);
-  background: color-mix(in srgb, var(--color-success) 8%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-success) 22%, transparent);
-  border-radius: var(--radius-surface, 12px);
+  padding: var(--space-3) 0 var(--space-3) var(--space-4);
+  background: transparent;
+  border: 0;
+  border-inline-start: 2px solid var(--color-success);
+  border-radius: 0;
 }
 .etiquette-box p { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); color: var(--ink-secondary); }
-.etiquette-box strong { color: var(--ink); }
-.dark .etiquette-box { background: color-mix(in srgb, var(--color-success) 14%, transparent); border-color: color-mix(in srgb, var(--color-success) 32%, transparent); }
+.etiquette-box strong { font-family: var(--font-editorial); color: var(--ink); }
+.dark .etiquette-box { background: transparent; border-inline-start-color: var(--color-success); }
 
 /* ── ical bulk-subscribe button ── */
 .ical-bulk-btn {
@@ -354,11 +355,6 @@
 .ical-bulk-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .dark .ical-bulk-btn { background: var(--bg-alt); border-color: var(--line); }
 
-@media (prefers-reduced-motion: reduce) {
-  .ical-bulk-btn:hover { transform: none; }
-  .ical-bulk-btn:active { transform: none; }
-}
-
 /* ── Off-season mini-preview (upgrade of the plain apology text) ── */
 .offseason-preview {
   margin: var(--space-3) 0 0;
@@ -376,27 +372,13 @@
 }
 .offseason-preview-item strong { font-family: var(--font-editorial); color: var(--ink); font-weight: 600; }
 
-/* ── Region blob quick-picks (geographic gesture, no map tiles) ──
-   Static shape difference, not motion — border-radius isn't listed in .quick-pick's
-   own transition (catalog.css), so the hover shape-change already snaps instantly;
-   no reduced-motion override needed here (nothing to disable). */
+/* ── Region blob quick-picks (geographic gesture, no map tiles) ── */
 .quick-picks.blob-picks .quick-pick:nth-child(1) { border-radius: 42% 58% 61% 39% / 45% 42% 58% 55%; }
 .quick-picks.blob-picks .quick-pick:nth-child(2) { border-radius: 55% 45% 40% 60% / 38% 55% 45% 62%; }
 .quick-picks.blob-picks .quick-pick:nth-child(3) { border-radius: 48% 52% 55% 45% / 58% 40% 60% 42%; }
 .quick-picks.blob-picks .quick-pick:hover { border-radius: var(--radius-sheet); }
 
-/* ── Register hue-shift (leaf = lễ hội/ancestral, amber = sự kiện/contemporary).
-   le-hoi.vue and su-kien.vue are separate routes (not a single page with a live
-   register switch), so .register-le-hoi/.register-su-kien are static per-route
-   modifiers, not an animated transition target — .register-le-hoi is the default
-   leaf voice (rules above key off the ABSENCE of .register-su-kien);
-   .register-su-kien is the explicit amber override on su-kien.vue's hero. Both
-   classes exist so the convention is documented at the DOM level. ── */
-
-/* ── Carved-numeral date badge upgrade (temple-stone numerals, not a UI chip digit) ── */
-.edb-day { font-family: var(--font-editorial); font-weight: 600; }
-
-/* ── Unified lunar-label voice (was scattered plain italic sans) ── */
+/* ── Unified lunar-label voice ── */
 .lunar-label {
   font-family: var(--font-editorial);
   font-style: italic;
@@ -411,28 +393,38 @@
 .event-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  border-block-start: 1px solid var(--line);
+  counter-reset: event-archive;
 }
 
 .event-row {
+  position: relative;
   display: flex;
   gap: var(--space-4);
   align-items: flex-start;
-  padding: var(--space-4);
-  background: var(--card);
-  border: .5px solid var(--line);
-  border-radius: var(--radius-sheet);
-  box-shadow: var(--shadow-xs);
-  transition: var(--transition-card);
+  padding: var(--space-5) var(--space-3);
+  background: transparent;
+  border: 0;
+  border-block-end: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
+  counter-increment: event-archive;
+  transition: transform .25s var(--ease-out-expo), border-color .25s var(--ease-out);
   color: var(--ink);
 }
+.event-list > .event-row:first-child {
+  border-inline-start: 3px solid var(--color-brand);
+  padding-inline-start: var(--space-5);
+}
+.event-list > .event-row:first-child .event-info h3 {
+  font-size: clamp(1.15rem, 1.6vw, 1.38rem);
+}
 .event-row:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--border);
+  transform: translateX(4px);
+  border-block-end-color: var(--color-brand);
 }
 .event-row:active {
-  transform: scale(.98);
+  transform: translateY(1px) scale(0.98);
   transition-duration: .1s;
 }
 
@@ -445,7 +437,6 @@
   border-radius: var(--radius-surface);
   padding: var(--space-1) var(--space-2);
   line-height: 1.2;
-  /* Depth treatment: soft inner border + bottom inset scrim so the badge reads as a folded date tab. */
   box-shadow: inset 0 1px 0 rgba(var(--white-rgb), .18), inset 0 -2px 4px rgba(var(--black-rgb), .14), var(--shadow-xs);
   transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo);
 }
@@ -458,13 +449,11 @@
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   text-transform: uppercase;
-  /* KHÔNG dùng opacity làm nhãn phụ: nó nhân thẳng vào tương phản (trắng .85
-     trên #af6048 rớt 4.58 -> 3.78, số do của axe). Thứ bậc tháng/ngày đã do cỡ
-     chữ và độ đậm gánh (text-xs semibold vs text-xl bold). */
   color: var(--date-badge-ink);
 }
 .edb-day {
   display: block;
+  font-family: var(--font-editorial);
   font-size: var(--text-xl);
   font-weight: var(--weight-bold);
   letter-spacing: -.01em;
@@ -491,12 +480,18 @@
   font-weight: 600;
   margin: 0 0 var(--space-1);
   line-height: var(--leading-snug);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-wrap: pretty;
 }
 .event-summary {
   font-size: var(--text-sm);
   color: var(--ink-secondary);
   margin: 0 0 var(--space-2);
   line-height: var(--leading-normal);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-wrap: pretty;
 }
 .event-meta {
   display: flex;
@@ -530,21 +525,15 @@
   height: 100%;
   object-fit: cover;
   transition: transform .5s var(--ease-out-expo);
+  animation: eventThumbReveal .5s var(--ease-out-expo) both;
 }
 .event-row:hover .event-thumb img { transform: scale(var(--img-hover-scale)); }
-/* Refined lazy-load reveal: gentle fade + de-blur on first paint. CSS-only (no .loaded hook
-   needed) so images always resolve to full clarity even if no JS load handler fires. */
-.event-thumb img { animation: eventThumbReveal .5s var(--ease-out-expo) both; }
 @keyframes eventThumbReveal {
   from { opacity: 0; filter: blur(3px); }
   to { opacity: 1; filter: blur(0); }
 }
 
-/* ── ical per-row button (was duplicated verbatim in le-hoi.vue + su-kien.vue
-   scoped styles; su-kien's copy had :focus-visible, le-hoi's did not — that
-   drift meant le-hoi's "Thêm vào lịch" button had no keyboard focus ring.
-   Reconciled to one shared copy so both routes get the focus ring. ── */
-.event-row { position: relative; }
+/* ── ical per-row button ── */
 .ical-btn {
   position: absolute;
   top: var(--space-2);
@@ -558,9 +547,6 @@
   opacity: 0;
   transition: opacity .2s var(--ease-out), box-shadow .2s var(--ease-out);
   z-index: 1;
-  /* Mobile audit: measured 36×44 at 375px — too narrow a tap target.
-     min-width guarantees ≥44px on touch viewports without disturbing the
-     desktop-hover-reveal sizing (padding-driven width stays as-is above). */
   min-width: 44px;
   min-height: 44px;
   display: inline-flex;
@@ -571,9 +557,6 @@
 .event-row:focus-within .ical-btn { opacity: 1; }
 .ical-btn:hover { background: var(--surface); box-shadow: var(--shadow-xs); }
 .ical-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; opacity: 1; }
-/* dark overrides for .ical-btn in dark-overrides.css */
-/* Touch devices have no :hover — the "add to calendar" affordance was invisible on
-   first pass on mobile. Make it always-visible wherever hover can't reveal it. */
 @media (hover: none) {
   .ical-btn { opacity: 1; }
 }
@@ -587,33 +570,39 @@
 .toggle-btn {
   padding: var(--space-2) var(--space-4);
   background: var(--card);
-  border: .5px solid var(--line);
+  border: 1px solid var(--border-liquid-glass, var(--line));
   border-radius: var(--radius-pill, 999px);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   color: var(--ink-secondary);
   cursor: pointer;
   min-height: 44px;
+  box-shadow: var(--shadow-card-ambient, var(--shadow-xs));
   transition: background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out), transform .3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .3s var(--ease-out);
 }
-.toggle-btn:hover:not(.active) { box-shadow: var(--shadow-xs); transform: translateY(-1px); }
-.toggle-btn:active { transform: scale(.96); }
+.toggle-btn:hover:not(.active) {
+  border-color: color-mix(in srgb, var(--alluvial-gold) 45%, var(--border-liquid-glass));
+  box-shadow: var(--shadow-card-hover, var(--shadow-sm));
+  transform: translateY(-2px);
+}
+.toggle-btn:active { transform: translateY(1px) scale(.98); }
 .toggle-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .toggle-btn.active {
   background: var(--date-badge-bg);
   color: var(--date-badge-ink);
   border-color: var(--date-badge-bg);
+  box-shadow: 0 2px 10px rgba(var(--color-brand-rgb), 0.25);
 }
 
 /* ── Calendar ── */
 .calendar {
   background: var(--card);
-  border: .5px solid var(--line);
-  border-radius: var(--radius-sheet);
+  border: 1px solid var(--border-liquid-glass, var(--line));
+  border-radius: var(--radius-surface-refined, 14px);
   padding: var(--space-5);
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-card-ambient, var(--shadow-sm));
 }
 .cal-header {
   display: flex;
@@ -692,8 +681,6 @@
   font-size: var(--text-2xs);
   line-height: 1.3;
   padding: var(--space-1);
-  /* Cùng lỗi với .event-date-badge: --primary-fg là token CHỮ, dùng làm NỀN thì
-     chữ trắng chỉ đạt 2.69 ở chế độ tối. Ở đây chữ 10px nên ngưỡng là 4.5. */
   background: var(--date-badge-bg);
   color: var(--date-badge-ink);
   border-radius: 3px;
@@ -702,8 +689,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: opacity .3s var(--ease-out), transform .3s var(--ease-out-expo);
 }
-.cal-event-dot { transition: opacity .3s var(--ease-out), transform .3s var(--ease-out-expo); }
 .cal-event-dot:hover { opacity: .85; transform: scale(1.04); }
 .cal-event-dot:active { transform: scale(.93); }
 .cal-more {
@@ -712,10 +699,7 @@
   padding-inline-start: var(--space-1);
 }
 
-/* ── Lunar date — promoted from a 9px afterthought to the page's one
-   distinctive, consistently-voiced typographic device (serif italic,
-   per docs/.../08-events.md §4). Reuses .lunar-label so hero ribbon,
-   ledger and calendar cell all speak the same lunar "font". ── */
+/* ── Lunar date ── */
 .cal-day-row {
   display: flex;
   align-items: baseline;
@@ -744,41 +728,27 @@
   font-weight: var(--weight-semibold);
   opacity: 1;
 }
-/* Tiny markers distinguish the two lunar anchor days at a glance. */
 .cal-lunar.lunar-first::before { content: '•'; margin-inline-end: 1px; }
 .cal-lunar.lunar-mid::before { content: '◯'; margin-inline-end: 1px; font-size: var(--text-2xs); }
 
-@media (prefers-reduced-motion: reduce) {
-  .cal-lunar { transition: none; }
-}
-
 /* ── Dark mode (events) ── */
-.dark .event-row { border-color: var(--line); }
-.dark .event-row:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb), .1); }
+.dark .event-row { border-block-end-color: var(--line); }
 .dark .toggle-btn { background: var(--bg-alt); border-color: var(--line); }
-/* Stronger focus ring contrast on dark backgrounds for the view-toggle. */
 .dark .toggle-btn:focus-visible { outline-color: var(--color-focus); }
-.dark .calendar { border-color: var(--line); }
+.dark .calendar { border-color: var(--border-liquid-glass, var(--line)); box-shadow: var(--shadow-card-ambient); }
 .dark .cal-nav { border-color: var(--line); background: var(--bg-alt); }
 .dark .cal-nav:hover { background: rgba(var(--white-rgb), .08); }
 .dark .cat-mua { background: color-mix(in srgb, var(--color-success) 18%, transparent); color: var(--color-success); }
-/* Calendar has-events cells need a stronger tint to stay visible on the dark card. */
 .dark .cal-cell.cal-has-events {
   background:
     repeating-linear-gradient(45deg, rgba(var(--color-action-rgb), .05) 0 2px, transparent 2px 7px),
     rgba(var(--color-action-rgb), .1);
 }
-/* Festival date badge: lighten the clay tint so white month/day text keeps ≥4.5:1 in dark mode. */
-/* Soften the date-badge inset scrim on dark so it doesn't read as a hard line. */
 .dark .event-date-badge {
-  /* Vòng ngoài 1px thay cho việc làm sáng nền: chip đậm giữ được chữ trắng
-     10.12:1, còn ranh giới thành phần do viền gánh (#d98a6f trên card tối
-     = 6.43, thừa ngưỡng 3.0). box-shadow chứ không border: không đổi kích thước. */
   box-shadow: 0 0 0 1px var(--date-badge-ring), inset 0 1px 0 rgba(var(--white-rgb), .12), inset 0 -2px 4px rgba(var(--black-rgb), .28), var(--shadow-xs);
 }
-.dark .lunar-ribbon { background: var(--card); border-color: var(--line); }
-.dark .ledger-row { border-color: var(--line); }
-.dark .ledger-row:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb), .1); }
+.dark .lunar-ribbon { background: var(--card); border-color: var(--border-liquid-glass, var(--line)); }
+.dark .ledger-row { border-block-end-color: var(--line); }
 
 /* ── Responsive: tablet ── */
 @media (min-width: 769px) and (max-width: 1024px) {
@@ -788,28 +758,32 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .event-row:hover { transform: none; }
-  .event-row:active { transform: none; }
-  .event-thumb img { transition: none; animation: none; }
-  .event-row:hover .event-date-badge { transform: none; }
+  .lunar-ribbon-tick:hover,
+  .lunar-ribbon-tick:focus-visible { transform: translate(-50%, -50%); }
+  .lunar-ribbon-tip,
+  .cal-lunar,
   .event-date-badge { transition: none; }
-  .cal-event-dot:hover { transform: none; }
-  .cal-nav:hover { transform: none; }
-  .toggle-btn:hover:not(.active) { transform: none; }
+  .now-banner-dot { animation: none; }
+  .now-banner:hover,
+  .ledger-row:hover,
+  .ledger-row:active,
+  .ical-bulk-btn:hover,
+  .ical-bulk-btn:active,
+  .event-row:hover,
+  .event-row:active,
+  .event-row:hover .event-date-badge,
+  .cal-event-dot:hover,
+  .cal-nav:hover,
+  .toggle-btn:hover:not(.active),
   .toggle-btn:active { transform: none; }
+  .event-thumb img { transition: none; animation: none; }
 }
 
 /* ── Responsive: mobile ── */
 @media (max-width: 640px) {
-  /* Mobile audit: the two nowrap tab labels ("🎋 Lễ hội truyền thống" /
-     "🎪 Sự kiện & hội chợ") don't fit side-by-side at 375px even with
-     tighter padding (~400px of unwrappable content vs. a ~340px available
-     row) — .register-toggle had no flex-wrap, so the pill pushed past the
-     page edge instead of reflowing. Let it wrap to two full-width rows
-     instead, and drop the fully-pill --radius-full (9999px) down to a
-     regular rounded-rect on both the outer track and each tab — a 9999px
-     radius reads fine as a single pill but looks broken (lopsided lozenge)
-     once it's two stacked rows of different-width tabs. */
+  .lunar-ribbon { flex-wrap: wrap; }
+  .lunar-ribbon-label { order: -1; width: 100%; }
+  .lunar-ribbon-tip { max-width: 60vw; }
   .register-toggle { flex-wrap: wrap; border-radius: var(--radius-sheet); }
   .register-toggle-tab { flex: 1 1 100%; justify-content: center; border-radius: var(--radius-surface, 12px); }
   .event-row { flex-wrap: wrap; }
@@ -818,11 +792,9 @@
   .event-disclosure { max-width: 100%; }
   .event-date-badge { width: 48px; }
   .edb-day { font-size: var(--text-lg); }
-  /* roomier calendar touch targets on phones */
   .cal-grid { min-width: 320px; }
   .cal-cell { min-height: 64px; }
   .cal-event-dot { font-size: var(--text-2xs); }
-  /* keep the summary but cap it to 2 lines so the stacked row stays compact */
   .event-summary {
     display: -webkit-box;
     -webkit-line-clamp: 2;

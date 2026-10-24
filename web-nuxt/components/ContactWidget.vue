@@ -94,17 +94,18 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 </template>
 
 <style scoped>
-/* Desktop: sticky sidebar */
+/* Desktop: sticky Open Architectural Margin Ledger */
 .cw {
   position: sticky;
   top: calc(var(--header-height, 60px) + var(--space-4));
   z-index: var(--z-sticky);
   width: var(--contact-widget-width);
-  background: var(--card);
-  border-radius: var(--radius-sheet);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow-md);
-  padding: var(--space-5);
+  background: transparent;
+  border-radius: 0;
+  border: 0;
+  border-block: 1px solid var(--line);
+  box-shadow: none;
+  padding: var(--space-4) 0;
 }
 
 .cw-inner {
@@ -155,15 +156,16 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 .cw-copyable {
   background: none;
   border: none;
-  padding: var(--space-2);
-  margin: calc(-1 * var(--space-2));
-  border-radius: var(--radius-surface);
+  border-bottom: 1px solid transparent;
+  padding: var(--space-2) 0;
+  margin: 0;
+  border-radius: 0;
   cursor: pointer;
-  transition: background .2s var(--ease-out);
+  transition: border-color .2s var(--ease-out), color .2s var(--ease-out);
   font: inherit;
-  width: calc(100% + var(--space-4));
+  width: 100%;
 }
-.cw-copyable:hover { background: var(--bg-alt); }
+.cw-copyable:hover { background: transparent; border-bottom-color: var(--color-action); }
 .cw-copyable:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .cw-check {
   flex-shrink: 0;
@@ -264,6 +266,8 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
     right: 0;
     top: auto;
     width: 100%;
+    background: var(--card);
+    border: 1px solid var(--line);
     border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
     box-shadow: var(--shadow-lg);
     padding: var(--space-3) var(--space-4);
@@ -293,7 +297,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 }
 
 .dark .cw {
-  border-color: rgba(var(--white-rgb), .12);
+  border-color: var(--line);
 }
 
 @media (forced-colors: active) {

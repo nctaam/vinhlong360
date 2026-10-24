@@ -13,7 +13,7 @@
         <div class="catalog-aeo-plaque__kicker-group">
           <div class="catalog-aeo-plaque__meta-row">
             <span class="catalog-aeo-plaque__kicker">{{ kicker }}</span>
-            <span class="catalog-aeo-plaque__stamp" title="Dữ liệu bản địa được đối soát">
+            <span class="catalog-aeo-plaque__stamp sr-only" title="Dữ liệu bản địa được đối soát">
               <IconLine name="shield-check" class="catalog-aeo-plaque__stamp-icon" aria-hidden="true" />
               <span>Xác thực thực địa</span>
             </span>
@@ -55,7 +55,7 @@ const props = withDefaults(defineProps<{
   ctaTo?: string
   ctaLabel?: string
 }>(), {
-  kicker: 'Góc nhìn bản địa · Giải đáp nhanh AEO',
+  kicker: 'Góc nhìn bản địa · Giải đáp nhanh',
   accent: 'amber',
   icon: 'bulb',
   ctaTo: '',
@@ -68,28 +68,54 @@ const titleId = `catalog-aeo-title-${instanceId}`
 
 <style scoped>
 .catalog-aeo-plaque {
-  padding-block: var(--space-6);
+  padding-block: var(--space-8);
 }
 
 .catalog-aeo-plaque__frame {
+  --aeo-sheet-radius: var(--radius-sheet);
   max-inline-size: var(--maxw);
   margin-inline: auto;
-  padding: var(--space-6) var(--space-6);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sheet);
-  background: var(--color-canvas);
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: var(--space-7) 0;
+  border-block: 1px solid color-mix(in srgb, var(--tri-region-material-accent, var(--color-brand)) 28%, var(--color-border));
+  border-inline: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   contain: layout style paint;
 }
 
-.dark .catalog-aeo-plaque__frame {
-  box-shadow: var(--shadow-sm);
+@media (min-width: 900px) {
+  .catalog-aeo-plaque__frame {
+    display: grid;
+    grid-template-columns: minmax(15rem, 0.34fr) minmax(0, 0.66fr);
+    gap: var(--space-4) var(--space-8);
+    align-items: start;
+  }
+
+  .catalog-aeo-plaque__head {
+    grid-column: 1;
+    padding-inline-end: var(--space-6);
+  }
+
+  .catalog-aeo-plaque__content {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    margin-bottom: 0;
+  }
+
+  .catalog-aeo-plaque__foot {
+    grid-column: 1;
+    justify-content: flex-start;
+    border-top: 0;
+    padding-top: 0;
+    margin-top: var(--space-2);
+  }
 }
 
 .catalog-aeo-plaque__head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
@@ -98,22 +124,20 @@ const titleId = `catalog-aeo-title-${instanceId}`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-top: 2px;
   border-radius: var(--radius-pill);
-  background: rgba(var(--black-rgb), 0.04);
+  background: transparent;
   color: var(--tri-region-material-accent, var(--color-material-amber));
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   flex-shrink: 0;
-}
-
-.dark .catalog-aeo-plaque__icon {
-  background: rgba(var(--white-rgb), 0.08);
 }
 
 .catalog-aeo-plaque__kicker-group {
   display: flex;
   flex-direction: column;
+  gap: var(--space-1);
 }
 
 .catalog-aeo-plaque__meta-row {
@@ -128,7 +152,7 @@ const titleId = `catalog-aeo-title-${instanceId}`
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
-  color: var(--color-text-muted);
+  color: var(--tri-region-material-accent, var(--color-brand));
 }
 
 .catalog-aeo-plaque__stamp {
@@ -151,44 +175,68 @@ const titleId = `catalog-aeo-title-${instanceId}`
 .catalog-aeo-plaque__title {
   margin: 0;
   font-family: var(--font-editorial);
-  font-size: var(--text-xl);
-  line-height: var(--leading-tight);
+  font-size: clamp(1.3rem, 2.2vw, 1.68rem);
+  font-weight: var(--weight-semibold);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
   color: var(--color-text);
+  text-wrap: balance;
 }
 
 .catalog-aeo-plaque__content {
   display: grid;
   grid-template-columns: repeat(var(--column-count, 2), 1fr);
-  gap: var(--space-5);
+  gap: var(--space-6);
   margin-bottom: var(--space-4);
+  counter-reset: aeo-note;
 }
 
 @media (max-width: 768px) {
   .catalog-aeo-plaque__content {
     grid-template-columns: 1fr;
-    gap: var(--space-4);
+    gap: var(--space-5);
   }
 }
 
 .catalog-aeo-plaque__item {
+  --aeo-item-radius: var(--radius-surface);
+  counter-increment: aeo-note;
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-3);
-  border-radius: var(--radius-surface);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s var(--ease-out);
+  gap: var(--space-1h);
+  padding: var(--space-1) 0 var(--space-1) var(--space-5);
+  border-inline-start: 1px solid color-mix(in srgb, var(--tri-region-material-accent, var(--color-brand)) 32%, var(--color-border));
+  border-radius: 0;
+  background: transparent;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s var(--ease-out);
 }
 
-.catalog-aeo-plaque__item:hover {
-  background-color: color-mix(in srgb, var(--tri-region-material-accent, var(--color-material-amber)) 4%, transparent);
-  transform: translateY(-1px);
+.catalog-aeo-plaque__item::before {
+  content: counter(aeo-note, decimal-leading-zero);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--tri-region-material-accent, var(--color-brand));
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .catalog-aeo-plaque__item:hover {
+    border-inline-start-color: var(--tri-region-material-accent, var(--color-brand));
+    transform: translateX(3px);
+  }
 }
 
 .catalog-aeo-plaque__entry-title {
   margin: 0;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
+  font-family: var(--font-editorial);
+  font-size: clamp(1.02rem, 1.25vw, 1.14rem);
+  font-weight: var(--weight-semibold);
+  line-height: 1.3;
   color: var(--color-text);
+  text-wrap: pretty;
 }
 
 .catalog-aeo-plaque__dek {
@@ -196,11 +244,12 @@ const titleId = `catalog-aeo-title-${instanceId}`
   font-size: var(--text-sm);
   line-height: var(--leading-relaxed);
   color: var(--color-text-muted);
+  text-wrap: pretty;
 }
 
 .catalog-aeo-plaque__foot {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   border-top: 1px solid var(--color-border);
   padding-top: var(--space-3);
   margin-top: var(--space-2);
@@ -211,26 +260,22 @@ const titleId = `catalog-aeo-title-${instanceId}`
   align-items: center;
   gap: var(--space-2);
   min-height: 44px;
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
   font-size: var(--text-sm);
   font-weight: var(--weight-bold);
   color: var(--color-action, var(--color-text));
   text-decoration: none;
   border-radius: var(--radius-control);
-  transition: background 150ms var(--ease-out), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 150ms var(--ease-out), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .catalog-aeo-plaque__cta:hover {
-  background: color-mix(in srgb, var(--tri-region-material-accent, var(--color-material-amber)) 8%, transparent);
-  transform: translateY(-1px);
+  color: var(--tri-region-material-accent, var(--color-brand));
+  transform: translateX(2px);
 }
 
 .catalog-aeo-plaque__cta:active {
   transform: scale(0.98);
-}
-
-.dark .catalog-aeo-plaque__cta:hover {
-  background: rgba(var(--white-rgb), 0.08);
 }
 
 .catalog-aeo-plaque__cta:focus-visible {
@@ -245,7 +290,7 @@ const titleId = `catalog-aeo-title-${instanceId}`
 }
 
 .catalog-aeo-plaque__cta:hover .catalog-aeo-plaque__arrow {
-  transform: translateX(3px);
+  transform: translateX(4px);
 }
 
 @media (prefers-reduced-motion: reduce) {

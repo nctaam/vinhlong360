@@ -78,7 +78,7 @@
       <span v-if="(post.post_type && post.post_type !== 'share') || post.entity_id" class="thread-rule" aria-hidden="true"></span>
 
       <div v-if="post.rating" class="thread-rating" role="img" :aria-label="`${post.rating} trên 5 sao`">
-        <span v-for="s in 5" :key="s" :class="['star', { active: s <= post.rating }]" aria-hidden="true">★</span>
+        <span v-for="s in 5" :key="s" :class="['star', { active: s <= post.rating }]" aria-hidden="true"><IconLine name="star" /></span>
       </div>
 
       <div v-if="post.content" class="thread-body">
@@ -294,9 +294,6 @@ const { timeAgo } = useTimeAgo()
   margin: var(--space-1) 0 var(--space-05);
   background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
 }
-.dark .thread-rule {
-  background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
-}
 
 /* Type badge — hairline top-border eyebrow (museum spec-tag) instead of a
    solid app-badge pill; small-caps wide tracking per narrative-system §2.2. */
@@ -353,7 +350,7 @@ const { timeAgo } = useTimeAgo()
   color: var(--color-source-verified);
   background: var(--color-source-verified-surface);
   border: 1px solid color-mix(in srgb, var(--color-source-verified) 30%, transparent);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   padding: 1px var(--space-15, 6px);
   white-space: nowrap;
 }

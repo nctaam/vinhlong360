@@ -158,54 +158,10 @@ useHead(() => ({
 }))
 </script>
 
+<style src="~/assets/css/legal.css"></style>
 <style scoped>
 .contact-page { max-width: 760px; }
 
-/* ── Brand masthead — same river→clay wash family as Giới thiệu; each
-   page keeps its own scoped copy (no shared component per unit scope). ── */
-.brand-masthead {
-  position: relative;
-  overflow: clip;
-  isolation: isolate;
-  margin: 0 calc(-1 * var(--space-5)) var(--space-6);
-  padding: var(--space-8) var(--space-5) var(--space-6);
-  display: flex;
-  align-items: center;
-  gap: var(--space-6);
-  background:
-    var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--color-material-river) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--color-brand-rgb), .16) 120%);
-  background-blend-mode: overlay, normal;
-}
-.bm-inner { flex: 1 1 auto; min-width: 0; max-width: var(--measure-read); }
-.bm-header-seal {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  margin: 0 0 var(--space-3);
-}
-.bm-header-seal .bm-eyebrow { margin: 0; }
-.bm-eyebrow {
-  display: flex; align-items: center; gap: var(--space-2);
-  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
-  text-transform: uppercase; letter-spacing: var(--tracking-caps);
-  color: var(--color-brand); margin: 0 0 var(--space-3);
-}
-.bm-tick { width: 14px; height: 1.5px; background: var(--color-material-amber); flex-shrink: 0; }
-.brand-masthead h1 {
-  font-family: var(--font-editorial); font-weight: 600;
-  font-size: clamp(1.9rem, 1.55rem + 1.8vw, 2.7rem);
-  line-height: var(--leading-tight); letter-spacing: var(--tracking-tight);
-  color: var(--ink); margin: 0 0 var(--space-2); text-wrap: balance;
-}
-.bm-sub {
-  font-family: var(--font-editorial); font-style: italic;
-  font-size: clamp(1rem, .92rem + .4vw, 1.2rem);
-  line-height: var(--leading-snug); color: var(--ink-secondary, var(--muted));
-  margin: 0 0 var(--space-3); max-width: 46ch;
-}
 /* Response-time SLA badge — published up front, not buried in card copy. */
 .bm-sla {
   display: inline-flex; align-items: center; gap: var(--space-2);
@@ -225,46 +181,53 @@ useHead(() => ({
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  counter-reset: contact-channel;
 }
 
+/* Wave 9: Open Architectural Contact Ledger — unboxed from 4-sided cards */
 .contact-card {
-  background: var(--card);
-  border: .5px solid var(--line);
-  border-radius: var(--radius-sheet);
-  padding: var(--space-6);
-  box-shadow: var(--shadow-xs);
-  transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
+  counter-increment: contact-channel;
+  background: transparent;
+  border: 0;
+  border-block-start: 1.5px solid var(--line);
+  border-radius: 0;
+  padding: var(--space-5) 0 var(--space-3);
+  box-shadow: none;
+  transition: border-color .3s var(--ease-out);
+}
+.contact-card::before {
+  content: "KÊNH " counter(contact-channel, decimal-leading-zero);
+  display: block;
+  margin-bottom: var(--space-2);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-weight: 500;
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  color: var(--color-brand);
 }
 .contact-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--border);
+  border-block-start-color: var(--color-brand);
 }
-.contact-card:active { transform: translateY(0) scale(.98); transition-duration: .08s; }
-/* Inert info cards (no CTA) should not signal interactivity:
-   no lift, no shadow/border shift, no icon motion. */
+/* Inert info cards (no CTA) should not signal interactivity */
 .card-report, .card-privacy { cursor: default; }
 .card-report:hover, .card-privacy:hover {
-  transform: none;
-  box-shadow: var(--shadow-xs);
-  border-color: var(--line);
+  border-block-start-color: var(--line);
 }
-.card-report:active, .card-privacy:active { transform: none; }
 
-/* Hairline chip, not a perfectly-centred emoji-in-a-circle (documented anti-slop tell):
-   asymmetric rounded-square with a sediment (river→clay) corner accent; the glyph itself
-   sits off-centre at reduced opacity, more "watermark" than "icon". */
+/* Open Architectural Glyph Mark — unboxed watermark with sediment rule accent */
 .card-icon {
   position: relative;
   display: inline-flex;
   align-items: flex-end;
   justify-content: flex-start;
-  width: var(--space-12);
-  height: var(--space-12);
-  padding: var(--space-2);
-  border-radius: var(--radius-surface) var(--radius-surface) var(--radius-surface) var(--radius-control);
-  border: .5px solid var(--line);
-  background: var(--bg-warm);
+  width: var(--space-10, 40px);
+  height: var(--space-10, 40px);
+  padding: 0 0 var(--space-1);
+  border-radius: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
   margin-bottom: var(--space-3);
   overflow: clip;
   transition: transform .35s var(--ease-out-expo), border-color .3s var(--ease-out);
@@ -314,16 +277,16 @@ useHead(() => ({
 }
 
 .card-claim {
-  border-color: var(--color-action);
-  border-width: 2px;
-  background: var(--color-action-surface);
+  border-block-start-color: var(--color-action);
+  border-block-start-width: 2px;
+  background: transparent;
 }
 
 .card-correction--prominent {
-  border-color: var(--mangthit-500);
-  border-width: 1.5px;
-  background: color-mix(in srgb, var(--mangthit-500) 4%, var(--card));
-  box-shadow: var(--shadow-sm);
+  border-block-start-color: var(--mangthit-500);
+  border-block-start-width: 2px;
+  background: transparent;
+  box-shadow: none;
 }
 
 .correction-card-header {
@@ -395,32 +358,6 @@ useHead(() => ({
 .card-action .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), background .3s var(--ease-out); }
 .card-action .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 .card-action .btn:active { transform: scale(.96); transition-duration: .08s; }
-
-/* Dark mode */
-.dark .brand-masthead {
-  background:
-    var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--color-brand-rgb), .12) 120%);
-}
-.dark .bm-motif { color: var(--clay-400); opacity: .7; }
-.dark .contact-card { background: var(--bg-alt); border-color: var(--line); }
-.dark .contact-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb),.1); }
-.dark .card-report:hover, .dark .card-privacy:hover { box-shadow: var(--shadow-xs); border-color: var(--line); }
-.dark .card-claim { background: var(--color-action-surface); border-color: var(--color-action-border); }
-.dark .card-correction--prominent {
-  background: color-mix(in srgb, var(--mangthit-500) 10%, var(--bg-alt));
-  border-color: color-mix(in srgb, var(--color-brand) 45%, transparent);
-}
-.dark .ombudsman-tag {
-  color: var(--clay-400);
-  background: color-mix(in srgb, var(--clay-400) 12%, transparent);
-  border-color: color-mix(in srgb, var(--clay-400) 30%, transparent);
-}
-.dark .contact-card p { color: var(--ink-secondary); }
-.dark .contact-card h2 { color: var(--ink); }
-.dark .card-icon { background: rgba(var(--white-rgb),.04); border-color: var(--line); }
-.dark .contact-card:hover .card-icon { border-color: rgba(var(--white-rgb),.16); }
-.dark .card-claim .card-icon { background: var(--color-action-surface); }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

@@ -632,6 +632,7 @@ useHead({
 }
 .map-zoom-btn:hover { background: var(--bg-warm); border-color: var(--color-brand); color: var(--color-brand); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(var(--black-rgb), 0.12); }
 .map-zoom-btn:active { transform: scale(0.94); }
+.map-zoom-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .map-terroir-gps-btn {
   display: inline-flex;
@@ -651,6 +652,7 @@ useHead({
 }
 .map-terroir-gps-btn:hover { background: var(--bg-warm); border-color: var(--color-brand); color: var(--color-brand); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(var(--black-rgb), 0.12); }
 .map-terroir-gps-btn:active { transform: scale(0.95); }
+.map-terroir-gps-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 [data-outdoor-contrast="high"] .map-filters {
   border: 2px solid var(--color-brand);
@@ -694,10 +696,18 @@ useHead({
 }
 @media (prefers-reduced-motion: reduce) {
   .map-quick-preset-btn,
+  .map-quick-preset-btn:hover,
+  .map-quick-preset-btn:active,
   .map-contrast-toggle,
+  .map-contrast-toggle:active,
   .map-fullbleed-toggle,
+  .map-fullbleed-toggle:active,
   .map-zoom-btn,
-  .map-terroir-gps-btn {
+  .map-zoom-btn:hover,
+  .map-zoom-btn:active,
+  .map-terroir-gps-btn,
+  .map-terroir-gps-btn:hover,
+  .map-terroir-gps-btn:active {
     transition: none;
     transform: none;
   }

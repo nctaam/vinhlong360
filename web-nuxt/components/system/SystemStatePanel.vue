@@ -66,23 +66,25 @@ const iconName = computed(() => STATE_META[props.kind].icon)
 </script>
 
 <style scoped>
+/* Wave 12: Open Architectural System State Ledger (Zero Card-in-Card) */
 .system-state {
   position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: var(--space-5);
   width: min(100%, 720px);
-  padding: clamp(var(--space-6), 5vw, var(--space-10));
+  padding: clamp(var(--space-6), 5vw, var(--space-10)) 0 clamp(var(--space-6), 5vw, var(--space-10)) var(--space-6);
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sheet);
-  background: var(--card);
+  border: 0;
+  border-block: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
 }
 
 .system-state-signal {
   position: absolute;
   inset: 0 auto 0 0;
-  width: 5px;
+  width: 3px;
   background: var(--color-brand);
 }
 
@@ -90,9 +92,9 @@ const iconName = computed(() => STATE_META[props.kind].icon)
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 11px;
-  height: 11px;
-  border: 2px solid var(--card);
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--color-canvas, var(--card));
   border-radius: 50%;
   background: var(--color-brand);
   transform: translate(-50%, -50%);
@@ -101,12 +103,13 @@ const iconName = computed(() => STATE_META[props.kind].icon)
 .system-state-icon {
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-surface);
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
   color: var(--color-action);
-  background: var(--bg-alt);
+  background: transparent;
   font-size: 1.5rem;
 }
 
@@ -123,7 +126,7 @@ const iconName = computed(() => STATE_META[props.kind].icon)
 .system-state h1 {
   margin: 0;
   color: var(--ink);
-  font-family: var(--font-sans);
+  font-family: var(--font-editorial, var(--font-sans));
   font-size: clamp(1.5rem, 4vw, 2.25rem);
   line-height: 1.2;
 }

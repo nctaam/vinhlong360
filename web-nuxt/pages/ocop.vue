@@ -9,7 +9,7 @@
       <div class="catalog-hero-inner">
         <div class="wax-seal" :aria-label="`Hạng cao nhất: ${topStarTier} sao`" role="img">
           <span class="wax-seal-notches" aria-hidden="true"></span>
-          <span class="wax-seal-star" aria-hidden="true">★{{ topStarTier }}</span>
+          <span class="wax-seal-star" aria-hidden="true"><IconLine name="star" />{{ topStarTier }}</span>
         </div>
         <div>
           <p class="ledger-kicker">Chứng nhận quốc gia · Mỗi xã một sản phẩm</p>
@@ -205,7 +205,7 @@
         </template>
       </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
-      <div v-else-if="filtered.length" :class="viewMode === 'list' ? 'list-view' : 'grid'">
+      <div v-else-if="filtered.length" :class="viewMode === 'list' ? 'list-view' : 'grid grid--asymmetric'">
         <EntityCard v-for="e in visible" :key="e.id" :entity="e" :season-filter="seasonFilter" color-recipe="tri-region-v1" />
       </div>
       <EmptyState v-else icon-name="star" title="Không tìm thấy sản phẩm OCOP" message="Thử thay đổi hạng sao, khu vực hoặc tháng mùa vụ.">
@@ -232,7 +232,7 @@
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
-import { AREA_META } from '~/composables/useConstants'
+import { AREA_META, CURRENT_AREA_META } from '~/composables/useConstants'
 import { inSeason, relevanceScore } from '~/composables/useSeason'
 import { isOcopCertified, ocopStars } from '~/utils/ocop'
 
@@ -256,13 +256,13 @@ useFilterUrl({ sao: starFilterStr, vung: areaFilter, mua: seasonFilter, sort: so
 
 const starFilterOptions = [
   { key: '0', label: 'Tất cả' },
-  { key: '5', label: '5 sao', icon: '⭐⭐⭐⭐⭐' },
-  { key: '4', label: '4 sao', icon: '⭐⭐⭐⭐' },
-  { key: '3', label: '3 sao', icon: '⭐⭐⭐' },
+  { key: '5', label: '5 sao', iconName: 'star' },
+  { key: '4', label: '4 sao', iconName: 'star' },
+  { key: '3', label: '3 sao', iconName: 'star' },
 ]
 const areaFilterOptions = computed(() => [
   { key: 'all', label: 'Tất cả' },
-  ...Object.entries(AREA_META).map(([slug, m]) => ({ key: slug, label: m.name, icon: m.emoji })),
+  ...Object.entries(CURRENT_AREA_META).map(([slug, m]) => ({ key: slug, label: m.name, iconName: m.icon })),
 ])
 const seasonFilterOptions = computed(() => [
   { key: 'all', label: 'Tất cả' },
@@ -396,7 +396,7 @@ const filtered = computed(() => {
   }
 
   if (areaFilter.value !== 'all') {
-    list = list.filter((e: Entity) => getEntityArea(e) === areaFilter.value)
+    list = list.filter((e: Entity) => entityMatchesAreaScope(e, areaFilter.value))
   }
 
   if (seasonFilter.value !== 'all') {
@@ -503,19 +503,21 @@ useHead(() => {
 }
 .hero-cred-seal em { font-style: normal; color: var(--muted); text-transform: none; letter-spacing: 0; }
 
-/* Honor roll banner above the 5-star carousel */
+/* Honor roll banner above the 5-star carousel — Open Left-Rule Editorial Plaque */
 .honor-banner {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-4);
+  padding: var(--space-3) 0 var(--space-3) var(--space-4);
   margin-bottom: var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--color-brand) 30%, transparent);
-  border-radius: var(--radius-control);
-  background: linear-gradient(90deg, rgba(var(--color-brand-rgb), .08), transparent);
+  border: 0;
+  border-inline-start: 2px solid var(--color-brand);
+  border-radius: 0;
+  background: transparent;
 }
 .honor-banner-icon { font-size: 1.25rem; }
 .honor-banner-text {
+  font-family: var(--font-editorial);
   font-weight: var(--weight-semibold);
   font-size: var(--text-sm);
   color: var(--color-brand);
@@ -546,7 +548,7 @@ useHead(() => {
 }
 
 .dark .hero-cred-seal { color: var(--color-brand); }
-.dark .honor-banner { background: linear-gradient(90deg, rgba(var(--color-brand-rgb), .12), transparent); }
+.dark .honor-banner { background: transparent; border-inline-start-color: var(--color-brand); }
 
 @media (prefers-reduced-motion: reduce) {
   .honor-roll :deep(.card:hover) { transform: none; }
@@ -611,11 +613,14 @@ useHead(() => {
   position: absolute;
   inset: 6%;
   border-radius: 50%;
-  border: 1px dashed rgba(var(--white-rgb), .4);
+  border: 1px solid rgba(var(--white-rgb), .28);
 }
 .wax-seal-star {
   position: relative;
   z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   font-family: var(--font-editorial);
   font-weight: 600;
   font-size: clamp(1.1rem, .6vw + 1rem, 1.35rem);
@@ -673,46 +678,57 @@ useHead(() => {
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
   min-height: 44px;
-  border: .5px solid var(--line);
+  border: 1px solid var(--border-liquid-glass, var(--line));
   border-radius: var(--radius-pill, 999px);
   background: var(--card);
   cursor: pointer;
   font-size: var(--text-xs);
+  box-shadow: var(--shadow-xs);
   transition: border-color .25s var(--ease-out), background .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .25s var(--ease-out);
 }
-.star-jump-btn:hover { border-color: var(--color-action); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
+.star-jump-btn:hover { border-color: color-mix(in srgb, var(--alluvial-gold) 45%, var(--border-liquid-glass)); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 .star-jump-btn:active { transform: scale(.96); }
-.star-jump-btn.active { border-color: var(--color-action); background: rgba(var(--color-action-rgb), .06); box-shadow: 0 2px 8px rgba(var(--color-action-rgb), .15); }
+.star-jump-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.star-jump-btn.active { border-color: var(--color-action); background: rgba(var(--color-action-rgb), .08); box-shadow: 0 2px 10px rgba(var(--color-action-rgb), .25); }
 .star-jump-btn .quick-pick-icon { font-size: .85rem; }
-.star-jump-btn .quick-pick-count { color: var(--muted); font-size: var(--text-xs); }
+.star-jump-btn .quick-pick-label {
+  white-space: nowrap;
+  font-weight: var(--weight-semibold);
+}
+.star-jump-btn .quick-pick-count {
+  color: var(--muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
 
-/* Descending star-ledger bands — border weight + glow + numeral size decrease
-   5→4→3, so trust hierarchy reads through layout weight before a word is
-   read (signature moment, concept §10). Reuses EntityCard unchanged. */
-.ocop-band { border-radius: var(--radius-sheet); padding: var(--space-6); margin-bottom: var(--space-6); }
+/* Descending star-ledger bands — Open Architectural Hairline Bands (Zero Card-in-Card):
+   top rule weight + numeral size decrease 5→4→3 without 4-sided card wrappers around EntityCard. */
+.ocop-band {
+  border-radius: 0;
+  padding: var(--space-6) 0 var(--space-2);
+  margin-bottom: var(--space-6);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
 .ocop-band--5 {
-  border: 1px solid color-mix(in srgb, var(--color-material-amber) 35%, transparent);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--color-material-amber) 7%, transparent), transparent 65%);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-material-amber) 8%, transparent), var(--shadow-sm);
+  border-block-start: 2px solid var(--color-material-amber);
 }
 .ocop-band--5 .section-head h2 {
   font-size: clamp(1.6rem, 1.3rem + 1vw, 2.1rem);
 }
 .ocop-band--4 {
-  border: .5px solid color-mix(in srgb, var(--color-material-amber) 20%, transparent);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--color-material-amber) 3.5%, transparent), transparent 65%);
-  padding: var(--space-5);
+  border-block-start: 1px solid color-mix(in srgb, var(--color-material-amber) 50%, var(--line));
+  padding: var(--space-5) 0 var(--space-2);
 }
 .ocop-band--4 .section-head h2 { font-size: var(--text-xl); }
 .ocop-band--3 {
-  border: .5px solid var(--line);
-  background: none;
-  padding: var(--space-4) var(--space-5);
-  box-shadow: none;
+  border-block-start: 1px solid var(--line);
+  padding: var(--space-4) 0 var(--space-2);
 }
 .ocop-band--3 .section-head h2 { font-size: var(--text-lg); }
-.dark .ocop-band--5 { background: linear-gradient(180deg, color-mix(in srgb, var(--color-material-amber) 10%, transparent), transparent 65%); }
-.dark .ocop-band--4 { background: linear-gradient(180deg, color-mix(in srgb, var(--color-material-amber) 5%, transparent), transparent 65%); }
+.dark .ocop-band--5,
+.dark .ocop-band--4 { background: transparent; }
 
 /* Explicit top-down stagger reinforcement (5 settles first, 3 last) — modest
    nudge on top of each band's own independent scroll-triggered reveal. */
@@ -739,8 +755,8 @@ useHead(() => {
 }
 
 @media (max-width: 640px) {
-  .ocop-band { padding: var(--space-4); }
-  .ocop-band--4 { padding: var(--space-4); }
-  .ocop-band--3 { padding: var(--space-3) var(--space-4); }
+  .ocop-band { padding: var(--space-4) 0 var(--space-2); }
+  .ocop-band--4 { padding: var(--space-4) 0 var(--space-2); }
+  .ocop-band--3 { padding: var(--space-3) 0 var(--space-2); }
 }
 </style>

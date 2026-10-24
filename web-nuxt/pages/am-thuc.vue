@@ -24,7 +24,7 @@
     <!-- AEO Plaque — Culinary Guidance -->
     <CatalogAeoPlaque
       title="Chỉ dẫn Ẩm thực Bản địa Vĩnh Long — Hương vị sông Cửu Long"
-      kicker="Góc nhìn bản địa · Giải đáp nhanh AEO"
+      kicker="Góc nhìn bản địa · Giải đáp nhanh"
       accent="amber"
       icon="cup"
       :entries="culinaryAeoEntries"
@@ -67,7 +67,7 @@
     <section v-once class="page-article reveal">
       <div class="sediment-head"><h2>Hồn cốt ẩm thực miệt vườn sông nước</h2></div>
       <div class="editorial-body drop-cap">
-        <p>Ẩm thực châu thổ Cửu Long tại vùng đất Vĩnh Long hợp nhất (3 vùng trước 7-2025) là khúc biến tấu hài hòa giữa sản vật thiên nhiên hào sảng và bàn tay cần lao của cư dân ba dân tộc Kinh, Khmer, Hoa. Mỗi món ăn gắn liền với mùa vụ con nước: mùa nước nổi rộn ràng với mớ cá linh non, bông điên điển nở vàng bờ kinh; mùa gặt thơm lừng cá lóc nướng trui rơm rạ; và mùa nắng êm đềm với những chảo bánh xèo vịt xiêm củ hũ dừa giòn tan bên rặng dừa xanh mát.</p>
+        <p>Ẩm thực châu thổ Cửu Long tại tỉnh Vĩnh Long thống nhất (với 124 xã, phường sau sáp nhập) là khúc biến tấu hài hòa giữa sản vật thiên nhiên hào sảng và bàn tay cần lao của cư dân ba dân tộc Kinh, Khmer, Hoa. Mỗi món ăn gắn liền với mùa vụ con nước: mùa nước nổi rộn ràng với mớ cá linh non, bông điên điển nở vàng bờ kinh; mùa gặt thơm lừng cá lóc nướng trui rơm rạ; và mùa nắng êm đềm với những chảo bánh xèo vịt xiêm củ hũ dừa giòn tan bên rặng dừa xanh mát.</p>
       </div>
       <CatalogInterstitial
         fact="Ẩm thực Mekong Vĩnh Long hội tụ hơn 300 món ngon và đặc sản truyền thống, kết hợp gia vị tự nhiên độc bản như ngải bún, mắm đồng và củ hũ dừa, được ban biên tập tổng hợp và cập nhật liên tục."
@@ -101,27 +101,7 @@
           </button>
         </div>
 
-        <!-- Area filter pills (tactile pills >= 44x44px) -->
-        <div class="chip-row wrap-mobile" role="group" aria-label="Lọc theo vùng">
-          <button
-            type="button"
-            :class="['chip tactile-pill', { active: areaFilter === 'all' }]"
-            :aria-pressed="areaFilter === 'all'"
-            @click="areaFilter = 'all'"
-          >
-            Tất cả vùng
-          </button>
-          <button
-            v-for="(meta, key) in AREA_META"
-            :key="key"
-            type="button"
-            :class="['chip tactile-pill', { active: areaFilter === key }]"
-            :aria-pressed="areaFilter === key"
-            @click="areaFilter = key as string"
-          >
-            <IconLine :name="meta.icon || 'pin'" /> {{ meta.name }}
-          </button>
-        </div>
+
 
         <!-- Type filter pills (tactile pills >= 44x44px) -->
         <div class="chip-row wrap-mobile" role="group" aria-label="Lọc theo phân loại">
@@ -232,7 +212,7 @@
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
-import { AREA_META } from '~/composables/useConstants'
+import { AREA_META, CURRENT_AREA_META } from '~/composables/useConstants'
 
 useReveal()
 
@@ -260,7 +240,7 @@ const culinaryAeoEntries = [
   },
   {
     heading: 'Khoai lang tím Bình Tân & Bánh tét Trà Cuôn',
-    text: 'Củ khoai lang tím dẻo bùi chấm mắm sống cá lóc đồng đậm đà, cùng đòn bánh tét Trà Cuôn nếp dẻo thơm hạt ngọc trời quyện nhân đậu xanh, thịt mỡ và trứng muối béo ngậy nức tiếng gần xa.',
+    text: 'Củ khoai lang tím dẻo bùi chấm mắm sống cá lóc đồng, cùng đòn bánh tét Trà Cuôn nếp dẻo thơm quyện nhân đậu xanh, thịt mỡ và trứng muối béo ngậy được gói lá chuối xanh truyền thống.',
   },
 ]
 
@@ -315,15 +295,10 @@ const allEntities = computed<Entity[]>(() => {
 })
 
 const areaCounts = computed(() => {
-  const counts: Record<string, number> = {}
-  for (const e of allEntities.value) {
-    const area = getEntityArea(e)
-    if (area) counts[area] = (counts[area] || 0) + 1
-  }
-  return Object.entries(AREA_META).map(([key, meta]) => ({
+  return Object.entries(CURRENT_AREA_META).map(([key, meta]) => ({
     key,
     name: meta.name,
-    count: counts[key] || 0,
+    count: allEntities.value.filter((e: Entity) => entityMatchesAreaScope(e, key)).length,
   }))
 })
 
@@ -333,7 +308,7 @@ const filtered = computed(() => {
     list = list.filter((e: Entity) => e.type === typeFilter.value)
   }
   if (areaFilter.value !== 'all') {
-    list = list.filter((e: Entity) => getEntityArea(e) === areaFilter.value)
+    list = list.filter((e: Entity) => entityMatchesAreaScope(e, areaFilter.value))
   }
   if (q.value.trim()) {
     const keyword = q.value.trim().toLowerCase()
@@ -373,81 +348,7 @@ watch([areaFilter, typeFilter, q], () => {
 </script>
 
 <style scoped>
-.wake-hero {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--radius-surface);
-  padding: clamp(var(--space-8), 4vw + var(--space-6), 3.5rem) var(--space-6) var(--space-6);
-  margin-bottom: var(--space-6);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-subtle);
-}
-
-.wake-hero-inner {
-  position: relative;
-  z-index: 1;
-  max-width: 65ch;
-}
-
-.wake-hero-eyebrow {
-  margin: 0 0 var(--space-3);
-  font-family: var(--font-sans);
-  font-size: var(--text-2xs);
-  font-weight: var(--weight-bold);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-caps);
-  color: var(--color-brand);
-}
-
-.wake-hero-title {
-  margin: 0 0 var(--space-3);
-  font-family: var(--font-editorial-display);
-  font-size: clamp(var(--text-3xl), 4.5vw, var(--text-5xl));
-  font-weight: var(--weight-semibold);
-  line-height: 1.15;
-  letter-spacing: var(--tracking-tight);
-  color: var(--color-text);
-  text-wrap: balance;
-}
-
-.wake-hero-sub {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--text-base);
-  line-height: var(--leading-relaxed);
-  max-width: 60ch;
-}
-
-.wake-hero-stats {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  gap: var(--space-6);
-  margin-top: var(--space-6);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border);
-  flex-wrap: wrap;
-}
-
-.wake-hero-stats .stat-item {
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-control);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-}
-
-.wake-hero-stats .stat-num {
-  font-variant-numeric: tabular-nums;
-  font-weight: var(--weight-bold);
-  color: var(--color-text);
-  margin-right: var(--space-1);
-}
-
-.wake-hero-stats .stat-label {
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-}
-
+/* .wake-hero* shared in assets/css/catalog.css */
 .tactile-pill {
   min-height: 44px;
   min-width: 44px;
@@ -455,38 +356,60 @@ watch([areaFilter, typeFilter, q], () => {
 
 .cuisine-triad {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-6);
   margin-top: var(--space-4);
+  padding-block: var(--space-5);
+  border-block: 1px solid var(--color-border);
+  counter-reset: cuisine-triad;
 }
 
 .cuisine-tile {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-surface);
-  padding: var(--space-5);
+  position: relative;
+  background: transparent;
+  border: 0;
+  border-inline-start: 1px solid color-mix(in srgb, var(--color-action) 38%, var(--color-border));
+  border-radius: 0;
+  padding: var(--space-1) 0 var(--space-1) var(--space-5);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out);
+  box-shadow: none;
+  counter-increment: cuisine-triad;
+  transition: transform .3s var(--ease-out-expo), border-color .3s var(--ease-out);
 }
 
-.cuisine-tile:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-  border-color: var(--color-border-strong);
+.cuisine-tile::before {
+  content: counter(cuisine-triad, decimal-leading-zero);
+  font-family: var(--font-editorial-display, var(--font-editorial));
+  font-style: italic;
+  font-size: var(--text-xl);
+  line-height: 1;
+  color: var(--color-action);
+  opacity: 0.72;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cuisine-tile:hover {
+    transform: translateX(4px);
+    border-inline-start-color: var(--color-action);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cuisine-tile,
+  .cuisine-more-icon {
+    transition: none;
+  }
 }
 
 .cuisine-tile-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-full);
-  background: var(--color-action-surface);
+  width: auto;
+  height: auto;
+  background: transparent;
   color: var(--color-action);
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: var(--space-1);
 }
 
 .cuisine-tile-kicker {
@@ -504,6 +427,9 @@ watch([areaFilter, typeFilter, q], () => {
   font-weight: 600;
   color: var(--color-text);
   margin: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-wrap: pretty;
 }
 
 .cuisine-tile-body {
@@ -512,6 +438,8 @@ watch([areaFilter, typeFilter, q], () => {
   color: var(--color-text-muted);
   margin: 0;
   flex: 1;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .cuisine-tile-tag {
@@ -520,7 +448,9 @@ watch([areaFilter, typeFilter, q], () => {
   color: var(--muted);
   margin-top: var(--space-2);
   padding-top: var(--space-2);
-  border-top: 1px dashed var(--color-border);
+  border-top: 1px solid var(--color-border);
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .cuisine-divider {

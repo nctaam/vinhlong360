@@ -16,9 +16,8 @@
   --state-pressed: color-mix(in oklch, var(--state-color) 18%, transparent);
   --state-disabled: color-mix(in oklch, var(--color-text-muted) 22%, transparent);
   --state-loading: color-mix(in oklch, var(--color-action) 22%, transparent);
-  --state-error: color-mix(in oklch, var(--color-error) 24%, transparent);
-  --shadow-card-ambient: 0 2px 12px -2px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  --shadow-card-hover: 0 8px 28px -4px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --shadow-card-ambient: 0 2px 14px -2px rgba(var(--black-rgb), 0.55), 0 0 0 1px rgba(var(--white-rgb), 0.08), inset 0 1px 0 rgba(var(--white-rgb), 0.08);
+  --shadow-card-hover: 0 16px 44px -6px rgba(var(--black-rgb), 0.82), 0 0 0 1px color-mix(in srgb, var(--alluvial-gold) 45%, rgba(var(--white-rgb), 0.15)), inset 0 1px 0 rgba(var(--white-rgb), 0.18);
 }
 
 /* ScrollToTop */
@@ -28,10 +27,6 @@
 /* ShareButton */
 .dark .share-btn { background: var(--glass-bg-heavy); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border-color: var(--line); }
 .dark .share-btn:hover { background: rgba(var(--white-rgb), .06); }
-
-/* PostCard */
-.dark .post-entity-link { background: rgba(var(--white-rgb), .06); }
-.dark .post-entity-link:hover { background: rgba(var(--white-rgb), .1); }
 
 /* Breadcrumb */
 .dark .breadcrumb a:hover { background: rgba(var(--white-rgb), .06); }
@@ -47,73 +42,61 @@
 .dark .nf-search input::placeholder { color: var(--color-text-muted); }
 .dark .nf-btn-outline { border-color: var(--color-action); color: var(--color-action); }
 
-/* ── Post detail (bai-viet/[id]) ── */
-.dark .comment-form { background: rgba(var(--white-rgb), .04); border-color: rgba(var(--white-rgb), .08); }
-.dark .comment-form:focus-within { background: rgba(var(--white-rgb), .06); border-color: var(--color-action); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .15); }
-.dark .comment-form .input { color: var(--ink); }
-.dark .comment-form .input::placeholder { color: var(--color-text-muted); }
-.dark .comment-item { border-color: rgba(var(--white-rgb), .06); }
-.dark .comment-item:hover { background: rgba(var(--white-rgb), .03); }
-
 /* ── Map (ban-do) ── */
 .dark #mapContainer { border-color: rgba(var(--white-rgb), .08); box-shadow: var(--shadow-md); }
 .dark #mapContainer:hover { box-shadow: var(--shadow-lg); }
 .dark .maplibregl-canvas { filter: brightness(.8) contrast(1.1) invert(1) hue-rotate(180deg); }
 .dark .maplibregl-popup-content { filter: invert(1) hue-rotate(180deg); }
 
-/* ── Ward hub (xa-phuong/[id]) ── */
-.dark .wp-card { border-color: rgba(var(--white-rgb), .08); }
-.dark .wp-card:hover { box-shadow: var(--shadow-lg); }
+/* ── Ward hub (xa-phuong/[id]) — Wave 10 Open Architectural Nocturne Parity ── */
+.dark .wp-card { border-color: var(--line); box-shadow: none; background: transparent; }
 .dark .wp-contact-item { border-color: rgba(var(--white-rgb), .06); }
-.dark .wp-contact-main { background: rgba(var(--white-rgb), .04); }
+.dark .wp-contact-main { background: transparent; }
 .dark .wp-fac { border-color: rgba(var(--white-rgb), .06); }
-.dark .wp-fac:hover { background: rgba(var(--white-rgb), .04); }
-.dark .wp-map-btn { background: rgba(var(--white-rgb), .05); border-color: rgba(var(--white-rgb), .08); }
-.dark .wp-map-btn:hover { background: rgba(var(--white-rgb), .08); }
+.dark .wp-fac:hover { background: transparent; border-color: var(--color-brand); }
 .dark .wp-map-container { border-color: rgba(var(--white-rgb), .08); }
 
 /* ── Itinerary detail (lich-trinh/[id]) ── */
-.dark .step-card { border-color: rgba(var(--white-rgb), .08); }
-.dark .step-card:hover { border-color: rgba(var(--white-rgb), .15); box-shadow: var(--shadow-md); }
+.dark .step-card { border-color: rgba(var(--white-rgb), .08); box-shadow: none; }
+.dark .step-card:hover { border-color: var(--color-brand); box-shadow: none; }
 .dark .route-leg-line { background: rgba(var(--white-rgb), .1); }
 .dark .route-map { border-color: rgba(var(--white-rgb), .08); box-shadow: var(--shadow-md); }
 
 /* ── Itinerary list (lich-trinh/index) ── */
 .dark .saved-section { border-bottom-color: rgba(var(--white-rgb), .08); }
-.dark .js-item { border-color: rgba(var(--white-rgb), .08); }
-.dark .js-item:hover { box-shadow: var(--shadow-sm); }
+.dark .js-item { border-color: rgba(var(--white-rgb), .08); box-shadow: none; }
+.dark .js-item:hover { border-color: var(--color-brand); box-shadow: none; }
 
 /* ── Create itinerary (tao-lich-trinh) ── */
 .dark .picker-item:hover { background: rgba(var(--white-rgb), .05); }
-.dark .stop-card:hover { box-shadow: var(--shadow-md); }
+.dark .stop-card:hover { border-color: var(--color-brand); box-shadow: none; }
 
 /* ── Routes (tuyen-duong) ── */
-.dark .route-card { border-color: rgba(var(--white-rgb), .08); }
-.dark .route-card:hover { border-color: rgba(var(--white-rgb), .15); box-shadow: var(--shadow-lg); }
-.dark .route-tips { background: rgba(var(--white-rgb), .04); }
+.dark .route-card { border-color: rgba(var(--white-rgb), .08); box-shadow: none; }
+.dark .route-card:hover { border-block-start-color: var(--color-brand); box-shadow: none; }
+.dark .route-tips { background: transparent; }
 .dark .route-stops li:hover { background: rgba(var(--white-rgb), .03); }
 
 /* ── Search (tim-kiem) ── */
 .dark .quick-pick { border-color: rgba(var(--white-rgb), .08); }
-.dark .quick-pick:hover { border-color: var(--color-action); box-shadow: var(--shadow-md); }
+.dark .quick-pick:hover { border-color: var(--color-action); }
 
 /* ── Seasonal (theo-mua) ── */
 .dark .season-badge { background: rgba(var(--black-rgb), .7); }
 
 /* ── Community (cong-dong) ── */
-.dark .sidebar-card:hover { box-shadow: var(--shadow-md); }
-.dark .report-entity-card { background: rgba(var(--white-rgb), .04); }
+.dark .sidebar-card:hover { box-shadow: none; }
+.dark .report-entity-card { background: transparent; border-color: var(--color-material-amber); }
 
 /* ── Directory (danh-ba) ── */
-.dark .fac { border-color: rgba(var(--white-rgb), .08); }
-.dark .fac:hover { border-color: rgba(var(--white-rgb), .15); box-shadow: var(--shadow-md); }
-.dark .dir-disclaimer { background: color-mix(in srgb, var(--color-material-amber) 8%, transparent); border-color: color-mix(in srgb, var(--color-material-amber) 25%, transparent); }
+.dark .fac { border-color: rgba(var(--white-rgb), .08); box-shadow: none; }
+.dark .fac:hover { border-color: var(--color-brand); box-shadow: none; }
 
 /* ── Contact (lien-he) ── */
-.dark .contact-card { border-color: rgba(var(--white-rgb), .08); }
-.dark .contact-card:hover { border-color: rgba(var(--white-rgb), .15); box-shadow: var(--shadow-lg); }
-.dark .card-claim { background: color-mix(in srgb, var(--color-brand) 6%, var(--card)); border-color: rgba(var(--white-rgb), .12); }
-.dark .card-note { color: rgba(var(--white-rgb), .6) !important; }
+.dark .contact-card { border-color: rgba(var(--white-rgb), .08); box-shadow: none; background: transparent; }
+.dark .contact-card:hover { border-block-start-color: var(--color-brand); box-shadow: none; }
+.dark .card-claim { background: transparent; border-block-start-color: var(--color-action); }
+.dark .card-note { color: var(--color-text-muted); }
 
 /* ── Profile (nguoi-dung/[id]) ── */
 .dark .profile-cover { border-color: rgba(var(--white-rgb), .06); }
@@ -129,26 +112,13 @@
 .dark .status-banned { background: rgba(var(--color-error-rgb), .16); color: var(--error); }
 .dark .admin-select-inline { background: rgba(var(--white-rgb), .05); border-color: rgba(var(--white-rgb), .1); color: var(--ink); }
 
-/* ── Admin: stats (thong-ke) ── */
-.dark .stat-panel { border-color: rgba(var(--white-rgb), .08); }
-.dark .stat-panel:hover { box-shadow: var(--shadow-md); }
-
 /* ── Admin: reports (bao-cao) ── */
 .dark .status-pending { background: color-mix(in srgb, var(--color-material-amber) 18%, transparent); color: var(--color-warning); }
 .dark .status-resolved { background: color-mix(in srgb, var(--color-success) 18%, transparent); color: var(--color-success); }
 .dark .status-dismissed { background: rgba(var(--white-rgb), .06); color: rgba(var(--white-rgb), .4); }
 
-/* ── Homepage hero + category grid ── */
-/* hf-card (glass feature card) keeps glass in dark. hero-pill (redesigned → text-link index),
-   hero-stats (→ hairline contents-strip) and cat-tile (→ per-category PHOTO tiles) were
-   rebuilt: they must NOT get a dark `background` override — the shorthand erases the tile
-   image (leaving a blank dark box) and boxes the contents-strip. Their own rules handle dark. */
-.dark .hf-card { background: rgba(var(--white-rgb), .10); border-color: rgba(var(--white-rgb), .20); }
-.dark .hf-card:hover { background: rgba(var(--white-rgb), .16); }
-
 /* Section headings */
 .dark .home .section-head h2 { color: var(--ink); }
-.dark .home .section-head .section-link { color: var(--color-action); }
 
 /* Event cards */
 /* Cùng vết M3 residue với .spotlight ở dưới: gỡ nền để .event-mini không thành
@@ -169,9 +139,8 @@
 
 /* Quán ngon list */
 .dark .top-place { border-color: rgba(var(--white-rgb), .10); }
-.dark .top-place:hover { background: rgba(var(--white-rgb), .08); }
+.dark .top-place:hover { background: transparent; border-color: var(--color-action); }
 .dark .top-place h3 { color: var(--ink); }
-.dark .top-place .tp-reviews { color: var(--muted); }
 
 /* Section subtitle */
 .dark .section-head p { color: var(--muted); }
@@ -194,7 +163,7 @@
 .dark .notif-retry:hover { border-color: rgba(var(--white-rgb), .2); }
 
 /* ── ReviewCard ── */
-.dark .review-featured { background: color-mix(in srgb, var(--color-material-amber) 6%, transparent); }
+.dark .review-featured { background: transparent; }
 
 /* ── CommandPalette ── */
 .dark .cmd-palette { background: var(--card); }
@@ -202,8 +171,8 @@
 .dark .cmd-footer kbd { background: rgba(var(--white-rgb), .12); color: rgba(var(--white-rgb), .7); }
 
 /* ── Sự kiện ── */
-.dark .ical-btn { background: var(--card); border-color: var(--line); color: var(--ink); }
-.dark .ical-btn:hover { background: rgba(var(--white-rgb), .08); }
+.dark .ical-btn { background: transparent; border-color: var(--line); color: var(--ink); }
+.dark .ical-btn:hover { background: transparent; border-color: var(--color-action); color: var(--color-action); }
 
 /* Explicit and system contrast preferences stay on semantic Nocturne tokens. */
 html[data-high-contrast="true"].dark {

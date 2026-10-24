@@ -210,13 +210,13 @@ useSeoMeta({
 .illust-halo {
   width: 110px;
   height: 110px;
-  border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--color-material-clay) 12%, var(--color-surface));
-  border: 1.5px solid var(--alluvial-gold);
+  border-radius: var(--radius-pill, 999px);
+  background: transparent;
+  border: 1px solid var(--alluvial-gold);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-md);
+  box-shadow: none;
 }
 
 .error-heading {
@@ -283,6 +283,13 @@ useSeoMeta({
   font-weight: var(--weight-title-sm);
   cursor: pointer;
 }
+.error-search-btn:focus-visible,
+.error-link-pill:focus-visible,
+.safe-haven-card:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
 
 .error-discovery-label {
   margin: var(--space-fib-1) 0 0;
@@ -303,13 +310,13 @@ useSeoMeta({
   gap: 6px;
   min-height: 44px;
   padding: 0 var(--space-fib-3);
-  background: var(--color-surface);
+  background: transparent;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   color: var(--color-text);
   text-decoration: none;
   font-size: var(--font-size-caption);
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .error-link-pill:hover {
@@ -320,9 +327,10 @@ useSeoMeta({
 .safe-haven-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--space-fib-2);
+  gap: 0 var(--space-fib-3);
   width: 100%;
   margin: var(--space-fib-2) 0;
+  border-block-end: 1px solid var(--color-border);
 }
 
 .safe-haven-card {
@@ -330,24 +338,26 @@ useSeoMeta({
   align-items: center;
   gap: var(--space-fib-2);
   min-height: 52px;
-  padding: var(--space-fib-2) var(--space-fib-3);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-surface);
+  padding: var(--space-fib-2) 0;
+  background: transparent;
+  border: 0;
+  border-block-start: 1px solid var(--color-border);
+  border-radius: 0;
   color: var(--color-text);
   text-decoration: none;
   text-align: left;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .safe-haven-card:hover {
-  background: var(--color-surface-raised);
-  border-color: var(--alluvial-gold);
+  background: transparent;
+  border-block-start-color: var(--alluvial-gold);
 }
 
 .safe-haven-card strong {
   display: block;
+  font-family: var(--font-editorial, 'Lora', serif);
   font-size: var(--font-size-body);
 }
 
@@ -376,7 +386,7 @@ useSeoMeta({
   font-weight: var(--weight-title-sm);
   cursor: pointer;
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .btn-primary {

@@ -32,7 +32,7 @@
     </section>
 
     <!-- Spotlight -->
-    <CatalogSpotlight :items="entities" />
+    <CatalogSpotlight :items="entities" color-recipe="tri-region-v1" />
 
     <!-- AEO Plaque: District Terroir & Cultural Geography Portfolio -->
     <CatalogAeoPlaque
@@ -120,7 +120,7 @@
     <!-- Full grid (progressive loading) — declutter-3 T12: bỏ catalog-divider "Tất cả N mục";
          full grid GIỮ nguyên (D8: restaurant/cafe/place/facility ~430e chỉ có ở đây) -->
     <section v-if="entities.length" class="block reveal">
-      <div class="grid">
+      <div class="grid grid--asymmetric">
         <EntityCard v-for="e in visibleEntities" :key="e.id" :entity="e" />
       </div>
       <div v-if="visibleEntities.length < entities.length" class="load-more-wrap">
@@ -236,7 +236,7 @@ const areaAeoDigest = computed(() => {
       entries: [
         {
           heading: 'Quần thể 140+ Chùa Khmer Cổ kính',
-          text: 'Kiến trúc Angkor rực rỡ, lễ hội Ok Om Bok và nghệ thuật múa Chhay-dâm đậm đà bản sắc tâm linh phương Nam.',
+          text: 'Kiến trúc Angkor rực rỡ, lễ hội Ok Om Bok và nghệ thuật múa Chhay-dâm lưu giữ dòng chảy tâm linh đặc sắc phương Nam.',
         },
         {
           heading: 'Ao Bà Om & Danh thắng Cây cổ thụ',
@@ -244,7 +244,7 @@ const areaAeoDigest = computed(() => {
         },
         {
           heading: 'Dừa sáp Cầu Kè & Biển Ba Động',
-          text: 'Đặc sản dừa sáp sánh đặc quý hiếm độc nhất vô nhị cùng bờ biển phù sa lộng gió biển Đông hoang sơ.',
+          text: 'Đặc sản dừa sáp sánh đặc quý hiếm béo ngậy đặc thù cùng bờ biển phù sa lộng gió biển Đông hoang sơ.',
         },
       ],
       ctaTo: '/kham-pha/lang-nghe',
@@ -276,10 +276,14 @@ const areaAeoDigest = computed(() => {
   }
 })
 
-const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
+const ADMIN_LEVELS = ['phuong', 'xa']
 const wards = computed(() =>
   (placesData.value || [])
-    .filter((p: Entity) => p.area === areaKey && ADMIN_LEVELS.includes(p.level || ''))
+    .filter((p: Entity) => ADMIN_LEVELS.includes(p.level || '') && (
+      areaKey === 'vinh-long'
+        ? entityMatchesAreaScope(p, areaKey) || p.parentId === 'vinh-long'
+        : p.area === areaKey
+    ))
     .sort((a: Entity, b: Entity) => a.name.localeCompare(b.name, 'vi'))
 )
 
@@ -324,7 +328,6 @@ const typeSections = computed(() =>
     .filter(t => entityGroups.value.groups[t]?.length)
     .map(t => ({
       type: t,
-      emoji: TYPE_META[t]?.emoji || '📍',
       label: TYPE_META[t]?.label || t,
       items: entityGroups.value.groups[t] || [],
     }))
@@ -512,8 +515,8 @@ if (areaMeta) {
 .cat-area-vinh-long .catalog-hero-icon, .cat-area-ben-tre .catalog-hero-icon, .cat-area-tra-vinh .catalog-hero-icon { filter: drop-shadow(0 2px 8px rgba(var(--black-rgb),.5)); }
 .cat-area-vinh-long .area-stats .stat-num, .cat-area-ben-tre .area-stats .stat-num, .cat-area-tra-vinh .area-stats .stat-num { color: var(--white); }
 .cat-area-vinh-long .area-stats .stat-label, .cat-area-ben-tre .area-stats .stat-label, .cat-area-tra-vinh .area-stats .stat-label { color: rgba(var(--white-rgb),.82); }
-.cat-area-vinh-long .area-stats .stat-item, .cat-area-ben-tre .area-stats .stat-item, .cat-area-tra-vinh .area-stats .stat-item { background: rgba(var(--white-rgb),.14); border-color: rgba(var(--white-rgb),.26); }
-.cat-area-vinh-long .area-stats .stat-item:hover, .cat-area-ben-tre .area-stats .stat-item:hover, .cat-area-tra-vinh .area-stats .stat-item:hover { background: rgba(var(--white-rgb),.22); }
+.cat-area-vinh-long .area-stats .stat-item, .cat-area-ben-tre .area-stats .stat-item, .cat-area-tra-vinh .area-stats .stat-item { background: transparent; border-color: rgba(var(--white-rgb),.28); }
+.cat-area-vinh-long .area-stats .stat-item:hover, .cat-area-ben-tre .area-stats .stat-item:hover, .cat-area-tra-vinh .area-stats .stat-item:hover { background: transparent; }
 
 .area-hero-bloom {
   position: absolute;
@@ -534,25 +537,28 @@ if (areaMeta) {
   .area-hero { padding-bottom: var(--space-6); }
 }
 
-/* ── SIGNATURE: Stat pills as "proof badges" ──────────────────────────────
-   Region-tinted surface + hairline so each stat reads as a credential, not
-   loose text. Hover lifts the number in the region colour. Scoped to this
-   page only. */
+/* ── Wave 12: Open Architectural Stat Ledger Strip (Zero Card-in-Card) ── */
 .area-stats .stat-item {
-  background: rgba(var(--AREA-rgb), .06);
-  border: .5px solid var(--line);
-  border-radius: var(--radius-surface);
+  background: transparent;
+  border: 0;
+  border-inline-start: 1px solid var(--line);
+  border-radius: 0;
+  padding: var(--space-1) 0 var(--space-1) var(--space-4);
+}
+.area-stats .stat-item:first-child {
+  border-inline-start: 0;
+  padding-inline-start: 0;
 }
 .area-stats .stat-item:hover {
-  background: rgba(var(--AREA-rgb), .1);
+  background: transparent;
 }
 .area-stats .stat-item:hover .stat-num {
   color: var(--color-action-hover);
-  transform: scale(1.08);
 }
 .area-stats .stat-num {
   display: inline-block;
-  transition: color .3s var(--ease-out), transform .25s var(--ease-out-expo);
+  font-family: var(--font-editorial);
+  transition: color .3s var(--ease-out);
 }
 /* mobile: stats become a tidy 2-up grid so they never orphan on a line */
 @media (max-width: 640px) {
@@ -562,29 +568,28 @@ if (areaMeta) {
     gap: var(--space-3);
   }
   .area-stats .stat-item {
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
     min-height: 44px;
-    justify-content: center;
+    padding-inline-start: var(--space-3);
+    border-inline-start: 1px solid rgba(var(--white-rgb), .26);
   }
 }
 
-/* ── SIGNATURE: Type-section "see all" toggle ─────────────────────────────
-   Truncated scroll-rows (>8 items) get an inline expand control instead of a
-   silent cut. Matches the muted count typography when collapsed. */
+/* ── SIGNATURE: Type-section "see all" toggle ── */
 .see-all-toggle {
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   color: var(--color-action);
   background: transparent;
-  border: .5px solid transparent;
-  border-radius: var(--radius-pill, 999px);
+  border: .5px solid var(--line);
+  border-radius: var(--radius-control);
   padding: var(--space-2) var(--space-3);
   min-height: 44px;
   display: inline-flex;
   align-items: center;
   cursor: pointer;
-  transition: background .25s var(--ease-out), color .25s var(--ease-out), transform .15s var(--ease-spring);
+  transition: background .25s var(--ease-out), color .25s var(--ease-out), border-color .25s var(--ease-out);
 }
 .see-all-toggle:hover {
   background: rgba(var(--color-action-rgb), .08);

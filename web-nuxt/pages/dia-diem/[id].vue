@@ -1094,15 +1094,17 @@ useHead({
 <style src="~/assets/css/detail.css"></style>
 
 <style scoped>
+/* Wave 12: Open Left-Rule Architectural Seal (Zero Card-in-Card) */
 .green-tourism-badge {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) 0 var(--space-2) var(--space-3);
   margin: var(--space-3) 0 var(--space-4);
-  border-radius: var(--radius-surface);
-  background: color-mix(in srgb, var(--color-material-leaf) 6%, transparent);
-  border: .5px solid color-mix(in srgb, var(--color-material-leaf) 24%, var(--line));
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  border-inline-start: 2px solid var(--color-material-leaf);
   max-width: var(--measure-read);
 }
 .green-tourism-badge .gt-icon {
@@ -1117,6 +1119,7 @@ useHead({
   gap: 1px;
 }
 .green-tourism-badge .gt-label {
+  font-family: var(--font-editorial);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   letter-spacing: .01em;

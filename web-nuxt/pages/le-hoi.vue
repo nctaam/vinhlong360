@@ -42,7 +42,6 @@
           <path class="moon-lit" :d="todayMoonPath" />
         </svg>
         <span class="lunar-ribbon-label">Trăng <strong>{{ todayLunar.day }}/30</strong></span>
-        <MekongWaterBadge :lunar-day="todayLunar.day" compact />
         <div class="lunar-ribbon-track">
           <button
             v-for="tick in ribbonTicks" :key="tick.id"
@@ -59,7 +58,7 @@
     </section>
 
     <!-- Spotlight nổi bật -->
-    <CatalogSpotlight :items="allEvents" />
+    <CatalogSpotlight :items="allEvents" color-recipe="tri-region-v1" />
 
     <CatalogAeoPlaque
       title="Cẩm nang nghi thức lễ hội ba dân tộc Kinh — Khmer — Hoa"
@@ -362,15 +361,15 @@ function clearFilters() {
 
 const festivalAeoEntries = [
   {
-    heading: 'Lễ Hội Kỳ Yên & Miếu Đình Người Kinh',
+    heading: 'Lễ hội Kỳ Yên & đình miếu người Kinh',
     text: 'Cầu quốc thái dân an, phong điều vũ thuận. Diễn ra trang nghiêm tại các đình làng cổ kính với nghi thức rước sắc thần, lễ tế tiền hiền và nghệ thuật hát bội truyền thống.',
   },
   {
-    heading: 'Lễ Tết Chôl Chnăm Thmây & Ok Om Bok Người Khmer',
+    heading: 'Lễ Tết Chôl Chnăm Thmây & Ok Om Bok người Khmer',
     text: 'Tết năm mới ấm áp và lễ hội cúng trăng tạ ơn đất trời. Điểm nhấn là nghi thức tắm Phật, đút cốm dẹp truyền thống và không khí rộn rã tại các ngôi chùa Khmer Nam Bộ.',
   },
   {
-    heading: 'Lễ Vía Bà & Miếu Thất Phủ Người Hoa',
+    heading: 'Lễ Vía Bà & Thất Phủ Miếu người Hoa',
     text: 'Không gian văn hóa tín ngưỡng đặc sắc tại Thất Phủ Miếu (Chùa Ông), múa lân sư rồng sôi động cùng tục xin xăm, thỉnh lộc linh thiêng đầu xuân.',
   },
 ]
@@ -732,21 +731,22 @@ useHead(() => {
   50% { box-shadow: 0 0 0 4px rgba(var(--color-action-rgb), .12); }
 }
 
-/* Off-season note when there are no upcoming festivals */
+/* Off-season note when there are no upcoming festivals — Open Hairline Ledger Note */
 .lehoi-offseason {
   margin: 0;
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-4) 0;
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  background: var(--color-surface-subtle);
-  border-radius: var(--radius-surface, 12px);
-  border: 1px solid var(--color-border);
+  background: transparent;
+  border-radius: 0;
+  border: 0;
+  border-block: 1px solid var(--color-border);
 }
 
-.dark .lehoi-offseason { background: var(--color-surface-subtle); border-color: var(--color-border); }
+.dark .lehoi-offseason { background: transparent; border-color: var(--color-border); }
 
 /* Thumbnail placeholder colour if image fails / while loading */
-.event-thumb { background: var(--bg-alt); }
+.event-thumb { background: var(--bg-alt); border-radius: var(--radius-surface, 12px); }
 
 @media (prefers-reduced-motion: reduce) {
   .lehoi-status.status-now { animation: none; }

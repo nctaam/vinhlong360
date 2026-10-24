@@ -52,7 +52,7 @@
         <section class="offline-section" aria-labelledby="offline-tide-heading">
           <h3 id="offline-tide-heading" class="offline-section-title">
             <VernacularGlyph name="barringtonia-flower" :size="16" accent="silt" />
-            <span>Lịch Con Nước Thiên Văn (Tính Toán Cục Bộ)</span>
+            <span>Lịch con nước thủy triều (tính toán ngoại tuyến)</span>
           </h3>
 
           <div class="tide-almanac-card">
@@ -76,7 +76,7 @@
         <section class="offline-section" aria-labelledby="offline-nav-heading">
           <h3 id="offline-nav-heading" class="offline-section-title">
             <IconLine name="compass" aria-hidden="true" />
-            <span>Chỉ Dẫn Vượt Sông &amp; Tọa Độ Thực Địa</span>
+            <span>Chỉ dẫn qua sông &amp; tọa độ thực địa</span>
           </h3>
 
           <div class="offline-nav-card">
@@ -96,7 +96,7 @@
         <section class="offline-section" aria-labelledby="offline-emergency-heading">
           <h3 id="offline-emergency-heading" class="offline-section-title">
             <IconLine name="phone" aria-hidden="true" />
-            <span>Đầu Mối Cứu Hộ Đường Thủy &amp; Khẩn Cấp (Gọi Trực Tiếp)</span>
+            <span>Số điện thoại cứu hộ đường thủy &amp; khẩn cấp</span>
           </h3>
 
           <div class="emergency-contacts-grid">
@@ -164,31 +164,31 @@ const networkText = computed(() => {
 
 const EMERGENCY_CONTACTS = [
   {
-    name: 'Cứu Hộ Giao Thông Thủy Vĩnh Long',
-    role: 'Trực ban 24/7 sông Cổ Chiên & Bến Đình Khao',
+    name: 'Cứu hộ giao thông thủy Vĩnh Long',
+    role: 'Trực ban 24/7 sông Cổ Chiên & bến Đình Khao',
     phone: '0270 3822 188',
     tel: '02703822188',
   },
   {
-    name: 'Bến Phà An Bình',
+    name: 'Bến phà An Bình',
     role: 'Phà chở khách sang cù lao thường trực ngày đêm',
     phone: '0270 3858 200',
     tel: '02703858200',
   },
   {
-    name: 'Bệnh Viện Đa Khoa Tỉnh Vĩnh Long',
+    name: 'Bệnh viện Đa khoa tỉnh Vĩnh Long',
     role: 'Cấp cứu y tế & hỗ trợ sơ cứu vùng sông nước',
     phone: '0270 3823 520',
     tel: '02703823520',
   },
   {
-    name: 'Công An Tỉnh Vĩnh Long (Trực Ban)',
+    name: 'Công an tỉnh Vĩnh Long (Trực ban)',
     role: 'Bảo đảm an ninh trật tự & hỗ trợ du khách',
     phone: '069 370 6112',
     tel: '0693706112',
   },
   {
-    name: 'Tổng Đài Cứu Nạn Khẩn Cấp (PCCC & CNCH)',
+    name: 'Tổng đài cứu nạn khẩn cấp (PCCC & CNCH)',
     role: 'Cứu hộ cứu nạn khẩn cấp trên sông',
     phone: '114',
     tel: '114',
@@ -226,7 +226,7 @@ function dismissModal() {
   border-radius: var(--radius-surface);
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .offline-panel-container.as-modal {
@@ -295,6 +295,12 @@ function dismissModal() {
   color: var(--color-text);
   cursor: pointer;
 }
+.offline-toggle-btn:focus-visible,
+.offline-close-btn:focus-visible,
+.emergency-contact-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
 
 .offline-panel-body {
   padding: var(--space-fib-3);
@@ -321,10 +327,11 @@ function dismissModal() {
 
 .tide-almanac-card,
 .offline-nav-card {
-  padding: var(--space-fib-2) var(--space-fib-3);
-  background: var(--color-surface-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
+  padding: var(--space-fib-2) 0;
+  background: transparent;
+  border: 0;
+  border-block: 1px solid var(--color-border);
+  border-radius: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-fib-1);
@@ -347,7 +354,7 @@ function dismissModal() {
 .tide-indicator-dot {
   width: 8px;
   height: 8px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: var(--alluvial-gold);
 }
 
@@ -395,7 +402,8 @@ function dismissModal() {
 .emergency-contacts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--space-fib-2);
+  gap: 0 var(--space-fib-3);
+  border-block-start: 1px solid var(--color-border);
 }
 
 .emergency-contact-btn {
@@ -403,18 +411,19 @@ function dismissModal() {
   align-items: center;
   justify-content: space-between;
   min-height: 48px;
-  padding: var(--space-fib-2) var(--space-fib-3);
-  background: var(--color-surface-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
+  padding: var(--space-fib-2) 0;
+  background: transparent;
+  border: 0;
+  border-block-end: 1px solid var(--color-border);
+  border-radius: 0;
   color: var(--color-text);
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .emergency-contact-btn:hover {
-  background: var(--color-surface-raised);
-  border-color: var(--alluvial-gold);
+  background: transparent;
+  border-block-end-color: var(--alluvial-gold);
 }
 
 .contact-info {
@@ -448,5 +457,11 @@ function dismissModal() {
 
 .contact-phone-num {
   font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .emergency-contact-btn {
+    transition: none;
+  }
 }
 </style>

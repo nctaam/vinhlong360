@@ -61,7 +61,7 @@
       <div class="pocket-pass-card" data-pocket-pass-inline>
         <div class="pocket-pass-head">
           <div class="pocket-pass-meta-top">
-            <span class="pocket-pass-badge"><IconLine name="ticket" aria-hidden="true" /> Thẻ Hành Trình Bỏ Túi</span>
+            <span class="pocket-pass-badge"><IconLine name="ticket" aria-hidden="true" /> Thẻ hành trình bỏ túi</span>
             <span class="pocket-pass-offline-tag"><IconLine name="wifi" aria-hidden="true" /> Hoạt động ngoại tuyến</span>
           </div>
           <h3 class="pocket-pass-title">{{ itineraryTitle }}</h3>
@@ -273,7 +273,7 @@ const itineraryTitle = computed(() => itinerary.value?.title || itinerary.value?
 
 const areaMeta = computed(() => {
   const area = itinerary.value?.area
-  return (area ? AREA_META[area] : null) || { emoji: '📍', icon: 'pin', name: area || '', blurb: '' }
+  return (area ? AREA_META[area] : null) || { icon: 'pin', name: area || '', blurb: '' }
 })
 
 const itinerarySaveShape = computed(() => ({
@@ -287,11 +287,6 @@ const itinerarySaveShape = computed(() => ({
 function typeIcon(type?: string) {
   if (!type) return 'pin'
   return TYPE_META[type]?.icon || 'pin'
-}
-
-function typeEmoji(type?: string) {
-  if (!type) return '📍'
-  return TYPE_META[type]?.emoji || '📍'
 }
 
 function typeLabel(type?: string) {
@@ -673,10 +668,11 @@ if (itinerary.value && !itinerary.value.error) {
 .pocket-pass-section { margin: var(--space-4) 0 var(--space-6); }
 .pocket-pass-card {
   display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
-  padding: var(--space-4) var(--space-5);
-  background: var(--color-surface-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-surface);
+  padding: var(--space-4) 0;
+  background: transparent;
+  border: 0;
+  border-block: 1.5px solid var(--color-brand);
+  border-radius: 0;
 }
 .pocket-pass-badge { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--color-action); }
 .pocket-pass-offline-tag { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-2xs); color: var(--color-text-muted); margin-left: var(--space-3); }
@@ -690,22 +686,22 @@ if (itinerary.value && !itinerary.value.error) {
   .pocket-pass-qr-wrap { width: 100%; justify-content: space-between; margin-top: var(--space-2); }
 }
 
-/* Mode selector panel: snug card-like container */
+/* Mode selector panel: Wave 9 Open Editorial Control Strip */
 .transport-mode-spaced {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--space-2);
   margin-bottom: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  background: var(--bg-alt);
-  border: .5px solid var(--line);
-  border-radius: var(--radius-sheet);
-  box-shadow: var(--shadow-xs);
+  padding: var(--space-3) 0;
+  background: transparent;
+  border: 0;
+  border-block: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
   /* Reserve height so client-only mount doesn't shift layout (CLS) */
   min-height: 56px;
 }
-.dark .transport-mode-spaced { background: rgba(var(--white-rgb),.03); border-color: var(--line); }
 .transport-mode .chip { transition: transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
 .transport-mode .chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .transport-mode .chip:active { transform: scale(.95); transition-duration: .08s; }
@@ -767,17 +763,14 @@ if (itinerary.value && !itinerary.value.error) {
 }
 .step-index {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-sans);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
+  align-items: baseline;
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: var(--text-lg);
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
-  background: var(--mangthit-500, var(--color-material-clay));
-  color: var(--white);
-  padding: 1px var(--space-2);
-  border-radius: var(--radius-pill, 999px);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--mangthit-500) 25%, transparent);
+  line-height: 1;
+  color: var(--mangthit-500, var(--color-material-clay));
 }
 /* Connector dot anchoring each step to the spine */
 .step::before {
@@ -796,17 +789,17 @@ if (itinerary.value && !itinerary.value.error) {
   display: flex;
   gap: var(--space-3);
   align-items: flex-start;
-  padding: var(--space-4);
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-surface, 12px);
-  box-shadow: var(--shadow-xs);
-  transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
+  padding: var(--space-3) 0 var(--space-4);
+  background: transparent;
+  border: 0;
+  border-block-end: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
+  transition: border-color .25s var(--ease-out);
 }
-.step-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
-.step-card:active { transform: scale(.97); transition-duration: .08s; }
-.step-emoji { font-size: 1.6rem; line-height: 1; transition: transform .35s var(--ease-out-expo); }
-.step-card:hover .step-emoji { transform: scale(1.1) rotate(-3deg); }
+.step-card:hover { border-color: var(--color-brand); }
+.step-emoji { font-size: 1.6rem; line-height: 1; transition: transform .25s var(--ease-out-expo); }
+.step-card:hover .step-emoji { transform: scale(1.06); }
 .step-content h3 {
   font-family: var(--font-serif, var(--font-editorial));
   font-size: var(--text-base);
@@ -857,26 +850,23 @@ if (itinerary.value && !itinerary.value.error) {
 .dark .step-card .summary { color: rgba(var(--white-rgb),.72); }
 
 /* ── Note callout — respectful etiquette/context notes (§8: chùa Khmer,
-   seasonal caveats) surfaced as a warm amber-tinted aside instead of plain
-   gray text, so a cultural note reads as considered, not an afterthought. ── */
+   seasonal caveats) surfaced as an open left-rule editorial note. ── */
 .step-note-callout {
   display: flex; align-items: flex-start; gap: var(--space-2);
-  margin: var(--space-2) 0 0; padding: var(--space-2) var(--space-3);
-  background: color-mix(in srgb, var(--color-material-amber) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-material-amber) 25%, transparent);
-  border-radius: var(--radius-control); font-size: var(--text-sm); line-height: var(--leading-normal);
+  margin: var(--space-2) 0 0; padding: var(--space-1) 0 var(--space-1) var(--space-3);
+  background: transparent;
+  border: 0; border-inline-start: 2px solid var(--color-material-amber);
+  border-radius: 0; font-size: var(--text-sm); line-height: var(--leading-normal);
   color: var(--ink);
 }
 .tnc-icon { flex-shrink: 0; color: var(--color-material-amber); font-size: 1.1em; line-height: 1.4; }
-.dark .step-note-callout { background: color-mix(in srgb, var(--color-material-amber) 14%, transparent); border-color: color-mix(in srgb, var(--color-material-amber) 25%, transparent); }
-.dark .tnc-icon { color: var(--color-material-amber); }
 
 .transport-mode-spaced .chip { display: inline-flex; align-items: center; gap: var(--space-1); }
 .transport-mode-spaced .chip .line-icon { font-size: 1.05em; }
 
 .route-leg { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0 var(--space-2) var(--space-6); }
-.route-leg-line { width: 2px; height: 20px; background: var(--line); border-radius: 1px; transition: background .3s var(--ease-out); }
-.route-leg-info { font-size: var(--text-xs); color: var(--muted); }
+.route-leg-line { width: 1.5px; height: 18px; background: var(--line); transition: background .3s var(--ease-out); }
+.route-leg-info { font-family: var(--font-editorial); font-style: italic; font-size: var(--text-xs); color: var(--muted); }
 /* Narrative bridge — the next stop's name whispered inline, so a distance
    stat becomes a handoff between two moments in the day (§5/§7). */
 .route-leg-next { color: var(--color-brand); font-weight: var(--weight-medium); }
@@ -905,46 +895,40 @@ if (itinerary.value && !itinerary.value.error) {
 .route-map:hover { box-shadow: var(--shadow-md); }
 @media (max-width: 640px) { .route-map { height: clamp(200px, 45vh, 300px); } }
 
-/* Route leg pill */
-.route-leg-info { background: var(--bg-alt); padding: var(--space-1) var(--space-3); border-radius: var(--radius-pill, 999px); transition: background .3s var(--ease-out); }
-
 /* Route loading shimmer */
 /* Nâng đáy opacity .6 → .82: ở .6 thì --muted trộn với nền tối tụt dưới ngưỡng
    tương phản, axe bắt serious ngay tại khoảnh khắc "Đang tính..." (2026-08-06).
    Nhịp thở vẫn còn (.82 ↔ 1) nhưng chữ đọc được ở mọi pha. */
 .route-loading { opacity: .82; animation: routePulse 1.5s var(--ease-in-out) infinite; }
 @keyframes routePulse { 0%, 100% { opacity: .82; } 50% { opacity: 1; } }
-/* Route total: prominent floating summary badge, pinned right */
+/* Route total: Wave 12 Open Left-Rule Summary Strip (unboxed from pill-in-pill) */
 .route-total {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   margin: 0 0 var(--space-3);
   font-size: var(--text-sm);
   color: var(--color-brand);
   font-weight: var(--weight-bold);
-  padding: var(--space-2) var(--space-4);
-  background: var(--card);
-  border: 1.5px solid rgba(var(--color-brand-rgb), .35);
-  border-radius: var(--radius-pill, 999px);
-  box-shadow: var(--shadow-xs);
-  transition: background .3s var(--ease-out), box-shadow .3s var(--ease-out);
+  padding: var(--space-1) 0 var(--space-1) var(--space-3);
+  background: transparent;
+  border: 0;
+  border-inline-start: 2px solid var(--color-brand);
+  border-radius: 0;
+  box-shadow: none;
 }
 /* Error variant: warm, designed messaging */
 .route-total[role="status"] {
   color: var(--color-brand);
-  border-color: var(--color-brand-surface);
   font-weight: var(--weight-semibold);
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
 }
 .route-total[role="status"] .chip { font-weight: var(--weight-semibold); }
-.dark .route-total { background: rgba(var(--white-rgb),.04); border-color: rgba(var(--color-brand-rgb), .4); }
+.dark .route-total { background: transparent; border-inline-start-color: var(--color-brand); }
 
 /* Dark mode */
 .dark .step-card { border-color: var(--line); }
-.dark .step-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb),.1); }
+.dark .step-card:hover { border-color: var(--color-brand); }
 .dark .route-leg-line { background: rgba(var(--white-rgb),.1); }
-.dark .route-leg-info { background: rgba(var(--white-rgb),.04); }
 .dark .route-map { border-color: var(--line); }
 
 /* Reduced motion */
@@ -987,7 +971,7 @@ if (itinerary.value && !itinerary.value.error) {
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 12px;
+  font-size: var(--text-2xs);
   box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.3);
 }
 </style>

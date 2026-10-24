@@ -51,8 +51,8 @@
           <span>{{ data.place.name }}</span>
         </h1>
         <p class="wp-region">
-          <IconLine class="wp-region-icon" :name="areaMeta.icon" aria-hidden="true" />
-          <NuxtLink :to="`/khu-vuc/${data.place.area}`">{{ areaMeta.name }}</NuxtLink>
+          <IconLine class="wp-region-icon" name="landmark" aria-hidden="true" />
+          <NuxtLink to="/danh-ba">Tỉnh Vĩnh Long</NuxtLink>
         </p>
       </div>
     </header>
@@ -104,11 +104,11 @@
           <dl class="wp-facts">
             <div>
               <dt>Đơn vị</dt>
-              <dd>{{ data.place.level === 'phuong' ? 'Phường' : 'Xã' }}</dd>
+              <dd>Đơn vị hành chính cấp {{ data.place.level === 'phuong' ? 'phường' : 'xã' }} thuộc tỉnh Vĩnh Long</dd>
             </div>
-            <div v-if="data.place.area">
-              <dt>Khu vực</dt>
-              <dd>{{ areaMeta.name }}</dd>
+            <div>
+              <dt>Trực thuộc</dt>
+              <dd>Tỉnh Vĩnh Long</dd>
             </div>
             <div v-if="attrs.area_km2">
               <dt>Diện tích</dt>
@@ -183,7 +183,7 @@
         <ClientOnly>
           <section v-if="data.place.coordinates" class="wp-map-sec">
             <EmptyState v-if="mapLoadError" tone="error" message="Không tải được bản đồ. Kiểm tra kết nối và thử lại." />
-            <div v-show="!mapLoadError" ref="mapEl" class="wp-map-container" :class="{ 'wp-map-loading': !mapReady }" role="application" aria-roledescription="bản đồ tương tác" :aria-label="`Bản đồ ${data.place.name}. Dùng chuột hoặc cảm ứng để di chuyển.`"></div>
+            <div v-show="!mapLoadError" ref="mapEl" class="wp-map-container" :class="{ 'wp-map-loading': !mapReady }" role="region" aria-roledescription="bản đồ tương tác" :aria-label="`Bản đồ ${data.place.name}. Dùng phím mũi tên, chuột hoặc cảm ứng để di chuyển.`"></div>
           </section>
         </ClientOnly>
 
@@ -191,8 +191,8 @@
           <section v-if="data.tourism?.length" class="wp-sec">
             <p class="wp-eyebrow"><IconLine name="pin" aria-hidden="true" /> Tham quan</p>
             <h2>Địa điểm tham quan <span class="cnt">({{ data.tourism.length }})</span></h2>
-            <div class="wp-grid grid">
-              <EntityCard v-for="e in data.tourism" :key="e.id" :entity="e" />
+            <div class="wp-grid grid grid--asymmetric">
+              <EntityCard v-for="e in data.tourism" :key="e.id" :entity="e" color-recipe="tri-region-v1" />
             </div>
           </section>
 
@@ -200,8 +200,8 @@
             <div class="wp-divider" aria-hidden="true"></div>
             <p class="wp-eyebrow"><IconLine name="home" aria-hidden="true" /> Nghỉ ngơi</p>
             <h2>Lưu trú <span class="cnt">({{ data.lodging.length }})</span></h2>
-            <div class="wp-grid grid">
-              <EntityCard v-for="e in data.lodging" :key="e.id" :entity="e" />
+            <div class="wp-grid grid grid--asymmetric">
+              <EntityCard v-for="e in data.lodging" :key="e.id" :entity="e" color-recipe="tri-region-v1" />
             </div>
           </section>
 
@@ -209,17 +209,20 @@
             <div class="wp-divider" aria-hidden="true"></div>
             <p class="wp-eyebrow"><IconLine name="gift" aria-hidden="true" /> Đặc sản</p>
             <h2>Đặc sản &amp; sản phẩm <span class="cnt">({{ data.products.length }})</span></h2>
-            <div class="wp-grid grid">
-              <EntityCard v-for="e in data.products" :key="e.id" :entity="e" />
+            <div class="wp-grid grid grid--asymmetric">
+              <EntityCard v-for="e in data.products" :key="e.id" :entity="e" color-recipe="tri-region-v1" />
             </div>
           </section>
 
-          <div v-if="!totalContent" class="wp-empty-card">
+          <div v-if="!totalContent" class="wp-empty-card" data-ward-unvisited-state>
             <div class="wp-empty-motif" aria-hidden="true"></div>
-            <IconLine class="wp-empty-icon" name="map" aria-hidden="true" />
-            <p class="wp-empty-title">Trang đang được xây dựng</p>
-            <p class="wp-empty-msg">Chưa có dữ liệu địa điểm cho {{ data.place.name }}. Du lịch, lưu trú và đặc sản của khu vực này đang được bổ sung.</p>
-            <p class="wp-empty-hint">Quay lại sau hoặc khám phá các xã/phường lân cận qua trang khu vực.</p>
+            <IconLine class="wp-empty-icon" name="compass" aria-hidden="true" />
+            <p class="wp-empty-title">Vùng đất nguyên sơ đang chờ dấu chân khám phá</p>
+            <p class="wp-empty-msg">{{ data.place.name }} giữ trọn nhịp sống điền dã mộc mạc của sông nước Vĩnh Long. Dữ liệu thực địa, di tích và sản vật bản xứ đang được đội ngũ ghi nhận liên tục.</p>
+            <div class="wp-empty-actions">
+              <NuxtLink to="/danh-ba" class="btn btn-outline btn-sm"><IconLine name="landmark" aria-hidden="true" /> Danh bạ hành chính</NuxtLink>
+              <NuxtLink to="/ban-do" class="btn btn-primary btn-sm"><IconLine name="map" aria-hidden="true" /> Xem vị trí trên bản đồ</NuxtLink>
+            </div>
           </div>
         </div>
       </div>
@@ -312,21 +315,51 @@ function sanitizeWardError(err: unknown): Record<string, unknown> | null {
   }
 }
 
-const {
-  data: wardOverviewResult,
-  error: wardOverviewError,
-  status: wardOverviewStatus,
-  refresh: refreshWardOverview,
-} = await useAsyncData(computed(() => `ward-${id.value}`), async () => {
-  const generation = wardLaunchGeneration.current()
-  const requestId = id.value
-  try {
-    const overview = await apiFetch<WardOverviewResponse>(`/api/places/${encodedId.value}/overview`)
-    return { generation, requestId, overview, failed: false, error: null } satisfies WardOverviewResult
-  } catch (error) {
-    return { generation, requestId, overview: null, failed: true, error: sanitizeWardError(error) } satisfies WardOverviewResult
-  }
-}, { watch: [id, () => route.fullPath], deep: false })
+// The overview is presentation data only. The backend's exact `/entities/{id}`
+// response is the sole ward policy carrier, and is skipped while the base gate
+// is closed so a closed request never makes this extra backend call.
+const [
+  {
+    data: wardOverviewResult,
+    error: wardOverviewError,
+    status: wardOverviewStatus,
+    refresh: refreshWardOverview,
+  },
+  {
+    data: wardPolicyCarrier,
+    error: wardPolicyError,
+    status: wardPolicyStatus,
+    refresh: refreshWardPolicy,
+  },
+] = await Promise.all([
+  useAsyncData(computed(() => `ward-${id.value}`), async () => {
+    const generation = wardLaunchGeneration.current()
+    const requestId = id.value
+    try {
+      const overview = await apiFetch<WardOverviewResponse>(`/api/places/${encodedId.value}/overview`)
+      return { generation, requestId, overview, failed: false, error: null } satisfies WardOverviewResult
+    } catch (error) {
+      return { generation, requestId, overview: null, failed: true, error: sanitizeWardError(error) } satisfies WardOverviewResult
+    }
+  }, { watch: [id, () => route.fullPath], deep: false }),
+  useAsyncData(
+    computed(() => `ward-launch-policy-${id.value}`),
+    async () => {
+      const generation = wardLaunchGeneration.current()
+      const requestId = id.value
+      if (!launchSafety.canRefineEntityPolicy.value) {
+        return { generation, requestId, carrier: null, error: null } satisfies WardPolicyCarrierResult
+      }
+      try {
+        const carrier = await apiFetch<Record<string, unknown>>(`/api/entities/${encodedId.value}`)
+        return { generation, requestId, carrier, error: null } satisfies WardPolicyCarrierResult
+      } catch (error) {
+        return { generation, requestId, carrier: null, error: sanitizeWardError(error) } satisfies WardPolicyCarrierResult
+      }
+    },
+    { watch: [id, () => route.fullPath], deep: false },
+  ),
+])
 
 const acceptedWardOverview = shallowRef<WardOverviewResult | null>(null)
 const currentWardOverview = computed(() => {
@@ -343,32 +376,6 @@ function acceptCurrentWardOverview(result: WardOverviewResult | null | undefined
 
 acceptCurrentWardOverview(wardOverviewResult.value)
 watch(wardOverviewResult, acceptCurrentWardOverview, { flush: 'sync' })
-
-// The overview is presentation data only. The backend's exact `/entities/{id}`
-// response is the sole ward policy carrier, and is skipped while the base gate
-// is closed so a closed request never makes this extra backend call.
-const {
-  data: wardPolicyCarrier,
-  error: wardPolicyError,
-  status: wardPolicyStatus,
-  refresh: refreshWardPolicy,
-} = await useAsyncData(
-  computed(() => `ward-launch-policy-${id.value}`),
-  async () => {
-    const generation = wardLaunchGeneration.current()
-    const requestId = id.value
-    if (!launchSafety.canRefineEntityPolicy.value) {
-      return { generation, requestId, carrier: null, error: null } satisfies WardPolicyCarrierResult
-    }
-    try {
-      const carrier = await apiFetch<Record<string, unknown>>(`/api/entities/${encodedId.value}`)
-      return { generation, requestId, carrier, error: null } satisfies WardPolicyCarrierResult
-    } catch (error) {
-      return { generation, requestId, carrier: null, error: sanitizeWardError(error) } satisfies WardPolicyCarrierResult
-    }
-  },
-  { watch: [id, () => route.fullPath], deep: false },
-)
 
 async function refreshWard() {
   wardLaunchGeneration.begin()
@@ -567,7 +574,7 @@ const wardAcademicMarginalia = computed(() => {
 
   if (name.includes('mang thít') || name.includes('mỹ an') || name.includes('nhơn phú') || name.includes('mỹ phước')) {
     return {
-      content: 'Dải phù sa mịn lắng đọng dọc sông Cổ Chiên tạo nên vỉa đất sét mộc dẻo quánh đặc thù — nền tảng nuôi dưỡng quần thể Di sản Đương đại Mang Thít với hơn 1.000 lò nung gạch gốm đỏ hình phễu độc nhất vô nhị.',
+      content: 'Dải phù sa mịn lắng đọng dọc sông Cổ Chiên tạo nên vỉa đất sét mộc dẻo quánh đặc thù — nền tảng nuôi dưỡng quần thể Di sản Đương đại Mang Thít với hơn 1.000 lò nung gạch gốm đỏ hình phễu trầm tích qua cả thế kỷ.',
       sourceTitle: 'Khảo sát Địa chí Văn hóa Vĩnh Long & Hồ sơ Di sản Lò gốm Mang Thít (NotebookLM Archive)',
       sourceUrl: 'https://vinhlong360.vn/dia-diem/lang-gom-mang-thit',
     }
@@ -581,7 +588,7 @@ const wardAcademicMarginalia = computed(() => {
   }
   if (name.includes('trà ôn') || name.includes('lục sĩ')) {
     return {
-      content: 'Nằm tại ngã ba sông Hậu và sông Mang Thít, Trà Ôn sở hữu thủy đạo giao thương huyết mạch, hình thành tập quán buôn bán trên ghe thuyền nông sản theo con nước lớn ròng từ thế kỷ XIX.',
+      content: 'Giao điểm ngã ba sông Hậu và sông Mang Thít đem lại cho Trà Ôn thủy đạo giao thương huyết mạch, hình thành tập quán buôn bán trên ghe thuyền nông sản theo con nước lớn ròng từ thế kỷ XIX.',
       sourceTitle: 'Tập san Văn hóa Dân gian & Chợ Nổi Sông Cửu Long',
       sourceUrl: 'https://vinhlong360.vn/dia-diem/cho-noi-tra-on',
     }
@@ -601,7 +608,7 @@ const wardAcademicMarginalia = computed(() => {
     }
   }
   return {
-    content: 'Nằm ở tâm điểm châu thổ Cửu Long giữa hai nhánh Tiền Giang và Hậu Giang, địa bàn sở hữu mạng lưới thủy trình tự nhiên phong phú, định hình nếp sống thương hồ, làng nghề ven sông và nông nghiệp trù phú.',
+    content: 'Tâm điểm châu thổ Cửu Long giữa hai nhánh Tiền Giang và Hậu Giang đem đến cho địa bàn mạng lưới thủy trình tự nhiên phong phú, định hình nếp sống thương hồ, làng nghề ven sông và nông nghiệp trù phú.',
     sourceTitle: 'Tư liệu Địa chí Văn hóa Lịch sử Đồng bằng Sông Cửu Long (NotebookLM Core)',
     sourceUrl: 'https://vinhlong360.vn/gioi-thieu',
   }
@@ -636,8 +643,8 @@ const representativeImageMeta = computed(() => buildImageMeta(representativeImag
 
 const placeName = computed(() => data.value?.place?.name || 'Xã/Phường')
 useSeoMeta({
-  title: () => data.value?.place?.name ? `${data.value.place.name} — ${areaMeta.value.name} — vinhlong360` : 'Xã phường — vinhlong360',
-  description: () => data.value?.place?.summary || `Tổng hợp địa điểm du lịch, cơ sở lưu trú, sản phẩm đặc sản và danh bạ hành chính của ${placeName.value}.`,
+  title: () => data.value?.place?.name ? `${data.value.place.name} — tỉnh Vĩnh Long — vinhlong360` : 'Xã phường — vinhlong360',
+  description: () => data.value?.place?.summary || `Tổng hợp địa điểm du lịch, cơ sở lưu trú, sản phẩm đặc sản và danh bạ hành chính của ${placeName.value}, tỉnh Vĩnh Long.`,
   ogTitle: () => `${placeName.value} — vinhlong360`,
   ogDescription: () => data.value?.place?.summary || `Du lịch, đặc sản & danh bạ ${placeName.value}.`,
   ogImage: () => representativeImageMeta.value.ogImage,
@@ -656,7 +663,7 @@ const { mapEl, mapReady, mapLoadError } = useWardDetailMap({
 
 const breadcrumbItems = computed(() => [
   { label: 'Trang chủ', to: '/' },
-  ...(data.value?.place?.area ? [{ label: areaMeta.value.name, to: `/khu-vuc/${data.value.place.area}` }] : []),
+  { label: 'Danh bạ xã/phường', to: '/danh-ba' },
   { label: data.value?.place?.name || 'Xã/phường' },
 ])
 
@@ -668,12 +675,12 @@ const placeJsonLd = computed(() => {
     '@type': 'AdministrativeArea',
     '@id': `${placeUrl}#adminarea`,
     name: p.name,
-    description: p.summary || `${p.name} thuộc ${areaMeta.value.name}, tỉnh Vĩnh Long.`,
+    description: p.summary || `${p.name} là đơn vị hành chính cấp ${p.level === 'phuong' ? 'phường' : 'xã'} thuộc tỉnh Vĩnh Long.`,
     url: placeUrl,
-    address: { '@type': 'PostalAddress', addressRegion: areaMeta.value.name, addressCountry: 'VN' },
+    address: { '@type': 'PostalAddress', addressRegion: 'Vĩnh Long', addressCountry: 'VN' },
     containedInPlace: {
       '@type': 'AdministrativeArea',
-      name: areaMeta.value.name,
+      name: 'Tỉnh Vĩnh Long',
     },
   }
   const representativeImage = descriptorToImageObject(representativeImageDescriptor.value)
@@ -688,7 +695,7 @@ const placeJsonLd = computed(() => {
     '@type': 'WebPage',
     '@id': `${placeUrl}#webpage`,
     url: placeUrl,
-    name: `${p.name} — ${areaMeta.value.name} — vinhlong360`,
+    name: `${p.name} — tỉnh Vĩnh Long — vinhlong360`,
     description: p.summary || `Khám phá địa điểm du lịch, ẩm thực, đặc sản và danh bạ hành chính tại ${p.name}.`,
     inLanguage: 'vi-VN',
     isPartOf: { '@id': `${SITE_URL}/#website` },
@@ -703,8 +710,8 @@ const placeJsonLd = computed(() => {
     '@id': `${placeUrl}#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
-      ...(p.area ? [{ '@type': 'ListItem', position: 2, name: areaMeta.value.name, item: `${SITE_URL}/khu-vuc/${p.area}` }] : []),
-      { '@type': 'ListItem', position: p.area ? 3 : 2, name: p.name, item: placeUrl },
+      { '@type': 'ListItem', position: 2, name: 'Danh bạ xã/phường', item: `${SITE_URL}/danh-ba` },
+      { '@type': 'ListItem', position: 3, name: p.name, item: placeUrl },
     ],
   }
 
@@ -725,7 +732,7 @@ const placeJsonLd = computed(() => {
   const faqItems: FaqItem[] = [
     {
       q: `${p.name} thuộc huyện, thị xã hay thành phố nào của tỉnh Vĩnh Long?`,
-      a: `${p.name} là đơn vị hành chính cấp ${p.level === 'phuong' ? 'phường' : 'xã'} trực thuộc ${areaMeta.value.name}, tỉnh Vĩnh Long.`,
+      a: `${p.name} là đơn vị hành chính cấp ${p.level === 'phuong' ? 'phường' : 'xã'} trực thuộc tỉnh Vĩnh Long thống nhất (124 xã, phường sau sáp nhập).`,
     },
     {
       q: `Có những địa điểm du lịch, ẩm thực hoặc đặc sản nào tại ${p.name}?`,
@@ -858,7 +865,7 @@ useHead({
 /* ── CE3: unify the ward page under the phù-sa editorial voice (scoped .ce-ward) ── */
 /* Section heads already use the serif; add the vertical "sediment core" tick (river→amber→clay). */
 .ce-ward .wp-sec h2::before {
-  content: ""; flex: 0 0 auto; width: 4px; height: 1.05em; border-radius: var(--radius-full);
+  content: ""; flex: 0 0 auto; width: 3px; height: 1.05em; border-radius: 0;
   background: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
 }
 .dark .ce-ward .wp-sec h2::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
@@ -866,13 +873,12 @@ useHead({
 .ce-ward .wp-summary { font-family: var(--font-editorial); font-size: clamp(1.02rem, .98rem + .3vw, 1.15rem); }
 .wp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--space-4); }
 
-/* Designed empty-state card */
+/* Designed empty-state ledger — Wave 9 Open Architectural Empty State */
 .wp-empty-card {
   position: relative; overflow: hidden; text-align: center;
-  background: var(--card); border: .5px solid var(--line);
-  border-radius: var(--radius-sheet); padding: var(--space-10) var(--space-6) var(--space-8);
+  background: transparent; border: 0; border-block: 1px solid var(--line);
+  border-radius: 0; padding: var(--space-8) var(--space-4);
   margin-top: var(--space-2);
-  background-image: radial-gradient(circle at 50% 0%, rgba(var(--color-brand-rgb), .06), transparent 60%);
 }
 .wp-empty-motif {
   position: absolute; inset: auto 0 0 0; height: 60px; pointer-events: none; opacity: .06;
@@ -883,48 +889,26 @@ useHead({
 }
 .wp-empty-icon {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 72px; height: 72px; font-size: 2.2rem; border-radius: 50%;
+  width: 72px; height: 72px; font-size: 2.2rem; border-radius: var(--radius-pill, 999px);
   background: radial-gradient(circle, rgba(var(--color-brand-rgb), .12), rgba(var(--color-brand-rgb), .04) 70%, transparent);
   margin-bottom: var(--space-3); position: relative; z-index: 1;
 }
 .wp-empty-title { font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); margin: 0 0 var(--space-2); position: relative; z-index: 1; }
-.wp-empty-msg { color: var(--ink-secondary, var(--muted)); font-size: var(--text-sm); line-height: var(--leading-relaxed); max-width: 46ch; margin: 0 auto var(--space-2); position: relative; z-index: 1; }
-.wp-empty-hint { color: var(--muted); font-size: var(--text-xs); max-width: 44ch; margin: 0 auto; position: relative; z-index: 1; }
+.wp-empty-msg { color: var(--ink-secondary, var(--muted)); font-size: var(--text-sm); line-height: var(--leading-relaxed); max-width: 52ch; margin: 0 auto var(--space-4); position: relative; z-index: 1; }
+.wp-empty-actions { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); position: relative; z-index: 1; }
 
-/* Sidebar cards */
-.wp-aside { grid-area: aside; display: flex; flex-direction: column; gap: var(--space-4); position: sticky; top: 78px; max-height: calc(100vh - 78px); max-height: calc(100dvh - 78px); overflow-y: auto; overscroll-behavior: contain; contain: layout style; }
+/* Sidebar specification ledger — Wave 9 Open Architectural Ledger */
+.wp-aside { grid-area: aside; display: flex; flex-direction: column; gap: var(--space-4); padding-inline-right: var(--space-5); border-inline-end: 1px solid var(--line); position: sticky; top: 78px; max-height: calc(100vh - 78px); max-height: calc(100dvh - 78px); overflow-y: auto; overscroll-behavior: contain; contain: layout style; }
 .wp-aside :deep(.entity-trust-panel) { margin: 0; }
 .ward-action-dock { margin: 0; }
 .ward-action-dock :deep(.action-dock__primary) { flex: 1 1 100%; }
-.ward-primary-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 44px;
-  padding: var(--space-3) var(--space-4);
-  color: var(--text-on-dark, var(--white));
-  font-weight: var(--weight-bold);
-  text-align: center;
-  background: var(--color-action);
-  border-radius: var(--radius-control);
-}
+.ward-primary-action { display: inline-flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; padding: var(--space-3) var(--space-4); color: var(--text-on-dark, var(--white)); font-weight: var(--weight-bold); text-align: center; background: var(--color-action); border-radius: var(--radius-control); }
 .ward-primary-action:hover { background: var(--color-action-hover); }
 .ward-primary-action:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
-.wp-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-5); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
-.wp-card::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  background: linear-gradient(180deg, rgba(var(--white-rgb),.6) 0%, transparent 55%);
-  mix-blend-mode: overlay; opacity: 0; transition: opacity .35s var(--ease-out-expo);
-}
-.wp-card:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(var(--color-action-rgb), .14), 0 18px 40px -18px rgba(var(--color-action-rgb), .25); }
-.wp-card:hover::before { opacity: .9; }
-.dark .wp-card::before { background: linear-gradient(180deg, rgba(var(--white-rgb),.08) 0%, transparent 55%); }
-.dark .wp-card:hover::before { opacity: .5; }
-.wp-card h3 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: 0 0 var(--space-3); position: relative; z-index: 1; }
+.wp-card { position: relative; background: transparent; border: 0; border-block-start: 1px solid var(--line); border-radius: 0; padding: var(--space-4) 0 0; box-shadow: none; }
+.wp-card h2, .wp-card h3 { font-family: var(--font-editorial); font-size: var(--text-base); font-weight: var(--weight-semibold); margin: 0 0 var(--space-3); position: relative; z-index: 1; }
 .wp-card .wp-contact, .wp-card .wp-fac-list { position: relative; z-index: 1; }
-.wp-facts-card h2 { margin: 0 0 var(--space-3); font-size: var(--text-base); }
-.wp-fact-evidence { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+.wp-fact-evidence { display: none; }
 .wp-facts { display: grid; gap: var(--space-2); margin: 0; }
 .wp-facts > div { display: grid; grid-template-columns: minmax(5rem, .8fr) minmax(0, 1.2fr); gap: var(--space-3); padding-block: var(--space-2); border-bottom: .5px solid var(--line); }
 .wp-facts > div:last-child { border-bottom: 0; }
@@ -938,37 +922,26 @@ useHead({
 .wp-contact { display: flex; flex-direction: column; gap: var(--space-3); }
 .wp-contact-item { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2) 0; border-bottom: .5px solid var(--line); }
 .wp-contact-item:last-child { border-bottom: none; padding-bottom: 0; }
-.wp-contact-main { background: linear-gradient(90deg, rgba(var(--color-action-rgb), .07) 0%, rgba(var(--color-brand-rgb), .07) 100%); border-radius: var(--radius-surface); padding: var(--space-3); border-bottom: none; margin-bottom: 2px; }
+.wp-contact-main { background: transparent; border-radius: 0; padding: var(--space-1) 0 var(--space-1) var(--space-3); border: 0; border-inline-start: 2px solid var(--color-action); margin-bottom: 2px; }
 .wp-contact-label { font-size: var(--text-xs); color: var(--muted); }
 .wp-phone { font-size: var(--text-base); font-weight: var(--weight-bold); color: var(--color-action); min-height: 44px; padding: var(--space-2) var(--space-3); margin-inline-start: calc(var(--space-3) * -1); display: inline-flex; align-items: center; border-radius: var(--radius-control); }
 .wp-phone:hover { text-decoration: underline; }
 .wp-phone:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 
-/* Facilities */
-.wp-fac-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-.wp-fac { padding: var(--space-2) var(--space-2); border-bottom: .5px solid var(--line); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo); border-radius: var(--radius-control); margin: 0 calc(var(--space-2) * -1); }
-.wp-fac:hover { background: rgba(var(--color-action-rgb), .05); transform: translateX(2px); }
-.wp-fac:last-child { border-bottom: none; }
+/* Facilities — Wave 12 Open Hairline Administrative Ledger */
+.wp-fac-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; border-block-start: .5px solid var(--line); }
+.wp-fac { padding: var(--space-2h, 10px) 0; border-bottom: .5px solid var(--line); border-radius: 0; margin: 0; background: transparent; }
+.wp-fac strong { display: block; font-family: var(--font-editorial); font-weight: 600; color: var(--ink); }
 .wp-fac-kind { font-size: var(--text-xs); color: var(--color-action); display: inline-flex; align-items: center; gap: var(--space-1); margin-bottom: 2px; }
 .wp-fac-icon { font-size: 1.1rem; line-height: 1; flex-shrink: 0; }
 .wp-fac-row { font-size: var(--text-sm); color: var(--muted); margin-top: 2px; }
 .wp-fac-row a { color: var(--color-action); }
 .wp-fac-row a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 
-/* Map button */
-.wp-map-btn { display: flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-3); border-radius: var(--radius-sheet); background: var(--bg-warm); border: .5px solid var(--line); font-weight: var(--weight-bold); font-size: var(--text-sm); color: var(--ink); min-height: 44px; transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out); }
-.wp-map-btn:hover { background: var(--line); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
-.wp-map-btn:active { transform: scale(.97); transition-duration: .08s; }
-.wp-map-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-
 /* Responsive */
 @media (max-width: 840px) {
   .wp-body { grid-template-columns: 1fr; grid-template-areas: 'aside' 'main'; gap: var(--space-5); }
-  /* min-width: 0 — grid items default to min-width:auto; without this the
-     nested .wp-grid EntityCard rows force .wp-main (and, through it, the
-     single .wp-body track) wider than the viewport, causing page-level
-     horizontal scroll on mobile. */
-  .wp-aside { position: static; max-height: none; overflow-y: visible; margin-top: 0; }
+  .wp-aside { position: static; max-height: none; overflow-y: visible; margin-top: 0; padding-inline-right: 0; border-inline-end: 0; }
   .ward-action-dock[data-detail-action-safe-area] { padding-bottom: max(var(--space-3), env(safe-area-inset-bottom, 0px)); }
   .wp-stats { gap: var(--space-4); }
 }
@@ -981,25 +954,8 @@ useHead({
   .wp-empty-card { padding: var(--space-8) var(--space-5) var(--space-6); }
 }
 
-/* Dark mode */
-.dark .wp-card { background: var(--card); border-color: var(--line); }
-.dark .wp-card:hover { box-shadow: 0 0 0 1px rgba(var(--color-action-rgb), .22), 0 18px 40px -18px rgba(var(--black-rgb),.6); }
-.dark .wp-contact-main { background: linear-gradient(90deg, rgba(var(--color-action-rgb), .12) 0%, rgba(var(--color-brand-rgb), .10) 100%); }
-.dark .wp-phone { color: var(--color-action); }
-.dark .wp-fac:hover { background: var(--glass-subtle); }
-.dark .wp-fac-kind { color: var(--color-action); }
-.dark .wp-fac-row a { color: var(--color-action); }
-.dark .wp-map-btn { background: var(--glass-subtle); border-color: var(--line); color: var(--ink); }
-.dark .wp-map-btn:hover { background: var(--glass-light); }
-.dark .wp-empty-card { background-image: radial-gradient(circle at 50% 0%, rgba(var(--color-brand-rgb), .10), transparent 60%); }
-
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .wp-card:hover { transform: none; }
-  .wp-card::before { transition: none; }
-  .wp-map-btn:hover { transform: none; }
-  .wp-map-btn:active { transform: none; }
-  .wp-fac:hover { transform: none; }
   .wp-map-loading { animation: none; }
   :deep(.wp-marker:hover) { transform: none; }
 }

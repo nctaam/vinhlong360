@@ -61,9 +61,10 @@ const effectiveIconName = computed(() => {
   grid-template-columns: auto 1fr;
   gap: var(--space-4);
   align-items: center;
-  padding: var(--space-5) var(--space-6);
-  border-radius: var(--radius-sheet);
-  border: .5px solid var(--line);
+  padding: var(--space-5) 0;
+  border-radius: 0;
+  border: 0;
+  border-block-end: 1px solid var(--line);
   background: linear-gradient(135deg, rgba(var(--catalog-legacy-primary-rgb), .04), transparent);
   margin: var(--space-4) 0;
   position: relative;
@@ -90,7 +91,7 @@ const effectiveIconName = computed(() => {
    reading as a slapped-on heading-marker next to the now-serif fact copy */
 .interstitial-icon-chip {
   display: flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px; border-radius: var(--radius-full); flex-shrink: 0;
+  width: 40px; height: 40px; border-radius: var(--radius-pill, 999px); flex-shrink: 0;
   background: rgba(var(--catalog-legacy-primary-rgb), .07);
 }
 .dark .interstitial-icon-chip { background: rgba(var(--white-rgb), .06); }
@@ -199,7 +200,7 @@ const effectiveIconName = computed(() => {
 
 @media (max-width: 640px) {
   .interstitial {
-    padding: var(--space-4);
+    padding: var(--space-4) 0;
     gap: var(--space-3);
   }
   .interstitial-icon-chip {
@@ -208,12 +209,6 @@ const effectiveIconName = computed(() => {
   }
   .interstitial-icon {
     font-size: 1rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .interstitial-link:hover {
-    transform: none;
   }
 }
 </style>

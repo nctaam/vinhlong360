@@ -119,7 +119,7 @@
                     @change="onFileSelect"
                   />
                 </label>
-                <span v-if="newContent.length > 0" :class="['char-count', { warn: charRatio > .8, full: charRatio >= 1 }]">
+                <span v-if="newContent.length > 0" :class="['char-count', { warn: charRatio > .8, full: charRatio >= 1 }]" role="status" aria-live="polite">
                   {{ newContent.length }}/{{ MAX_CHARS }}
                 </span>
               </div>
@@ -204,12 +204,12 @@
           :message="`Không có bài viết nào khớp “${searchQuery}”.`"
         />
 
-        <div v-else-if="ugcUnavailable" class="feed-error" data-service-state="503">
+        <div v-else-if="ugcUnavailable" class="feed-error" data-service-state="503" role="alert" aria-live="assertive">
           <p>Dịch vụ cộng đồng đang tạm thời gián đoạn (503). Vui lòng thử lại sau ít phút.</p>
           <button type="button" class="btn btn-outline btn-sm" @click="fetchFeed(true)">Thử lại</button>
         </div>
 
-        <div v-else-if="feedError && !displayPosts.length" class="feed-error">
+        <div v-else-if="feedError && !displayPosts.length" class="feed-error" role="alert" aria-live="assertive">
           <p>Không thể tải bảng tin.</p>
           <button type="button" class="btn btn-outline btn-sm" @click="fetchFeed(true)">Thử lại</button>
         </div>
@@ -863,23 +863,24 @@ useHead({
 .threads-layout { display: grid; grid-template-columns: 1fr 280px; gap: var(--space-6); align-items: start; }
 .threads-feed { display: flex; flex-direction: column; min-width: 0; }
 
-/* ── Compose (Chronicle Compose Panel) ── */
+/* ── Compose (Open Chronicle Compose Ledger — Wave 12) ── */
 .threads-compose,
 .chronicle-compose-panel {
-  display: flex; gap: var(--space-3); border-radius: var(--radius-surface);
-  margin: 0 calc(var(--space-2) * -1) var(--space-2);
-  padding: var(--space-5) var(--space-3) var(--space-4);
-  background: var(--color-surface-subtle);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-xs);
-  transition: background .3s var(--ease-out), border-color .3s var(--ease-out), border-radius .3s var(--ease-out), box-shadow .3s var(--ease-out-expo);
+  display: flex; gap: var(--space-3); border-radius: 0;
+  margin: 0 0 var(--space-4);
+  padding: var(--space-4) 0;
+  background: transparent;
+  border: 0;
+  border-block: 1px solid var(--line);
+  box-shadow: none;
+  transition: border-color .3s var(--ease-out);
 }
 .threads-compose:focus-within,
 .chronicle-compose-panel:focus-within {
-  background: var(--color-surface);
-  border-color: var(--color-brand);
-  border-radius: var(--radius-sheet);
-  box-shadow: var(--shadow-sm);
+  background: transparent;
+  border-block-color: var(--color-action);
+  border-radius: 0;
+  box-shadow: none;
 }
 .compose-left { width: 40px; flex-shrink: 0; display: flex; justify-content: center; }
 .compose-right { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
@@ -930,7 +931,7 @@ useHead({
 .img-preview-thumb { position: relative; width: 64px; height: 64px; border-radius: var(--radius-control); overflow: hidden; }
 .img-preview-item:hover { transform: scale(1.08); box-shadow: var(--shadow-sm); }
 .img-preview-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.img-preview-invalid { min-height: 64px; margin: 0; padding: var(--space-2) var(--space-8) var(--space-2) var(--space-2); border: 1px dashed var(--line); border-radius: var(--radius-control); color: var(--error); font-size: var(--text-xs); line-height: 1.35; }
+.img-preview-invalid { min-height: 64px; margin: 0; padding: var(--space-2) var(--space-8) var(--space-2) var(--space-2); border: 1px solid var(--border-liquid-glass, var(--line)); border-radius: var(--radius-control); color: var(--error); font-size: var(--text-xs); line-height: 1.35; background: var(--bg-alt); }
 .img-preview-item .remove { position: absolute; top: -4px; right: -4px; width: 28px; height: 28px; border-radius: 50%; background: var(--overlay-dark); color: var(--text-on-dark, var(--white)); border: none; cursor: pointer; font-size: .7rem; display: flex; align-items: center; justify-content: center; padding: var(--space-2); box-sizing: content-box; transition: background .2s, transform .2s var(--ease-out-expo); }
 .img-preview-item .remove:hover { background: var(--error); transform: scale(1.1); }
 .img-preview-item .remove:focus-visible { outline: 2px solid var(--text-on-dark, var(--white)); outline-offset: 1px; }
@@ -941,16 +942,13 @@ useHead({
 .feed-loading { text-align: center; padding: var(--space-5); }
 .feed-loading .spinner { margin: 0 auto; }
 
-/* ── Dark mode & Responsive ── */
-.dark .compose-attach:hover { background: rgba(var(--white-rgb),.08); }
-.dark .threads-compose { background: var(--color-surface-subtle); border-color: var(--color-border); }
-.dark .threads-compose:focus-within { background: var(--color-surface); border-color: var(--color-brand); }
+/* ── Responsive ── */
 @media (max-width: 820px) {
   .threads-layout { grid-template-columns: 1fr; }
   .threads-sidebar { display: none; }
   .threads-page { max-width: 100%; }
   .threads-feed { padding-inline: var(--space-1); }
-  .threads-compose { padding-inline: var(--space-3); }
+  .threads-compose { padding-inline: 0; }
   .compose-input { min-height: 48px; font-size: var(--text-base); }
   .cd-input { font-size: var(--text-base, 16px); }
 }
