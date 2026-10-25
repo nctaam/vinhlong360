@@ -201,19 +201,14 @@ class MemoryGraph:
     def _save_unlocked(self):
         """Internal save -- caller must hold self._lock."""
         try:
+            from versioned_json_store import atomic_write_json
+
             data = {
                 "nodes": [n.to_dict() for n in self._nodes.values()],
                 "edges": [e.to_dict() for e in self._edges.values()],
                 "saved_at": time.time(),
             }
-            content = json.dumps(data, ensure_ascii=False, indent=2)
-
-            tmp_path = self._path.with_suffix(".tmp")
-            tmp_path.write_text(content, encoding="utf-8")
-            # Atomic rename (on Windows, need to remove target first)
-            if self._path.exists():
-                self._path.unlink()
-            tmp_path.rename(self._path)
+            atomic_write_json(self._path, data, indent=2)
 
             self._mutations_since_save = 0
         except Exception as e:
@@ -227,6 +222,35 @@ class MemoryGraph:
 
     # ── Core Operations ──────────────────────────
 
+    def _pop_edge_unlocked(self, key: tuple[str, str, str]) -> bool:
+        edge = self._edges.pop(key, None)
+        if edge is None:
+            return False
+        self._adjacency[edge.source].discard(key)
+        self._adjacency[edge.target].discard(key)
+        return True
+
+    def _pick_victim_node(self, excluded: set[str]) -> str | None:
+        for nid in self._nodes:
+            if nid not in excluded and (str(nid).startswith("anon") or not self._adjacency.get(nid)):
+                return nid
+        return next((nid for nid in self._nodes if nid not in excluded), None)
+
+    def _evict_if_needed(self, exclude_ids: set[str] | None = None) -> None:
+        """Keep total nodes + edges bounded at _MAX_ERASURE_ITEMS so purge_owner never hits scan-limit DoS."""
+        excluded = exclude_ids or set()
+        while len(self._nodes) + len(self._edges) >= self._MAX_ERASURE_ITEMS:
+            if self._edges:
+                victim_edge = min(self._edges, key=lambda k: self._edges[k].weight)
+                if self._pop_edge_unlocked(victim_edge):
+                    continue
+            victim_node = self._pick_victim_node(excluded)
+            if victim_node is None:
+                break
+            for key in list(self._adjacency.pop(victim_node, set())):
+                self._pop_edge_unlocked(key)
+            self._nodes.pop(victim_node, None)
+
     def add_node(self, id: str, type: str = "entity",
                  properties: dict | None = None) -> MemoryNode:
         """Add a node or update an existing one. Returns the node."""
@@ -237,6 +261,7 @@ class MemoryGraph:
                 if properties:
                     node.properties.update(properties)
             else:
+                self._evict_if_needed(exclude_ids={id})
                 props = dict(properties) if properties else {}
                 node = MemoryNode(id=id, type=type, properties=props)
                 self._nodes[id] = node
@@ -252,14 +277,17 @@ class MemoryGraph:
         with self._lock:
             # Ensure both nodes exist
             if source not in self._nodes:
+                self._evict_if_needed(exclude_ids={source, target})
                 self._nodes[source] = MemoryNode(id=source, type="entity")
             if target not in self._nodes:
+                self._evict_if_needed(exclude_ids={source, target})
                 self._nodes[target] = MemoryNode(id=target, type="entity")
 
             if key in self._edges:
                 edge = self._edges[key]
                 edge.reinforce(weight)
             else:
+                self._evict_if_needed(exclude_ids={source, target})
                 edge = MemoryEdge(source=source, target=target,
                                   relation=relation, weight=weight)
                 self._edges[key] = edge

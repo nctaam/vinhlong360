@@ -522,7 +522,7 @@ error_tracker = ErrorTracker()
 ADMIN_API_KEY = os.environ.get("ADMIN_API_KEY", "")
 # True chỉ khi key được sinh tạm ở DEV — server startup mới in giá trị cho dev xài.
 ADMIN_KEY_AUTOGEN = False
-_IS_PRODUCTION = os.environ.get("ENVIRONMENT", "development").strip().lower() == "production"
+_IS_PRODUCTION = os.environ.get("ENVIRONMENT", "development").strip().lower() in ("production", "prod", "prd")
 
 def _generate_default_key():
     """Generate a default admin key if not set in .env."""

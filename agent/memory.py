@@ -81,6 +81,17 @@ def _get_encryption_key() -> bytes:
     return _encryption_key
 
 
+def _assert_fernet_if_production() -> None:
+    try:
+        from config import settings as _cfg
+        if getattr(_cfg, "is_production", False):
+            raise RuntimeError("Fernet (cryptography) is required for ColdMemory encryption in production")
+    except RuntimeError:
+        raise
+    except Exception:
+        pass
+
+
 def _encrypt(plaintext: str) -> str:
     """Encrypt a string. Returns Fernet token or base64-encoded data."""
     key = _get_encryption_key()
@@ -89,6 +100,7 @@ def _encrypt(plaintext: str) -> str:
         f = _Fernet(key)
         return f.encrypt(data).decode("utf-8")
     else:
+        _assert_fernet_if_production()
         # Base64 obfuscation fallback (XOR with repeated key then b64)
         key_bytes = base64.urlsafe_b64decode(key)
         xored = bytes(b ^ key_bytes[i % len(key_bytes)] for i, b in enumerate(data))
@@ -102,6 +114,7 @@ def _decrypt(ciphertext: str) -> str:
         f = _Fernet(key)
         return f.decrypt(ciphertext.encode("utf-8")).decode("utf-8")
     else:
+        _assert_fernet_if_production()
         key_bytes = base64.urlsafe_b64decode(key)
         xored = base64.urlsafe_b64decode(ciphertext.encode("utf-8"))
         data = bytes(b ^ key_bytes[i % len(key_bytes)] for i, b in enumerate(xored))

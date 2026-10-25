@@ -14,13 +14,16 @@ import database  # noqa: E402
 import entity_details as _entity_details  # noqa: E402
 import freshness  # noqa: E402
 import guardrails  # noqa: E402
+import knowledge  # noqa: E402
 import memory  # noqa: E402
+import memory_graph  # noqa: E402
 import middleware  # noqa: E402
 import orchestrator  # noqa: E402
 import privacy_boundary  # noqa: E402
 import pytest  # noqa: E402
 import semantic_cache  # noqa: E402
 import seo  # noqa: E402
+import server  # noqa: E402
 import site_settings  # noqa: E402
 import twofactor  # noqa: E402
 import vector_search  # noqa: E402
@@ -180,6 +183,52 @@ def test_twofactor_app_secret_raises_in_production_without_secret(monkeypatch):
     monkeypatch.setattr(config.settings, "ADMIN_API_KEY", "")
     with pytest.raises(RuntimeError, match="TOTP encryption key missing in production"):
         twofactor._app_secret()
+
+
+def test_memory_graph_evicts_weakest_items_at_erasure_cap(tmp_path, monkeypatch):
+    g = memory_graph.MemoryGraph(graph_path=tmp_path / "graph.json", auto_save_every=999)
+    monkeypatch.setattr(g, "_MAX_ERASURE_ITEMS", 3)
+    g.add_node("anon_1", type="user")
+    g.add_node("e1", type="entity")
+    g.add_edge("anon_1", "e1", "discussed", weight=0.2)
+    assert len(g._nodes) + len(g._edges) == 3
+    g.add_node("e2", type="entity")
+    assert len(g._nodes) + len(g._edges) <= 3
+    assert "e2" in g._nodes
+
+
+def test_knowledge_refresh_dependent_caches_invalidates_seo_and_loads_autocorrect(monkeypatch):
+    import autocorrect as ac_mod
+
+    seo._db_snapshot = {"entities": [{"id": "stale"}]}
+    seo._db_snapshot_ts = 999999999.0
+    captured = {}
+    monkeypatch.setattr(ac_mod, "load_entity_names", lambda emap: captured.setdefault("emap", emap))
+    knowledge._refresh_dependent_caches({"e1": {"id": "e1", "name": "Chùa Tiên Châu", "type": "attraction"}})
+    assert seo._db_snapshot is None
+    assert "e1" in captured["emap"]
+
+
+def test_memory_encrypt_raises_in_production_without_fernet(monkeypatch):
+    monkeypatch.setattr(memory, "_HAS_FERNET", False)
+    monkeypatch.setattr(config.settings, "ENVIRONMENT", "production")
+    with pytest.raises(RuntimeError, match="Fernet"):
+        memory._encrypt("secret-profile")
+
+
+@pytest.mark.anyio
+async def test_server_limit_request_size_rejects_negative_content_length():
+    req = SimpleNamespace(
+        headers={"content-length": "-5"},
+        url=SimpleNamespace(path="/api/chat"),
+    )
+
+    async def _call_next(_r):
+        raise AssertionError("call_next must not run on negative Content-Length")
+
+    resp = await server.limit_request_size(req, _call_next)
+    assert resp.status_code == 400
+
 
 
 

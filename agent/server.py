@@ -444,8 +444,8 @@ async def lifespan(app):
             conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
             conn.close()
             logger.info("SQLite WAL checkpoint complete")
-        except Exception:
-            logger.debug("SQLite WAL checkpoint failed", exc_info=True)
+        except sqlite3.Error as exc:
+            logger.warning("SQLite WAL checkpoint failed: %s", exc, exc_info=True)
     logger.info("Shutdown complete")
     logger.flush()
 
@@ -453,7 +453,7 @@ async def lifespan(app):
 _server_start_time = time.time()
 
 # GĐ4.7: ẩn tài liệu API (docs/redoc/openapi) ở production để giảm lộ bề mặt nội bộ.
-_IS_PROD = os.environ.get("ENVIRONMENT", "development").strip().lower() == "production"
+_IS_PROD = os.environ.get("ENVIRONMENT", "development").strip().lower() in ("production", "prod", "prd")
 
 # ── Bóc chat (2026-08-27) ─────────────────────────────────────
 # `chat`/`chat_stream` + 106 ký hiệu phụ trợ đã sang `agent/chat/`; vùng dò
@@ -737,6 +737,8 @@ async def limit_request_size(request: Request, call_next):
         try:
             size = int(content_length)
         except ValueError:
+            return _error_response(400, "Invalid Content-Length header")
+        if size < 0:
             return _error_response(400, "Invalid Content-Length header")
         path = request.url.path
         limit = MAX_BODY_SIZE
@@ -1683,15 +1685,15 @@ hr { border: none; border-top: 1px solid #e6e0d4; margin: 12px 0; }
 <div class="chat-wrap">
   <div class="header">
     <h1>vinhlong<span>360</span> Knowledge Agent</h1>
-    <p class="subtitle">Chuyên gia AI về tỉnh Vĩnh Long — du lịch, văn hóa, lịch sử, ẩm thực</p>
+    <p class="subtitle">Sổ tay thực địa tỉnh Vĩnh Long — du lịch, văn hóa, lịch sử, ẩm thực (124 xã/phường)</p>
     <div class="stats-bar" id="statsBar"></div>
   </div>
   <div class="suggestions" id="initSuggestions">
     <button onclick="ask(this.textContent)">Tháng này nên đi đâu?</button>
     <button onclick="ask(this.textContent)">Đặc sản OCOP nổi bật?</button>
     <button onclick="ask(this.textContent)">Lập lịch trình 2 ngày ẩm thực</button>
-    <button onclick="ask(this.textContent)">Chùa Khmer ở Trà Vinh?</button>
-    <button onclick="ask(this.textContent)">So sánh Bến Tre và Trà Vinh</button>
+    <button onclick="ask(this.textContent)">Các ngôi chùa Khmer tiêu biểu?</button>
+    <button onclick="ask(this.textContent)">Khám phá làng gốm Mang Thít</button>
     <button onclick="ask(this.textContent)">Gần Cầu Mỹ Thuận có gì?</button>
   </div>
   <div class="messages" id="messages" role="log" aria-live="polite" aria-label="Lịch sử hội thoại"></div>
@@ -1728,7 +1730,7 @@ async function send(){
           if(data.type==='autocorrect'){
             const acDiv=document.createElement('div');
             acDiv.style.cssText='font-size:.82rem;color:#8a9a92;padding:4px 10px;margin-bottom:6px;background:#fef9f0;border-radius:8px;border:1px solid #f0e6d4;';
-            acDiv.innerHTML='\\u270E \\u0110\\u00e3 s\\u1eeda: <s>'+data.original+'</s> \\u2192 <b>'+data.corrected+'</b>';
+            acDiv.innerHTML='\\u0110\\u00e3 s\\u1eeda: <s>'+data.original+'</s> \\u2192 <b>'+data.corrected+'</b>';
             msgDiv.insertBefore(acDiv,contentDiv);
           }else if(data.type==='tool_start'){tools.push(data.name);
             if(!msgDiv.querySelector('.trace-panel')){const tp=document.createElement('div');tp.className='trace-panel';msgDiv.insertBefore(tp,contentDiv);}
@@ -1766,8 +1768,8 @@ function showSuggestions(items){const old=document.querySelector('.suggestions.d
 function showFeedback(msgDiv,receipt,submitFeedback){
   if(!receipt)return;
   const row=document.createElement('div');row.className='feedback-row';
-  const up=document.createElement('button');up.textContent='👍 Hữu ích';
-  const down=document.createElement('button');down.textContent='👎 Chưa tốt';
+  const up=document.createElement('button');up.textContent='Hữu ích';
+  const down=document.createElement('button');down.textContent='Chưa sát thực tế';
   up.onclick=()=>submitFeedback(1,up,down);
   down.onclick=()=>submitFeedback(0,down,up);
   row.appendChild(up);row.appendChild(down);msgDiv.appendChild(row);
@@ -1786,7 +1788,7 @@ async function sendFeedback(receipt,rating,selected,other){
     status.textContent='Chưa thể ghi nhận. Vui lòng thử lại.';
   }
 }
-function renderMd(t){let h=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function renderMd(t){let h=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   // Code blocks (``` ... ```)
   h=h.replace(/```(\\w*)\\n([\\s\\S]*?)```/g,function(m,lang,code){return '<pre class="code-block"><code>'+code.trim()+'</code></pre>';});
   // Inline code
@@ -1797,8 +1799,8 @@ function renderMd(t){let h=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(
   h=h.replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>');
   // Blockquotes
   h=h.replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>').replace(/<\\/blockquote>\\s*<blockquote>/g,'<br>');
-  // Links [text](url)
-  h=h.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  // Links [text](url) — restrict to safe http(s) or root-relative paths
+  h=h.replace(/\\[([^\\]]+)\\]\\((https?:\\/\\/[^\\s")]+|\\/[\\S^")]+)\\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
   // Tables
   h=h.replace(/^\\|(.+)\\|$/gm,function(m,row){
     var cells=row.split('|').map(function(c){return c.trim();});

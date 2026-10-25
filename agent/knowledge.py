@@ -135,6 +135,21 @@ def _ensure():
 _reload_lock = threading.Lock()
 
 
+def _refresh_dependent_caches(entities_map: dict | None = None) -> None:
+    """Invalidate SEO DB snapshot and refresh autocorrect entity names when knowledge updates."""
+    try:
+        import seo
+        seo.invalidate_db_snapshot()
+    except Exception:
+        pass
+    if entities_map is not None:
+        try:
+            import autocorrect
+            autocorrect.load_entity_names(entities_map)
+        except Exception:
+            pass
+
+
 def reload():
     """Hot-reload data từ DB (sau admin CRUD / auto-learn / migrate).
 
@@ -148,9 +163,35 @@ def reload():
         _entities, _relationships, _itineraries = new_e, new_r, new_i
         _adjacency = None                     # vô hiệu index kề -> dựng lại lazy theo rel mới
         _adj_src = None
+        _geo_buckets = None
+        _geo_buckets_key = None
         src = _data_source
+    _refresh_dependent_caches(new_e)
     return {"status": "ok", "entities": len(new_e),
             "itineraries": len(new_i), "source": src}
+
+
+def sync_entity(entity_id: str) -> None:
+    """Incrementally refresh or remove a single entity in _entities from DB."""
+    global _geo_buckets, _geo_buckets_key
+    if _entities is None:
+        return
+    try:
+        from database import db
+        eid = str(entity_id)
+        row = db.get_entity(eid)
+        with _reload_lock:
+            if _entities is None:
+                return
+            if row:
+                _entities[eid] = row
+            else:
+                _entities.pop(eid, None)
+            _geo_buckets = None
+            _geo_buckets_key = None
+        _refresh_dependent_caches()
+    except Exception:
+        logger.debug("Incremental sync_entity failed for %s", entity_id, exc_info=True)
 
 
 def _normalize_vn(text: str) -> str:
@@ -246,6 +287,78 @@ AREA_META = {
     "lien-vung": {"name": "Liên vùng", "emoji": "🧭"},
 }
 
+CURRENT_PROVINCE_SLUG = "vinh-long"
+CURRENT_ADMIN_LEVELS = frozenset({"xa", "phuong"})
+CURRENT_AREA_ALIASES = {
+    "vinh-long": CURRENT_PROVINCE_SLUG,
+    "ben-tre": CURRENT_PROVINCE_SLUG,
+    "tra-vinh": CURRENT_PROVINCE_SLUG,
+}
+
+
+def normalize_current_area(area: str | None) -> str | None:
+    """Normalize a current-scope selector while preserving provenance fields."""
+    if area is None:
+        return None
+    return CURRENT_AREA_ALIASES.get(str(area), str(area))
+
+
+def normalize_current_areas(areas: list[str] | None) -> list[str]:
+    """Normalize/dedupe a current-scope selector list in stable order."""
+    if not areas:
+        return [CURRENT_PROVINCE_SLUG]
+    return list(dict.fromkeys(normalize_current_area(area) for area in areas if area))
+
+
+def current_places() -> list[dict]:
+    """Return the 124 current administrative children of Vĩnh Long."""
+    _ensure()
+    return sorted(
+        [
+            entity
+            for entity in _entities.values()
+            if entity.get("type") == "place"
+            and entity.get("level") in CURRENT_ADMIN_LEVELS
+            and (
+                entity.get("parentId") == CURRENT_PROVINCE_SLUG
+                or entity.get("area") in {"vinh-long", "ben-tre", "tra-vinh"}
+            )
+        ],
+        key=lambda place: place.get("name", ""),
+    )
+
+
+def current_scope_matches(entity: dict) -> bool:
+    """Match content inside the current province, including legacy area buckets."""
+    _ensure()
+    if not isinstance(entity, dict):
+        return False
+    if (
+        entity.get("type") == "place"
+        and entity.get("level") in CURRENT_ADMIN_LEVELS
+        and (
+            entity.get("parentId") == CURRENT_PROVINCE_SLUG
+            or entity.get("area") in {"vinh-long", "ben-tre", "tra-vinh"}
+        )
+    ):
+        return True
+
+    place = get_place(entity.get("id", ""))
+    if place and (
+        place.get("level") in CURRENT_ADMIN_LEVELS
+        and (
+            place.get("parentId") == CURRENT_PROVINCE_SLUG
+            or place.get("area") in {"vinh-long", "ben-tre", "tra-vinh"}
+        )
+    ):
+        return True
+
+    attrs = entity.get("attributes") or {}
+    return (
+        entity.get("area") in {"vinh-long", "ben-tre", "tra-vinh"}
+        or attrs.get("province_old") in {"Vĩnh Long", "Bến Tre", "Trà Vinh"}
+    )
+
 
 def get_entity(entity_id: str) -> dict | None:
     _ensure()
@@ -278,6 +391,8 @@ def places(area: str = None) -> list[dict]:
 
 def _search_area_match(e: dict, area: str) -> bool:
     """GĐ: entity khớp bộ lọc area (qua places HOẶC province_old fallback)."""
+    if area == CURRENT_PROVINCE_SLUG:
+        return current_scope_matches(e)
     p = get_place(e["id"])
     # Primary: check via places data
     area_match = p and p.get("area") == area
@@ -293,6 +408,42 @@ def _search_area_match(e: dict, area: str) -> bool:
     return area_match
 
 
+_geo_buckets: tuple[dict[str, list[dict]], dict[str, list[dict]]] | None = None
+_geo_buckets_key: tuple[int, int] | None = None
+_geo_lock = threading.Lock()
+
+
+def _build_geo_buckets(entities: dict) -> tuple[dict[str, list[dict]], dict[str, list[dict]]]:
+    by_place: dict[str, list[dict]] = {}
+    by_area: dict[str, list[dict]] = {}
+    for ent in entities.values():
+        if ent.get("type") not in CARD_TYPES:
+            continue
+        pid = ent.get("placeId")
+        if not pid:
+            continue
+        by_place.setdefault(pid, []).append(ent)
+        pl = entities.get(pid) or {}
+        ar = pl.get("area")
+        if ar:
+            by_area.setdefault(ar, []).append(ent)
+    return by_place, by_area
+
+
+def _get_geo_buckets() -> tuple[dict[str, list[dict]], dict[str, list[dict]]]:
+    """Self-healing index (by_place, by_area) for CARD_TYPES entities."""
+    global _geo_buckets, _geo_buckets_key
+    entities = _entities or {}
+    cur_key = (id(_entities), len(entities))
+    if _geo_buckets is not None and _geo_buckets_key == cur_key:
+        return _geo_buckets
+    with _geo_lock:
+        if _geo_buckets is None or _geo_buckets_key != cur_key:
+            _geo_buckets = _build_geo_buckets(entities)
+            _geo_buckets_key = cur_key
+    return _geo_buckets
+
+
 def _search_q_match(e: dict, q: str) -> bool:
     """GĐ: entity khớp truy vấn text q (so cả bản gốc lẫn bản normalize dấu)."""
     ql = q.lower()
@@ -305,8 +456,9 @@ def _search_q_match(e: dict, q: str) -> bool:
         attrs.get("ward"), attrs.get("district"),
         attrs.get("province_old"), attrs.get("address"),
     ])).lower()
-    searchable_norm = _normalize_vn(searchable)
-    return ql in searchable or ql_norm in searchable_norm
+    if ql in searchable:
+        return True
+    return ql_norm in _normalize_vn(searchable)
 
 
 def _search_month_ok(e: dict, month: int) -> bool:
@@ -491,7 +643,17 @@ def list_itineraries(area: str = None) -> list[dict]:
     _ensure()
     out = list(_itineraries.values())
     if area:
-        out = [it for it in out if it.get("area") == area or area in (it.get("areas") or [])]
+        if area == CURRENT_PROVINCE_SLUG:
+            out = [
+                it for it in out
+                if normalize_current_area(it.get("area")) == CURRENT_PROVINCE_SLUG
+                or any(
+                    normalize_current_area(item) == CURRENT_PROVINCE_SLUG
+                    for item in (it.get("areas") or [])
+                )
+            ]
+        else:
+            out = [it for it in out if it.get("area") == area or area in (it.get("areas") or [])]
     return out
 
 
@@ -573,36 +735,29 @@ def _top_entities(area: str, limit: int = 5) -> list[dict]:
 
 
 def _nearby_same_place(nearby, entity_id, pid, limit):
-    """GĐ: gom entity cùng placeId (khối 1, tách nguyên văn — mutate nearby)."""
+    """GĐ: gom entity cùng placeId qua chỉ mục O(1) _get_geo_buckets."""
     if not pid:
         return
-    for other in _entities.values():
+    by_place, _ = _get_geo_buckets()
+    for other in by_place.get(pid, ()):
         if len(nearby) >= limit:
             break
         if other["id"] == entity_id:
             continue
-        if other["type"] not in CARD_TYPES:
-            continue
-        if other.get("placeId") == pid:
-            nearby.append({"id": other["id"], "name": other["name"], "type": other["type"],
-                           "summary": other.get("summary", "")[:80], "proximity": "cùng xã/phường"})
+        nearby.append({"id": other["id"], "name": other["name"], "type": other["type"],
+                       "summary": other.get("summary", "")[:80], "proximity": "cùng xã/phường"})
 
 
 def _nearby_same_area(nearby, entity_id, pid, area, limit):
-    """GĐ: gom entity cùng area (khối 2, tách nguyên văn — mutate nearby)."""
+    """GĐ: gom entity cùng area qua chỉ mục O(1) _get_geo_buckets."""
     if not (len(nearby) < limit and area):
         return
-    for other in _entities.values():
-        if other["id"] == entity_id:
+    _, by_area = _get_geo_buckets()
+    for other in by_area.get(area, ()):
+        if other["id"] == entity_id or other.get("placeId") == pid:
             continue
-        if other["type"] not in CARD_TYPES:
-            continue
-        if other.get("placeId") == pid:
-            continue  # Đã có
-        op = get_place(other["id"])
-        if op and op.get("area") == area:
-            nearby.append({"id": other["id"], "name": other["name"], "type": other["type"],
-                           "summary": other.get("summary", "")[:80], "proximity": "cùng khu vực"})
+        nearby.append({"id": other["id"], "name": other["name"], "type": other["type"],
+                       "summary": other.get("summary", "")[:80], "proximity": "cùng khu vực"})
         if len(nearby) >= limit:
             break
 
