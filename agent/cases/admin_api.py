@@ -127,7 +127,7 @@ def require_case_action(action: str):
 # that lasts fifteen minutes and dies with their login session.
 
 from dataclasses import dataclass  # noqa: E402
-from datetime import datetime, timedelta  # noqa: E402
+from datetime import datetime, timedelta, timezone  # noqa: E402
 
 STEP_UP_LIFETIME = timedelta(minutes=15)
 PRIVATE_EVIDENCE_SCOPE = "case.private_evidence"
@@ -167,7 +167,7 @@ class StepUpRefused(ValueError):
         self.status = status
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class StepUpGrant:
     case_id: str
     actor_ref: str
@@ -188,7 +188,9 @@ def grant_private_evidence_access(case_id: str, actor, *, now: datetime) -> Step
             "human_operator_required",
             "Reading a report needs a person, not a shared key.",
         )
-    secret = _crypto().issue_capability()
+    crypto = _crypto()
+    secret = crypto.issue_capability()
+    session_digest = crypto.digest_capability(secret)
     expires_at = now + STEP_UP_LIFETIME
     with _store().transaction() as transaction:
         # One live grant per person per case: re-authenticating replaces the old
@@ -196,7 +198,7 @@ def grant_private_evidence_access(case_id: str, actor, *, now: datetime) -> Step
         transaction.revoke_admin_access(case_id=case_id, actor_ref=actor_ref, now=now)
         transaction.grant_admin_access(
             case_id=case_id, actor_ref=actor_ref, scope=PRIVATE_EVIDENCE_SCOPE,
-            session_digest=_crypto().digest_capability(secret), expires_at=expires_at,
+            session_digest=session_digest, expires_at=expires_at,
         )
     return StepUpGrant(case_id=case_id, actor_ref=actor_ref, secret=secret,
                        expires_at=expires_at)
@@ -247,8 +249,6 @@ case_admin_router = APIRouter(prefix="/admin/cases", tags=["admin-cases"])
 
 
 def _now() -> datetime:
-    from datetime import timezone
-
     return datetime.now(timezone.utc)
 
 
@@ -533,7 +533,7 @@ async def rollback_change_set_route(request: Request, body: ChangeSetBody):
 # — including password, otp, recovery_code and secret — before validation reads a
 # value, so an authentication secret cannot arrive here even by accident.
 
-ASSISTED_CHANNELS = {Channel.PHONE.value, Channel.ZALO_HUMAN.value}
+ASSISTED_CHANNELS = frozenset({Channel.PHONE.value, Channel.ZALO_HUMAN.value})
 
 
 class AssistedItemBody(BaseModel):
@@ -596,7 +596,8 @@ async def create_assisted_correction(request: Request, body: AssistedCorrectionB
     from .domain import Channel as _Channel
     from .service import AssistedIntake, CorrectionItemInput
 
-    validate_assisted_intake(body, now=_now())
+    now = _now()
+    validate_assisted_intake(body, now=now)
     if _SERVICE is None:
         raise HTTPException(503, detail={"code": "case_service_unavailable",
                                          "detail": "Case intake is not configured."})
@@ -617,7 +618,7 @@ async def create_assisted_correction(request: Request, body: AssistedCorrectionB
                 privacy_notice_revision=body.privacy_notice_revision,
                 consent_scope=body.consent_scope,
                 consent_given_at=body.consent_given_at,
-                read_back_confirmed=all(item.read_back_confirmed for item in body.items),
+                read_back_confirmed=True,
                 reporter_confirmed=body.reporter_confirmed,
             ),
             channel=_Channel(body.channel),
@@ -627,7 +628,7 @@ async def create_assisted_correction(request: Request, body: AssistedCorrectionB
             rate_subject=actor.actor_ref,
             optional_phone=body.optional_phone,
             notification_consent=body.notification_consent,
-            now=_now(),
+            now=now,
         )
     except Exception as error:  # noqa: BLE001
         raise _fail(error) from error
@@ -723,43 +724,53 @@ class DecisionBody(BaseModel):
     reviewer_ref: StrictStr | None = Field(default=None, max_length=200)
 
 
-@case_admin_router.post("/decisions", dependencies=[_guard("item.decide")])
-async def decide_case_item(request: Request, body: DecisionBody):
+def _decide_case_item_sync(actor: ActorContext, body: DecisionBody, now: datetime):
     from .correction import DecideItemCommand, decide_item, load_evidence_records
     from .domain import CorrectionOutcome
     from .service import required_evidence_scope_for_field
 
-    try:
-        # Read the evidence back out of storage rather than trusting the caller
-        # to say what supported their own ruling — and the risk class likewise:
-        # a caller-supplied risk would let any decision be judged by R1's rules.
-        evidence = await asyncio.to_thread(load_evidence_records, body.case_id, body.item_id)
-        with _store().transaction() as transaction:
-            stored = {
-                item.item_id: item
+    # Read the evidence back out of storage rather than trusting the caller
+    # to say what supported their own ruling — and the risk class likewise:
+    # a caller-supplied risk would let any decision be judged by R1's rules.
+    evidence = load_evidence_records(body.case_id, body.item_id)
+    with _store().transaction() as transaction:
+        stored = next(
+            (
+                item
                 for item in transaction.load_correction_items(body.case_id)
-            }.get(body.item_id)
-        if stored is None:
-            raise StepUpRefused("correction_item_not_found",
-                                "That item is not on this case.", status=404)
-        outcome = await asyncio.to_thread(
-            decide_item,
-            DecideItemCommand(
-                case_id=body.case_id, item_id=body.item_id,
-                outcome_code=CorrectionOutcome(body.outcome_code),
-                reason_code=body.reason_code, evidence=evidence,
-                risk_class=stored.risk_class, actor=_actor(request),
-                reviewer_ref=body.reviewer_ref,
-                required_scope=required_evidence_scope_for_field(stored.field_path),
+                if item.item_id == body.item_id
             ),
-            now=_now(),
+            None,
         )
-    except Exception as error:  # noqa: BLE001
-        raise _fail(error) from error
+    if stored is None:
+        raise StepUpRefused("correction_item_not_found",
+                            "That item is not on this case.", status=404)
+    outcome = decide_item(
+        DecideItemCommand(
+            case_id=body.case_id, item_id=body.item_id,
+            outcome_code=CorrectionOutcome(body.outcome_code),
+            reason_code=body.reason_code, evidence=evidence,
+            risk_class=stored.risk_class, actor=actor,
+            reviewer_ref=body.reviewer_ref,
+            required_scope=required_evidence_scope_for_field(stored.field_path),
+        ),
+        now=now,
+    )
     from . import metrics as _metrics
 
     _metrics.observe("decided", channel="web", risk_class=str(stored.risk_class),
                      case_id=body.case_id)
+    return outcome
+
+
+@case_admin_router.post("/decisions", dependencies=[_guard("item.decide")])
+async def decide_case_item(request: Request, body: DecisionBody):
+    try:
+        outcome = await asyncio.to_thread(
+            _decide_case_item_sync, _actor(request), body, _now()
+        )
+    except Exception as error:  # noqa: BLE001
+        raise _fail(error) from error
     return {"item_id": outcome.item_id, "outcome_code": str(outcome.outcome_code),
             "reason_code": outcome.reason_code,
             "revision": outcome.revision,
@@ -793,19 +804,24 @@ def _resolve_change_set_evidence_refs(body: BuildChangeSetBody) -> tuple[str, ..
     )
 
 
-@case_admin_router.post("/change-sets", dependencies=[_guard("changeset.build")])
-async def build_case_change_set(request: Request, body: BuildChangeSetBody):
+def _build_case_change_set_sync(
+    actor: ActorContext, body: BuildChangeSetBody, now: datetime
+):
     from .correction import build_change_set
 
-    try:
-        def _build_sync():
-            evidence_refs = _resolve_change_set_evidence_refs(body)
-            return build_change_set(
-                body.case_id, tuple(body.item_ids), _actor(request), body.expected_revision,
-                evidence_refs=evidence_refs, now=_now(),
-            )
+    evidence_refs = _resolve_change_set_evidence_refs(body)
+    return build_change_set(
+        body.case_id, tuple(body.item_ids), actor, body.expected_revision,
+        evidence_refs=evidence_refs, now=now,
+    )
 
-        draft = await asyncio.to_thread(_build_sync)
+
+@case_admin_router.post("/change-sets", dependencies=[_guard("changeset.build")])
+async def build_case_change_set(request: Request, body: BuildChangeSetBody):
+    try:
+        draft = await asyncio.to_thread(
+            _build_case_change_set_sync, _actor(request), body, _now()
+        )
     except Exception as error:  # noqa: BLE001
         raise _fail(error) from error
     return {"case_id": draft.case_id, "entity_id": draft.entity_id,
@@ -823,7 +839,6 @@ class VerifyBody(BaseModel):
 
 @case_admin_router.post("/change-sets/verify", dependencies=[_guard("changeset.verify")])
 async def verify_case_projection(request: Request, body: VerifyBody):
-    import asyncio
     from .publication import VerifyProjectionCommand, verify_public_projection
 
     fetcher = _PROJECTION_FETCHER

@@ -13,11 +13,14 @@ Tính năng:
 """
 
 import logging
+import re
 import unicodedata
 from functools import lru_cache
 from threading import Lock
 
 logger = logging.getLogger(__name__)
+
+_COMBINING_MARKS_RE = re.compile(r"[\u0300-\u036f]")
 
 # ══════════════════════════════════════════════════
 #  VIETNAMESE NORMALIZATION
@@ -61,14 +64,11 @@ def normalize_vietnamese(text: str) -> str:
     """
     if not text:
         return ""
-    s = text.lower()
-    # Replace đ/Đ before NFD decomposition (đ does not decompose)
-    s = s.replace("đ", "d")
+    s = text.lower().replace("đ", "d")
     # NFD decomposes accented chars into base + combining marks
     s = unicodedata.normalize("NFD", s)
-    # Strip all combining marks (category M = Mark)
-    s = "".join(c for c in s if unicodedata.category(c)[0] != "M")
-    return s
+    # Strip all combining marks via C-engine regex
+    return _COMBINING_MARKS_RE.sub("", s)
 
 
 # ══════════════════════════════════════════════════
@@ -451,6 +451,38 @@ def load_entity_names(entities: dict):
         _ensure_entity_buckets()
 
 
+def _best_entity_in_buckets(
+    span: str,
+    max_distance: int,
+    best_dist: int,
+    best_name: str | None,
+) -> tuple[int, str | None]:
+    """Scan length-compatible entity buckets and update (best_dist, best_name)."""
+    exact = _entity_exact_map.get(span)
+    if exact is not None:
+        return 0, exact
+    span_len = len(span)
+    for target_len in range(max(1, span_len - max_distance), span_len + max_distance + 1):
+        for norm_name, orig_name in _entity_by_len.get(target_len, ()):
+            dist = _levenshtein(span, norm_name, max_distance=best_dist - 1)
+            if dist < best_dist:
+                best_dist = dist
+                best_name = orig_name
+                if dist == 0:
+                    return 0, best_name
+    return best_dist, best_name
+
+
+@lru_cache(maxsize=2048)
+def _fuzzy_match_entity_cached(
+    word: str, max_distance: int, _list_id: int | None, _list_len: int
+) -> str | None:
+    best_dist, best_name = _best_entity_in_buckets(
+        word, max_distance, max_distance + 1, None
+    )
+    return best_name if best_dist <= max_distance else None
+
+
 def _fuzzy_match_entity(word: str, max_distance: int = 2) -> str | None:
     """
     Find the closest entity name for a single word/phrase using Levenshtein.
@@ -470,24 +502,9 @@ def _fuzzy_match_entity(word: str, max_distance: int = 2) -> str | None:
         return None
 
     _ensure_entity_buckets()
-    exact = _entity_exact_map.get(word)
-    if exact is not None:
-        return exact
-
-    best_name = None
-    best_dist = max_distance + 1
-
-    word_len = len(word)
-    for target_len in range(max(1, word_len - max_distance), word_len + max_distance + 1):
-        for norm_name, orig_name in _entity_by_len.get(target_len, ()):
-            dist = _levenshtein(word, norm_name, max_distance=best_dist - 1)
-            if dist < best_dist:
-                best_dist = dist
-                best_name = orig_name
-                if dist == 0:
-                    return best_name
-
-    return best_name if best_dist <= max_distance else None
+    return _fuzzy_match_entity_cached(
+        word, max_distance, _entity_norm_list_id, _entity_norm_list_len
+    )
 
 
 def _fuzzy_match_words(text: str, max_distance: int = 2) -> str | None:
@@ -520,22 +537,11 @@ def _fuzzy_match_words(text: str, max_distance: int = 2) -> str | None:
     for window_size in range(max_window, 0, -1):
         for start in range(len(words) - window_size + 1):
             window_text = " ".join(words[start:start + window_size])
-            exact = _entity_exact_map.get(window_text)
-            if exact is not None:
-                return exact
-            window_len = len(window_text)
-            for target_len in range(
-                max(1, window_len - max_distance), window_len + max_distance + 1
-            ):
-                for norm_name, orig_name in _entity_by_len.get(target_len, ()):
-                    dist = _levenshtein(
-                        window_text, norm_name, max_distance=best_dist - 1
-                    )
-                    if dist < best_dist:
-                        best_dist = dist
-                        best_match = orig_name
-                        if dist == 0:
-                            return best_match
+            best_dist, best_match = _best_entity_in_buckets(
+                window_text, max_distance, best_dist, best_match
+            )
+            if best_dist == 0:
+                return best_match
 
     return best_match if best_dist <= max_distance else None
 

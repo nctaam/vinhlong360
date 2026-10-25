@@ -29,6 +29,8 @@ import logging
 import re
 import unicodedata
 from collections import deque
+from functools import lru_cache
+from threading import Lock
 from typing import Literal
 
 import knowledge
@@ -41,6 +43,14 @@ logger = logging.getLogger(__name__)
 # ══════════════════════════════════════════════════
 
 QueryComplexity = Literal["simple", "moderate", "complex"]
+
+_SIMPLE_INTENTS: frozenset[str] = frozenset({"entity_detail", "simple_fact"})
+_COMPLEX_INTENT_TOOLS: dict[str, tuple[str, ...]] = {
+    "comparison": ("compare_areas", "search", "search"),
+    "itinerary": ("seasonal_now", "generate_itinerary", "suggest_followups"),
+    "multi_hop": ("search", "entity_detail", "nearby_entities"),
+    "open_ended": ("search", "web_search", "suggest_followups"),
+}
 
 
 def classify_query(query: str) -> dict:
@@ -65,7 +75,7 @@ def classify_query(query: str) -> dict:
     # ── Classify complexity ──
 
     # SIMPLE: direct lookup, single entity/fact
-    if intent in ("entity_detail", "simple_fact") and entities:
+    if intent in _SIMPLE_INTENTS and entities:
         return {
             "complexity": "simple",
             "intent": intent,
@@ -75,21 +85,12 @@ def classify_query(query: str) -> dict:
         }
 
     # COMPLEX: comparison, itinerary planning, multi-hop, opinion
-    if intent in ("comparison", "itinerary", "multi_hop", "open_ended"):
-        tools = []
-        if intent == "comparison":
-            tools = ["compare_areas", "search", "search"]
-        elif intent == "itinerary":
-            tools = ["seasonal_now", "generate_itinerary", "suggest_followups"]
-        elif intent == "multi_hop":
-            tools = ["search", "entity_detail", "nearby_entities"]
-        else:
-            tools = ["search", "web_search", "suggest_followups"]
-
+    complex_tools = _COMPLEX_INTENT_TOOLS.get(intent)
+    if complex_tools is not None:
         return {
             "complexity": "complex",
             "intent": intent,
-            "suggested_tools": tools,
+            "suggested_tools": list(complex_tools),
             "entities_detected": entities,
             "areas_detected": areas,
         }
@@ -167,15 +168,14 @@ def evaluate_retrieval_relevance(query: str, results: list[dict]) -> dict:
 
     # Check keyword overlap between query and results
     q_words = set(_normalize(query).split())
+    top_results = results[:5]
     total_overlap = 0
 
-    for r in results[:5]:
-        r_text = _normalize(r.get("name", "") + " " + r.get("summary", ""))
-        r_words = set(r_text.split())
-        overlap = len(q_words & r_words)
-        total_overlap += overlap
+    for r in top_results:
+        r_text = _normalize(f"{r.get('name', '')} {r.get('summary', '')}")
+        total_overlap += len(q_words.intersection(r_text.split()))
 
-    avg_overlap = total_overlap / max(len(results[:5]), 1)
+    avg_overlap = total_overlap / max(len(top_results), 1)
 
     if avg_overlap >= 2:
         return {
@@ -199,14 +199,22 @@ def evaluate_retrieval_relevance(query: str, results: list[dict]) -> dict:
         }
 
 
+_REFORMULATE_PREFIX_RE = re.compile(
+    r"^(cho tôi biết|hãy|xin|vui lòng|bạn có thể)\s+", re.IGNORECASE
+)
+_TRAILING_QMARK_RE = re.compile(r"\?+$")
+_REFORMULATE_AREAS: tuple[str, ...] = ("vĩnh long", "bến tre", "trà vinh")
+
+
 def _reformulate_query(query: str) -> str:
     """Reformulate query để tìm kiếm lại."""
     # Remove question words
-    q = re.sub(r"^(cho tôi biết|hãy|xin|vui lòng|bạn có thể)\s+", "", query, flags=re.IGNORECASE)
-    q = re.sub(r"\?+$", "", q).strip()
+    q = _REFORMULATE_PREFIX_RE.sub("", query)
+    q = _TRAILING_QMARK_RE.sub("", q).strip()
 
     # Add location context if missing
-    if not any(a in q.lower() for a in ["vĩnh long", "bến tre", "trà vinh"]):
+    q_lower = q.lower()
+    if not any(a in q_lower for a in _REFORMULATE_AREAS):
         q += " Vĩnh Long"
 
     return q
@@ -383,6 +391,13 @@ def _format_cross_paths(graph_nodes: list[dict]) -> list[str]:
     return cross_paths
 
 
+_HOP_LABELS: dict[int, str] = {
+    1: "Liên quan trực tiếp",
+    2: "Liên quan gián tiếp (2 hops)",
+    3: "Liên quan xa (3 hops)",
+}
+
+
 def graph_context_prompt(entity_id: str) -> str:
     """
     Tạo context prompt từ graph expansion (lên tới 3 hops).
@@ -398,12 +413,11 @@ def graph_context_prompt(entity_id: str) -> str:
     lines = [f"[Graph context cho {root_name}]:"]
 
     # Group by hop
-    hop_labels = {1: "Liên quan trực tiếp", 2: "Liên quan gián tiếp (2 hops)", 3: "Liên quan xa (3 hops)"}
     for hop in range(1, 4):
         hop_nodes = [n for n in graph["nodes"] if n["hop"] == hop]
         if hop_nodes:
             items = ", ".join(f"{n['name']} ({n['type']})" for n in hop_nodes[:5])
-            lines.append(f"  {hop_labels.get(hop, f'Hop {hop}')}: {items}")
+            lines.append(f"  {_HOP_LABELS.get(hop, f'Hop {hop}')}: {items}")
 
     # Show cross-domain paths (nodes that cross entity types)
     cross_paths = _format_cross_paths(graph["nodes"])
@@ -414,7 +428,7 @@ def graph_context_prompt(entity_id: str) -> str:
             lines.append(f"    • {cp}")
 
     # Key edges
-    unique_labels = set(e["label"] for e in graph["edges"])
+    unique_labels = {e["label"] for e in graph["edges"]}
     if unique_labels:
         lines.append(f"  Quan hệ: {', '.join(unique_labels)}")
 
@@ -426,12 +440,14 @@ def _collect_neighbors(current: str) -> list[tuple[str, str]]:
     # Get neighbors via relationships
     rels = knowledge.related(current)
     neighbors: list[tuple[str, str]] = [(r["id"], r["label"]) for r in rels]
+    seen_ids: set[str] = {nb[0] for nb in neighbors}
 
     # Also get nearby entities
     nearby = knowledge.nearby_entities(current, limit=5)
     for n in nearby:
         nid = n["id"]
-        if nid not in {nb[0] for nb in neighbors}:
+        if nid not in seen_ids:
+            seen_ids.add(nid)
             neighbors.append((nid, n.get("proximity", "near")))
     return neighbors
 
@@ -445,6 +461,14 @@ def _should_explore_path(neighbor_id, new_path, visited_at_depth) -> bool:
         return False
     visited_at_depth[neighbor_id] = min(new_depth, prev_depth or new_depth)
     return True
+
+
+def _non_cycle_neighbors(
+    current: str, path: list[tuple[str, str]]
+) -> list[tuple[str, str]]:
+    """Trả về danh sách (neighbor_id, label) không nằm trong path hiện tại."""
+    path_ids = {p[0] for p in path}
+    return [nb for nb in _collect_neighbors(current) if nb[0] not in path_ids]
 
 
 def find_paths(entity_a: str, entity_b: str, max_hops: int = 4) -> list[list[tuple[str, str]]]:
@@ -470,19 +494,10 @@ def find_paths(entity_a: str, entity_b: str, max_hops: int = 4) -> list[list[tup
 
     while queue and len(found_paths) < 5:
         current, path = queue.popleft()
-        current_depth = len(path) - 1
-
-        if current_depth >= max_hops:
+        if len(path) - 1 >= max_hops:
             continue
 
-        neighbors = _collect_neighbors(current)
-
-        for neighbor_id, label in neighbors:
-            # Skip if we already visited this node at a shallower or equal depth
-            # (allow revisiting at deeper depth for finding alternative paths)
-            if neighbor_id in {p[0] for p in path}:
-                continue  # Avoid cycles within the same path
-
+        for neighbor_id, label in _non_cycle_neighbors(current, path):
             new_path = path + [(neighbor_id, label)]
 
             if neighbor_id == entity_b:
@@ -498,31 +513,31 @@ def find_paths(entity_a: str, entity_b: str, max_hops: int = 4) -> list[list[tup
 
 
 # Concept keyword map cho cross_domain_query (có dấu + không dấu).
-_CONCEPT_KEYWORDS: dict[str, list[str]] = {
-    "person": [
+_CONCEPT_KEYWORDS: dict[str, tuple[str, ...]] = {
+    "person": (
         "đầu bếp", "nghệ nhân", "người", "chủ", "bà", "ông", "anh", "chị",
         "dau bep", "nghe nhan", "nguoi", "chu",
-    ],
-    "dish": [
+    ),
+    "dish": (
         "món", "ẩm thực", "đặc sản", "nấu", "chế biến", "bánh", "bún",
         "mon", "am thuc", "dac san", "nau", "che bien", "banh", "bun",
-    ],
-    "attraction": [
+    ),
+    "attraction": (
         "nhà hàng", "quán", "homestay", "du lịch", "điểm", "nơi", "chỗ",
         "nha hang", "quan", "du lich", "diem", "noi", "cho",
-    ],
-    "product": [
+    ),
+    "product": (
         "sản phẩm", "trái cây", "hàng", "ocop",
         "san pham", "trai cay", "hang",
-    ],
-    "experience": [
+    ),
+    "experience": (
         "trải nghiệm", "tour", "tham quan", "hoạt động",
         "trai nghiem", "tham quan", "hoat dong",
-    ],
-    "craft_village": [
+    ),
+    "craft_village": (
         "làng nghề", "nghề", "thủ công",
         "lang nghe", "nghe", "thu cong",
-    ],
+    ),
 }
 
 
@@ -530,11 +545,13 @@ def _concept_entities(concept_type: str, matched_kw: list[str]) -> list[str]:
     """Tìm entity ids đại diện cho 1 concept: theo type + keyword search (khử trùng)."""
     # Find entities of this type
     entities = knowledge.search_entities(entity_type=concept_type, limit=10)
+    seen_ids: set[str] = {e["id"] for e in entities}
     # Also try keyword search
     for kw in matched_kw[:2]:
-        kw_results = knowledge.search_entities(q=kw, limit=5)
-        for r in kw_results:
-            if r["id"] not in {e["id"] for e in entities}:
+        for r in knowledge.search_entities(q=kw, limit=5):
+            rid = r["id"]
+            if rid not in seen_ids:
+                seen_ids.add(rid)
                 entities.append(r)
 
     return [e["id"] for e in entities[:8]]
@@ -735,32 +752,39 @@ def build_rag_context(query: str, session_context: str = "") -> str:
 # ══════════════════════════════════════════════════
 
 _DIACRITICS_RE = re.compile(r"[\u0300-\u036f]")
+_NORM_INDEX_LOCK = Lock()
 _NORM_ENTITY_INDEX_CACHE: tuple[
     tuple[int, int] | None, tuple[tuple[str, str, str], ...]
 ] = (None, ())
 
 
+@lru_cache(maxsize=2048)
 def _normalize(text: str) -> str:
     s = unicodedata.normalize("NFD", text.lower())
     s = _DIACRITICS_RE.sub("", s)
     return s.replace("đ", "d")
 
 
+def _is_searchable_entity(e: object) -> bool:
+    return isinstance(e, dict) and e.get("type") != "place" and bool(e.get("name"))
+
+
 def _normalized_entity_index() -> tuple[tuple[str, str, str], ...]:
     global _NORM_ENTITY_INDEX_CACHE
     raw = getattr(knowledge, "_entities", None) or {}
     cache_key = (id(raw), len(raw)) if len(raw) >= 32 else None
-    cached_key, cached_items = _NORM_ENTITY_INDEX_CACHE
-    if cache_key is not None and cached_key == cache_key:
-        return cached_items
-    items = tuple(
-        (eid, e["name"].lower(), _normalize(e["name"]))
-        for eid, e in raw.items()
-        if isinstance(e, dict) and e.get("type") != "place" and e.get("name")
-    )
-    if cache_key is not None:
-        _NORM_ENTITY_INDEX_CACHE = (cache_key, items)
-    return items
+    with _NORM_INDEX_LOCK:
+        cached_key, cached_items = _NORM_ENTITY_INDEX_CACHE
+        if cache_key is not None and cached_key == cache_key:
+            return cached_items
+        items = tuple(
+            (eid, e["name"].lower(), _normalize(e["name"]))
+            for eid, e in raw.items()
+            if _is_searchable_entity(e)
+        )
+        if cache_key is not None:
+            _NORM_ENTITY_INDEX_CACHE = (cache_key, items)
+        return items
 
 
 def _detect_entities(query: str) -> list[str]:
@@ -781,46 +805,53 @@ def _detect_entities(query: str) -> list[str]:
     return detected
 
 
+_AREA_KW: tuple[str, ...] = ("vĩnh long", "bến tre", "trà vinh")
+_AREA_KW_NORM: tuple[str, ...] = ("vinh long", "ben tre", "tra vinh")
+
+
 def _detect_areas(query: str) -> list[str]:
     """Map current and legacy province names to the single current scope."""
     q = query.lower()
     q_norm = _normalize(q)
-    province_mentions = (
-        "vĩnh long" in q
-        or "vinh long" in q_norm
-        or "bến tre" in q
-        or "ben tre" in q_norm
-        or "trà vinh" in q
-        or "tra vinh" in q_norm
-    )
-    return ["vinh-long"] if province_mentions else []
+    return ["vinh-long"] if _match_kw(q, q_norm, _AREA_KW, _AREA_KW_NORM) else []
 
 
 # Intent rules: (intent, có-dấu keywords, không-dấu keywords).
 # Thứ tự PHẢI giữ nguyên — trả về intent đầu tiên khớp (như chuỗi if cũ).
-_INTENT_RULES: list[tuple[str, list[str], list[str]]] = [
+_INTENT_RULES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
     ("comparison",
-     ["so sánh", "khác nhau", "hay hơn", "nên chọn"],
-     ["so sanh", "khac nhau", "hay hon", "nen chon"]),
+     ("so sánh", "khác nhau", "hay hơn", "nên chọn"),
+     ("so sanh", "khac nhau", "hay hon", "nen chon")),
     ("itinerary",
-     ["lịch trình", "đi đâu", "kế hoạch", "mấy ngày", "plan"],
-     ["lich trinh", "di dau", "ke hoach", "may ngay"]),
+     ("lịch trình", "đi đâu", "kế hoạch", "mấy ngày", "plan"),
+     ("lich trinh", "di dau", "ke hoach", "may ngay")),
     ("multi_hop",
-     ["gần", "quanh đây", "xung quanh", "kế bên"],
-     ["gan", "quanh day", "xung quanh", "ke ben"]),
+     ("gần", "quanh đây", "xung quanh", "kế bên"),
+     ("gan", "quanh day", "xung quanh", "ke ben")),
     ("entity_detail",
-     ["là gì", "chi tiết", "thông tin"],
-     ["la gi", "chi tiet", "thong tin"]),
+     ("là gì", "chi tiết", "thông tin"),
+     ("la gi", "chi tiet", "thong tin")),
     ("simple_fact",
-     ["mấy", "bao nhiêu", "khi nào", "ở đâu"],
-     ["may", "bao nhieu", "khi nao", "o dau"]),
+     ("mấy", "bao nhiêu", "khi nào", "ở đâu"),
+     ("may", "bao nhieu", "khi nao", "o dau")),
     ("open_ended",
-     ["tại sao", "vì sao", "như thế nào", "giải thích"],
-     ["tai sao", "vi sao", "nhu the nao", "giai thich"]),
-]
+     ("tại sao", "vì sao", "như thế nào", "giải thích"),
+     ("tai sao", "vi sao", "nhu the nao", "giai thich")),
+)
+
+_SEASONAL_KW: tuple[str, ...] = (
+    "mùa", "tháng", "bây giờ", "hiện tại", "hôm nay",
+    "nên đi", "thời điểm", "khi nào",
+)
+_SEASONAL_KW_NORM: tuple[str, ...] = (
+    "mua", "thang", "bay gio", "hien tai", "hom nay",
+    "nen di", "thoi diem", "khi nao",
+)
 
 
-def _match_kw(q: str, q_norm: str, kw: list[str], kw_norm: list[str]) -> bool:
+def _match_kw(
+    q: str, q_norm: str, kw: tuple[str, ...] | list[str], kw_norm: tuple[str, ...] | list[str]
+) -> bool:
     """True nếu q chứa 1 keyword có-dấu HOẶC q_norm chứa 1 keyword không-dấu."""
     return any(w in q for w in kw) or any(w in q_norm for w in kw_norm)
 
@@ -841,10 +872,4 @@ def _detect_intent(query: str) -> str:
 def _is_seasonal_query(query: str) -> bool:
     q = query.lower()
     q_norm = _normalize(q)
-    return any(w in q for w in [
-        "mùa", "tháng", "bây giờ", "hiện tại", "hôm nay",
-        "nên đi", "thời điểm", "khi nào",
-    ]) or any(w in q_norm for w in [
-        "mua", "thang", "bay gio", "hien tai", "hom nay",
-        "nen di", "thoi diem", "khi nao",
-    ])
+    return _match_kw(q, q_norm, _SEASONAL_KW, _SEASONAL_KW_NORM)

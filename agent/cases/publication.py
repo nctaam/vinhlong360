@@ -127,7 +127,7 @@ def _require_lease(transaction, case_id: str, actor, *, now: datetime) -> str:
 
 # ── Apply ──
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class ApplyChangeSetCommand:
     case_id: str
     change_set_id: str
@@ -136,7 +136,7 @@ class ApplyChangeSetCommand:
     expected_entity_revision: int
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class PublicationResult:
     change_set_id: str
     case_id: str
@@ -241,6 +241,8 @@ def apply_change_set(command: ApplyChangeSetCommand, *, now: datetime) -> Public
             raise _reject("entity_revision_moved", "That entry changed since the decision.")
 
         after_patch = dict(row["after_patch"] or {})
+        applied_fields = tuple(sorted(after_patch))
+        event_id = f"notify:{command.change_set_id}:applied"
         write = transaction.apply_entity_patch(
             entity_id,
             _entity_patch(after_patch, entity.values.get("attributes")),
@@ -274,11 +276,11 @@ def apply_change_set(command: ApplyChangeSetCommand, *, now: datetime) -> Public
         _write_audit_outbox(
             transaction, command, snapshot, updated, actor_ref,
             reason_code="change_set_applied",
-            event_id=f"notify:{command.change_set_id}:applied",
+            event_id=event_id,
             topic="correction.updated", now=now,
             descriptor={
                 "entity_revision": write.revision,
-                "applied_fields": list(sorted(after_patch)),
+                "applied_fields": list(applied_fields),
             },
         )
     from . import metrics as _metrics
@@ -291,9 +293,9 @@ def apply_change_set(command: ApplyChangeSetCommand, *, now: datetime) -> Public
         entity_id=entity_id,
         entity_revision=write.revision,
         state=PublicationState.APPLIED,
-        applied_fields=tuple(sorted(after_patch)),
+        applied_fields=applied_fields,
         revision=updated.current_revision,
-        outbox_event_id=f"notify:{command.change_set_id}:applied",
+        outbox_event_id=event_id,
     )
 
 
@@ -325,14 +327,14 @@ def _replay_apply(transaction, command, row: dict, snapshot) -> PublicationResul
 
 # ── Verification ──
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class VerifyProjectionCommand:
     case_id: str
     change_set_id: str
     actor: object
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class VerificationResult:
     change_set_id: str
     state: PublicationState
@@ -380,28 +382,37 @@ def _compare_projection(projection, entity_id: str, after_patch: dict,
     return tuple(mismatches)
 
 
-def _replay_verification_failure(transaction, command, snapshot, existing) -> VerificationResult:
-    event_id = f"notify:{command.change_set_id}:verification_failed"
-    payload, available_at = _validate_verification_failure_receipt(
-        command, existing, event_id,
-    )
-    raw_mismatches = _require_replay_text_sequence(
-        payload, "mismatched", event_id, require_nonempty=True,
-    )
+def _build_verification_failure_result(
+    command: VerifyProjectionCommand,
+    payload: dict,
+    mismatches: tuple[str, ...],
+    available_at: datetime,
+    event_id: str,
+) -> VerificationResult:
     return VerificationResult(
         change_set_id=command.change_set_id,
         state=PublicationState.APPLIED,
         verified=False,
-        mismatches=raw_mismatches,
+        mismatches=mismatches,
         next_update_at=available_at,
         revision=payload["revision"],
         outbox_event_id=event_id,
     )
 
 
+def _replay_verification_failure(transaction, command, snapshot, existing) -> VerificationResult:
+    event_id = f"notify:{command.change_set_id}:verification_failed"
+    payload, available_at, raw_mismatches = _validate_verification_failure_receipt(
+        command, existing, event_id,
+    )
+    return _build_verification_failure_result(
+        command, payload, raw_mismatches, available_at, event_id,
+    )
+
+
 def _validate_verification_failure_receipt(
     command: VerifyProjectionCommand, existing: dict | None, event_id: str,
-) -> tuple[dict, datetime]:
+) -> tuple[dict, datetime, tuple[str, ...]]:
     """Validate the committed failure before deciding whether recovery is due."""
     payload = _replay_payload(
         existing,
@@ -409,7 +420,7 @@ def _validate_verification_failure_receipt(
         required=("revision", "mismatched", "next_update_at"),
     )
     _require_replay_case(payload, command.case_id, event_id)
-    _require_replay_text_sequence(
+    mismatches = _require_replay_text_sequence(
         payload, "mismatched", event_id, require_nonempty=True,
     )
     retry_at = _verification_retry_at(existing)
@@ -418,7 +429,7 @@ def _validate_verification_failure_receipt(
             "publication_receipt_invalid",
             "The persisted verification failure has no recovery deadline.",
         )
-    return payload, retry_at
+    return payload, retry_at, mismatches
 
 
 def _verification_retry_at(existing: dict | None) -> datetime | None:
@@ -455,16 +466,18 @@ def _copy_replay_mapping(value, event_id: str, *, incomplete: bool = False) -> d
         )
 
 
+_REPLAY_REQUIRED_TEXT_KEYS = ("case_id", "generation", "correlation_id")
+_REPLAY_BASE_REQUIRED_KEYS = frozenset(("event_id", *_REPLAY_REQUIRED_TEXT_KEYS))
+
+
 def _validate_replay_payload(
     receipt: dict, payload: dict, event_id: str, required: tuple[str, ...],
 ) -> dict:
-    required_keys = (
-        "event_id", "case_id", "generation", "correlation_id", *required,
-    )
     if (
         type(receipt.get("idempotency_key")) is not str
         or receipt["idempotency_key"] != event_id
-        or any(key not in payload for key in required_keys)
+        or not _REPLAY_BASE_REQUIRED_KEYS.issubset(payload)
+        or not set(required).issubset(payload)
     ):
         raise _reject(
             "publication_receipt_invalid",
@@ -475,7 +488,7 @@ def _validate_replay_payload(
             "publication_receipt_invalid",
             f"The committed publication receipt {event_id} identifies another event.",
         )
-    for key in ("case_id", "generation", "correlation_id"):
+    for key in _REPLAY_REQUIRED_TEXT_KEYS:
         if type(payload[key]) is not str or not payload[key]:
             raise _reject(
                 "publication_receipt_invalid",
@@ -564,12 +577,12 @@ def _load_verification_failure(
     existing_failure = transaction.load_outbox_by_idempotency_key(failure_event_id)
     if existing_failure is None:
         return None, None, None
-    _, retry_at = _validate_verification_failure_receipt(
+    payload, retry_at, mismatches = _validate_verification_failure_receipt(
         command, existing_failure, failure_event_id,
     )
     if retry_at is None or now < retry_at:
-        replay = _replay_verification_failure(
-            transaction, command, snapshot, existing_failure,
+        replay = _build_verification_failure_result(
+            command, payload, mismatches, retry_at, failure_event_id,
         )
         return existing_failure, replay, retry_at
     return existing_failure, None, retry_at
@@ -612,13 +625,9 @@ def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
         mismatches = _compare_projection(projection, entity_id, after_patch, expected_revision)
 
         if mismatches:
-            if existing_failure is not None:
-                return _record_verification_failure(
-                    transaction, command, snapshot, actor_ref, mismatches,
-                    now=now, existing_failure=existing_failure,
-                )
             return _record_verification_failure(
-                transaction, command, snapshot, actor_ref, mismatches, now=now
+                transaction, command, snapshot, actor_ref, mismatches,
+                now=now, existing_failure=existing_failure,
             )
         return _record_verification_success(
             transaction, command, snapshot, actor_ref, now=now
@@ -720,7 +729,7 @@ def _record_verification_failure(transaction, command, snapshot, actor_ref: str,
 
 # ── Rollback ──
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class RollbackChangeSetCommand:
     case_id: str
     change_set_id: str
@@ -728,7 +737,7 @@ class RollbackChangeSetCommand:
     reason_code: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class RollbackResult:
     change_set_id: str
     entity_id: str

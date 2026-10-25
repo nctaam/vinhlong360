@@ -27,6 +27,7 @@ from entity_schemas import ENTITY_SCHEMAS, KIND_OF_TYPE, _coerce
 
 UNIVERSAL = ["address", "phone", "website", "hours", "price_range",
              "sub_category", "best_time", "highlight"]
+_UNIVERSAL_SET = frozenset(UNIVERSAL)
 KEY_MAP = {"view": "view_note", "architectural_style": "architecture_style"}
 KIND_TABLE = {
     "place": "entity_place_details",
@@ -40,12 +41,15 @@ KIND_TABLE = {
     "admin_place": "entity_adminplace_details",
 }
 DETAIL_TABLES = tuple(dict.fromkeys(KIND_TABLE.values()))
-INT_COLUMNS = {"founding_year", "scenic_rating", "review_count", "ocop_star",
-               "households", "star_rating", "rooms", "month", "duration_days",
-               "birth_year", "death_year", "population"}
-JSONB_COLUMNS = {"ingredients", "amenities", "merged_from"}
-NUMERIC_COLUMNS = {"rating"}
-BOOL_COLUMNS = {"parking", "wifi", "ocop_certified"}
+INT_COLUMNS = frozenset({
+    "founding_year", "scenic_rating", "review_count", "ocop_star",
+    "households", "star_rating", "rooms", "month", "duration_days",
+    "birth_year", "death_year", "population",
+})
+JSONB_COLUMNS = frozenset({"ingredients", "amenities", "merged_from"})
+NUMERIC_COLUMNS = frozenset({"rating"})
+BOOL_COLUMNS = frozenset({"parking", "wifi", "ocop_certified"})
+_EMPTY_VALUES = (None, "", [], {})
 
 
 def _kind_columns() -> dict[str, list[str]]:
@@ -57,13 +61,15 @@ def _kind_columns() -> dict[str, list[str]]:
             continue
         for f in schema["fields"]:
             key = f["key"]
-            if key in UNIVERSAL:
+            if key in _UNIVERSAL_SET:
                 continue
             out[kind].add(KEY_MAP.get(key, key))
     return {k: sorted(v) for k, v in out.items()}
 
 
 KIND_COLUMNS: dict[str, list[str]] = _kind_columns()
+_UNIVERSAL_SET_PG = ", ".join(f"{c} = %s" for c in UNIVERSAL)
+_UNIVERSAL_SET_SQLITE = ", ".join(f"{c} = ?" for c in UNIVERSAL)
 
 
 def _coerce_int_column(coerced: Any) -> tuple[Any, bool]:
@@ -99,12 +105,12 @@ def _split_typed_field(f: dict, attrs: dict) -> tuple[str | None, str | None, An
     if key not in attrs:
         return None, None, None, None
     raw = attrs[key]
-    if raw in (None, "", [], {}):
+    if raw in _EMPTY_VALUES:
         return None, None, None, None
     coerced, ok = _coerce(raw, f["widget"])
-    if not ok or coerced in (None, "", [], {}):
+    if not ok or coerced in _EMPTY_VALUES:
         return None, None, None, f"{key}={raw!r}"
-    if key in UNIVERSAL:
+    if key in _UNIVERSAL_SET:
         return "uni", key, coerced if isinstance(coerced, str) else str(coerced), None
     col = KEY_MAP.get(key, key)
     if col in INT_COLUMNS:
@@ -164,30 +170,9 @@ def _db_value(col: str, value: Any, is_pg: bool):
     return value
 
 
-def sync_entity_details(conn, is_pg: bool, entity_id: str, etype: str,
-                        attrs: dict | None) -> DetailCacheMutation:
-    """Dual-write: phản chiếu typed attributes vào cột phổ quát + bảng CTI.
-
-    Ghi-là-chính (mirror, KHÔNG COALESCE): cột = giá trị mới hoặc NULL — đảm bảo
-    bất biến parity sau mọi lần ghi. Chạy trên CHÍNH connection/transaction của
-    caller (upsert_entity/_bulk_load) — nguyên tử cùng lần ghi entity.
-    """
-    uni, det, _skipped = split_typed(etype, attrs)
-    ph = "%s" if is_pg else "?"
-
-    # 1) 8 cột phổ quát trên entities — luôn set đủ 8 (giá trị hoặc NULL).
-    sets = ", ".join(f"{c} = {ph}" for c in UNIVERSAL)
-    _exec(conn, is_pg, f"UPDATE entities SET {sets} WHERE id = {ph}",
-          [uni.get(c) for c in UNIVERSAL] + [entity_id])
-
-    # 2) Bảng CTI của kind (nếu có).
-    kind = KIND_OF_TYPE.get(etype)
-    table = KIND_TABLE.get(kind or "")
-    for stale_table in DETAIL_TABLES:
-        if stale_table != table:
-            _exec(conn, is_pg,
-                  f"DELETE FROM {stale_table} WHERE entity_id = {ph}",
-                  [entity_id])
+def _sync_cti_detail_row(
+    conn, is_pg: bool, ph: str, entity_id: str, kind: str | None, table: str | None, det: dict
+) -> DetailCacheMutation:
     if not table:
         return DetailCacheMutation.from_detail(entity_id, None)
     cols = KIND_COLUMNS[kind]
@@ -205,6 +190,33 @@ def sync_entity_details(conn, is_pg: bool, entity_id: str, etype: str,
         sql = f"INSERT OR REPLACE INTO {table} (entity_id, {collist}) VALUES ({phs})"
     _exec(conn, is_pg, sql, [entity_id, *values])
     return DetailCacheMutation.from_detail(entity_id, det)
+
+
+def sync_entity_details(conn, is_pg: bool, entity_id: str, etype: str,
+                        attrs: dict | None) -> DetailCacheMutation:
+    """Dual-write: phản chiếu typed attributes vào cột phổ quát + bảng CTI.
+
+    Ghi-là-chính (mirror, KHÔNG COALESCE): cột = giá trị mới hoặc NULL — đảm bảo
+    bất biến parity sau mọi lần ghi. Chạy trên CHÍNH connection/transaction của
+    caller (upsert_entity/_bulk_load) — nguyên tử cùng lần ghi entity.
+    """
+    uni, det, _skipped = split_typed(etype, attrs)
+    ph = "%s" if is_pg else "?"
+
+    # 1) 8 cột phổ quát trên entities — luôn set đủ 8 (giá trị hoặc NULL).
+    sets = _UNIVERSAL_SET_PG if is_pg else _UNIVERSAL_SET_SQLITE
+    _exec(conn, is_pg, f"UPDATE entities SET {sets} WHERE id = {ph}",
+          [uni.get(c) for c in UNIVERSAL] + [entity_id])
+
+    # 2) Bảng CTI của kind (nếu có).
+    kind = KIND_OF_TYPE.get(etype)
+    table = KIND_TABLE.get(kind or "")
+    for stale_table in DETAIL_TABLES:
+        if stale_table != table:
+            _exec(conn, is_pg,
+                  f"DELETE FROM {stale_table} WHERE entity_id = {ph}",
+                  [entity_id])
+    return _sync_cti_detail_row(conn, is_pg, ph, entity_id, kind, table, det)
 
 
 def delete_entity_details(conn, is_pg: bool, entity_id: str) -> DetailCacheMutation:
@@ -277,7 +289,7 @@ def detail_cache_write_scope():
         yield
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class DetailCacheMutation:
     entity_id: str
     detail_items: tuple[tuple[str, Any], ...] | None
@@ -304,9 +316,13 @@ def apply_detail_cache_mutations(
         _DETAIL_CACHE = updated
 
 
-_SCHEMA_KEYS: dict[str, list[str]] = {
-    etype: [f["key"] for f in schema["fields"]]
+_SCHEMA_KEYS: dict[str, tuple[str, ...]] = {
+    etype: tuple(f["key"] for f in schema["fields"])
     for etype, schema in ENTITY_SCHEMAS.items()
+}
+_SCHEMA_KEY_SETS: dict[str, frozenset[str]] = {
+    etype: frozenset(keys)
+    for etype, keys in _SCHEMA_KEYS.items()
 }
 
 
@@ -414,11 +430,11 @@ def rebuild_attributes(etype: str, attrs: Any, entity_row: dict) -> Any:
     detail = (_DETAIL_CACHE or {}).get(entity_row.get("id") or "", {})
 
     def col_value(key: str) -> Any:
-        if key in UNIVERSAL:
+        if key in _UNIVERSAL_SET:
             return entity_row.get(key)
         return detail.get(KEY_MAP.get(key, key))
 
-    key_set = set(schema_keys)
+    key_set = _SCHEMA_KEY_SETS[etype]
     out: dict = {}
     for k, v in attrs.items():
         if k in key_set:

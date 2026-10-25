@@ -23,6 +23,9 @@ import hashlib
 import hmac
 import json
 import logging
+import re as _re
+import unicodedata as _ud
+from functools import lru_cache
 from pathlib import Path
 
 from versioned_json_store import compare_and_swap_json, load_json, load_json_versioned, mutate_json
@@ -100,10 +103,7 @@ def _is_provisional(e: dict) -> bool:
 
 
 def _review_snapshot(entity: dict) -> dict:
-    snapshot = copy.deepcopy(entity)
-    snapshot.pop("status", None)
-    snapshot.pop("verified", None)
-    return snapshot
+    return {k: v for k, v in entity.items() if k not in ("status", "verified")}
 
 
 def _review_token(snapshot: dict) -> str:
@@ -179,37 +179,37 @@ def list_provisional() -> list:
 def promote(entity_id: str, review_token: str) -> dict:
     """Promote a provisional entity to verified (trusted)."""
     kb, version = load_json_versioned(DATA_JSON)
-    for e in kb["entities"]:
-        if e["id"] == entity_id:
-            if not _is_provisional(e):
-                return {"ok": False, "error": "already verified"}
-            current_token = _review_token(_review_snapshot(e))
-            if not isinstance(review_token, str) or not hmac.compare_digest(current_token, review_token):
-                return {"ok": False, "error": "stale_review"}
-            before = copy.deepcopy(e)
-            e["status"] = "verified"
-            e["verified"] = True
-            promoted = copy.deepcopy(e)
-            if not compare_and_swap_json(DATA_JSON, version, kb):
-                return {"ok": False, "error": "stale_review"}
-            _PROVISIONAL_AUDIT_CONTEXT[entity_id] = ("admin", "provisional_approve")
-            try:
-                db_result = _db_upsert(promoted)
-                if db_result is False:
-                    raise RuntimeError("db_write_failed")
-            except Exception:
-                rolled_back = _rollback_promotion(entity_id, before, promoted)
-                return {"ok": False, "error": "db_write_failed"} if rolled_back else {
-                    "ok": False, "error": "db_write_failed", "degraded": True,
-                    "reconciliation_required": [entity_id],
-                }
-            if isinstance(db_result, dict) and db_result.get("committed"):
-                _reload()
-                return {"ok": False, "error": "db_write_failed", "degraded": True,
-                        "reconciliation_required": True}
-            _reload()
-            return {"ok": True, "id": entity_id, "status": "verified"}
-    return {"ok": False, "error": "not found"}
+    e = next((item for item in kb["entities"] if item["id"] == entity_id), None)
+    if e is None:
+        return {"ok": False, "error": "not found"}
+    if not _is_provisional(e):
+        return {"ok": False, "error": "already verified"}
+    current_token = _review_token(_review_snapshot(e))
+    if not isinstance(review_token, str) or not hmac.compare_digest(current_token, review_token):
+        return {"ok": False, "error": "stale_review"}
+    before = copy.deepcopy(e)
+    e["status"] = "verified"
+    e["verified"] = True
+    promoted = copy.deepcopy(e)
+    if not compare_and_swap_json(DATA_JSON, version, kb):
+        return {"ok": False, "error": "stale_review"}
+    _PROVISIONAL_AUDIT_CONTEXT[entity_id] = ("admin", "provisional_approve")
+    try:
+        db_result = _db_upsert(promoted)
+        if db_result is False:
+            raise RuntimeError("db_write_failed")
+    except Exception:
+        rolled_back = _rollback_promotion(entity_id, before, promoted)
+        return {"ok": False, "error": "db_write_failed"} if rolled_back else {
+            "ok": False, "error": "db_write_failed", "degraded": True,
+            "reconciliation_required": [entity_id],
+        }
+    if isinstance(db_result, dict) and db_result.get("committed"):
+        _reload()
+        return {"ok": False, "error": "db_write_failed", "degraded": True,
+                "reconciliation_required": True}
+    _reload()
+    return {"ok": True, "id": entity_id, "status": "verified"}
 
 
 def _prepare_rejection(kb: dict, entity_id: str) -> dict:
@@ -276,9 +276,6 @@ def reject(entity_id: str) -> dict:
     return result
 
 
-import re as _re
-import unicodedata as _ud
-
 _DEDUP_STOP = frozenset({
     "khu", "diem", "du", "lich", "quan", "nha", "vuon", "co", "cua",
     "vinh", "long", "ben", "tre", "tra", "the", "va", "tham",
@@ -288,11 +285,19 @@ _DEDUP_STOP = frozenset({
     "con", "dinh", "chua", "den", "mieu", "bao", "tang", "cang",
 })
 
+_COMBINING_MARKS_RE = _re.compile(r"[\u0300-\u036f]")
+_NON_ALNUM_RE = _re.compile(r"[^a-z0-9]+")
+
+
+@lru_cache(maxsize=4096)
+def _cached_name_tokens(name: str) -> frozenset[str]:
+    s = _ud.normalize("NFD", (name or "").lower())
+    s = _COMBINING_MARKS_RE.sub("", s).replace("đ", "d")
+    return frozenset(t for t in _NON_ALNUM_RE.split(s) if len(t) >= 3 and t not in _DEDUP_STOP)
+
 
 def _name_tokens(name: str) -> set:
-    s = _ud.normalize("NFD", (name or "").lower())
-    s = _re.sub(r"[̀-ͯ]", "", s).replace("đ", "d")
-    return {t for t in _re.split(r"[^a-z0-9]+", s) if len(t) >= 3 and t not in _DEDUP_STOP}
+    return set(_cached_name_tokens(name or ""))
 
 
 # Site-like types: the same physical place is often labeled differently
@@ -300,27 +305,28 @@ def _name_tokens(name: str) -> set:
 _SITE_TYPES = frozenset({"history", "attraction", "nature"})
 
 
+@lru_cache(maxsize=4096)
 def _full_norm_name(name: str) -> str:
     s = _ud.normalize("NFD", (name or "").lower())
-    s = _re.sub(r"[̀-ͯ]", "", s).replace("đ", "d")
-    return _re.sub(r"[^a-z0-9]+", " ", s).strip()
+    s = _COMBINING_MARKS_RE.sub("", s).replace("đ", "d")
+    return _NON_ALNUM_RE.sub(" ", s).strip()
 
 
 # Sentinel distinguishing "no match" from "matched entity whose id is falsy".
 _NO_DUP = object()
 
 
-def _same_type_dup_id(cand_tokens: set, e: dict):
+def _same_type_dup_id(cand_tokens: set | frozenset, e: dict):
     """Same-type near-duplicate check for one entity.
 
     Returns the entity id on match (mirrors ``e.get("id")`` verbatim), else
     the ``_NO_DUP`` sentinel (candidate looks distinct vs this entity).
     """
-    ex_tokens = _name_tokens(e.get("name", ""))
+    ex_tokens = _cached_name_tokens(e.get("name", ""))
     if not ex_tokens:
         return _NO_DUP
     overlap = cand_tokens & ex_tokens
-    if len(overlap) >= 2 or (overlap and overlap == min(cand_tokens, ex_tokens, key=len)):
+    if len(overlap) >= 2 or (overlap and len(overlap) == min(len(cand_tokens), len(ex_tokens))):
         return e.get("id")
     return _NO_DUP
 
@@ -391,12 +397,14 @@ def _promotion_pairs(provisional: list[dict], hits: dict, min_hits: int):
 
 def _apply_promotions(kb: dict, promoted_pairs, candidates: int) -> tuple[bool, dict]:
     entities = kb.get("entities", [])
-    locations = {str(entity.get("id")): entity for entity in entities}
-    if any(locations.get(str(original.get("id"))) != original for original, _ in promoted_pairs):
-        return False, {"candidates": candidates, "promoted": [], "error": "stale_review"}
+    index_by_id = {str(entity.get("id")): (i, entity) for i, entity in enumerate(entities)}
+    for original, _ in promoted_pairs:
+        entry = index_by_id.get(str(original.get("id")))
+        if entry is None or entry[1] != original:
+            return False, {"candidates": candidates, "promoted": [], "error": "stale_review"}
     for original, promoted in promoted_pairs:
-        index = next(i for i, entity in enumerate(entities) if entity.get("id") == original.get("id"))
-        entities[index] = copy.deepcopy(promoted)
+        idx = index_by_id[str(original.get("id"))][0]
+        entities[idx] = copy.deepcopy(promoted)
     return bool(promoted_pairs), {
         "candidates": candidates,
         "promoted": [e["id"] for _, e in promoted_pairs],
@@ -463,9 +471,13 @@ def auto_promote_pass(min_hits: int = 3, dry_run: bool = False) -> dict:
     """
     hits = _entity_hits()
     source = _load_kb()
-    provisional = [copy.deepcopy(e) for e in source.get("entities", []) if _is_provisional(e)]
+    provisional = [e for e in source.get("entities", []) if _is_provisional(e)]
     candidates = len(provisional)
-    promoted_pairs = _promotion_pairs(provisional, hits, min_hits)
+    promoted_pairs = [
+        (copy.deepcopy(original), {**copy.deepcopy(original), "status": "verified", "verified": True})
+        for original in provisional
+        if hits.get(original.get("id"), 0) >= min_hits
+    ]
     if dry_run:
         return {"candidates": candidates, "promoted": [e["id"] for _, e in promoted_pairs]}
 
@@ -485,10 +497,10 @@ def auto_promote_pass(min_hits: int = 3, dry_run: bool = False) -> dict:
 
 def stats() -> dict:
     kb = _load_kb()
-    provisional = [e for e in kb.get("entities", []) if _is_provisional(e)]
+    entities = kb.get("entities", [])
     return {
-        "provisional_count": len(provisional),
-        "total_entities": len(kb.get("entities", [])),
+        "provisional_count": sum(1 for e in entities if _is_provisional(e)),
+        "total_entities": len(entities),
     }
 
 

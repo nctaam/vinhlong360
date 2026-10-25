@@ -7,8 +7,28 @@ export const COMMON_PASSWORDS = new Set([
   'sunshine', 'princess', 'football', 'shadow', 'superman', 'michael',
 ])
 
+const RE_INTERNAL_UA = /(?:python|urllib|httpx|aiohttp|curl|wget|healthcheck|uptime|node|undici|node-fetch)/i
+const RE_LOWER = /[a-z]/
+const RE_UPPER = /[A-Z]/
+const RE_DIGIT = /\d/
+const RE_NON_ALNUM = /[^a-zA-Z0-9]/
+
+const PW_STRENGTH_EMPTY = Object.freeze({ score: 0, label: '', color: '' })
+const PW_STRENGTH_COMMON = Object.freeze({ score: 1, label: 'Rất yếu', color: 'var(--error)' })
+const PW_STRENGTH_BY_LEVEL = Object.freeze([
+  PW_STRENGTH_EMPTY,
+  Object.freeze({ score: 1, label: 'Yếu', color: 'var(--error)' }),
+  Object.freeze({ score: 2, label: 'Trung bình', color: 'var(--warning)' }),
+  Object.freeze({ score: 3, label: 'Mạnh', color: 'var(--success)' }),
+  Object.freeze({ score: 4, label: 'Rất mạnh', color: 'var(--color-brand)' }),
+])
+
+function isAbortError(err: unknown): boolean {
+  return Boolean(err && typeof err === 'object' && ((err as any).name === 'AbortError' || (err as any).cause?.name === 'AbortError'))
+}
+
 export function isInternalUA(ua: string): boolean {
-  return /(python|urllib|httpx|aiohttp|curl|wget|healthcheck|uptime|node|undici|node-fetch)/i.test(ua || '')
+  return Boolean(ua) && RE_INTERNAL_UA.test(ua)
 }
 
 export function shortUA(ua: string): string {
@@ -56,25 +76,24 @@ export function useSettingsSecurity(options: UseSettingsSecurityOptions = {}) {
 
   const pwStrength = computed(() => {
     const pw = newPw.value
-    if (!pw) return { score: 0, label: '', color: '' }
-    if (COMMON_PASSWORDS.has(pw.toLowerCase())) return { score: 1, label: 'Rất yếu', color: 'var(--error)' }
+    if (!pw) return PW_STRENGTH_EMPTY
+    if (COMMON_PASSWORDS.has(pw.toLowerCase())) return PW_STRENGTH_COMMON
     let score = 0
     if (pw.length >= 8) score++
     if (pw.length >= 12) score++
     if (pw.length >= 16) score++
-    if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++
-    if (/\d/.test(pw)) score++
-    if (/[^a-zA-Z0-9]/.test(pw)) score++
+    if (RE_LOWER.test(pw) && RE_UPPER.test(pw)) score++
+    if (RE_DIGIT.test(pw)) score++
+    if (RE_NON_ALNUM.test(pw)) score++
     const level = score <= 2 ? 1 : score <= 3 ? 2 : score <= 4 ? 3 : 4
-    const labels = ['', 'Yếu', 'Trung bình', 'Mạnh', 'Rất mạnh']
-    const colors = ['', 'var(--error)', 'var(--warning)', 'var(--success)', 'var(--color-brand)']
-    return { score: level, label: labels[level], color: colors[level] }
+    return PW_STRENGTH_BY_LEVEL[level]!
   })
 
   const hasPassword = computed(() => user.value?.has_password === true)
   const hasPasswordKnown = computed(() => typeof user.value?.has_password === 'boolean')
 
   async function savePassword() {
+    if (savingPw.value) return
     if (hasPassword.value && !currentPw.value) {
       showToast('Vui lòng nhập mật khẩu hiện tại', 'error')
       return
@@ -109,12 +128,21 @@ export function useSettingsSecurity(options: UseSettingsSecurityOptions = {}) {
   const sessions = ref<any[]>([])
   const sessionsLoading = ref(true)
   const hiddenSystemSessions = ref(0)
+  let sessionsAbort: AbortController | null = null
+  const revokingSessionIds = new Set<string>()
 
   async function loadSessions() {
+    sessionsAbort?.abort()
+    const controller = new AbortController()
+    sessionsAbort = controller
     sessionsLoading.value = true
     try {
-      const res = await $fetch<{ sessions: any[]; hidden_internal_count?: number }>('/auth/sessions', { headers: authHeaders() })
-      const visible = []
+      const res = await $fetch<{ sessions: any[]; hidden_internal_count?: number }>('/auth/sessions', {
+        headers: authHeaders(),
+        signal: controller.signal,
+      })
+      if (sessionsAbort !== controller) return
+      const visible: any[] = []
       let hidden = Number(res.hidden_internal_count || 0)
       for (const session of res.sessions || []) {
         if (!session.is_current && isInternalUA(session.user_agent)) hidden += 1
@@ -122,32 +150,56 @@ export function useSettingsSecurity(options: UseSettingsSecurityOptions = {}) {
       }
       sessions.value = visible
       hiddenSystemSessions.value = hidden
-    } catch { /* ignore */ }
-    sessionsLoading.value = false
+    } catch (e: unknown) {
+      if (isAbortError(e)) return
+    } finally {
+      if (sessionsAbort === controller) {
+        sessionsLoading.value = false
+        sessionsAbort = null
+      }
+    }
   }
 
   async function revokeSession(id: string) {
+    if (!id || revokingSessionIds.has(id)) return
+    revokingSessionIds.add(id)
     try {
-      await $fetch(`/auth/sessions/${id}`, { method: 'DELETE', headers: authHeaders() })
+      await $fetch(`/auth/sessions/${encodeURIComponent(id)}`, { method: 'DELETE', headers: authHeaders() })
       sessions.value = sessions.value.filter(s => s.id !== id)
       showToast('Đã thu hồi phiên', 'success')
     } catch (e: unknown) {
       if (getStatusCode(e) === 401) { handleSessionExpired(); return }
       showToast('Không thể thu hồi phiên', 'error')
+    } finally {
+      revokingSessionIds.delete(id)
     }
   }
 
   // ── Login History ──
   const loginHistory = ref<any[]>([])
   const loginHistoryLoading = ref(true)
+  let loginHistoryAbort: AbortController | null = null
 
   async function loadLoginHistory() {
+    loginHistoryAbort?.abort()
+    const controller = new AbortController()
+    loginHistoryAbort = controller
     loginHistoryLoading.value = true
     try {
-      const res = await $fetch<{ history: any[] }>('/auth/login-history', { headers: authHeaders() })
+      const res = await $fetch<{ history: any[] }>('/auth/login-history', {
+        headers: authHeaders(),
+        signal: controller.signal,
+      })
+      if (loginHistoryAbort !== controller) return
       loginHistory.value = res.history || []
-    } catch { /* ignore */ }
-    loginHistoryLoading.value = false
+    } catch (e: unknown) {
+      if (isAbortError(e)) return
+    } finally {
+      if (loginHistoryAbort === controller) {
+        loginHistoryLoading.value = false
+        loginHistoryAbort = null
+      }
+    }
   }
 
   // ── 2FA ──
@@ -158,13 +210,30 @@ export function useSettingsSecurity(options: UseSettingsSecurityOptions = {}) {
   const recoveryCodes = ref<string[]>([])
   const disableCode = ref('')
   const trustedDevices = ref<any[]>([])
+  let twoFAAbort: AbortController | null = null
+  let trustedDevicesAbort: AbortController | null = null
+  const removingDeviceIds = new Set<string>()
 
   async function load2FAStatus() {
+    twoFAAbort?.abort()
+    const controller = new AbortController()
+    twoFAAbort = controller
     twoFALoading.value = true
     try {
-      twoFA.value = await $fetch<{ enabled: boolean; recovery_remaining: number }>('/auth/2fa/status', { headers: authHeaders() })
-    } catch { /* ignore */ }
-    twoFALoading.value = false
+      const res = await $fetch<{ enabled: boolean; recovery_remaining: number }>('/auth/2fa/status', {
+        headers: authHeaders(),
+        signal: controller.signal,
+      })
+      if (twoFAAbort !== controller) return
+      twoFA.value = res
+    } catch (e: unknown) {
+      if (isAbortError(e)) return
+    } finally {
+      if (twoFAAbort === controller) {
+        twoFALoading.value = false
+        twoFAAbort = null
+      }
+    }
   }
 
   async function begin2FASetup() {
@@ -196,8 +265,7 @@ export function useSettingsSecurity(options: UseSettingsSecurityOptions = {}) {
       disableCode.value = ''
       recoveryCodes.value = []
       showToast('Đã tắt xác thực 2 bước', 'success')
-      await load2FAStatus()
-      await loadTrustedDevices()
+      await Promise.all([load2FAStatus(), loadTrustedDevices()])
     } catch (e: unknown) {
       if (getStatusCode(e) === 401) { handleSessionExpired(); return }
       showToast(extractErrorMessage(e, 'Mã không đúng'), 'error')
@@ -205,13 +273,28 @@ export function useSettingsSecurity(options: UseSettingsSecurityOptions = {}) {
   }
 
   async function loadTrustedDevices() {
+    trustedDevicesAbort?.abort()
+    const controller = new AbortController()
+    trustedDevicesAbort = controller
     try {
-      const r = await $fetch<{ devices: any[] }>('/auth/trusted-devices', { headers: authHeaders() })
+      const r = await $fetch<{ devices: any[] }>('/auth/trusted-devices', {
+        headers: authHeaders(),
+        signal: controller.signal,
+      })
+      if (trustedDevicesAbort !== controller) return
       trustedDevices.value = r.devices || []
-    } catch { /* ignore */ }
+    } catch (e: unknown) {
+      if (isAbortError(e)) return
+    } finally {
+      if (trustedDevicesAbort === controller) {
+        trustedDevicesAbort = null
+      }
+    }
   }
 
   async function removeTrustedDevice(id: string) {
+    if (!id || removingDeviceIds.has(id)) return
+    removingDeviceIds.add(id)
     try {
       await $fetch(`/auth/trusted-devices/${encodeURIComponent(id)}`, { method: 'DELETE', headers: authHeaders() })
       trustedDevices.value = trustedDevices.value.filter(d => d.id !== id)
@@ -219,6 +302,8 @@ export function useSettingsSecurity(options: UseSettingsSecurityOptions = {}) {
     } catch (e: unknown) {
       if (getStatusCode(e) === 401) { handleSessionExpired(); return }
       showToast('Không thể xoá thiết bị', 'error')
+    } finally {
+      removingDeviceIds.delete(id)
     }
   }
 

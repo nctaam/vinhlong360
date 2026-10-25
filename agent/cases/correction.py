@@ -44,6 +44,7 @@ AUTHORITATIVE_LEVELS = frozenset({EvidenceLevel.E3, EvidenceLevel.E4})
 CORROBORATING_LEVELS = frozenset({EvidenceLevel.E2, EvidenceLevel.E3, EvidenceLevel.E4})
 HIGH_RISK = frozenset({RiskClass.R2, RiskClass.R3})
 MAKER_CHECKER_RISK = frozenset({RiskClass.R3})
+_MAKER_CHECKER_RISK_CODES = frozenset({"R3"})
 
 TERMINAL_OUTCOMES = frozenset(
     {
@@ -70,7 +71,7 @@ def _reject(code: str, detail: str, status: int = 409) -> CorrectionRejected:
 
 # ── Evidence ──
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class EvidenceRecord:
     evidence_id: str
     case_id: str
@@ -85,32 +86,34 @@ class EvidenceRecord:
     asserted_value: str | None = None
 
 
+def _is_usable_evidence_record(
+    record: EvidenceRecord, *, now: datetime, required_scope: str
+) -> bool:
+    try:
+        return bool(
+            record.source_scope == required_scope
+            and record.observed_at.tzinfo is not None
+            and record.effective_at.tzinfo is not None
+            and record.observed_at <= now
+            and record.effective_at <= now
+            and (record.expires_at is None or (
+                record.expires_at.tzinfo is not None and record.expires_at > now
+            ))
+        )
+    except (AttributeError, TypeError):
+        return False
+
+
 def usable_evidence(
     records: tuple[EvidenceRecord, ...], *, now: datetime, required_scope: str
 ) -> tuple[EvidenceRecord, ...]:
     """In scope, effective, observed and unexpired at the decision boundary."""
     if type(now) is not datetime or now.tzinfo is None:
         raise ValueError("evidence_timestamp_timezone_required")
-
-    def usable(record: EvidenceRecord) -> bool:
-        try:
-            return bool(
-                record.source_scope == required_scope
-                and record.observed_at.tzinfo is not None
-                and record.effective_at.tzinfo is not None
-                and record.observed_at <= now
-                and record.effective_at <= now
-                and (record.expires_at is None or (
-                    record.expires_at.tzinfo is not None and record.expires_at > now
-                ))
-            )
-        except (AttributeError, TypeError):
-            return False
-
     return tuple(
         record
         for record in records
-        if usable(record)
+        if _is_usable_evidence_record(record, now=now, required_scope=required_scope)
     )
 
 
@@ -128,7 +131,22 @@ def _independent_sources(records: tuple[EvidenceRecord, ...]) -> int:
     })
 
 
-@dataclass(frozen=True)
+def _high_risk_ruling_reason(
+    records: tuple[EvidenceRecord, ...], decision_maker_ref: str
+) -> str | None:
+    # Somebody other than the decision maker must have put a usable piece on
+    # the record, so a decision cannot rest only on its author's own filing.
+    corroborating = tuple(r for r in records if r.level in CORROBORATING_LEVELS)
+    if not any(r.author_ref != decision_maker_ref for r in corroborating):
+        return "author_recusal_required"
+    if any(r.level in AUTHORITATIVE_LEVELS for r in corroborating):
+        return None
+    if _independent_sources(corroborating) >= INDEPENDENT_SOURCES_REQUIRED:
+        return None
+    return "independent_source_required"
+
+
+@dataclass(frozen=True, slots=True)
 class CorrectionRuling:
     supported: bool
     reason_code: str | None = None
@@ -145,20 +163,8 @@ class CorrectionRuling:
             return cls(False, "evidence_conflict")
         if risk not in HIGH_RISK:
             return cls(bool(records), None if records else "insufficient_evidence_level")
-        # Somebody other than the decision maker must have put a usable piece on
-        # the record, so a decision cannot rest only on its author's own filing.
-        if not any(
-            record.author_ref != decision_maker_ref and record.level in CORROBORATING_LEVELS
-            for record in records
-        ):
-            return cls(False, "author_recusal_required")
-        if any(record.level in AUTHORITATIVE_LEVELS for record in records):
-            return cls(True, None)
-        if _independent_sources(records) >= INDEPENDENT_SOURCES_REQUIRED:
-            return cls(True, None)
-        if not any(record.level in CORROBORATING_LEVELS for record in records):
-            return cls(False, "insufficient_evidence_level")
-        return cls(False, "independent_source_required")
+        reason = _high_risk_ruling_reason(records, decision_maker_ref)
+        return cls(reason is None, reason)
 
 
 def supports_risk(
@@ -169,7 +175,7 @@ def supports_risk(
 
 # ── Decisions ──
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class DecideItemCommand:
     case_id: str
     item_id: str
@@ -183,7 +189,7 @@ class DecideItemCommand:
     required_scope: str | None = None
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class DecisionOutcome:
     case_id: str
     item_id: str
@@ -280,7 +286,7 @@ def validate_decision(
 
 # ── Change sets ──
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class ProposedChange:
     item_id: str
     entity_id: str
@@ -289,7 +295,7 @@ class ProposedChange:
     after_value: object
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class ChangeSetDraft:
     case_id: str
     entity_id: str
@@ -342,7 +348,7 @@ def validate_change_set(
     if draft.base_entity_revision != current_entity_revision:
         # The captured before-state is stale; re-reading is the caller's job.
         raise _reject("entity_revision_moved", "That entry changed since the decision.")
-    if draft.risk_class in {"R3"} and (
+    if draft.risk_class in _MAKER_CHECKER_RISK_CODES and (
         not draft.reviewer_ref or draft.reviewer_ref == draft.decision_maker_ref
     ):
         raise _reject("maker_checker_required", "This risk class needs a second person.")
@@ -486,7 +492,7 @@ def _replay_receipt_payload(
             "publication_receipt_invalid",
             f"The committed receipt {event_id} is incomplete.",
         )
-    return dict(payload)
+    return payload
 
 
 def _require_receipt_text(payload: dict, key: str, event_id: str) -> str:
@@ -608,27 +614,29 @@ def _evidence_descriptor(command: AddEvidenceCommand) -> dict:
     return descriptor
 
 
+def _row_to_evidence_record(row: Mapping) -> EvidenceRecord:
+    descriptor = row["descriptor"] or {}
+    return EvidenceRecord(
+        evidence_id=str(row["evidence_id"]),
+        case_id=str(row["case_id"]),
+        item_id=str(row["item_id"]) if row["item_id"] else None,
+        level=EvidenceLevel(row["evidence_level"]),
+        source_scope=str(descriptor.get("source_scope") or ""),
+        author_ref=str(row["created_by_ref"]),
+        observed_at=_moment(descriptor.get("observed_at")),
+        effective_at=_moment(descriptor.get("effective_at")),
+        expires_at=_moment(descriptor.get("expires_at")),
+        source_ref=row["source_ref"],
+        asserted_value=descriptor.get("asserted_value"),
+    )
+
+
 def load_evidence_records(case_id: str, item_id: str | None = None) -> tuple[EvidenceRecord, ...]:
     """Rebuild what was written down, so a ruling can be judged on it later."""
     store = _store()
     with store.transaction() as transaction:
         rows = transaction.load_correction_evidence(case_id, item_id)
-    return tuple(
-        EvidenceRecord(
-            evidence_id=str(row["evidence_id"]),
-            case_id=str(row["case_id"]),
-            item_id=str(row["item_id"]) if row["item_id"] else None,
-            level=EvidenceLevel(row["evidence_level"]),
-            source_scope=str((row["descriptor"] or {}).get("source_scope") or ""),
-            author_ref=str(row["created_by_ref"]),
-            observed_at=_moment((row["descriptor"] or {}).get("observed_at")),
-            effective_at=_moment((row["descriptor"] or {}).get("effective_at")),
-            expires_at=_moment((row["descriptor"] or {}).get("expires_at")),
-            source_ref=row["source_ref"],
-            asserted_value=(row["descriptor"] or {}).get("asserted_value"),
-        )
-        for row in rows
-    )
+    return tuple(_row_to_evidence_record(row) for row in rows)
 
 
 def _moment(value) -> datetime | None:
@@ -678,6 +686,16 @@ def add_evidence(command: AddEvidenceCommand, *, now: datetime) -> EvidenceRecor
     )
 
 
+_DECISION_RULING_REQUIRED_KEYS = (
+    "case_id", "item_id", "outcome_code", "reason_code", "refs",
+    "decision_maker_ref", "reviewer_ref", "duplicate_of",
+)
+_DECISION_RECEIPT_REQUIRED_KEYS = (
+    "event_id", "case_id", "revision", "generation",
+    "correlation_id", "decision_digest", "ruling",
+)
+
+
 def _decision_replay_header(payload: dict, raw_command: DecideItemCommand,
                             event_id: str) -> tuple[int, str, dict]:
     if payload["event_id"] != event_id or payload["case_id"] != raw_command.case_id:
@@ -693,11 +711,7 @@ def _decision_replay_header(payload: dict, raw_command: DecideItemCommand,
     if type(ruling) is not dict:
         raise _reject("publication_receipt_invalid",
                       f"The committed receipt {event_id} has an invalid ruling.")
-    required = (
-        "case_id", "item_id", "outcome_code", "reason_code", "refs",
-        "decision_maker_ref", "reviewer_ref", "duplicate_of",
-    )
-    if any(key not in ruling for key in required):
+    if any(key not in ruling for key in _DECISION_RULING_REQUIRED_KEYS):
         raise _reject("publication_receipt_invalid",
                       f"The committed receipt {event_id} has an incomplete ruling.")
     return revision, decision_digest, ruling
@@ -797,10 +811,10 @@ def _validate_decision_replay_binding(reason_code: str, maker: str, reviewer: st
 
 def _validate_decision_replay_evidence(outcome_code: CorrectionOutcome, refs: tuple[str, ...],
                                        raw_command: DecideItemCommand, event_id: str) -> None:
-    command_refs = tuple(
+    command_refs = {
         record.evidence_id for record in raw_command.evidence
         if type(getattr(record, "evidence_id", None)) is str
-    )
+    }
     if (
         outcome_code in _EVIDENCE_BEARING and not refs
         or any(ref not in command_refs for ref in refs)
@@ -826,10 +840,7 @@ def _replay_existing_decision(existing, raw_command: DecideItemCommand,
     payload = _replay_receipt_payload(
         existing,
         event_id,
-        required=(
-            "event_id", "case_id", "revision", "generation",
-            "correlation_id", "decision_digest", "ruling",
-        ),
+        required=_DECISION_RECEIPT_REQUIRED_KEYS,
     )
     revision, decision_digest, ruling = _decision_replay_header(payload, raw_command, event_id)
     outcome_code, reason_code, refs, maker, reviewer, duplicate_of = _decision_replay_ruling(
@@ -1201,6 +1212,59 @@ def _replay_existing_change_set(transaction, case_id: str, item_ids: tuple[str, 
     )
 
 
+def _draft_change_set_from_payloads(
+    transaction,
+    crypto,
+    *,
+    case_id: str,
+    payloads: tuple[dict, ...],
+    actor,
+    actor_ref: str,
+    evidence_refs: tuple[str, ...],
+    now: datetime,
+) -> tuple[str, ChangeSetDraft]:
+    entity_ids = {str(row["entity_id"]) for row in payloads}
+    if len(entity_ids) != 1:
+        raise _reject("change_set_spans_entities", "One change set, one entry.")
+    entity_id = entity_ids.pop()
+
+    # What the entry says now is ours to read, never the reporter's to
+    # assert. The before-state becomes the inverse patch, so trusting their
+    # transcription would mean a rollback republishing a string nobody
+    # authored and nobody ever reviewed — the reported value is seen at no
+    # other point in the system.
+    live = transaction.load_entity_for_update(entity_id)
+    changes = tuple(
+        ProposedChange(
+            item_id=str(row["item_id"]),
+            entity_id=entity_id,
+            field_path=str(row["field_path"]),
+            before_value=live_value_at(live.values, str(row["field_path"])),
+            after_value=crypto.decrypt_private_payload(str(row["proposed_value_enc"]))["value"],
+        )
+        for row in payloads
+    )
+    risk = max((str(row["risk_class"]) for row in payloads), default="R0")
+    draft = ChangeSetDraft(
+        case_id=case_id,
+        entity_id=entity_id,
+        base_entity_revision=int(payloads[0]["base_entity_revision"]),
+        changes=changes,
+        risk_class=risk,
+        decision_maker_ref=actor_ref,
+        reviewer_ref=getattr(actor, "reviewer_ref", None),
+        evidence_refs=tuple(evidence_refs),
+    )
+    live_revision = getattr(live, "revision", None)
+    if live_revision is None:
+        live_revision = transaction.entity_revision(entity_id)
+    if live_revision is None:
+        raise _reject("correction_entity_unknown", "That entry is not published here.",
+                      status=404)
+    validate_change_set(draft, current_entity_revision=live_revision, now=now)
+    return risk, draft
+
+
 def build_change_set(
     case_id: str,
     accepted_item_ids: tuple[str, ...],
@@ -1241,44 +1305,16 @@ def build_change_set(
         # build path simply walked around all of it, and verification then
         # closed the case as a properly answered correction.
         _require_decided_payloads(payloads)
-
-        entity_ids = {str(row["entity_id"]) for row in payloads}
-        if len(entity_ids) != 1:
-            raise _reject("change_set_spans_entities", "One change set, one entry.")
-        entity_id = entity_ids.pop()
-
-        # What the entry says now is ours to read, never the reporter's to
-        # assert. The before-state becomes the inverse patch, so trusting their
-        # transcription would mean a rollback republishing a string nobody
-        # authored and nobody ever reviewed — the reported value is seen at no
-        # other point in the system.
-        live = transaction.load_entity_for_update(entity_id)
-        changes = tuple(
-            ProposedChange(
-                item_id=str(row["item_id"]),
-                entity_id=entity_id,
-                field_path=str(row["field_path"]),
-                before_value=live_value_at(live.values, str(row["field_path"])),
-                after_value=crypto.decrypt_private_payload(str(row["proposed_value_enc"]))["value"],
-            )
-            for row in payloads
-        )
-        risk = max((str(row["risk_class"]) for row in payloads), default="R0")
-        draft = ChangeSetDraft(
+        risk, draft = _draft_change_set_from_payloads(
+            transaction,
+            crypto,
             case_id=case_id,
-            entity_id=entity_id,
-            base_entity_revision=int(payloads[0]["base_entity_revision"]),
-            changes=changes,
-            risk_class=risk,
-            decision_maker_ref=actor_ref,
-            reviewer_ref=getattr(actor, "reviewer_ref", None),
-            evidence_refs=tuple(evidence_refs),
+            payloads=payloads,
+            actor=actor,
+            actor_ref=actor_ref,
+            evidence_refs=evidence_refs,
+            now=now,
         )
-        live_revision = transaction.entity_revision(entity_id)
-        if live_revision is None:
-            raise _reject("correction_entity_unknown", "That entry is not published here.",
-                          status=404)
-        validate_change_set(draft, current_entity_revision=live_revision, now=now)
 
         before, after, inverse = build_patches(draft)
         change_set_id = transaction.insert_change_set(

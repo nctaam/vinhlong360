@@ -84,7 +84,8 @@ def _score_tool_usage(tools_used, score, issues, good_points):
 
 def _score_content_quality(answer, score, issues, good_points):
     """Section 3 của evaluate_answer — tín hiệu chất lượng nội dung (verbatim)."""
-    if "xin lỗi" in answer.lower() and "không" in answer.lower():
+    ans_lower = answer.lower()
+    if "xin lỗi" in ans_lower and "không" in ans_lower:
         score -= 1.5
         issues.append("Agent xin lỗi không trả lời được")
     if "**" in answer:  # Markdown formatting
@@ -120,13 +121,16 @@ def _score_relevance(query, answer, score, issues, good_points):
     return score
 
 
+_ERROR_PATTERNS: tuple[str, ...] = (
+    "lỗi", "error", "exception", "timeout",
+    "không kết nối", "thử lại",
+)
+
+
 def _score_error_patterns(answer, score, issues):
     """Section 6 của evaluate_answer — phát hiện dấu hiệu lỗi (verbatim)."""
-    error_patterns = [
-        "lỗi", "error", "exception", "timeout",
-        "không kết nối", "thử lại",
-    ]
-    if any(p in answer.lower() for p in error_patterns):
+    ans_lower = answer.lower()
+    if any(p in ans_lower for p in _ERROR_PATTERNS):
         score -= 1.5
         issues.append("Có dấu hiệu lỗi trong câu trả lời")
     return score
@@ -235,37 +239,38 @@ class ReflexionEngine:
 
         return reflection
 
+    _LESSON_RULES: tuple[tuple[str, str], ...] = (
+        ("quá ngắn", "Cần trả lời chi tiết hơn với ví dụ cụ thể"),
+        ("không dùng tools", "PHẢI dùng search/entity_detail trước khi trả lời"),
+        ("xin lỗi", "Thử web_search khi knowledge base không đủ thông tin"),
+        ("không liên quan", "Đọc kỹ câu hỏi, trả lời đúng chủ đề"),
+        ("lỗi", "Kiểm tra lỗi hệ thống và có fallback response"),
+    )
+
+    _CATEGORY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+        ("itinerary", ("lịch trình", "đi đâu", "gợi ý", "plan")),
+        ("food", ("ăn gì", "món", "đặc sản", "ẩm thực")),
+        ("history", ("lịch sử", "ai", "nhân vật", "người")),
+        ("culture", ("chùa", "lễ hội", "văn hóa", "khmer")),
+        ("comparison", ("so sánh", "khác nhau", "hơn")),
+    )
+
     def _generate_lesson(self, query: str, evaluation: dict) -> str:
         """Tạo bài học từ failure."""
         lessons = []
-
         for issue in evaluation["issues"]:
-            if "quá ngắn" in issue:
-                lessons.append("Cần trả lời chi tiết hơn với ví dụ cụ thể")
-            elif "không dùng tools" in issue:
-                lessons.append("PHẢI dùng search/entity_detail trước khi trả lời")
-            elif "xin lỗi" in issue:
-                lessons.append("Thử web_search khi knowledge base không đủ thông tin")
-            elif "không liên quan" in issue:
-                lessons.append("Đọc kỹ câu hỏi, trả lời đúng chủ đề")
-            elif "lỗi" in issue:
-                lessons.append("Kiểm tra lỗi hệ thống và có fallback response")
-
+            for marker, lesson_text in self._LESSON_RULES:
+                if marker in issue:
+                    lessons.append(lesson_text)
+                    break
         return " | ".join(lessons) if lessons else "Cần cải thiện chất lượng tổng thể"
 
     def _categorize_query(self, query: str) -> str:
         """Phân loại câu hỏi."""
         q = query.lower()
-        if any(w in q for w in ["lịch trình", "đi đâu", "gợi ý", "plan"]):
-            return "itinerary"
-        if any(w in q for w in ["ăn gì", "món", "đặc sản", "ẩm thực"]):
-            return "food"
-        if any(w in q for w in ["lịch sử", "ai", "nhân vật", "người"]):
-            return "history"
-        if any(w in q for w in ["chùa", "lễ hội", "văn hóa", "khmer"]):
-            return "culture"
-        if any(w in q for w in ["so sánh", "khác nhau", "hơn"]):
-            return "comparison"
+        for category, keywords in self._CATEGORY_RULES:
+            if any(w in q for w in keywords):
+                return category
         return "general"
 
     # ── Retrieval ──

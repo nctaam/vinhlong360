@@ -71,8 +71,10 @@ export function usePlannerDraftState(options: UsePlannerDraftStateOptions) {
     plannerRevisionConflict.value = null
   }
 
+  let resolvingConflict = false
+
   function persistPlannerDraft() {
-    if (!import.meta.client) return
+    if (!import.meta.client || typeof localStorage === 'undefined') return
     const savedAt = new Date().toISOString()
     draftSavedAt.value = savedAt
     try {
@@ -90,13 +92,19 @@ export function usePlannerDraftState(options: UsePlannerDraftStateOptions) {
   }
 
   function restorePlannerDraft() {
-    if (!import.meta.client || stops.value.length) return
+    if (!import.meta.client || typeof localStorage === 'undefined' || stops.value.length) return
     try {
       const raw = localStorage.getItem(LS_DRAFT)
       if (!raw) return
       const parsed = parsePlannerDraftSnapshot(JSON.parse(raw))
       if (!parsed?.stops.length) return
-      stops.value = parsed.stops.map(stop => plannerStopFromDraft(stop))
+      const restoredStops: PlanStop[] = new Array(parsed.stops.length)
+      for (let i = 0; i < parsed.stops.length; i++) {
+        const stop = plannerStopFromDraft(parsed.stops[i]!)
+        plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type))
+        restoredStops[i] = stop
+      }
+      stops.value = restoredStops
       planTitle.value = parsed.title
       localDraftRevision.value = parsed.revision
       plannerInputState.version = localDraftRevision.value
@@ -111,19 +119,16 @@ export function usePlannerDraftState(options: UsePlannerDraftStateOptions) {
       }
       travelBudgetMinutes.value = parsed.travelBudgetMinutes
       localDirty.value = true
-      stops.value.forEach((stop) => {
-        plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type))
-      })
     } catch { /* malformed draft is ignored without blocking the timeline */ }
   }
 
   function updatePlannerConnectivity() {
-    if (!import.meta.client) return
+    if (!import.meta.client || typeof navigator === 'undefined') return
     plannerOnline.value = navigator.onLine
   }
 
   async function choosePlannerConflict(choice: 'local' | 'server' | 'manual') {
-    if (saving.value) return
+    if (saving.value || resolvingConflict) return
     if (choice === 'manual') {
       await nextTick()
       plannerConflictEl.value?.focus()
@@ -131,22 +136,31 @@ export function usePlannerDraftState(options: UsePlannerDraftStateOptions) {
     }
     const snapshot = plannerRevisionConflict.value
     if (!snapshot) return
+    resolvingConflict = true
     const persistenceWasReady = draftPersistenceReady.value
     draftPersistenceReady.value = false
-    acceptServerComparisonBase(snapshot)
-    if (choice === 'server') {
-      invalidatePlannerSchedule()
-      planTitle.value = snapshot.title
-      stops.value = serializePlanStops(snapshot.stops) as PlanStop[]
-      stops.value.forEach(stop => plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type)))
-      localDraftRevision.value += 1
-      localDirty.value = false
-    } else {
-      localDirty.value = true
+    try {
+      acceptServerComparisonBase(snapshot)
+      if (choice === 'server') {
+        invalidatePlannerSchedule()
+        planTitle.value = snapshot.title
+        const nextStops = serializePlanStops(snapshot.stops) as PlanStop[]
+        for (let i = 0; i < nextStops.length; i++) {
+          const stop = nextStops[i]!
+          plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type))
+        }
+        stops.value = nextStops
+        localDraftRevision.value += 1
+        localDirty.value = false
+      } else {
+        localDirty.value = true
+      }
+      plannerRevisionConflict.value = null
+      await nextTick()
+    } finally {
+      draftPersistenceReady.value = persistenceWasReady
+      resolvingConflict = false
     }
-    plannerRevisionConflict.value = null
-    await nextTick()
-    draftPersistenceReady.value = persistenceWasReady
     persistPlannerDraft()
   }
 

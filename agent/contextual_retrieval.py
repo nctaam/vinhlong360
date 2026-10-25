@@ -103,6 +103,9 @@ def _season_parts(season) -> list[str]:
     return []
 
 
+_NEAR_REL_TYPES: frozenset[str] = frozenset({"near", "nearby", "adjacent"})
+
+
 def _relationship_parts(eid: str, relationships: list) -> tuple[list[str], list[str]]:
     """Split relationships into (related_names, nearby_names) (extracted verbatim)."""
     related_names: list[str] = []
@@ -110,10 +113,6 @@ def _relationship_parts(eid: str, relationships: list) -> tuple[list[str], list[
     for rel in relationships:
         src = rel.get("source", "")
         tgt = rel.get("target", "")
-        rtype = rel.get("type", "")
-        label = rel.get("label", "")
-
-        partner_id = ""
         if src == eid:
             partner_id = tgt
         elif tgt == eid:
@@ -121,12 +120,25 @@ def _relationship_parts(eid: str, relationships: list) -> tuple[list[str], list[
         else:
             continue
 
-        display = label if label else partner_id
-        if rtype in ("near", "nearby", "adjacent"):
+        display = rel.get("label", "") or partner_id
+        if rel.get("type", "") in _NEAR_REL_TYPES:
             nearby_names.append(display)
         else:
             related_names.append(display)
     return related_names, nearby_names
+
+
+def _index_relationships(relationships: list) -> dict[str, list[dict]]:
+    """Pre-index relationships by source and target entity ID in O(R)."""
+    by_eid: dict[str, list[dict]] = {}
+    for rel in relationships:
+        src = rel.get("source", "")
+        tgt = rel.get("target", "")
+        if src:
+            by_eid.setdefault(src, []).append(rel)
+        if tgt and tgt != src:
+            by_eid.setdefault(tgt, []).append(rel)
+    return by_eid
 
 
 class ContextualRetrieval:
@@ -251,6 +263,7 @@ class ContextualRetrieval:
         Returns:
             dict of entity_id -> contextual_text
         """
+        rels_by_eid = _index_relationships(relationships) if relationships else {}
         with self._lock:
             self._load_cache()
 
@@ -258,7 +271,9 @@ class ContextualRetrieval:
             for eid, entity in entities.items():
                 if entity.get("type") == "place":
                     continue
-                texts[eid] = self.build_contextual_text(entity, relationships)
+                texts[eid] = self.build_contextual_text(
+                    entity, rels_by_eid.get(eid, ())
+                )
 
             self._cache = texts
             self._rebuild_token_sets()
@@ -348,6 +363,23 @@ class BM25:
         df = self._df.get(token, 0)
         return math.log((self._N - df + 0.5) / (df + 0.5) + 1.0)
 
+    def _score_doc(
+        self,
+        doc_tf: Counter,
+        dl: int,
+        q_idfs: list[tuple[str, float]],
+    ) -> float:
+        """Compute BM25 score for a single document given precomputed query IDFs."""
+        k1 = self.k1
+        k1_plus_1 = k1 + 1.0
+        dl_norm = k1 * (1.0 - self.b + self.b * (dl / self._avg_dl))
+        s = 0.0
+        for qt, idf in q_idfs:
+            tf = doc_tf.get(qt, 0)
+            if tf:
+                s += idf * ((tf * k1_plus_1) / (tf + dl_norm))
+        return s
+
     def score(self, query: str, top_k: int = 10) -> list[dict]:
         """
         Score all documents against query using BM25.
@@ -365,24 +397,12 @@ class BM25:
         results: list[dict] = []
 
         with self._lock:
+            q_idfs = [(qt, self._idf(qt)) for qt in q_tokens]
             for doc_id, doc_tf in self._doc_tf.items():  # GĐ11.3: dùng TF precompute
                 dl = self._doc_lens.get(doc_id, 0)
                 if dl == 0:
                     continue
-
-                s = 0.0
-                for qt in q_tokens:
-                    if qt not in doc_tf:
-                        continue
-                    tf = doc_tf[qt]
-                    idf = self._idf(qt)
-                    # BM25 formula
-                    numerator = tf * (self.k1 + 1)
-                    denominator = tf + self.k1 * (
-                        1 - self.b + self.b * (dl / self._avg_dl)
-                    )
-                    s += idf * (numerator / denominator)
-
+                s = self._score_doc(doc_tf, dl, q_idfs)
                 if s > 0.001:
                     results.append({"entity_id": doc_id, "score": round(s, 4)})
 
@@ -415,19 +435,25 @@ def _build_rerank_prompt(query: str, candidates: list[dict]) -> str:
     )
 
 
+_RERANK_SPLIT_RE = re.compile(r"[,\s]+")
+
+
 def _parse_rerank_order(ranking_text: str, candidates: list[dict]) -> list[int]:
     """Parse LLM ranking text into an ordered index list (extracted verbatim)."""
-    indices = []
-    for tok in re.split(r'[,\s]+', ranking_text):
+    indices: list[int] = []
+    seen: set[int] = set()
+    n_cand = len(candidates)
+    for tok in _RERANK_SPLIT_RE.split(ranking_text):
         tok = tok.strip().rstrip(".")
         if tok.isdigit():
             idx = int(tok) - 1  # 1-based -> 0-based
-            if 0 <= idx < len(candidates) and idx not in indices:
+            if 0 <= idx < n_cand and idx not in seen:
+                seen.add(idx)
                 indices.append(idx)
 
     # Any candidates not mentioned go at the end in original order
-    for i in range(len(candidates)):
-        if i not in indices:
+    for i in range(n_cand):
+        if i not in seen:
             indices.append(i)
     return indices
 
@@ -439,6 +465,7 @@ class LLMReranker:
     """
 
     def __init__(self):
+        self._lock = Lock()
         self._client = None
         self._model: str = ""
 
@@ -446,19 +473,22 @@ class LLMReranker:
         """Lazy-init the OpenAI-compatible client."""
         if self._client is not None:
             return
-        try:
-            from openai import OpenAI
-        except ImportError:
-            raise RuntimeError("openai package required for LLM reranking")
+        with self._lock:
+            if self._client is not None:
+                return
+            try:
+                from openai import OpenAI
+            except ImportError:
+                raise RuntimeError("openai package required for LLM reranking")
 
-        api_key = os.environ.get("LLM_API_KEY", "")
-        base_url = os.environ.get("LLM_BASE_URL", "")
-        self._model = os.environ.get("LLM_MODEL_MINI", "cx/gpt-5.4-mini")
+            api_key = os.environ.get("LLM_API_KEY", "")
+            base_url = os.environ.get("LLM_BASE_URL", "")
+            self._model = os.environ.get("LLM_MODEL_MINI", "cx/gpt-5.4-mini")
 
-        if not api_key or not base_url:
-            raise RuntimeError("LLM_API_KEY and LLM_BASE_URL must be set for reranking")
+            if not api_key or not base_url:
+                raise RuntimeError("LLM_API_KEY and LLM_BASE_URL must be set for reranking")
 
-        self._client = OpenAI(api_key=api_key, base_url=base_url, timeout=15)
+            self._client = OpenAI(api_key=api_key, base_url=base_url, timeout=15)
 
     def rerank(
         self, query: str, candidates: list[dict], top_k: int = 5
@@ -547,14 +577,15 @@ def _collect_ctx_scores(query: str) -> dict[str, float]:
         if not token_sets:
             return ctx_scores
         q_tokens = set(_tokenize(query))
-        if not q_tokens:
+        len_q = len(q_tokens)
+        if not len_q:
             return ctx_scores
         for eid, doc_tokens in token_sets.items():
             if not doc_tokens:
                 continue
             overlap = len(q_tokens & doc_tokens)
             if overlap > 0:
-                union = len(q_tokens | doc_tokens)
+                union = len_q + len(doc_tokens) - overlap
                 ctx_scores[eid] = overlap / max(union, 1)
     except Exception as exc:
         logger.debug("Contextual scoring unavailable: %s", exc)

@@ -24,6 +24,18 @@ export interface UsePlannerStopOperationsOptions {
   stopAnnounce: Ref<string>
 }
 
+const EMPTY_ROUTE_LEGS: NonNullable<RouteResult['legs']> = Object.freeze([])
+const RE_RESTRICTED_VEHICLE_ACCESS = /chỉ xe máy|không vào được ô tô|hẹp/iu
+
+function extractEntityAccessFact(entity: any): string | null {
+  const access = entity?.attributes?.vehicle_access || entity?.attributes?.road_access
+  if (typeof access === 'string') {
+    const trimmed = access.trim()
+    return trimmed || null
+  }
+  return null
+}
+
 export function usePlannerStopOperations(options: UsePlannerStopOperationsOptions) {
   const {
     stops,
@@ -42,6 +54,26 @@ export function usePlannerStopOperations(options: UsePlannerStopOperationsOption
   const draggedStopIndex = ref<number | null>(null)
   const dragOverStopIndex = ref<number | null>(null)
   const stopAccessFactsMap = reactive(new Map<string, string>())
+
+  const entityAccessIndex = computed(() => {
+    const map = new Map<string, string | null>()
+    const favs = (favList.value || []) as any[]
+    for (let i = 0; i < favs.length; i++) {
+      const item = favs[i]
+      if (item?.id) map.set(item.id, extractEntityAccessFact(item))
+    }
+    const entities = (allEntities.value || []) as Entity[]
+    for (let i = 0; i < entities.length; i++) {
+      const item = entities[i]
+      if (item?.id) {
+        const fact = extractEntityAccessFact(item)
+        if (fact !== null || !map.has(item.id)) {
+          map.set(item.id, fact)
+        }
+      }
+    }
+    return map
+  })
 
   function removeStop(idx: number) {
     invalidatePlannerSchedule()
@@ -93,6 +125,7 @@ export function usePlannerStopOperations(options: UsePlannerStopOperationsOption
     draggedStopIndex.value = null
     dragOverStopIndex.value = null
     if (sourceIndex === null || sourceIndex === targetIndex) return
+    if (targetIndex < 0 || targetIndex >= stops.value.length) return
     const stop = stops.value[sourceIndex]
     if (!stop) return
     invalidatePlannerSchedule()
@@ -112,7 +145,7 @@ export function usePlannerStopOperations(options: UsePlannerStopOperationsOption
     return routeLegForStopIndex(
       stopIndex,
       currentRoutableStops.value,
-      routeResult.value?.legs || [],
+      routeResult.value?.legs || EMPTY_ROUTE_LEGS,
     )
   }
 
@@ -122,30 +155,25 @@ export function usePlannerStopOperations(options: UsePlannerStopOperationsOption
   }
 
   function stopAccessFact(stop: PlanStop): string | null {
-    if (stopAccessFactsMap.has(stop.id)) {
-      return stopAccessFactsMap.get(stop.id) || null
-    }
-    const match = (allEntities.value as Entity[]).find(e => e.id === stop.id)
-      || ((favList.value || []) as any[]).find(e => e.id === stop.id)
-    const access = match?.attributes?.vehicle_access || match?.attributes?.road_access
-    if (access && typeof access === 'string') {
-      const trimmed = access.trim()
-      stopAccessFactsMap.set(stop.id, trimmed)
-      return trimmed
-    }
-    return null
+    const cached = stopAccessFactsMap.get(stop.id)
+    if (cached !== undefined) return cached || null
+    return entityAccessIndex.value.get(stop.id) ?? null
   }
 
   function isVehicleAccessRestricted(stop: PlanStop): boolean {
     if (transportMode.value !== 'driving') return false
-    const fact = (stopAccessFact(stop) || '').toLowerCase()
-    return fact.includes('chỉ xe máy') || fact.includes('không vào được ô tô') || fact.includes('hẹp')
+    const fact = stopAccessFact(stop)
+    return Boolean(fact) && RE_RESTRICTED_VEHICLE_ACCESS.test(fact!)
   }
 
   const plannerVisitDuration = computed(() => {
-    return stops.value.reduce((total, stop) => (
-      total + ((plannerScheduleMetadata.get(stop)?.visitMinutes || 0) * 60)
-    ), 0)
+    void plannerInputState.version
+    const list = stops.value
+    let total = 0
+    for (let i = 0; i < list.length; i++) {
+      total += (plannerScheduleMetadata.get(list[i]!)?.visitMinutes || 0) * 60
+    }
+    return total
   })
 
   const plannerTravelDuration = computed<number | null>(() => {

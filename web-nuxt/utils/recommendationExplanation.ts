@@ -7,15 +7,27 @@ export interface SafeRecommendationExplanation {
 }
 
 const DEFAULT_REASON = 'Được cộng đồng quan tâm'
+const EXPLICIT_INTEREST_REASON = 'Phù hợp với sở thích bạn đã chọn'
+
+const RE_COMBINING_MARKS = /[\u0300-\u036f]/g
+const RE_LETTER_D = /đ/g
+const RE_WHITESPACE = /\s+/g
+
+const RE_UNSAFE_REGION_KEYWORDS = /\b(?:gps|ip|toa do|latitude|longitude|lat|lng|truy van|tim kiem)\b/
+const RE_IPV4 = /(?:\d{1,3}\.){3}\d{1,3}/
+const RE_IPV6 = /(?:[A-Fa-f0-9]{0,4}:){2,}[A-Fa-f0-9]{0,4}/
+const RE_COORD_PAIR = /[+-]?(?:\d+\.\d+|\.\d+)\s*[,;/]\s*[+-]?(?:\d+\.\d+|\.\d+)/
+const RE_DEGREE = /\d{1,3}\s*[°º]/
+const RE_FLOAT_TOKEN = /(?:^|\s)[+-]?(?:\d+\.\d+|\.\d+)(?:\s|$)/
 
 function foldText(value: string) {
   return value
     .trim()
     .toLocaleLowerCase('vi-VN')
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/\s+/g, ' ')
+    .replace(RE_COMBINING_MARKS, '')
+    .replace(RE_LETTER_D, 'd')
+    .replace(RE_WHITESPACE, ' ')
 }
 
 const SAFE_REASON_MAP: Record<string, string> = {
@@ -58,7 +70,7 @@ function safeReason(value: unknown, hasExplicitInterests: boolean) {
   if (typeof value !== 'string') return ''
   const folded = foldText(value)
   if (folded.startsWith('khop so thich ')) {
-    return hasExplicitInterests ? 'Phù hợp với sở thích bạn đã chọn' : 'Hợp với nội dung bạn quan tâm'
+    return hasExplicitInterests ? EXPLICIT_INTEREST_REASON : 'Hợp với nội dung bạn quan tâm'
   }
   return SAFE_REASON_MAP[folded] || ''
 }
@@ -67,44 +79,80 @@ function safeRegionLabel(value: unknown) {
   if (typeof value !== 'string') return ''
   const normalized = value.trim()
   if (!normalized || normalized.length > 100) return ''
+  if (
+    RE_IPV4.test(normalized)
+    || RE_IPV6.test(normalized)
+    || RE_COORD_PAIR.test(normalized)
+    || RE_DEGREE.test(normalized)
+    || RE_FLOAT_TOKEN.test(normalized)
+  ) {
+    return ''
+  }
   const folded = foldText(normalized)
-  if (/\b(gps|ip|toa do|latitude|longitude|lat|lng|truy van|tim kiem)\b/.test(folded)) return ''
-  if (/(?:\d{1,3}\.){3}\d{1,3}/.test(normalized)) return ''
-  if (/(?:[A-Fa-f0-9]{0,4}:){2,}[A-Fa-f0-9]{0,4}/.test(normalized)) return ''
-  if (/[+-]?(?:\d+\.\d+|\.\d+)\s*[,;/]\s*[+-]?(?:\d+\.\d+|\.\d+)/.test(normalized)) return ''
-  if (/\d{1,3}\s*[°º]/.test(normalized)) return ''
-  if (/(?:^|\s)[+-]?(?:\d+\.\d+|\.\d+)(?:\s|$)/.test(normalized)) return ''
+  if (RE_UNSAFE_REGION_KEYWORDS.test(folded)) return ''
   return normalized
 }
 
-function safeInterestLabels(value: unknown) {
-  if (!Array.isArray(value)) return []
-  const labels = value.flatMap((item) => {
-    if (typeof item !== 'string') return []
-    const label = INTEREST_LABELS[foldText(item)]
-    return label ? [label] : []
-  })
-  return [...new Set(labels)].slice(0, 3)
+function safeInterestLabels(value: unknown): string[] {
+  if (!Array.isArray(value) || value.length === 0) return []
+  const result: string[] = []
+  for (let i = 0; i < value.length; i++) {
+    const item = value[i]
+    if (typeof item !== 'string') continue
+    const label = INTEREST_LABELS[item] || INTEREST_LABELS[foldText(item)]
+    if (label && !result.includes(label)) {
+      result.push(label)
+      if (result.length === 3) break
+    }
+  }
+  return result
 }
 
 export function projectRecommendationExplanation(
   explanation?: Partial<RecommendationExplanation> | null,
 ): SafeRecommendationExplanation {
-  const interestLabels = safeInterestLabels(explanation?.explicit_interests)
-  const candidates = [
-    explanation?.primary_reason,
-    ...(Array.isArray(explanation?.reasons) ? explanation.reasons : []),
-  ]
-  const reasons = [...new Set(
-    candidates.map(value => safeReason(value, interestLabels.length > 0)).filter(Boolean),
-  )]
-  const explicitInterestReason = 'Phù hợp với sở thích bạn đã chọn'
-  const explicitIndex = interestLabels.length ? reasons.indexOf(explicitInterestReason) : -1
-  if (explicitIndex > 0) reasons.unshift(...reasons.splice(explicitIndex, 1))
-  reasons.splice(3)
+  if (!explanation) {
+    return {
+      reasons: [DEFAULT_REASON],
+      regionLabel: '',
+      interestLabels: [],
+    }
+  }
+  const interestLabels = safeInterestLabels(explanation.explicit_interests)
+  const hasExplicitInterests = interestLabels.length > 0
+  const reasons: string[] = []
+
+  const primary = safeReason(explanation.primary_reason, hasExplicitInterests)
+  if (primary) reasons.push(primary)
+
+  if (Array.isArray(explanation.reasons)) {
+    for (let i = 0; i < explanation.reasons.length; i++) {
+      const mapped = safeReason(explanation.reasons[i], hasExplicitInterests)
+      if (mapped && !reasons.includes(mapped)) {
+        reasons.push(mapped)
+      }
+    }
+  }
+
+  if (hasExplicitInterests) {
+    const explicitIndex = reasons.indexOf(EXPLICIT_INTEREST_REASON)
+    if (explicitIndex > 0) {
+      for (let i = explicitIndex; i > 0; i--) {
+        reasons[i] = reasons[i - 1]!
+      }
+      reasons[0] = EXPLICIT_INTEREST_REASON
+    }
+  }
+
+  if (reasons.length > 3) {
+    reasons.length = 3
+  } else if (reasons.length === 0) {
+    reasons.push(DEFAULT_REASON)
+  }
+
   return {
-    reasons: reasons.length ? reasons : [DEFAULT_REASON],
-    regionLabel: safeRegionLabel(explanation?.region_label),
+    reasons,
+    regionLabel: safeRegionLabel(explanation.region_label),
     interestLabels,
   }
 }

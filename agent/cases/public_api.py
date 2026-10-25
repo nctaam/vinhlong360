@@ -39,6 +39,12 @@ PROBLEM_MEDIA_TYPE = "application/problem+json"
 _PROBLEM_BASE = "https://vinhlong360.vn/problems/"
 _NO_STORE = {"Cache-Control": "no-store"}
 _CONTACT_RECEIPT_RE = re.compile(r"^[A-Za-z0-9_-]{8,512}={0,2}$")
+_REPORTED_KNOWN_FIELDS = frozenset({"reported_value_known", "reportedValueKnown"})
+_REPORTED_VALUE_FIELDS = frozenset({"reported_value", "reportedValue"})
+_CONTRACT_FIELD_ALIASES = {
+    "reported_value": "reportedValue",
+    "reported_value_known": "reportedValueKnown",
+}
 
 _SERVICE = None
 _SETTINGS = None
@@ -51,6 +57,10 @@ def _uuid_receipt(value: str) -> str | None:
         return str(uuid.UUID(value))
     except (AttributeError, ValueError, TypeError):
         return None
+
+
+def _valid_contact_receipt(receipt: str | None) -> bool:
+    return receipt is None or _CONTACT_RECEIPT_RE.fullmatch(receipt) is not None
 
 
 def configure_case_public_api(*, service=None, settings=None, allowed_origin=None) -> None:
@@ -230,53 +240,62 @@ def _validate_shared_correction_payload(
     validate_payload("correction-intake", payload, version=version)
 
 
+def _validate_single_correction_item(
+    item,
+    *,
+    version: str,
+    versioned: bool,
+    validate_payload,
+    contract_violation,
+) -> None:
+    fields_set = getattr(item, "model_fields_set", ()) or ()
+    reported_known_present = not _REPORTED_KNOWN_FIELDS.isdisjoint(fields_set)
+    reported_value_present = not _REPORTED_VALUE_FIELDS.isdisjoint(fields_set)
+    # The versioned transport requires the discriminator explicitly;
+    # header-less legacy callers retain the historical default.
+    if versioned and not reported_known_present:
+        raise contract_violation(
+            "missing required contract field: reported_value_known",
+            field="reportedValueKnown",
+        )
+    # `None` is meaningful only when it was sent. A defaulted value
+    # must not turn an omitted `reportedValue` into an unknown value.
+    if not reported_value_present and (versioned or reported_known_present):
+        raise contract_violation(
+            "missing required contract field: reported_value",
+            field="reported_value",
+        )
+    payload = {
+        "reported_value_known": item.reported_value_known,
+        "reported_value": item.reported_value,
+    }
+    _validate_shared_correction_payload(
+        payload,
+        version=version,
+        validate_payload=validate_payload,
+        contract_violation=contract_violation,
+    )
+
+
 def _validate_correction_contract(items, request: Request, *, version: str = "1") -> JSONResponse | None:
     """Validate each item against the shared registry before service mutation."""
+    index = 0
     try:
         try:
             from control_plane.contracts import ContractViolation, validate_payload
         except ModuleNotFoundError:
             from agent.control_plane.contracts import ContractViolation, validate_payload
+        versioned = request.headers.get("x-correction-contract-version") is not None
         for index, item in enumerate(items):
-            fields_set = set(getattr(item, "model_fields_set", ()))
-            reported_known_present = bool(
-                {"reported_value_known", "reportedValueKnown"} & fields_set
-            )
-            reported_value_present = bool(
-                {"reported_value", "reportedValue"} & fields_set
-            )
-            # The versioned transport requires the discriminator explicitly;
-            # header-less legacy callers retain the historical default.
-            if request.headers.get("x-correction-contract-version") is not None and not reported_known_present:
-                raise ContractViolation(
-                    "missing required contract field: reported_value_known",
-                    field="reportedValueKnown",
-                )
-            # `None` is meaningful only when it was sent. A defaulted value
-            # must not turn an omitted `reportedValue` into an unknown value.
-            if not reported_value_present and (
-                request.headers.get("x-correction-contract-version") is not None
-                or reported_known_present
-            ):
-                raise ContractViolation(
-                    "missing required contract field: reported_value",
-                    field="reported_value",
-                )
-            payload = {
-                "reported_value_known": item.reported_value_known,
-                "reported_value": item.reported_value,
-            }
-            _validate_shared_correction_payload(
-                payload,
+            _validate_single_correction_item(
+                item,
                 version=version,
+                versioned=versioned,
                 validate_payload=validate_payload,
                 contract_violation=ContractViolation,
             )
     except ContractViolation as exc:
-        field_name = {
-            "reported_value": "reportedValue",
-            "reported_value_known": "reportedValueKnown",
-        }.get(exc.field or "", exc.field)
+        field_name = _CONTRACT_FIELD_ALIASES.get(exc.field or "", exc.field)
         return _problem(
             422,
             exc.code,
@@ -443,6 +462,16 @@ def _clear_session_cookies(response: Response) -> None:
 
 # ── Routes ──
 
+def _invalid_contact_receipt_problem(field: str) -> JSONResponse:
+    return _problem(
+        422,
+        "invalid_contact_receipt",
+        "Mã xác nhận không hợp lệ hoặc đã hết hạn.",
+        field=field,
+        retry_after=0,
+    )
+
+
 async def _parse_correction_intake(request: Request, version: str):
     body, invalid = await _model(request, _CreateIn)
     if invalid is not None:
@@ -450,14 +479,8 @@ async def _parse_correction_intake(request: Request, version: str):
     contract_error = _validate_correction_contract(body.items, request, version=version)
     if contract_error is not None:
         return None, contract_error
-    if body.contact_receipt is not None and not _CONTACT_RECEIPT_RE.fullmatch(body.contact_receipt):
-        return None, _problem(
-            422,
-            "invalid_contact_receipt",
-            "Mã xác nhận không hợp lệ hoặc đã hết hạn.",
-            field="contactReceipt",
-            retry_after=0,
-        )
+    if not _valid_contact_receipt(body.contact_receipt):
+        return None, _invalid_contact_receipt_problem("contactReceipt")
     return body, None
 
 
@@ -657,15 +680,9 @@ async def _start_contact_verification(request: Request, *, pre_case: bool | None
     body, invalid = await _model(request, _ContactRequestIn)
     if invalid is not None:
         return invalid
-    if body.receipt is not None and not _CONTACT_RECEIPT_RE.fullmatch(body.receipt):
-        return _problem(
-            422,
-            "invalid_contact_receipt",
-            "Mã xác nhận không hợp lệ hoặc đã hết hạn.",
-            field="receipt",
-            retry_after=0,
-        )
-    if pre_case and not body.consent and not body.receipt:
+    if not _valid_contact_receipt(body.receipt):
+        return _invalid_contact_receipt_problem("receipt")
+    if pre_case and not (body.consent or body.receipt):
         # A phone number is not enough to identify which pending challenge the
         # caller owns. Require the opaque proof before touching any row.
         return _problem(401, *_CREDENTIAL)
@@ -778,18 +795,10 @@ def _contact_verify_lane(request: Request, body, has_access: bool):
     blocked = _guard_session_mutation(request) if use_access else _guard_public_post(request, intake=True)
     if blocked is not None:
         return use_access, blocked
-    malformed = body.receipt is not None and (
-        not _CONTACT_RECEIPT_RE.fullmatch(body.receipt)
-        or (use_access and legacy_receipt is None)
-    )
-    if malformed:
-        return use_access, _problem(
-            422,
-            "invalid_contact_receipt",
-            "Mã xác nhận không hợp lệ hoặc đã hết hạn.",
-            field="receipt",
-            retry_after=0,
-        )
+    if not _valid_contact_receipt(body.receipt) or (
+        use_access and body.receipt is not None and legacy_receipt is None
+    ):
+        return use_access, _invalid_contact_receipt_problem("receipt")
     return use_access, None
 
 

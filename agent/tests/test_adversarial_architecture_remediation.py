@@ -738,5 +738,67 @@ def test_campaign_omicron_multi_agent_architecture_optimizations():
     assert callable(cp_lifecycle._erase_store_policy)
 
 
+def test_campaign_pi_multi_agent_architecture_optimizations():
+    import achievements
+    import agentic_rag
+    import analytics
+    import autocorrect
+    import cases.admin_api as cases_admin_api
+    import cases.correction as cases_correction
+    import cases.public_api as cases_public_api
+    import cases.publication as cases_publication
+    import cases.work_control as cases_work_control
+    import contextual_retrieval
+    import entity_details
+    import itineraries.itinerary_optimizer as itinerary_optimizer
+    import itineraries.itinerary_selection as itinerary_selection
+    import kb_curation
+    import legacy_scrub
+    import mcp_server
+    import reflexion
+    import tracing
+
+    # 1. Ban 1: Itinerary Selection, Optimizer, KB Curation, Entity Details, Achievements & Analytics
+    assert hasattr(itinerary_selection.SelectionCandidate, "__slots__")
+    assert callable(itinerary_selection._subset_matrix_view)
+    assert callable(itinerary_selection._subset_ids_and_reward)
+    assert hasattr(itinerary_optimizer.RouteStop, "__slots__")
+    assert hasattr(kb_curation._cached_name_tokens, "cache_info")
+    assert hasattr(kb_curation._full_norm_name, "cache_info")
+    assert isinstance(entity_details._SCHEMA_KEY_SETS, dict)
+    assert callable(entity_details._sync_cti_detail_row)
+    assert isinstance(achievements._METRIC_ACHIEVEMENTS, tuple)
+    assert hasattr(analytics, "heapq")
+
+    # 2. Ban 2: Agentic RAG, Contextual Retrieval, Autocorrect, MCP Server, Tracing & Reflexion
+    assert hasattr(agentic_rag._normalize, "cache_info")
+    assert isinstance(agentic_rag._SIMPLE_INTENTS, frozenset)
+    assert isinstance(agentic_rag._COMPLEX_INTENT_TOOLS, dict)
+    assert callable(agentic_rag._non_cycle_neighbors)
+    assert isinstance(contextual_retrieval._NEAR_REL_TYPES, frozenset)
+    assert callable(contextual_retrieval._index_relationships)
+    assert callable(autocorrect._best_entity_in_buckets)
+    assert hasattr(autocorrect._fuzzy_match_entity_cached, "cache_info")
+    assert hasattr(mcp_server, "_llm_lock")
+    assert isinstance(tracing._LLM_COLLECT_KEYS, tuple)
+    assert isinstance(reflexion._ERROR_PATTERNS, tuple)
+
+    # 3. Ban 4: Cases Correction, Publication, Admin API, Public API, Work Control & Legacy Scrub
+    assert hasattr(cases_correction.EvidenceRecord, "__slots__")
+    assert callable(cases_correction._is_usable_evidence_record)
+    assert callable(cases_correction._draft_change_set_from_payloads)
+    assert hasattr(cases_publication.ApplyChangeSetCommand, "__slots__")
+    assert callable(cases_publication._build_verification_failure_result)
+    assert hasattr(cases_admin_api.StepUpGrant, "__slots__")
+    assert callable(cases_admin_api._decide_case_item_sync)
+    assert callable(cases_public_api._validate_single_correction_item)
+    assert hasattr(cases_work_control.WorkItem, "__slots__")
+    assert isinstance(cases_work_control._TRIAGE_WORK_KINDS, frozenset)
+    assert hasattr(legacy_scrub.ScrubFile, "__slots__")
+    assert isinstance(legacy_scrub._JSON_STORE_KINDS, frozenset)
+    assert callable(legacy_scrub._read_store_text)
+
+
+
 
 

@@ -30,6 +30,7 @@ const NUMERIC_KEYS = ['ocop_star', 'ocop_stars', 'ocop_rating'] as const
 // "có chứng nhận, chưa rõ hạng" — thiệt thòi nhưng THẬT; bắt nhầm thì trang khai
 // khống một hạng quốc gia.
 const SELF_TIER = /^\s*(?:ocop\s*)?([1-5])\s*sao\b/i
+const PURE_NUMERIC_TIER = /^\s*[1-5]\s*$/
 
 // §1.7 — hạng "mới được đề nghị" KHÔNG phải hạng đã đạt.
 const PROPOSAL = /đề xuất|đề nghị|chờ\s+(?:công nhận|đánh giá|xét)|đang\s+(?:xét|đề nghị)|dự kiến/i
@@ -40,19 +41,61 @@ const CLAIM_WINDOW = 40
 // "OCOP 2 sao" — chúng không tồn tại, nên ô số mang 1 hoặc 2 không phải hạng.
 const MIN_GRADE = 3
 
+// Đồng bộ với `_RE_TIER_SAO` trong `agent/ocop.py`: tiền biên dịch regex cho các bậc 1..9
+const TIER_SAO_RE: Record<number, RegExp> = {
+  1: /1\s*sao/gi,
+  2: /2\s*sao/gi,
+  3: /3\s*sao/gi,
+  4: /4\s*sao/gi,
+  5: /5\s*sao/gi,
+  6: /6\s*sao/gi,
+  7: /7\s*sao/gi,
+  8: /8\s*sao/gi,
+  9: /9\s*sao/gi,
+}
+
+const BADGE_LABELS: readonly string[] = Object.freeze([
+  'OCOP',
+  'OCOP 1 sao',
+  'OCOP 2 sao',
+  'OCOP 3 sao',
+  'OCOP 4 sao',
+  'OCOP 5 sao',
+])
+
+const EMPTY_ATTRS: Record<string, any> = Object.freeze({})
+
+function tierSaoRegex(tier: number): RegExp {
+  const cached = TIER_SAO_RE[tier]
+  if (cached) {
+    cached.lastIndex = 0
+    return cached
+  }
+  return new RegExp(`${tier}\\s*sao`, 'gi')
+}
+
 function attrs(e: OcopEntityLike | null | undefined): Record<string, any> {
-  return (e && e.attributes) || {}
+  const a = e?.attributes
+  return a && typeof a === 'object' && !Array.isArray(a) ? a : EMPTY_ATTRS
+}
+
+function hasAnyNumericKey(a: Record<string, any>): boolean {
+  for (let i = 0; i < NUMERIC_KEYS.length; i++) {
+    const val = a[NUMERIC_KEYS[i]!]
+    if (val !== undefined && val !== null && val !== '') return true
+  }
+  return false
 }
 
 /** Hạng sao GHI TRONG DỮ LIỆU, chưa qua bộ lọc §1.7. 0 = không rút được hạng. */
 /** Hạng từ BA KHOÁ SỐ. Tách ra để luật "ô số là rác chép nhầm cột" soi được
  *  riêng phần số, giống `_tu_khoa_so` bên bản Python. */
 function numericKeyTier(a: Record<string, any>): number {
-  for (const key of NUMERIC_KEYS) {
-    const raw = a[key]
+  for (let i = 0; i < NUMERIC_KEYS.length; i++) {
+    const raw = a[NUMERIC_KEYS[i]!]
     if (typeof raw === 'number' && Number.isFinite(raw)) return Math.trunc(raw)
     // Chuỗi thuần số ("4") vẫn là con số người ta định ghi.
-    if (typeof raw === 'string' && /^\s*[1-5]\s*$/.test(raw)) return parseInt(raw, 10)
+    if (typeof raw === 'string' && PURE_NUMERIC_TIER.test(raw)) return parseInt(raw, 10)
   }
   return 0
 }
@@ -77,8 +120,11 @@ export function ocopClaimedStars(e: OcopEntityLike | null | undefined): number {
 
 /** Văn xuôi có XÁC NHẬN hạng này cho CHÍNH entity không? Cùng cửa sổ ±40 với §1.7. */
 function proseAwardsTier(e: OcopEntityLike | null | undefined, tier: number): boolean {
-  const prose = `${e?.summary || ''} ${e?.description || ''}`
-  const needle = new RegExp(`${tier}\\s*sao`, 'gi')
+  const summary = e?.summary || ''
+  const description = e?.description || ''
+  if (!summary && !description) return false
+  const prose = `${summary} ${description}`
+  const needle = tierSaoRegex(tier)
   let m: RegExpExecArray | null
   while ((m = needle.exec(prose)) !== null) {
     const window = prose.slice(Math.max(0, m.index - CLAIM_WINDOW), m.index + m[0].length + CLAIM_WINDOW)
@@ -115,9 +161,7 @@ function proseAwardsTier(e: OcopEntityLike | null | undefined, tier: number): bo
  * nhưng vẫn tính là có dấu hiệu): đó là ý định ghi OCOP kèm lỗi gõ, khác hẳn
  * việc chép nhầm nguyên một cột khác.
  */
-export function ocopNumberIsColumnBleed(e: OcopEntityLike | null | undefined): boolean {
-  const a = attrs(e)
-  const n = numericKeyTier(a)
+function isColumnBleedWithTier(e: OcopEntityLike | null | undefined, a: Record<string, any>, n: number): boolean {
   if (n <= 0) return false
   if (n < MIN_GRADE) return true
   const lodgingStars = a.star_rating
@@ -125,6 +169,11 @@ export function ocopNumberIsColumnBleed(e: OcopEntityLike | null | undefined): b
   const parsed = parseInt(String(lodgingStars).trim(), 10)
   if (!Number.isFinite(parsed) || parsed !== n) return false
   return !proseAwardsTier(e, n)
+}
+
+export function ocopNumberIsColumnBleed(e: OcopEntityLike | null | undefined): boolean {
+  const a = attrs(e)
+  return isColumnBleedWithTier(e, a, numericKeyTier(a))
 }
 
 /**
@@ -151,10 +200,13 @@ export function ocopStarProvisional(e: OcopEntityLike | null | undefined): boole
  *  hạng lấy từ ô văn xuôi sau khi loại ô số rác. */
 function proseProposesTier(e: OcopEntityLike | null | undefined, claimed: number): boolean {
   if (claimed <= 0) return false
-  const prose = `${e?.summary || ''} ${e?.description || ''}`
+  const summary = e?.summary || ''
+  const description = e?.description || ''
+  if (!summary && !description) return false
+  const prose = `${summary} ${description}`
   if (!prose.trim()) return false
 
-  const needle = new RegExp(`${claimed}\\s*sao`, 'gi')
+  const needle = tierSaoRegex(claimed)
   let sawProposal = false
   let sawAwarded = false
   let m: RegExpExecArray | null
@@ -166,17 +218,14 @@ function proseProposesTier(e: OcopEntityLike | null | undefined, claimed: number
     if (PROPOSAL.test(window)) sawProposal = true
     if (AWARDED.test(window)) sawAwarded = true
   }
-  // Xét TOÀN VĂN, không xét từng lần nhắc. Văn xuôi của một entity tự mâu thuẫn
-  // với chính nó là chuyện thật, không phải giả định: `khoai-lang-say-binh-tan`
-  // nói "được đề xuất lên Trung ương đánh giá 5 sao" HAI lần rồi kết bằng câu
-  // trần "Sản phẩm OCOP 5 sao." Luật xét-từng-lần để đúng câu trần đó lật ngược
-  // cả phán quyết và trang lại khai 5 sao. Cùng họ với bẫy sáu-ô §5c: một sự
-  // thật nằm ở nhiều ô, các ô nói ngược nhau.
-  //
-  // Khi mâu thuẫn thì lời ĐỀ NGHỊ thắng lời khẳng định trần — nó cụ thể hơn, và
-  // §1.7 buộc nghiêng về phía KHÔNG khai khống. Chỉ lời xác nhận TƯỜNG MINH
-  // ("đạt N sao", "cấp quốc gia") mới lật lại được.
   return sawProposal && !sawAwarded
+}
+
+function effectiveTier(e: OcopEntityLike | null | undefined, a: Record<string, any>, numTier: number, badNumeric: boolean): number {
+  const n = badNumeric ? proseFieldTier(a) : (numTier || proseFieldTier(a))
+  if (n <= 0) return 0
+  if (proseProposesTier(e, n)) return 0
+  return n >= 1 && n <= 5 ? n : 0
 }
 
 /** Hạng DÙNG ĐƯỢC để xếp bậc và trưng ra. 0 = có chứng nhận nhưng chưa rõ hạng.
@@ -187,36 +236,28 @@ function proseProposesTier(e: OcopEntityLike | null | undefined, claimed: number
  * được ngay: Python trả 0, TS trả 9.
  */
 export function ocopStars(e: OcopEntityLike | null | undefined): number {
-  // Ô số là rác chép nhầm cột → bỏ nó, chỉ còn ô văn xuôi được nói.
-  const n = ocopNumberIsColumnBleed(e) ? proseFieldTier(attrs(e)) : ocopClaimedStars(e)
-  if (n <= 0) return 0
-  if (proseProposesTier(e, n)) return 0
-  return n >= 1 && n <= 5 ? n : 0
+  const a = attrs(e)
+  const numTier = numericKeyTier(a)
+  const badNumeric = isColumnBleedWithTier(e, a, numTier)
+  return effectiveTier(e, a, numTier, badNumeric)
 }
 
 /** Có dấu hiệu OCOP nào không — kể cả khi không rút được hạng. */
 export function isOcopCertified(e: OcopEntityLike | null | undefined): boolean {
   const a = attrs(e)
-  const hasNumber = NUMERIC_KEYS.some(k => a[k] !== undefined && a[k] !== null && a[k] !== '')
-  // Ô số rác chép nhầm cột KHÔNG phải dấu hiệu OCOP — nếu tính, 12 khách sạn vẫn
-  // đeo huy hiệu «OCOP» trơn, vẫn lọt bộ lọc và sổ vinh danh.
-  if (hasNumber && !ocopNumberIsColumnBleed(e)) return true
-  return !!(a.ocop || a.ocop_certified)
+  if (hasAnyNumericKey(a) && !isColumnBleedWithTier(e, a, numericKeyTier(a))) return true
+  return Boolean(a.ocop || a.ocop_certified)
 }
 
 /**
  * Nhãn hiển thị cho huy hiệu OCOP — «OCOP 5 sao» · «OCOP» · '' (không có).
- *
- * TUYỆT ĐỐI không in `attributes.ocop` thô ra giao diện. Trường đó là văn xuôi
- * tự do, và ít nhất một entity mang cả danh mục sản phẩm của công ty KHÁC:
- *   dua-sap-cau-ke → "VICOSAP: 4 SP OCOP 5 sao quốc gia + 7 SP OCOP 4 sao"
- * In thô ra thì trang gán chứng nhận của người khác cho trái dừa — đo được
- * 2026-08-27: huy hiệu rộng 468px, và chuỗi đó còn lọt vào JSON-LD `brand.name`
- * cho Google đọc. Một entity khác mang số quyết định:
- *   "OCOP 4 sao (QĐ 114/QĐ-UBND, 15/1/2020)"
  */
 export function ocopBadgeLabel(e: OcopEntityLike | null | undefined): string {
-  if (!isOcopCertified(e)) return ''
-  const tier = ocopStars(e)
-  return tier > 0 ? `OCOP ${tier} sao` : 'OCOP'
+  const a = attrs(e)
+  const numTier = numericKeyTier(a)
+  const badNumeric = isColumnBleedWithTier(e, a, numTier)
+  const tier = effectiveTier(e, a, numTier, badNumeric)
+  if (tier > 0) return BADGE_LABELS[tier]!
+  const hasNumeric = hasAnyNumericKey(a) && !badNumeric
+  return (hasNumeric || Boolean(a.ocop || a.ocop_certified)) ? 'OCOP' : ''
 }

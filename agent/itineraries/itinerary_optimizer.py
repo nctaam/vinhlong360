@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import lru_cache
+from itertools import pairwise
 import math
 
 
@@ -17,7 +18,7 @@ class NoFeasibleRouteError(ValueError):
     """Raised when the requested directional route cannot be constructed."""
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class RouteStop:
     id: str
     coordinates: Coordinates
@@ -36,7 +37,7 @@ class RouteStop:
             raise ValueError("Kinh độ phải nằm trong khoảng [-180, 180]")
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class OptimizeOptions:
     strict_direction: bool = True
     station_tolerance: float = 0.02
@@ -53,7 +54,7 @@ class OptimizeOptions:
             raise ValueError("Độ rộng beam search phải lớn hơn 0")
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class OptimizeResult:
     ordered_ids: tuple[str, ...]
     distance_before_km: float
@@ -63,13 +64,13 @@ class OptimizeResult:
     warnings: tuple[str, ...]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Projection:
     station: float
     lateral_km: float
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class _PreparedStop:
     stop: RouteStop
     original_index: int
@@ -127,7 +128,7 @@ def project_onto_corridor(
 def _path_distance_km(stops: list[RouteStop]) -> float:
     return sum(
         haversine_km(source.coordinates, target.coordinates)
-        for source, target in zip(stops, stops[1:])
+        for source, target in pairwise(stops)
     )
 
 
@@ -187,7 +188,7 @@ def _path_cost(
 ) -> float:
     return sum(
         _edge_cost(prepared[source], prepared[target], corridor_length_km)
-        for source, target in zip(path, path[1:])
+        for source, target in pairwise(path)
     )
 
 
@@ -198,7 +199,7 @@ def _path_is_allowed(
 ) -> bool:
     return all(
         _edge_allowed(prepared[source], prepared[target], options)
-        for source, target in zip(path, path[1:])
+        for source, target in pairwise(path)
     )
 
 
@@ -276,16 +277,17 @@ def _expand_exact_states(
     full_mask = (1 << len(middle)) - 1
     for mask in range(1, full_mask + 1):
         for last_position, last_index in enumerate(middle):
-            _expand_exact_state(
-                states,
-                mask,
-                last_position,
-                last_index,
-                middle,
-                prepared,
-                options,
-                corridor_length_km,
-            )
+            if mask & (1 << last_position):
+                _expand_exact_state(
+                    states,
+                    mask,
+                    last_position,
+                    last_index,
+                    middle,
+                    prepared,
+                    options,
+                    corridor_length_km,
+                )
 
 
 def _finish_exact_path(
@@ -381,13 +383,14 @@ def _expand_beam_state(
         ):
             continue
         next_mask = mask | bit
-        remaining = tuple(
-            index
-            for position, index in enumerate(middle)
-            if not next_mask & (1 << position)
-        )
-        if _leaves_unreachable_stop(next_index, remaining, prepared, options):
-            continue
+        if options.strict_direction:
+            remaining = tuple(
+                index
+                for position, index in enumerate(middle)
+                if not next_mask & (1 << position)
+            )
+            if _leaves_unreachable_stop(next_index, remaining, prepared, options):
+                continue
         next_cost = state_cost + _edge_cost(
             prepared[last_index],
             prepared[next_index],
@@ -553,7 +556,7 @@ def _backtrack_ratio(
             prepared[source].projection.station
             - prepared[target].projection.station,
         ) * corridor_length_km
-        for source, target in zip(path, path[1:])
+        for source, target in pairwise(path)
     )
     if backward_progress_km < 1e-12:
         return 0.0

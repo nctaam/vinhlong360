@@ -26,7 +26,7 @@ def _is_filled_str(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class SelectionCandidate:
     stop: ScheduleStop
     reward: float
@@ -50,7 +50,7 @@ class SelectionCandidate:
         object.__setattr__(self, "area", self.area.strip())
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class SelectionOptions:
     target_count: int
     exact_limit: int = 8
@@ -71,7 +71,7 @@ class SelectionOptions:
             raise ValueError("Deadline phải là số hữu hạn dương")
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class DroppedCandidate:
     stop_id: str
     reason: str
@@ -83,7 +83,7 @@ class DroppedCandidate:
             raise ValueError("Lý do loại candidate không được để trống")
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class SelectionResult:
     schedule: ScheduleResult
     selected_ids: tuple[str, ...]
@@ -115,7 +115,7 @@ class SelectionResult:
         object.__setattr__(self, "warnings", tuple(self.warnings))
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class _BeamState:
     selected_ids: frozenset[str]
     remaining_ids: tuple[str, ...]
@@ -179,15 +179,15 @@ def prune_candidates(
 
     dropped: list[DroppedCandidate] = []
     survivors: list[SelectionCandidate] = []
+    non_required = [other for other in items if other.stop.id not in required_ids]
     for item in items:
         if item.stop.id in required_ids:
             survivors.append(item)
             continue
         if any(
             _dominates(other, item)
-            for other in items
+            for other in non_required
             if other.stop.id != item.stop.id
-            and other.stop.id not in required_ids
         ):
             dropped.append(DroppedCandidate(item.stop.id, "dominated"))
             continue
@@ -240,6 +240,23 @@ class _SelectionSearch:
     visit_bound_infeasible: set = field(default_factory=set)
 
 
+def _subset_matrix_view(
+    matrix: TravelMatrix,
+    matrix_indexes: dict[str, int],
+    stop_ids: tuple[str, ...],
+) -> TravelMatrix:
+    indexes = tuple(matrix_indexes[stop_id] for stop_id in stop_ids)
+    durations = matrix.duration_minutes
+    return TravelMatrix(
+        stop_ids,
+        tuple(
+            tuple(durations[row][column] for column in indexes)
+            for row in indexes
+        ),
+        matrix.source,
+    )
+
+
 def _build_subset_view(
     search: _SelectionSearch, optional_ids: frozenset[str], remaining: float
 ) -> tuple[list[ScheduleStop], TravelMatrix, ScheduleOptions]:
@@ -259,15 +276,7 @@ def _build_subset_view(
     ]
     stop_ids = tuple(stop.id for stop in stops)
     stop_id_set = set(stop_ids)
-    indexes = [search.matrix_indexes[stop_id] for stop_id in stop_ids]
-    view = TravelMatrix(
-        stop_ids,
-        tuple(
-            tuple(search.matrix.duration_minutes[row][column] for column in indexes)
-            for row in indexes
-        ),
-        search.matrix.source,
-    )
+    view = _subset_matrix_view(search.matrix, search.matrix_indexes, stop_ids)
     local_options = replace(
         search.schedule_options,
         deadline_seconds=min(search.schedule_options.deadline_seconds, remaining),
@@ -283,7 +292,7 @@ def _build_subset_view(
 def _evaluate_subset(
     search: _SelectionSearch, optional_ids: frozenset[str]
 ) -> tuple[ScheduleResult | None, bool]:
-    key = frozenset(item.stop.id for item in search.required).union(optional_ids)
+    key = search.required_ids.union(optional_ids)
     cached = search.cache.get(key)
     if cached is not None:
         return cached
@@ -318,16 +327,12 @@ def _selection_objective(
     schedule: ScheduleResult,
     selected_optional_ids: frozenset[str],
 ) -> tuple[object, ...]:
-    selected_ids = tuple(
-        item.stop.id
-        for item in search.items
-        if item.stop.id in search.required_ids or item.stop.id in selected_optional_ids
-    )
     selected_items = [
         item
         for item in search.items
         if item.stop.id in search.required_ids or item.stop.id in selected_optional_ids
     ]
+    selected_ids = tuple(item.stop.id for item in selected_items)
     return (
         -len(selected_ids),
         -sum(item.reward for item in selected_items),
@@ -426,6 +431,15 @@ def _better_incumbent(
     return incumbent
 
 
+def _subset_ids_and_reward(
+    subset: tuple[SelectionCandidate, ...], required_reward: float
+) -> tuple[frozenset[str], float]:
+    return (
+        frozenset(item.stop.id for item in subset),
+        required_reward + sum(item.reward for item in subset),
+    )
+
+
 def _exact_search(
     search: _SelectionSearch,
     incumbent: tuple[ScheduleResult, frozenset[str]] | None,
@@ -443,8 +457,7 @@ def _exact_search(
             if time.perf_counter() >= search.deadline:
                 deadline_reached = True
                 break
-            subset_ids = frozenset(item.stop.id for item in subset)
-            subset_reward = required_reward + sum(item.reward for item in subset)
+            subset_ids, subset_reward = _subset_ids_and_reward(subset, required_reward)
             if _exact_subset_dominated(
                 search, incumbent, count, required_count, required_reward, subset_reward
             ):
@@ -639,15 +652,17 @@ def _best_repair_neighbor(
     optional_rank: dict[str, int],
 ) -> tuple[tuple[ScheduleResult, frozenset[str]], bool]:
     best = incumbent
+    best_objective = _selection_objective(search, best[0], best[1])
     for neighbor_ids in sorted(
         neighborhoods,
         key=lambda ids: tuple(sorted(ids, key=optional_rank.__getitem__)),
     ):
         schedule, timed_out = _evaluate_subset(search, neighbor_ids)
-        if schedule is not None and _selection_objective(
-            search, schedule, neighbor_ids
-        ) < _selection_objective(search, best[0], best[1]):
-            best = (schedule, neighbor_ids)
+        if schedule is not None:
+            candidate_objective = _selection_objective(search, schedule, neighbor_ids)
+            if candidate_objective < best_objective:
+                best = (schedule, neighbor_ids)
+                best_objective = candidate_objective
         if timed_out:
             return best, True
     return best, False

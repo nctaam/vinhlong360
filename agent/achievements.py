@@ -43,6 +43,7 @@ ACHIEVEMENTS: list[dict] = [
 ]
 
 _ACH_BY_ID = {a["id"]: a for a in ACHIEVEMENTS}
+_METRIC_ACHIEVEMENTS = tuple(a for a in ACHIEVEMENTS if a["id"] != "allrounder")
 import threading
 
 _CATEGORIES = ("content", "explorer", "social", "veteran")  # nhóm để tính allrounder
@@ -154,8 +155,8 @@ def check_achievements(conn, user_id: str, notify: bool = True) -> list[dict]:
         newly.append(_ACH_BY_ID[ach_id])
 
     # 1) Thành tích chỉ-số thường (bỏ allrounder tới cuối)
-    for a in ACHIEVEMENTS:
-        if a["id"] == "allrounder" or a["id"] in earned_ids:
+    for a in _METRIC_ACHIEVEMENTS:
+        if a["id"] in earned_ids:
             continue
         if metrics.get(a["metric"], 0) >= a["target"]:
             _award(a["id"])
@@ -191,17 +192,18 @@ async def get_my_achievements(user=Depends(require_user)):
             rows = db._fetchall(conn, f"""
                 SELECT achievement_id, unlocked_at FROM user_achievements WHERE user_id::text = {ph}
             """, (uid,))
-            unlocked = {db._row_to_dict(r)["achievement_id"]: db._row_to_dict(r)["unlocked_at"] for r in rows}
+            unlocked = {(d := db._row_to_dict(r))["achievement_id"]: d["unlocked_at"] for r in rows}
             return metrics, unlocked
 
     metrics, unlocked = await asyncio.to_thread(_query)
 
+    earned_cats = {_ACH_BY_ID[i]["category"] for i in unlocked if i in _ACH_BY_ID}
+    categories_covered_count = sum(1 for c in _CATEGORIES if c in earned_cats)
     out = []
     for a in ACHIEVEMENTS:
         earned = a["id"] in unlocked
         if a["metric"] == "categories_covered":
-            earned_cats = {_ACH_BY_ID[i]["category"] for i in unlocked if i in _ACH_BY_ID}
-            current = sum(1 for c in _CATEGORIES if c in earned_cats)
+            current = categories_covered_count
         else:
             current = metrics.get(a["metric"], 0)
         out.append({

@@ -33,8 +33,9 @@ import os
 import time
 from collections import deque
 from contextlib import contextmanager
+from itertools import islice
 from threading import Lock
-from typing import Any, Callable, Deque, Dict, Generator, List, Optional
+from typing import Any, Callable, Deque, Dict, Generator, List, Optional, Sequence
 
 logger = logging.getLogger("vinhlong360.tracing")
 
@@ -191,7 +192,7 @@ def _noop_span(name: str = "", **kwargs: Any) -> Generator[Any, None, None]:
 def _traced_span(
     span_name: str,
     attrs: Dict[str, Any],
-    collect_keys: Optional[List[str]] = None,
+    collect_keys: Optional[Sequence[str]] = None,
 ) -> Generator[Any, None, None]:
     """Shared boilerplate for all GenAI span creators.
 
@@ -279,6 +280,13 @@ def trace_tool_call(
         yield span
 
 
+_LLM_COLLECT_KEYS: tuple[str, ...] = (
+    "gen_ai.usage.prompt_tokens",
+    "gen_ai.usage.completion_tokens",
+)
+_RAG_COLLECT_KEYS: tuple[str, ...] = ("rag.results_count",)
+
+
 @contextmanager
 def trace_llm_call(
     model: str,
@@ -289,9 +297,7 @@ def trace_llm_call(
         yield None
         return
     attrs = {"gen_ai.request.model": model, "gen_ai.request.messages_count": messages_count}
-    with _traced_span("llm.completion", attrs,
-                      collect_keys=["gen_ai.usage.prompt_tokens",
-                                    "gen_ai.usage.completion_tokens"]) as span:
+    with _traced_span("llm.completion", attrs, collect_keys=_LLM_COLLECT_KEYS) as span:
         yield span
 
 
@@ -305,8 +311,7 @@ def trace_rag_retrieval(
         yield None
         return
     attrs = {"rag.query": query[:200], "rag.strategy": strategy}
-    with _traced_span("rag.retrieve", attrs,
-                      collect_keys=["rag.results_count"]) as span:
+    with _traced_span("rag.retrieve", attrs, collect_keys=_RAG_COLLECT_KEYS) as span:
         yield span
 
 
@@ -342,43 +347,17 @@ def traced(operation_name: Optional[str] = None) -> Callable:
     """
     def decorator(func: Callable) -> Callable:
         span_name = operation_name or func.__name__
+        base_attrs = {
+            "code.function": func.__name__,
+            "code.namespace": func.__module__ or "",
+        }
 
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             if _tracer is None:
                 return func(*args, **kwargs)
-
-            with _tracer.start_as_current_span(span_name) as span:
-                start = time.monotonic()
-                span.set_attribute("code.function", func.__name__)
-                span.set_attribute("code.namespace", func.__module__ or "")
-
-                status = "OK"
-                try:
-                    result = func(*args, **kwargs)
-                    span.set_status(Status(StatusCode.OK))
-                    return result
-                except Exception as exc:
-                    status = "ERROR"
-                    span.set_status(Status(StatusCode.ERROR, str(exc)))
-                    span.record_exception(exc)
-                    raise
-                finally:
-                    duration_ms = (time.monotonic() - start) * 1000
-                    span.set_attribute("duration_ms", round(duration_ms, 2))
-                    ctx = span.get_span_context()
-                    _record_span(
-                        trace_id=format(ctx.trace_id, "032x"),
-                        span_id=format(ctx.span_id, "016x"),
-                        name=span_name,
-                        start_time=start,
-                        duration_ms=duration_ms,
-                        status=status,
-                        attributes={
-                            "code.function": func.__name__,
-                            "code.namespace": func.__module__ or "",
-                        },
-                    )
+            with _traced_span(span_name, base_attrs):
+                return func(*args, **kwargs)
 
         return wrapper
     return decorator
@@ -414,24 +393,21 @@ def get_trace_summary() -> Dict[str, Any]:
 
     total = len(spans)
     counts: Dict[str, int] = {}
-    durations: Dict[str, List[float]] = {}
+    duration_sums: Dict[str, float] = {}
     errors: Dict[str, int] = {}
     total_errors = 0
 
     for s in spans:
         name = s["name"]
         counts[name] = counts.get(name, 0) + 1
-
-        if name not in durations:
-            durations[name] = []
-        durations[name].append(s["duration_ms"])
+        duration_sums[name] = duration_sums.get(name, 0.0) + s["duration_ms"]
 
         if s["status"] == "ERROR":
             total_errors += 1
             errors[name] = errors.get(name, 0) + 1
 
     avg_durations = {
-        name: round(sum(vals) / len(vals), 2) for name, vals in durations.items()
+        name: round(duration_sums[name] / count, 2) for name, count in counts.items()
     }
 
     return {
@@ -452,12 +428,10 @@ def export_traces_json(limit: int = 100) -> List[Dict[str, Any]]:
     Args:
         limit: so luong span toi da tra ve (default 100).
     """
+    if limit <= 0:
+        return []
     with _store_lock:
-        spans = list(_span_store)
-
-    # Moi nhat truoc
-    spans.reverse()
-    return spans[:limit]
+        return list(islice(reversed(_span_store), limit))
 
 
 # ==============================================================

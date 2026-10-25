@@ -38,14 +38,16 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import sys
 from datetime import timedelta, timezone
+from pathlib import Path
+from threading import Lock
+from typing import Optional
 
 from control_plane.clock import system_clock
 
 _VN_TZ = timezone(timedelta(hours=7))
-from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +95,8 @@ try:
 except ImportError:
     HAS_DDGS = False
 
+_llm_lock = Lock()
+
 try:
     from openai import OpenAI
     _llm_client = None
@@ -100,10 +104,12 @@ try:
     def _get_llm_client() -> OpenAI | None:
         global _llm_client
         if _llm_client is None:
-            api_key = os.environ.get("LLM_API_KEY")
-            base_url = os.environ.get("LLM_BASE_URL")
-            if api_key and base_url:
-                _llm_client = OpenAI(api_key=api_key, base_url=base_url)
+            with _llm_lock:
+                if _llm_client is None:
+                    api_key = os.environ.get("LLM_API_KEY")
+                    base_url = os.environ.get("LLM_BASE_URL")
+                    if api_key and base_url:
+                        _llm_client = OpenAI(api_key=api_key, base_url=base_url)
         return _llm_client
     HAS_LLM = True
 except ImportError:
@@ -152,8 +158,11 @@ def _web_search(query: str, max_results: int = 5) -> list[dict]:
 
 # ── Helper: generate follow-up suggestions via LLM ──
 
+_JSON_FENCE_START_RE = re.compile(r"^```json\s*")
+_JSON_FENCE_END_RE = re.compile(r"\s*```$")
+
+
 def _generate_followups(context: str) -> list[str]:
-    import re as _re
     client = _get_llm_client()
     if not client:
         return []
@@ -172,8 +181,8 @@ def _generate_followups(context: str) -> list[str]:
             temperature=0.7,
         )
         content = response.choices[0].message.content.strip()
-        content = _re.sub(r"^```json\s*", "", content)
-        content = _re.sub(r"\s*```$", "", content)
+        content = _JSON_FENCE_START_RE.sub("", content)
+        content = _JSON_FENCE_END_RE.sub("", content)
         return json.loads(content)[:3]
     except Exception as exc:
         logger.warning("Follow-up generation failed: %s", exc)
@@ -321,6 +330,29 @@ def itinerary_detail(itinerary_id: str) -> str:
     return json.dumps({**it, "stops": stops_detail}, ensure_ascii=False)
 
 
+_kb_cache_lock = Lock()
+_place_counts_cache: tuple[tuple[int, int] | None, dict[str, int]] = (None, {})
+_resource_entities_cache: tuple[tuple[int, int] | None, str] = (None, "")
+
+
+def _get_place_content_counts() -> dict[str, int]:
+    global _place_counts_cache
+    raw = knowledge._entities
+    key = (id(raw), len(raw))
+    with _kb_cache_lock:
+        cached_key, cached_counts = _place_counts_cache
+        if cached_key == key:
+            return cached_counts
+        counts: dict[str, int] = {}
+        card_types = knowledge.CARD_TYPES
+        for e in raw.values():
+            pid = e.get("placeId")
+            if pid and e["type"] in card_types:
+                counts[pid] = counts.get(pid, 0) + 1
+        _place_counts_cache = (key, counts)
+        return counts
+
+
 @mcp.tool(
     name="places_in_area",
     description="Danh sach cac xa/phuong trong mot khu vuc, kem so luong noi dung.",
@@ -333,11 +365,7 @@ def places_in_area(area: str) -> str:
     """
     _ensure_knowledge()
     ps = knowledge.places(area)
-    content_counts: dict[str, int] = {}
-    for e in knowledge._entities.values():
-        pid = e.get("placeId")
-        if pid and e["type"] in knowledge.CARD_TYPES:
-            content_counts[pid] = content_counts.get(pid, 0) + 1
+    content_counts = _get_place_content_counts()
     return json.dumps([{
         "id": p["id"],
         "name": p["name"],
@@ -522,18 +550,29 @@ def weather(area: Optional[str] = None) -> str:
 )
 def resource_entities() -> str:
     """List all entities in the knowledge base (id, name, type)."""
+    global _resource_entities_cache
     _ensure_knowledge()
-    entities = []
-    for e in knowledge._entities.values():
-        if e["type"] in knowledge.CARD_TYPES:
-            entities.append({
+    raw = knowledge._entities
+    key = (id(raw), len(raw))
+    with _kb_cache_lock:
+        cached_key, cached_json = _resource_entities_cache
+        if cached_key == key:
+            return cached_json
+        card_types = knowledge.CARD_TYPES
+        entities = [
+            {
                 "id": e["id"],
                 "name": e["name"],
                 "type": e["type"],
                 "summary": e.get("summary", "")[:100],
-            })
-    entities.sort(key=lambda x: x["name"])
-    return json.dumps(entities, ensure_ascii=False)
+            }
+            for e in raw.values()
+            if e["type"] in card_types
+        ]
+        entities.sort(key=lambda x: x["name"])
+        payload = json.dumps(entities, ensure_ascii=False)
+        _resource_entities_cache = (key, payload)
+        return payload
 
 
 @mcp.resource(
@@ -587,14 +626,14 @@ def resource_stats() -> str:
 )
 def prompt_travel_advisor() -> list[dict]:
     """System prompt that turns an LLM into a Vinh Long tourism advisor."""
-    current_month = system_clock.now_vietnam().month
+    now_vn = system_clock.now_vietnam()
     return [
         {
             "role": "user",
             "content": (
                 f"{SYSTEM_PROMPT}\n\n"
-                f"Hom nay: {system_clock.now_vietnam().strftime('%d/%m/%Y')}. "
-                f"Thang hien tai: {current_month}.\n\n"
+                f"Hom nay: {now_vn.strftime('%d/%m/%Y')}. "
+                f"Thang hien tai: {now_vn.month}.\n\n"
                 f"Hay tra loi cau hoi cua du khach."
             ),
         }
@@ -643,18 +682,20 @@ def prompt_itinerary_planner(
 #  CONFIG HELPER
 # ═══════════════════════════════════════════════════════════════════════
 
+_MCP_SCRIPT_PATH = str(Path(__file__).resolve()).replace("\\", "/")
+
+
 def get_mcp_config() -> dict:
     """Return the Claude Desktop / Claude Code config snippet for this MCP server.
 
     Usage:
         python -c "from agent.mcp_server import get_mcp_config; import json; print(json.dumps(get_mcp_config(), indent=2))"
     """
-    script_path = str(Path(__file__).resolve()).replace("\\", "/")
     return {
         "mcpServers": {
             "vinhlong360": {
                 "command": "python",
-                "args": [script_path],
+                "args": [_MCP_SCRIPT_PATH],
             }
         }
     }

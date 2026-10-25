@@ -11,10 +11,12 @@ Theo dõi:
 Dữ liệu lưu: agent/data/analytics.json
 """
 
+import heapq
 import json
 import logging
 import os
 import sys
+import tempfile
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from itertools import islice
@@ -118,7 +120,7 @@ def track_query(
     """Ghi nhận 1 query từ user."""
     owner_write_gate.assert_writable(owner_key)
     with _lock:
-        data = _load()
+        data = _read_snapshot()
         now = datetime.now(timezone.utc)
         today = now.strftime("%Y-%m-%d")
 
@@ -147,7 +149,7 @@ def track_query(
             name = tool.split("(")[0] if "(" in tool else tool
             data["tool_usage"][name] = data["tool_usage"].get(name, 0) + 1
         if len(data["tool_usage"]) > _MAX_TOOL_USAGE:
-            top_tools = sorted(data["tool_usage"].items(), key=lambda x: x[1], reverse=True)[:_MAX_TOOL_USAGE]
+            top_tools = heapq.nlargest(_MAX_TOOL_USAGE, data["tool_usage"].items(), key=lambda x: x[1])
             data["tool_usage"] = dict(top_tools)
 
         # Daily stats
@@ -165,10 +167,10 @@ _MAX_ENTITY_HITS = 10_000
 def track_entity_hit(entity_id: str):
     """Ghi nhận entity được truy cập."""
     with _lock:
-        data = _load()
+        data = _read_snapshot()
         data["entity_hits"][entity_id] = data["entity_hits"].get(entity_id, 0) + 1
         if len(data["entity_hits"]) > _MAX_ENTITY_HITS:
-            top = sorted(data["entity_hits"].items(), key=lambda x: x[1], reverse=True)[:_MAX_ENTITY_HITS]
+            top = heapq.nlargest(_MAX_ENTITY_HITS, data["entity_hits"].items(), key=lambda x: x[1])
             data["entity_hits"] = dict(top)
         _save(data)
 
@@ -176,7 +178,7 @@ def track_entity_hit(entity_id: str):
 def track_session():
     """Ghi nhận 1 session mới."""
     with _lock:
-        data = _load()
+        data = _read_snapshot()
         data["sessions"] += 1
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         if today not in data["daily_stats"]:
@@ -193,9 +195,6 @@ def save_conversation(
     owner_write_gate.assert_writable(owner_key)
     tmp = None
     try:
-        import os
-        import tempfile
-
         filepath = CONVERSATIONS_DIR / f"{session_id}.json"
         filepath.parent.mkdir(parents=True, exist_ok=True)
         fd, tmp_name = tempfile.mkstemp(
@@ -224,7 +223,7 @@ def save_conversation(
 def purge_owner_records(owner_key: str) -> int:
     """Remove exact owner-attributed query and unanswered records."""
     with _lock:
-        data = _load()
+        data = _read_snapshot()
         removed = 0
         for field in ("queries", "unanswered"):
             records = data.get(field, [])
@@ -260,7 +259,7 @@ def verify_owner_records_absent(owner_key: str) -> bool:
 def export_owner_records(owner_key: str) -> list[dict]:
     """Return owner-attributed analytics rows for lifecycle export."""
     with _lock:
-        data = _load()
+        data = _read_snapshot()
         return [
             dict(record)
             for field in ("queries", "unanswered")
@@ -331,8 +330,8 @@ def get_top_entities(limit: int = 20) -> list[dict]:
     """Entities được truy cập nhiều nhất."""
     with _lock:
         data = _read_snapshot()
-        sorted_hits = sorted(data["entity_hits"].items(), key=lambda x: -x[1])
-        return [{"entity_id": eid, "hits": count} for eid, count in sorted_hits[:limit]]
+        top_hits = heapq.nlargest(limit, data["entity_hits"].items(), key=lambda x: x[1])
+        return [{"entity_id": eid, "hits": count} for eid, count in top_hits]
 
 
 def get_knowledge_gaps(limit: int = 20, since: str | None = None) -> list[dict]:

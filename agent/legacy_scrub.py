@@ -66,14 +66,14 @@ class ScrubDataError(ScrubError):
     """A declared store could not be parsed or safely transformed."""
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class _ProfileStore:
     data: Mapping[str, Any]
     encrypted: bool
     key: bytes | None = None
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class ScrubFile:
     store_name: str
     path: Path
@@ -88,7 +88,7 @@ class ScrubFile:
         return self.path.as_posix()
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class ScrubPlan:
     root: Path
     owner_ids: tuple[str, ...]
@@ -104,7 +104,7 @@ class ScrubPlan:
         return sum(item.owner_matches for item in self.files)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class ScrubManifest:
     tool_version: str
     mode: str
@@ -193,28 +193,40 @@ def _iter_declared_files(root: Path):
             yield store_name, selected[0], selected[1]
 
 
-def _load_file(path: Path, kind: str):
+_JSON_STORE_KINDS = frozenset({"json", "conversation"})
+_RECORD_OWNER_FIELDS = ("owner_key", "user_id", "user_key", "actor")
+
+
+def _read_store_text(path: Path, raw_bytes: bytes | None) -> str:
     try:
-        text = path.read_text(encoding="utf-8")
-    except OSError as exc:
+        return raw_bytes.decode("utf-8") if raw_bytes is not None else path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
         raise ScrubDataError(f"cannot read declared store: {path.name}") from exc
+
+
+def _parse_jsonl_rows(path: Path, text: str) -> list[Any]:
+    rows = []
+    for line_number, line in enumerate(text.splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
+            rows.append(json.loads(line))
+        except json.JSONDecodeError as exc:
+            raise ScrubDataError(f"invalid JSONL at line {line_number}: {path.name}") from exc
+    return rows
+
+
+def _load_file(path: Path, kind: str, *, raw_bytes: bytes | None = None):
+    text = _read_store_text(path, raw_bytes)
     if kind == "profiles":
         return _load_profiles(path, text)
-    if kind in {"json", "conversation"}:
+    if kind in _JSON_STORE_KINDS:
         try:
             return json.loads(text)
         except json.JSONDecodeError as exc:
             raise ScrubDataError(f"invalid JSON in declared store: {path.name}") from exc
     if kind == "jsonl":
-        rows = []
-        for line_number, line in enumerate(text.splitlines(), 1):
-            if not line.strip():
-                continue
-            try:
-                rows.append(json.loads(line))
-            except json.JSONDecodeError as exc:
-                raise ScrubDataError(f"invalid JSONL at line {line_number}: {path.name}") from exc
-        return rows
+        return _parse_jsonl_rows(path, text)
     raise ScrubDataError(f"unsupported declared store kind: {kind}")
 
 
@@ -248,7 +260,7 @@ def _owner_match(value: Any, owner_ids: set[str]) -> bool:
 def _record_owner_match(record: Mapping[str, Any], owner_ids: set[str]) -> bool:
     return any(
         _owner_match(record.get(field), owner_ids)
-        for field in ("owner_key", "user_id", "user_key", "actor")
+        for field in _RECORD_OWNER_FIELDS
     )
 
 
@@ -270,11 +282,11 @@ def _graph_collections(payload: Any) -> tuple[list, list]:
 
 def _scrub_graph(payload: Any, owner_ids: set[str]) -> tuple[Any, int, bool]:
     nodes, edges = _graph_collections(payload)
-    retained_nodes = [node for node in nodes if not (isinstance(node, dict) and _owner_match(node.get("id"), owner_ids))]
+    retained_nodes = [node for node in nodes if not _owner_match(node.get("id"), owner_ids)]
     retained_edges = [edge for edge in edges if not _edge_owner_match(edge, owner_ids)]
     result = dict(payload)
-    result["nodes"] = [_redact(node) for node in retained_nodes]
-    result["edges"] = [_redact(edge) for edge in retained_edges]
+    result["nodes"] = retained_nodes
+    result["edges"] = retained_edges
     removed = len(nodes) - len(retained_nodes) + len(edges) - len(retained_edges)
     return _redact(result), removed, False
 
@@ -347,14 +359,19 @@ def _scrub_record_list(payload: Any, owner_ids: set[str], label: str) -> tuple[A
 def _scrub_mapping_records(payload: Any, owner_ids: set[str], label: str) -> tuple[Any, int, bool]:
     if not isinstance(payload, dict):
         raise ScrubDataError(f"invalid mapping store: {label}")
-    result = _redact(payload)
-    removed = 0
     fields = ("queries", "unanswered") if label == "analytics" else ("records",)
+    result = {k: _redact(v) for k, v in payload.items() if k not in fields}
+    removed = 0
     for field in fields:
-        rows = payload.get(field, [])
-        cleaned, count, _ = _scrub_record_list(rows, owner_ids, label)
-        result[field] = cleaned
-        removed += count
+        if field in payload:
+            rows = payload[field]
+            cleaned, count, _ = _scrub_record_list(rows, owner_ids, label)
+            result[field] = cleaned
+            removed += count
+        elif field in ("queries", "unanswered", "records"):
+            cleaned, count, _ = _scrub_record_list([], owner_ids, label)
+            result[field] = cleaned
+            removed += count
     return result, removed, False
 
 
@@ -376,7 +393,7 @@ def _scrub_guardrail_budget(payload: Any, owner_ids: set[str]) -> tuple[Any, int
     if not isinstance(payload, dict) or not isinstance(payload.get("sessions"), dict):
         raise ScrubDataError("invalid guardrail budget store")
     cleaned, removed, _ = _scrub_keyed_owners(payload["sessions"], owner_ids, "guardrail_budget")
-    result = _redact(payload)
+    result = {k: _redact(v) for k, v in payload.items() if k != "sessions"}
     result["sessions"] = cleaned
     return result, removed, False
 
@@ -384,7 +401,7 @@ def _scrub_guardrail_budget(payload: Any, owner_ids: set[str]) -> tuple[Any, int
 def _scrub_compiled_demos(payload: Any, owner_ids: set[str]) -> tuple[Any, int, bool]:
     if not isinstance(payload, dict) or not isinstance(payload.get("demos", {}), dict):
         raise ScrubDataError("invalid compiled prompt store")
-    result = _redact(payload)
+    result = {k: _redact(v) for k, v in payload.items() if k != "demos"}
     result["demos"] = {}
     removed = 0
     for intent, rows in payload["demos"].items():
@@ -513,8 +530,13 @@ def _scan_value(value: Any) -> tuple[int, set[str]]:
     return findings, types
 
 
-def _file_preview(item: ScrubFile, owner_ids: set[str]) -> tuple[Any, int, bool, int, set[str]]:
-    payload = _load_file(item.path, item.kind)
+def _file_preview(
+    item: ScrubFile,
+    owner_ids: set[str],
+    *,
+    raw_bytes: bytes | None = None,
+) -> tuple[Any, int, bool, int, set[str]]:
+    payload = _load_file(item.path, item.kind, raw_bytes=raw_bytes)
     scrubbed, matches, delete = _scrub_payload(item.store_name, payload, owner_ids)
     findings, types = _scan_value(payload)
     return scrubbed, matches, delete, findings, types
@@ -529,17 +551,20 @@ def build_scrub_plan(root: str | Path, *, owner_ids: Sequence[str]) -> ScrubPlan
     owner_set = set(owners)
     for store_name, path, kind in _iter_declared_files(root_path):
         content = path.read_bytes()
+        digest = _digest_bytes(content)
+        size = len(content)
         _scrubbed, matches, _delete, pii_findings, _types = _file_preview(
-            ScrubFile(store_name, path, kind, _digest_bytes(content), len(content), 0, 0),
+            ScrubFile(store_name, path, kind, digest, size, 0, 0),
             owner_set,
+            raw_bytes=content,
         )
         files.append(
             ScrubFile(
                 store_name=store_name,
                 path=path,
                 kind=kind,
-                before_digest=_digest_bytes(content),
-                before_bytes=len(content),
+                before_digest=digest,
+                before_bytes=size,
                 owner_matches=matches,
                 pii_findings=pii_findings,
             )
@@ -741,7 +766,8 @@ _REMAINING_HANDLERS = {
 
 
 def _remaining_for_store(store_name: str, payload: Any, owners: set[str]) -> int:
-    _scrub_payload(store_name, payload, set())
+    if store_name not in _SCRUB_ADAPTERS:
+        raise ScrubDataError(f"no scrub adapter for {store_name}")
     handler = _REMAINING_HANDLERS.get(store_name)
     if handler:
         return handler(payload, owners)
@@ -763,9 +789,12 @@ def _prepare_apply(plan: ScrubPlan):
     owner_set = set(plan.owner_ids)
     rendered = []
     for item in plan.files:
-        if not item.path.exists() or _digest_bytes(item.path.read_bytes()) != item.before_digest:
+        if not item.path.exists():
             raise StaleScrubPlan(f"before digest changed for {item.relative_path}")
-        scrubbed, matches, delete, _pii_before, types = _file_preview(item, owner_set)
+        raw_bytes = item.path.read_bytes()
+        if _digest_bytes(raw_bytes) != item.before_digest:
+            raise StaleScrubPlan(f"before digest changed for {item.relative_path}")
+        scrubbed, matches, delete, _pii_before, types = _file_preview(item, owner_set, raw_bytes=raw_bytes)
         if not delete and _remaining_for_store(item.store_name, scrubbed, owner_set):
             raise ScrubError("owner references remain in planned output")
         if not delete and _scan_value(scrubbed)[0]:
@@ -788,13 +817,15 @@ def _write_rendered(plan: ScrubPlan, rendered) -> tuple[dict, dict, set[str]]:
             after_digests[key] = None
             counts["files_deleted"] += 1
             continue
-        if content == item.path.read_bytes():
+        rendered_bytes = content or b""
+        after_digest = _digest_bytes(rendered_bytes)
+        if after_digest == item.before_digest:
             after_digests[key] = item.before_digest
             continue
         temp_path = item.path.with_name(f".{item.path.name}.scrub.tmp")
-        temp_path.write_bytes(content or b"")
+        temp_path.write_bytes(rendered_bytes)
         temp_path.replace(item.path)
-        after_digests[key] = _digest_bytes(content or b"")
+        after_digests[key] = after_digest
         counts["files_rewritten"] += 1
     return after_digests, counts, pii_types
 

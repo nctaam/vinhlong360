@@ -10,6 +10,7 @@ work item's revision, so two racing operators cannot both believe they own it.
 """
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
@@ -26,6 +27,10 @@ HIGH_RISK_SCOPE = "cases:high_risk"
 SUPERVISOR_SCOPE = "case.supervisor"
 HIGH_RISK_CLASSES = frozenset({RiskClass.R2, RiskClass.R3})
 ESCALATION_KIND = "escalation"
+_HEALTH_BY_RANK = {2: "breached", 1: "at_risk"}
+_LIVE_PROMISE_KINDS_PARAM = sorted(LIVE_PROMISE_KINDS)
+_AT_RISK_REMAINING_FRACTION = 1 - AT_RISK_FRACTION
+_TRIAGE_WORK_KINDS = frozenset({"decide", "decision"})
 
 _DATABASE = None
 _POLICY = None
@@ -41,7 +46,7 @@ def _reject(code: str, detail: str, status: int = 409) -> WorkControlRejected:
     return WorkControlRejected(CaseProblem(code=code, detail=detail, status=status))
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class WorkItem:
     work_item_id: str
     case_id: str
@@ -58,13 +63,13 @@ class WorkItem:
     promise_health: str = "on_track"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class QueuePage:
     items: tuple[WorkItem, ...]
     total: int
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class EscalationSummary:
     scanned: int = 0
     created: int = 0
@@ -104,7 +109,7 @@ def _row_to_item(database, row) -> WorkItem:
         ready_at=item["ready_at"],
         priority=int(item["priority"]),
         revision=int(item["revision"]),
-        promise_health={2: "breached", 1: "at_risk"}.get(
+        promise_health=_HEALTH_BY_RANK.get(
             int(item.get("health_rank") or 0), "on_track"
         ),
     )
@@ -137,7 +142,7 @@ def _require_scopes(actor, item: WorkItem | None) -> None:
 
 def _load(database, conn, work_item_id: str) -> WorkItem:
     row = database._fetchone(
-        database and conn,
+        conn,
         f"SELECT {_COLUMNS} FROM case_work_items WHERE work_item_id = %s",
         (work_item_id,),
     )
@@ -163,8 +168,6 @@ def _recused(database, conn, work_item_id: str, actor_ref: str) -> bool:
 
 def _audit(database, conn, item: WorkItem, actor, *, reason_code: str, now: datetime,
            detail: dict | None = None) -> None:
-    import json
-
     payload = {"work_item_id": item.work_item_id, "kind": item.kind}
     payload.update(detail or {})
     database._execute(
@@ -230,8 +233,8 @@ def list_queue(actor, filters: dict | None = None, *, now: datetime) -> QueuePag
     with database._conn(commit_on_success=False) as conn:
         rows = database._fetchall(
             conn, _QUEUE_SQL,
-            {"now": now, "at_risk": 1 - AT_RISK_FRACTION,
-             "kinds": sorted(LIVE_PROMISE_KINDS), "limit": limit},
+            {"now": now, "at_risk": _AT_RISK_REMAINING_FRACTION,
+             "kinds": _LIVE_PROMISE_KINDS_PARAM, "limit": limit},
         )
         items = tuple(_row_to_item(database, row) for row in rows)
     return QueuePage(items=items, total=len(items))
@@ -273,7 +276,7 @@ def claim_work_item(work_item_id: str, actor, expected_revision: int, *, now: da
         )
         _audit(database, conn, claimed, actor, reason_code="work_claimed", now=now)
         conn.commit()
-    if claimed.kind in ("decide", "decision"):
+    if claimed.kind in _TRIAGE_WORK_KINDS:
         from . import metrics as _metrics
 
         # The moment somebody picks the decision work up is when triage starts;
@@ -475,7 +478,7 @@ def scan_escalations(*, now: datetime, limit: int = 200) -> EscalationSummary:
         rows = database._fetchall(
             conn, _ESCALATION_SQL + " LIMIT %(limit)s",
             {"now": now, "kind": ESCALATION_KIND,
-             "kinds": sorted(LIVE_PROMISE_KINDS), "limit": limit},
+             "kinds": _LIVE_PROMISE_KINDS_PARAM, "limit": limit},
         )
         case_ids = [str(database._row_to_dict(row)["case_id"]) for row in rows]
         from . import metrics as _metrics
