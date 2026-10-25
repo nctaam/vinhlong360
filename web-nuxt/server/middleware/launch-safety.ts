@@ -12,6 +12,7 @@ import { failedOpenLaunchDecision } from '../utils/launch/launchHeaders'
 import {
   classifyRequestTarget,
   launchRouteManifest,
+  type RouteClassificationDecision,
 } from '../utils/launch/launchRouteManifest'
 import { resolveBaseLaunchSafetyDecision } from '../utils/launch/launchSafetyDecision'
 
@@ -45,16 +46,32 @@ export interface ResolveRequestLaunchSafetyDependencies {
   readonly fetchAttestation: AttestationFetcher
 }
 
-function requestMethod(event: H3Event): string {
-  return event.method || event.node.req.method || 'GET'
+interface CachedEventRouteInfo {
+  method: string
+  target: string
+  pathname: string
+  decision?: RouteClassificationDecision
 }
 
-function requestTarget(event: H3Event): string {
-  return event.node.req.url || event.path || '/'
+const eventRouteCache = new WeakMap<H3Event, CachedEventRouteInfo>()
+
+function getEventRouteInfo(event: H3Event): CachedEventRouteInfo {
+  let cached = eventRouteCache.get(event)
+  if (!cached) {
+    const method = event.method || event.node.req.method || 'GET'
+    const target = event.node.req.url || event.path || '/'
+    const pathname = target.split('?', 1)[0] || '/'
+    cached = { method, target, pathname }
+    eventRouteCache.set(event, cached)
+  }
+  return cached
 }
 
-function requestPathname(event: H3Event): string {
-  return requestTarget(event).split('?', 1)[0] || '/'
+function getEventRouteDecision(event: H3Event, info = getEventRouteInfo(event)): RouteClassificationDecision {
+  if (!info.decision) {
+    info.decision = classifyRequestTarget(info.target, launchRouteManifest, info.method)
+  }
+  return info.decision
 }
 
 function acceptsHtml(event: H3Event): boolean {
@@ -67,27 +84,26 @@ function acceptsHtml(event: H3Event): boolean {
 }
 
 export function isRootSeoRequest(event: H3Event): boolean {
-  return ROOT_SEO_PATHS.has(requestPathname(event))
+  return ROOT_SEO_PATHS.has(getEventRouteInfo(event).pathname)
 }
 
 export function isKnownNonHtmlRequest(event: H3Event): boolean {
-  const pathname = requestPathname(event)
-  if (pathname === '/_nuxt' || pathname.startsWith('/_nuxt/')) return true
+  const info = getEventRouteInfo(event)
+  if (info.pathname === '/_nuxt' || info.pathname.startsWith('/_nuxt/')) return true
 
-  const decision = classifyRequestTarget(requestTarget(event), launchRouteManifest, requestMethod(event))
+  const decision = getEventRouteDecision(event, info)
   return decision.classification === 'crawl-blocked-sensitive'
 }
 
 export function isLaunchSafetyCandidate(event: H3Event): boolean {
-  const method = requestMethod(event)
-  if (method !== 'GET' && method !== 'HEAD') return false
-  if (isRootSeoRequest(event)) return true
+  const info = getEventRouteInfo(event)
+  if (info.method !== 'GET' && info.method !== 'HEAD') return false
+  if (ROOT_SEO_PATHS.has(info.pathname)) return true
 
-  const pathname = requestPathname(event)
-  const finalSegment = pathname.slice(pathname.lastIndexOf('/') + 1)
+  const finalSegment = info.pathname.slice(info.pathname.lastIndexOf('/') + 1)
   if (finalSegment.includes('.') || !acceptsHtml(event)) return false
 
-  const decision = classifyRequestTarget(requestTarget(event), launchRouteManifest, method)
+  const decision = getEventRouteDecision(event, info)
   return PUBLIC_CLASSIFICATIONS.has(decision.classification)
 }
 

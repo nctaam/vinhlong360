@@ -21,8 +21,6 @@ const STORAGE_KEY = FAVORITES_STORAGE_KEY
 export function clearFavoriteStorage(storage: Pick<Storage, 'removeItem'>): void {
   storage.removeItem(STORAGE_KEY)
 }
-let loaded = false
-let syncSetup = false
 
 function isValidFavorite(v: unknown): v is FavoriteItem {
   if (!v || typeof v !== 'object') return false
@@ -41,7 +39,7 @@ export function readFavoriteStorage(storage: Pick<Storage, 'getItem' | 'setItem'
     }
     const normalized = parsed.filter(isValidFavorite).map(normalizeFavoriteItem)
     // Rewrite legacy URL snapshots immediately so later syncs cannot reintroduce raw media.
-    storage.setItem(STORAGE_KEY, JSON.stringify(normalized))
+    const serialized = JSON.stringify(normalized); if (serialized !== raw) storage.setItem(STORAGE_KEY, serialized)
     return normalized
   } catch {
     storage.removeItem(STORAGE_KEY)
@@ -69,7 +67,6 @@ export function createFavoriteItem(entity: Record<string, any>, savedAt = new Da
     summary: entity.summary,
     images: entity.images,
     image: entity.image,
-    attributes: entity.attributes,
     ...(Object.prototype.hasOwnProperty.call(entity, 'image_descriptor') ? { image_descriptor: entity.image_descriptor } : {}),
     ...(Object.prototype.hasOwnProperty.call(entity, 'image_descriptors') ? { image_descriptors: entity.image_descriptors } : {}),
     savedAt,
@@ -82,13 +79,15 @@ function normalizeFavoriteItem(item: FavoriteItem): FavoriteItem {
 
 export function useFavorites() {
   const favorites = useState<FavoriteItem[]>('favorites', () => [])
+  const loaded = useState<boolean>('favorites-loaded', () => false)
+  const syncSetup = useState<boolean>('favorites-sync-setup', () => false)
   const { isLoggedIn, authFetch } = useAuth()
   const { trackSave } = useUserEvents()
 
   function load() {
-    if (loaded || import.meta.server) return
+    if (loaded.value || import.meta.server) return
     favorites.value = readFavoriteStorage(localStorage)
-    loaded = true
+    loaded.value = true
   }
 
   function persist() {
@@ -125,10 +124,12 @@ export function useFavorites() {
     return runFavoriteBootstrap(load, () => isLoggedIn.value, mergeToServer)
   }
 
-  if (!syncSetup && import.meta.client) {
-    syncSetup = true
-    onNuxtReady(() => { void bootstrapSync() })
-    watch(isLoggedIn, (v, old) => { if (v && !old) void bootstrapSync() })
+  if (!syncSetup.value && import.meta.client) {
+    syncSetup.value = true
+    onNuxtReady(() => {
+      void bootstrapSync()
+      watch(isLoggedIn, (v, old) => { if (v && !old) void bootstrapSync() })
+    })
   }
 
   function isSaved(id: string) {

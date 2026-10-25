@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
 import math
 
 
@@ -79,6 +80,7 @@ _ExactState = tuple[float, tuple[int, ...]]
 _BeamState = tuple[float, tuple[int, ...], int, int]
 
 
+@lru_cache(maxsize=4096)
 def haversine_km(a: Coordinates, b: Coordinates) -> float:
     """Return great-circle distance in kilometers."""
     lat1, lng1 = map(math.radians, a)
@@ -101,6 +103,7 @@ def _local_xy_km(origin: Coordinates, point: Coordinates, ref_lat_rad: float) ->
     )
 
 
+@lru_cache(maxsize=4096)
 def project_onto_corridor(
     origin: Coordinates,
     destination: Coordinates,
@@ -143,6 +146,7 @@ def _prepare_stops(stops: list[RouteStop]) -> tuple[list[_PreparedStop], float]:
     return prepared, corridor_length_km
 
 
+@lru_cache(maxsize=4096)
 def _edge_allowed(
     source: _PreparedStop,
     target: _PreparedStop,
@@ -159,6 +163,7 @@ def _edge_allowed(
     return True
 
 
+@lru_cache(maxsize=4096)
 def _edge_cost(
     source: _PreparedStop,
     target: _PreparedStop,

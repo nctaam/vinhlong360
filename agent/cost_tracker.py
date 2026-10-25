@@ -21,7 +21,9 @@ import json
 import logging
 import os
 import re
+import tempfile
 from collections import deque
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from threading import Lock
@@ -34,6 +36,33 @@ logger = logging.getLogger(__name__)
 DATA_DIR = Path(__file__).resolve().parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
 COSTS_FILE = DATA_DIR / "costs.json"
+
+
+@contextmanager
+def _interprocess_file_lock(path: Path):
+    """Serialize cost store reads/writes across worker processes."""
+    lock_path = path.with_suffix(path.suffix + ".lock")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+b") as handle:
+        if os.name == "nt":
+            import msvcrt
+            handle.seek(0)
+            handle.write(b"0")
+            handle.flush()
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+            try:
+                yield
+            finally:
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
 
 # ══════════════════════════════════════════════════
@@ -203,39 +232,51 @@ class CostAttribution:
 
     def _load(self) -> None:
         """Doc records tu costs.json (neu ton tai)."""
-        if not COSTS_FILE.exists():
-            return
-        try:
-            with open(COSTS_FILE, encoding="utf-8") as f:
-                data = json.load(f)
-            records = data.get("records", [])
-            # Chi giu _MAX_RECORDS records gan nhat
-            for rec in records[-_MAX_RECORDS:]:
-                normalized = dict(rec)
-                if "owner_key" not in normalized:
-                    normalized["owner_key"] = ""
-                normalized.pop("session_id", None)
-                self._records.append(normalized)
-            logger.info("Da load %d cost records tu %s", len(self._records), COSTS_FILE)
-        except (json.JSONDecodeError, OSError) as exc:
-            logger.warning("Khong doc duoc costs.json: %s", exc)
+        with _interprocess_file_lock(COSTS_FILE):
+            if not COSTS_FILE.exists():
+                return
+            try:
+                with open(COSTS_FILE, encoding="utf-8") as f:
+                    data = json.load(f)
+                records = data.get("records", [])
+                # Chi giu _MAX_RECORDS records gan nhat
+                for rec in records[-_MAX_RECORDS:]:
+                    normalized = dict(rec)
+                    if "owner_key" not in normalized:
+                        normalized["owner_key"] = ""
+                    normalized.pop("session_id", None)
+                    self._records.append(normalized)
+                logger.info("Da load %d cost records tu %s", len(self._records), COSTS_FILE)
+            except (json.JSONDecodeError, OSError) as exc:
+                logger.warning("Khong doc duoc costs.json: %s", exc)
 
     def _save(self) -> None:
-        """Atomic write: ghi .tmp roi os.replace."""
+        """Atomic write: ghi unique .tmp roi os.replace duoi file lock."""
         data = {
             "saved_at": datetime.now(timezone.utc).isoformat(),
             "total_records": len(self._records),
             "records": list(self._records),
         }
-        tmp_file = COSTS_FILE.with_suffix(".json.tmp")
-        try:
-            with open(tmp_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-            os.replace(str(tmp_file), str(COSTS_FILE))
-            self._unsaved_count = 0
-            logger.debug("Saved %d cost records to %s", len(self._records), COSTS_FILE)
-        except OSError as exc:
-            logger.error("Loi khi save costs.json: %s", exc)
+        tmp_path: Optional[Path] = None
+        with _interprocess_file_lock(COSTS_FILE):
+            try:
+                COSTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+                fd, tmp_name = tempfile.mkstemp(
+                    dir=COSTS_FILE.parent,
+                    prefix=f".{COSTS_FILE.name}.",
+                    suffix=".tmp",
+                )
+                tmp_path = Path(tmp_name)
+                with os.fdopen(fd, "w", encoding="utf-8") as f:
+                    json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+                os.replace(str(tmp_path), str(COSTS_FILE))
+                self._unsaved_count = 0
+                logger.debug("Saved %d cost records to %s", len(self._records), COSTS_FILE)
+            except OSError as exc:
+                logger.error("Loi khi save costs.json: %s", exc)
+            finally:
+                if tmp_path is not None:
+                    tmp_path.unlink(missing_ok=True)
 
     # ── Record ──────────────────────────────────────
 
@@ -285,7 +326,7 @@ class CostAttribution:
 
     def verify_owner_absent(self, owner_key: str) -> bool:
         """Verify both live state and the persisted cost store."""
-        with self._lock:
+        with self._lock, _interprocess_file_lock(COSTS_FILE):
             if any(
                 record.get("owner_key", "") == owner_key
                 for record in self._records
@@ -370,6 +411,14 @@ class CostAttribution:
         for day in result:
             day["cost"] = round(day["cost"], 6)
         return result
+
+    def get_period_spent(self, date_prefix: str) -> float:
+        """Tong chi phi cho cac record co date bat dau bang date_prefix (YYYY-MM-DD hoac YYYY-MM)."""
+        with self._lock:
+            return round(
+                sum(r["cost"] for r in self._records if r.get("date", "").startswith(date_prefix)),
+                6,
+            )
 
     def get_summary(self) -> Dict[str, Any]:
         """Tong hop: tong chi phi, trung binh, queries count, top expensive."""
@@ -493,22 +542,13 @@ class BudgetManager:
             info = self._attribution.get_session_cost(session_id)
             return info["total_cost"]
 
-        daily_costs = self._attribution.get_daily_costs(days=31)
-
         if scope == "daily":
             today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-            for day in daily_costs:
-                if day["date"] == today:
-                    return day["cost"]
-            return 0.0
+            return self._attribution.get_period_spent(today)
 
         if scope == "monthly":
             month_prefix = datetime.now(timezone.utc).strftime("%Y-%m")
-            total = 0.0
-            for day in daily_costs:
-                if day["date"].startswith(month_prefix):
-                    total += day["cost"]
-            return total
+            return self._attribution.get_period_spent(month_prefix)
 
         return 0.0
 

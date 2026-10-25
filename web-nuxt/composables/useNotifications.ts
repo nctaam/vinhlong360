@@ -8,6 +8,8 @@ let sseReconnectTimer: ReturnType<typeof setTimeout> | null = null
 let sseRetryDelay = 1_000
 let activeSubscribers = 0
 let visibilityListenerAttached = false
+let activeVisibilityHandler: (() => void) | null = null
+let authStopWatch: (() => void) | null = null
 
 export function useNotifications() {
   const notifications = useState<Notification[]>('notifications', () => [])
@@ -78,9 +80,12 @@ export function useNotifications() {
 
   function _schedulePoll() {
     _clearPollTimer()
+    if (!import.meta.client || activeSubscribers <= 0 || !isLoggedIn.value || _isDocumentHidden()) return
     pollTimer = setTimeout(async () => {
       await fetchNotifications()
-      if (!eventSource) _schedulePoll()
+      if (!eventSource && activeSubscribers > 0 && isLoggedIn.value && !_isDocumentHidden()) {
+        _schedulePoll()
+      }
     }, pollInterval)
   }
 
@@ -113,7 +118,7 @@ export function useNotifications() {
     }
     es.onerror = () => {
       _closeSSE()
-      if (!isLoggedIn.value) return
+      if (!isLoggedIn.value || activeSubscribers <= 0) return
       _schedulePoll()
       _scheduleReconnect()
     }
@@ -133,6 +138,14 @@ export function useNotifications() {
     sseReconnectTimer = setTimeout(() => _connectSSE(), delay)
   }
 
+  function _detachVisibilityListener() {
+    if (import.meta.client && visibilityListenerAttached && activeVisibilityHandler) {
+      document.removeEventListener('visibilitychange', activeVisibilityHandler)
+      visibilityListenerAttached = false
+      activeVisibilityHandler = null
+    }
+  }
+
   function startPolling() {
     activeSubscribers += 1
     if (activeSubscribers > 1) return
@@ -141,8 +154,25 @@ export function useNotifications() {
     fetchNotifications()
     _connectSSE()
     if (import.meta.client && !visibilityListenerAttached) {
-      document.addEventListener('visibilitychange', _onVisibility)
+      activeVisibilityHandler = _onVisibility
+      document.addEventListener('visibilitychange', activeVisibilityHandler)
       visibilityListenerAttached = true
+    }
+    if (import.meta.client && !authStopWatch) {
+      authStopWatch = watch(isLoggedIn, (loggedIn) => {
+        if (activeSubscribers <= 0) return
+        if (!loggedIn) {
+          _clearPollTimer()
+          _clearReconnectTimer()
+          _closeSSE()
+          resetNotificationState()
+        } else {
+          pollInterval = 30_000
+          sseRetryDelay = 1_000
+          fetchNotifications()
+          _connectSSE()
+        }
+      })
     }
   }
 
@@ -152,9 +182,10 @@ export function useNotifications() {
     _clearPollTimer()
     _clearReconnectTimer()
     _closeSSE()
-    if (import.meta.client && visibilityListenerAttached) {
-      document.removeEventListener('visibilitychange', _onVisibility)
-      visibilityListenerAttached = false
+    _detachVisibilityListener()
+    if (authStopWatch) {
+      authStopWatch()
+      authStopWatch = null
     }
   }
 

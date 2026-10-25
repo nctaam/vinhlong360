@@ -19,12 +19,13 @@ No LLM required: distillation is rule-based from the tool sequence + answer
 shape, so the loop keeps learning during API outages.
 """
 
+from functools import lru_cache
 import json
 import logging
 import re
 import unicodedata
 from pathlib import Path
-from threading import Lock
+from threading import RLock
 
 from owner_write_gate import owner_write_gate
 
@@ -35,8 +36,17 @@ MEM_DIR = AGENT_DIR / "data" / "memory"
 MEM_DIR.mkdir(parents=True, exist_ok=True)
 BANK_FILE = MEM_DIR / "experience_bank.json"
 
-_lock = Lock()
+_lock = RLock()
 MAX_ITEMS = 500
+_bank_cache_key: tuple[str, int, int] | None = None
+_bank_cache_items: list[dict] = []
+
+_DIACRITIC_RE = re.compile(r"[̀-ͯ]")
+_WS_RE = re.compile(r"\s+")
+_INTENT_ITINERARY_RE = re.compile(r"lich trinh|ke hoach|hanh trinh|tour|di choi \d")
+_INTENT_COMPARISON_RE = re.compile(r"so sanh|khac nhau|hay hon|vs")
+_INTENT_RECOMMEND_RE = re.compile(r"goi y|de xuat|nen di|nen an|nen mua|dac san|co gi")
+_INTENT_SEASONAL_RE = re.compile(r"mua|thang|le hoi|mua nao|theo mua")
 
 _STOP = frozenset({
     "gi", "la", "co", "cua", "va", "o", "dau", "the", "nao", "khong", "duoc",
@@ -44,44 +54,68 @@ _STOP = frozenset({
 })
 
 
+@lru_cache(maxsize=1024)
 def _norm(text: str) -> str:
     s = unicodedata.normalize("NFD", (text or "").lower())
-    s = re.sub(r"[̀-ͯ]", "", s).replace("đ", "d")
-    return re.sub(r"\s+", " ", s).strip()
+    s = _DIACRITIC_RE.sub("", s).replace("đ", "d")
+    return _WS_RE.sub(" ", s).strip()
+
+
+@lru_cache(maxsize=1024)
+def _tokens_cached(text: str) -> frozenset[str]:
+    return frozenset(t for t in _norm(text).split() if len(t) >= 3 and t not in _STOP)
 
 
 def _tokens(text: str) -> set:
-    return {t for t in _norm(text).split() if len(t) >= 3 and t not in _STOP}
+    return set(_tokens_cached(text))
 
 
 def _intent(query: str) -> str:
     """Coarse intent bucket (keyword-based, no LLM)."""
     q = _norm(query)
-    if re.search(r"lich trinh|ke hoach|hanh trinh|tour|di choi \d", q):
+    if _INTENT_ITINERARY_RE.search(q):
         return "itinerary"
-    if re.search(r"so sanh|khac nhau|hay hon|vs", q):
+    if _INTENT_COMPARISON_RE.search(q):
         return "comparison"
-    if re.search(r"goi y|de xuat|nen di|nen an|nen mua|dac san|co gi", q):
+    if _INTENT_RECOMMEND_RE.search(q):
         return "recommendation"
-    if re.search(r"mua|thang|le hoi|mua nao|theo mua", q):
+    if _INTENT_SEASONAL_RE.search(q):
         return "seasonal"
     return "factual"
 
 
 def _load() -> list:
+    global _bank_cache_key, _bank_cache_items
     if BANK_FILE.exists():
         try:
-            return json.loads(BANK_FILE.read_text(encoding="utf-8"))
+            st = BANK_FILE.stat()
+            key = (str(BANK_FILE), st.st_mtime_ns, st.st_size)
+            if _bank_cache_key == key:
+                return [dict(it) for it in _bank_cache_items]
+            data = json.loads(BANK_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, list):
+                _bank_cache_key = key
+                _bank_cache_items = [dict(it) if isinstance(it, dict) else it for it in data]
+            return data
         except Exception as exc:
+            _bank_cache_key = None
             logger.warning("Failed to load experience bank: %s", exc)
             return []
+    _bank_cache_key = None
     return []
 
 
 def _save(items: list):
-    tmp = BANK_FILE.with_suffix(".tmp")
-    tmp.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
-    tmp.replace(BANK_FILE)
+    global _bank_cache_key, _bank_cache_items
+    from versioned_json_store import atomic_write_json
+
+    atomic_write_json(BANK_FILE, items, indent=2)
+    try:
+        st = BANK_FILE.stat()
+        _bank_cache_key = (str(BANK_FILE), st.st_mtime_ns, st.st_size)
+        _bank_cache_items = [dict(it) if isinstance(it, dict) else it for it in items]
+    except OSError:
+        _bank_cache_key = None
 
 
 def _tool_names(tools_used: list) -> list:
@@ -209,21 +243,18 @@ def verify_owner_absent(owner_key: str) -> bool:
 
 def retrieve(query: str, k: int = 3) -> list:
     """Top-k relevant strategy items by intent match + token overlap (offline)."""
-    items = _load()
+    with _lock:
+        items = _load()
     if not items:
         return []
     intent = _intent(query)
-    q_tokens = _tokens(query)
+    q_tokens = _tokens_cached(query)
 
     scored = []
     for it in items:
-        score = 0.0
-        if it["intent"] == intent:
-            score += 2.0
-        sample_tokens = _tokens(it.get("query_sample", ""))
-        overlap = len(q_tokens & sample_tokens)
-        score += overlap
-        score += 0.1 * it.get("uses", 1)  # mild reinforcement bias
+        score = 2.0 if it["intent"] == intent else 0.0
+        sample_tokens = _tokens_cached(it.get("query_sample", ""))
+        score += len(q_tokens & sample_tokens) + 0.1 * it.get("uses", 1)
         if score > 0:
             scored.append((score, it))
 
@@ -250,7 +281,8 @@ def build_prompt(query: str, k: int = 3) -> str:
 
 
 def stats() -> dict:
-    items = _load()
+    with _lock:
+        items = _load()
     return {
         "total": len(items),
         "positive": sum(1 for i in items if i["polarity"] == "positive"),

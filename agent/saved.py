@@ -41,9 +41,7 @@ class SavedItem(BaseModel):
     summary: Optional[str] = Field(None, max_length=1000)
     image: Optional[str] = Field(None, max_length=500)
     image_descriptor: Optional[GalleryImageDescriptor] = None
-    descriptor_revision: Optional[
-        Literal["ai-disclosure-v1", "media-disclosure-v2"]
-    ] = None
+    descriptor_revision: Optional[Literal["ai-disclosure-v1"]] = None
 
 
 class MergeBody(BaseModel):
@@ -95,14 +93,41 @@ def _list(conn, uid: str) -> list[dict]:
     return [_row_item(r) for r in rows]
 
 
-def _upsert(conn, uid: str, item: SavedItem, *, skip_missing: bool = False) -> bool:
+def _fetch_public_entity_ids(conn, entity_ids: list[str]) -> set[str]:
+    unique_ids = list({eid for eid in entity_ids if eid})
+    if not unique_ids:
+        return set()
+    ph = db._ph
+    placeholders = ", ".join(ph for _ in unique_ids)
+    rows = db._fetchall(conn, f"""
+        SELECT id FROM entities
+        WHERE id IN ({placeholders})
+          AND COALESCE(status, '') != 'provisional'
+          AND (verified IS NULL OR verified != 0)
+    """, tuple(unique_ids))
+    return {str(dict(r).get("id")) for r in rows if dict(r).get("id")}
+
+
+def _upsert(
+    conn,
+    uid: str,
+    item: SavedItem,
+    *,
+    skip_missing: bool = False,
+    public_ids: set[str] | None = None,
+) -> bool:
     ph = db._ph
     item.id = validate_path_id(item.id, "entity_id")
     item_kind = (item.kind or ("itinerary" if item.type == "itinerary" else "entity")).strip().lower()
     if item_kind not in {"entity", "itinerary"}:
         item_kind = "entity"
     item.kind = item_kind
-    if item_kind == "entity" and not _entity_is_public(conn, item.id):
+    is_public = (
+        (item.id in public_ids if public_ids is not None else _entity_is_public(conn, item.id))
+        if item_kind == "entity"
+        else True
+    )
+    if not is_public:
         if skip_missing:
             return False
         raise HTTPException(404, "Äá»‹a Ä‘iá»ƒm khÃ´ng tá»“n táº¡i hoáº·c chÆ°a cÃ´ng khai")
@@ -189,14 +214,16 @@ async def merge_saved(body: MergeBody, user=Depends(require_user), _csrf=Depends
     """
     check_rate(f"saved-merge:{user['id']}", 10, 300, "Đồng bộ quá nhanh. Vui lòng thử lại sau.")
     uid = str(user["id"])
-    items = (body.items or [])[:500]
+    items = [it for it in (body.items or [])[:500] if it.id]
+    for it in items:
+        it.id = validate_path_id(it.id, "entity_id")
     def _query():
         with db._conn() as conn:
             ph = db._ph
             db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"saved:{uid}",))
+            public_ids = _fetch_public_entity_ids(conn, list({it.id for it in items}))
             for it in items:
-                if it.id:
-                    _upsert(conn, uid, it, skip_missing=True)
+                _upsert(conn, uid, it, skip_missing=True, public_ids=public_ids)
             cnt_row = db._fetchone(conn, f"SELECT COUNT(*) c FROM saved_entities WHERE user_id = {ph}::uuid", (uid,))
             total = int(db._row_to_dict(cnt_row)["c"]) if cnt_row else 0
             if total > MAX_SAVED:

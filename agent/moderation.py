@@ -348,6 +348,12 @@ def _gc_tracking(store: dict, cutoff: float, cap: int) -> None:
             del store[k]
 
 
+_WHITESPACE_RE = re.compile(r"\s+")
+_UNSAFE_FILENAME_RE = re.compile(r"[^\w\-.]")
+_LETTER_SPACING_RE = re.compile(r"[a-zA-Z]\s[a-zA-Z]\s[a-zA-Z]\s[a-zA-Z]")
+_LETTER_COLLAPSE_RE = re.compile(r"([a-zA-Z])\s(?=[a-zA-Z]\s[a-zA-Z])")
+
+
 def _normalize_for_fingerprint(content: str) -> str:
     """Normalize content for fingerprint comparison.
 
@@ -355,7 +361,7 @@ def _normalize_for_fingerprint(content: str) -> str:
     slight variations of the same spam don't evade dedup.
     """
     text = content.lower().strip()
-    text = re.sub(r'\s+', ' ', text)
+    text = _WHITESPACE_RE.sub(' ', text)
     # Strip Vietnamese diacritics for comparison
     nfkd = _unicodedata.normalize('NFKD', text)
     text = ''.join(c for c in nfkd if not _unicodedata.combining(c))
@@ -849,9 +855,8 @@ def detect_coordinated_behavior(content: str, user_id: str, ip: str = "") -> dic
     if not content or len(content) < 20 or not user_id:
         return {"is_coordinated": False, "unique_users": 0, "unique_ips": 0, "score": 0.0}
 
-    import hashlib as _hl
-    normalized = re.sub(r'\s+', ' ', content.lower().strip())
-    fp = _hl.sha256(normalized.encode()).hexdigest()[:16]
+    normalized = _WHITESPACE_RE.sub(' ', content.lower().strip())
+    fp = _hashlib.sha256(normalized.encode()).hexdigest()[:16]
     now = _time.time()
 
     with _coord_lock:
@@ -901,7 +906,7 @@ def sanitize_image_filename(filename: str) -> str:
     # Remove null bytes
     name = name.replace("\x00", "")
     # Only allow safe characters
-    name = re.sub(r'[^\w\-.]', '_', name)
+    name = _UNSAFE_FILENAME_RE.sub('_', name)
     name = name.lstrip(".")
     if not name:
         return "upload.jpg"
@@ -1001,7 +1006,7 @@ def detect_text_obfuscation(content: str) -> dict:
         score = max(score, 0.6)
 
     # Excessive spacing between letters (c a s i n o)
-    if re.search(r'[a-zA-Z]\s[a-zA-Z]\s[a-zA-Z]\s[a-zA-Z]', content):
+    if _LETTER_SPACING_RE.search(content):
         techniques.append("letter_spacing")
         score = max(score, 0.4)
 
@@ -1038,7 +1043,7 @@ def deobfuscate_text(content: str) -> str:
     # Remove zero-width characters
     result = ''.join(c for c in content if c not in _ZERO_WIDTH_CHARS)
     # Collapse letter spacing (c a s i n o → casino)
-    result = re.sub(r'([a-zA-Z])\s(?=[a-zA-Z]\s[a-zA-Z])', r'\1', result)
+    result = _LETTER_COLLAPSE_RE.sub(r'\1', result)
     # Convert l33tspeak
     result = ''.join(_LEET_MAP.get(c, c) for c in result)
     # Normalize fullwidth to ASCII
@@ -1368,9 +1373,11 @@ def _enhanced_extra_signals(content: str, user_id: str, ip: str) -> dict:
             reasons.append(f"duplicate:count={dup['count']}")
 
     # Coordinated behavior
+    coord_hit = False
     if user_id:
         coord = detect_coordinated_behavior(content, user_id, ip)
-        if coord["is_coordinated"]:
+        coord_hit = bool(coord.get("is_coordinated"))
+        if coord_hit:
             score = max(score, coord["score"])
             reasons.append(f"coordinated:users={coord['unique_users']}")
 
@@ -1392,6 +1399,7 @@ def _enhanced_extra_signals(content: str, user_id: str, ip: str) -> dict:
         "score": score,
         "reasons": reasons,
         "spam_v2_hit": spam_v2["score"] > 0,
+        "coordinated_hit": coord_hit,
         "high_entropy": ent["is_suspicious"],
     }
 
@@ -1473,7 +1481,7 @@ async def moderate_content_enhanced(
             "xss": xss["has_xss"],
             "homoglyphs": homo["has_homoglyphs"],
             "spam_v2": deep["spam_v2_hit"],
-            "coordinated": user_id and detect_coordinated_behavior(content, user_id, ip).get("is_coordinated", False),
+            "coordinated": bool(user_id) and deep["coordinated_hit"],
             "high_entropy": deep["high_entropy"],
         },
         "moderation_available": moderation_available,

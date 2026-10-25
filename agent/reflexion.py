@@ -15,9 +15,11 @@ Kết hợp với Skill Documents:
 Tham khảo: Reflexion đạt 91% pass@1 trên HumanEval (vs 80% GPT-4).
 """
 
+from functools import lru_cache
 import json
 import logging
 import re
+import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
@@ -30,6 +32,16 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 REFLEXION_DIR = Path(__file__).resolve().parent / "data" / "memory"
 REFLEXION_DIR.mkdir(parents=True, exist_ok=True)
+
+_REL_DIACRITIC_RE = re.compile(r"[̀-ͯ]")
+_REL_SPLIT_RE = re.compile(r"[^a-z0-9]+")
+
+
+@lru_cache(maxsize=1024)
+def _rel_tokens_cached(text: str) -> frozenset[str]:
+    s = unicodedata.normalize("NFD", (text or "").lower())
+    s = _REL_DIACRITIC_RE.sub("", s).replace("đ", "d")
+    return frozenset(t for t in _REL_SPLIT_RE.split(s) if len(t) >= 3)
 
 
 def _score_answer_length(answer, score, issues, good_points):
@@ -149,12 +161,9 @@ class ReflexionEngine:
 
     def _save(self):
         try:
-            tmp = self._reflections_file.with_suffix(".tmp")
-            tmp.write_text(
-                json.dumps(self._reflections[-500:], ensure_ascii=False, indent=2),
-                encoding="utf-8"
-            )
-            tmp.replace(self._reflections_file)
+            from versioned_json_store import atomic_write_json
+
+            atomic_write_json(self._reflections_file, self._reflections[-500:], indent=2)
         except Exception as e:
             logger.warning("Failed to save reflections: %s", e)
 
@@ -263,10 +272,7 @@ class ReflexionEngine:
 
     @staticmethod
     def _rel_tokens(text: str) -> set:
-        import unicodedata as _ud
-        s = _ud.normalize("NFD", (text or "").lower())
-        s = re.sub(r"[̀-ͯ]", "", s).replace("đ", "d")
-        return {t for t in re.split(r"[^a-z0-9]+", s) if len(t) >= 3}
+        return set(_rel_tokens_cached(text))
 
     def get_relevant_reflections(self, query: str, limit: int = 3) -> list[dict]:
         """Tìm reflections liên quan để tránh lỗi cũ.
@@ -275,14 +281,14 @@ class ReflexionEngine:
         token với câu hỏi (semantic-lite) + ưu tiên cùng category + gần đây.
         """
         category = self._categorize_query(query)
-        q_tokens = self._rel_tokens(query)
+        q_tokens = _rel_tokens_cached(query)
+        with self._lock:
+            reflections = list(self._reflections)
 
         scored = []
-        for r in self._reflections:
-            score = 0.0
-            if r.get("category") == category:
-                score += 2.0
-            overlap = len(q_tokens & self._rel_tokens(r.get("query", "")))
+        for r in reflections:
+            score = 2.0 if r.get("category") == category else 0.0
+            overlap = len(q_tokens & _rel_tokens_cached(r.get("query", "")))
             score += overlap * 1.5
             if score > 0:
                 scored.append((score, r.get("created", ""), r))
@@ -293,7 +299,7 @@ class ReflexionEngine:
 
         # Fallback: if nothing overlapped, return most recent same-category
         if not results:
-            same_cat = [r for r in self._reflections if r.get("category") == category]
+            same_cat = [r for r in reflections if r.get("category") == category]
             same_cat.sort(key=lambda r: r.get("created", ""), reverse=True)
             results = same_cat[:limit]
         return results
@@ -364,10 +370,9 @@ class QualityTracker:
 
     def _save(self):
         try:
-            self._file.parent.mkdir(parents=True, exist_ok=True)
-            tmp = self._file.with_suffix(".tmp")
-            tmp.write_text(json.dumps(self._scores, ensure_ascii=False), encoding="utf-8")
-            tmp.replace(self._file)
+            from versioned_json_store import atomic_write_json
+
+            atomic_write_json(self._file, self._scores, indent=None)
         except Exception as exc:
             logger.warning("Failed to save quality scores: %s", exc)
 

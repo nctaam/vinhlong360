@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
 import math
 import re
 import time
@@ -371,6 +372,7 @@ def _project_schedule_stops(
     return tuple(prepared)
 
 
+@lru_cache(maxsize=2048)
 def _candidate_windows(
     stop: ScheduleStop,
     options: ScheduleOptions,
@@ -1046,24 +1048,26 @@ def _window_from_match(match: re.Match[str]) -> TimeWindow | None:
     return TimeWindow(start, end)
 
 
-def parse_time_range(text: str | None) -> TimeWindow | None:
-    """Parse one supported local time range, returning None when untrusted."""
-    if not isinstance(text, str):
-        return None
+@lru_cache(maxsize=1024)
+def _parse_time_range_str(text: str) -> TimeWindow | None:
     match = _TIME_RANGE_PATTERN.fullmatch(text.strip())
     if match is None:
         return None
     return _window_from_match(match)
 
 
-def parse_opening_hours(
-    text: str | None,
-) -> tuple[tuple[TimeWindow, ...], tuple[str, ...]]:
-    """Extract trusted time ranges and nonfatal parsing warnings."""
-    warnings: list[str] = []
+def parse_time_range(text: str | None) -> TimeWindow | None:
+    """Parse one supported local time range, returning None when untrusted."""
     if not isinstance(text, str):
-        return (), ("opening-hours-unknown",)
+        return None
+    return _parse_time_range_str(text)
 
+
+@lru_cache(maxsize=1024)
+def _parse_opening_hours_str(
+    text: str,
+) -> tuple[tuple[TimeWindow, ...], tuple[str, ...]]:
+    warnings: list[str] = []
     if _WEEKDAY_PREFIX_PATTERN.search(text):
         warnings.append("weekday-specific-hours-ignored")
         text = _WEEKDAY_PREFIX_PATTERN.sub(" ", text)
@@ -1078,6 +1082,26 @@ def parse_opening_hours(
     return windows, tuple(warnings)
 
 
+def parse_opening_hours(
+    text: str | None,
+) -> tuple[tuple[TimeWindow, ...], tuple[str, ...]]:
+    """Extract trusted time ranges and nonfatal parsing warnings."""
+    if not isinstance(text, str):
+        return (), ("opening-hours-unknown",)
+    return _parse_opening_hours_str(text)
+
+
+@lru_cache(maxsize=1024)
+def _parse_suggested_duration_minutes(suggested_duration: str) -> int | None:
+    hours_match = _HOURS_PATTERN.search(suggested_duration)
+    minutes_match = _MINUTES_PATTERN.search(suggested_duration)
+    if hours_match is None and minutes_match is None:
+        return None
+    hours = _duration_number(hours_match) if hours_match is not None else 0.0
+    minutes = _duration_number(minutes_match) if minutes_match is not None else 0.0
+    return int(round(hours * 60 + minutes))
+
+
 def infer_visit_minutes(
     entity_type: str | None,
     explicit_minutes: int | None,
@@ -1088,14 +1112,9 @@ def infer_visit_minutes(
         return explicit_minutes
 
     if isinstance(suggested_duration, str):
-        hours_match = _HOURS_PATTERN.search(suggested_duration)
-        minutes_match = _MINUTES_PATTERN.search(suggested_duration)
-        if hours_match is not None or minutes_match is not None:
-            hours = _duration_number(hours_match) if hours_match is not None else 0.0
-            minutes = (
-                _duration_number(minutes_match) if minutes_match is not None else 0.0
-            )
-            return int(round(hours * 60 + minutes))
+        parsed = _parse_suggested_duration_minutes(suggested_duration)
+        if parsed is not None:
+            return parsed
 
     normalized_type = (
         entity_type.strip().lower() if isinstance(entity_type, str) else ""

@@ -32,6 +32,7 @@ CARD_TYPES = [
     "event", "experience", "person", "history", "accommodation",
     "organization", "economy",
 ]
+_CARD_TYPE_SET = frozenset(CARD_TYPES)
 
 # ══════════════════════════════════════════════════
 #  Weights
@@ -125,7 +126,7 @@ def _entity_in_peak(entity: dict, month: int) -> bool:
 
 def _is_content_entity(entity: dict) -> bool:
     """Check if the entity is a displayable content type (not a place)."""
-    return entity.get("type") in CARD_TYPES
+    return entity.get("type") in _CARD_TYPE_SET
 
 
 def _build_relationship_index(relationships: list[dict]) -> dict[str, set[str]]:
@@ -140,6 +141,19 @@ def _build_relationship_index(relationships: list[dict]) -> dict[str, set[str]]:
     return dict(index)
 
 
+def _related_entity_ids(entity_id: str, relationships: list[dict]) -> set[str]:
+    """Return all entity IDs directly connected to entity_id without building the full graph."""
+    related: set[str] = set()
+    for r in relationships:
+        fr = r.get("from", "")
+        to = r.get("to", "")
+        if fr == entity_id and to:
+            related.add(to)
+        elif to == entity_id and fr:
+            related.add(fr)
+    return related
+
+
 # ══════════════════════════════════════════════════
 #  1. Content-Based Filtering
 # ══════════════════════════════════════════════════
@@ -148,18 +162,17 @@ def _score_tag_similarity(
     source_tags: set[str], candidate: dict
 ) -> tuple[float, list[str]]:
     """Factor 2: Jaccard-like tag similarity between source and candidate."""
+    if not source_tags:
+        return 0.0, []
     cand_tags = _get_tags(candidate)
-    if not (source_tags and cand_tags):
+    if not cand_tags:
         return 0.0, []
     intersection = len(source_tags & cand_tags)
-    union = len(source_tags | cand_tags)
-    if union <= 0:
+    if intersection == 0:
         return 0.0, []
+    union = len(source_tags) + len(cand_tags) - intersection
     tag_sim = intersection / union
-    reasons: list[str] = []
-    if intersection > 0:
-        reasons.append(f"shared_tags({intersection})")
-    return W_SHARED_TAGS * tag_sim, reasons
+    return W_SHARED_TAGS * tag_sim, [f"shared_tags({intersection})"]
 
 
 def _score_area_match(
@@ -254,8 +267,7 @@ def recommend_by_entity(
     source_type = source.get("type")
     source_ward = _get_ward_id(source)
 
-    rel_index = _build_relationship_index(relationships)
-    related_ids = rel_index.get(entity_id, set())
+    related_ids = _related_entity_ids(entity_id, relationships)
 
     scored: list[tuple[float, dict, list[str]]] = []
 
@@ -696,8 +708,7 @@ def recommend(context: dict) -> dict:
             "strategy": str  (describes which engines contributed)
         }
     """
-    with _lock:
-        return _recommend_impl(context)
+    return _recommend_impl(context)
 
 
 def _apply_content_based(

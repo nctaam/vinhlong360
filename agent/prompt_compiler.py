@@ -18,12 +18,14 @@ injection adds tokens per call, so it is OFF by default (env FEWSHOT_DEMOS=on)
 and capped tightly; turn it on when the API supports prompt caching.
 """
 
+import copy
+from functools import lru_cache
 import json
 import os
 import re
 import unicodedata
 from pathlib import Path
-from threading import Lock
+from threading import RLock
 
 from owner_write_gate import owner_write_gate
 
@@ -39,47 +41,76 @@ MAX_POOL = 300
 DEMOS_PER_INTENT = 2     # keep the few-shot block tiny
 MAX_ANSWER_CHARS = 600
 
-_lock = Lock()
+_lock = RLock()
+_file_cache: dict[str, tuple[tuple[int, int], object]] = {}
+
+_DIACRITIC_RE = re.compile(r"[̀-ͯ]")
+_WS_RE = re.compile(r"\s+")
+_INTENT_ITINERARY_RE = re.compile(r"lich trinh|ke hoach|hanh trinh|tour")
+_INTENT_COMPARISON_RE = re.compile(r"so sanh|khac nhau|hay hon")
+_INTENT_RECOMMEND_RE = re.compile(r"goi y|de xuat|nen di|nen an|dac san")
+_INTENT_SEASONAL_RE = re.compile(r"mua|thang|le hoi")
 
 _STOP = frozenset({"gi", "la", "co", "cua", "va", "o", "dau", "the", "nao", "nen"})
 
 
+@lru_cache(maxsize=1024)
 def _norm(text: str) -> str:
     s = unicodedata.normalize("NFD", (text or "").lower())
-    s = re.sub(r"[̀-ͯ]", "", s).replace("đ", "d")
-    return re.sub(r"\s+", " ", s).strip()
+    s = _DIACRITIC_RE.sub("", s).replace("đ", "d")
+    return _WS_RE.sub(" ", s).strip()
+
+
+@lru_cache(maxsize=1024)
+def _tokens_cached(text: str) -> frozenset[str]:
+    return frozenset(t for t in _norm(text).split() if len(t) >= 3 and t not in _STOP)
 
 
 def _tokens(text: str) -> set:
-    return {t for t in _norm(text).split() if len(t) >= 3 and t not in _STOP}
+    return set(_tokens_cached(text))
 
 
 def _intent(query: str) -> str:
     q = _norm(query)
-    if re.search(r"lich trinh|ke hoach|hanh trinh|tour", q):
+    if _INTENT_ITINERARY_RE.search(q):
         return "itinerary"
-    if re.search(r"so sanh|khac nhau|hay hon", q):
+    if _INTENT_COMPARISON_RE.search(q):
         return "comparison"
-    if re.search(r"goi y|de xuat|nen di|nen an|dac san", q):
+    if _INTENT_RECOMMEND_RE.search(q):
         return "recommendation"
-    if re.search(r"mua|thang|le hoi", q):
+    if _INTENT_SEASONAL_RE.search(q):
         return "seasonal"
     return "factual"
 
 
 def _load(path: Path, default):
+    key = str(path)
     if path.exists():
         try:
-            return json.loads(path.read_text(encoding="utf-8"))
+            st = path.stat()
+            sig = (st.st_mtime_ns, st.st_size)
+            cached = _file_cache.get(key)
+            if cached is not None and cached[0] == sig:
+                return copy.deepcopy(cached[1])
+            data = json.loads(path.read_text(encoding="utf-8"))
+            _file_cache[key] = (sig, copy.deepcopy(data))
+            return data
         except Exception:
+            _file_cache.pop(key, None)
             return default
+    _file_cache.pop(key, None)
     return default
 
 
 def _save(path: Path, data):
-    tmp = path.with_suffix(".tmp")
-    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-    tmp.replace(path)
+    from versioned_json_store import atomic_write_json
+
+    atomic_write_json(path, data, indent=2)
+    try:
+        st = path.stat()
+        _file_cache[str(path)] = ((st.st_mtime_ns, st.st_size), copy.deepcopy(data))
+    except OSError:
+        _file_cache.pop(str(path), None)
 
 
 def record_demo(
@@ -216,7 +247,8 @@ def get_demos(query: str, k: int = DEMOS_PER_INTENT) -> list:
     """Return compiled demos relevant to the query (by intent)."""
     if not ENABLED:
         return []
-    artifact = _load(COMPILED_FILE, {"demos": {}})
+    with _lock:
+        artifact = _load(COMPILED_FILE, {"demos": {}})
     demos = artifact.get("demos", {})
     return demos.get(_intent(query), [])[:k]
 
@@ -233,8 +265,9 @@ def build_prompt(query: str) -> str:
 
 
 def stats() -> dict:
-    pool = _load(RAW_FILE, [])
-    artifact = _load(COMPILED_FILE, {"demos": {}})
+    with _lock:
+        pool = _load(RAW_FILE, [])
+        artifact = _load(COMPILED_FILE, {"demos": {}})
     return {
         "enabled": ENABLED,
         "pool_size": len(pool),

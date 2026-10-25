@@ -11,6 +11,7 @@ Tạo lịch trình tùy chỉnh dựa trên:
 Output: lịch trình chi tiết với thời gian, điểm dừng, ghi chú, ăn uống.
 """
 
+from collections import Counter
 import logging
 import math
 from numbers import Real
@@ -78,8 +79,8 @@ MEAL_SLOTS = {
     "toi": "18:30",
 }
 
-MEAL_NOTE = "🍜 Nghỉ trưa & thưởng thức đặc sản"
-REST_NOTE = "🪑 Nghỉ/đệm thời gian"
+MEAL_NOTE = "Nghỉ trưa & thưởng thức đặc sản"
+REST_NOTE = "Nghỉ/đệm thời gian"
 
 
 def generate_itinerary(
@@ -97,7 +98,7 @@ def generate_itinerary(
     Args:
         days: 1-5 ngày
         interests: ["am_thuc", "lich_su", "thien_nhien", "van_hoa", "mua_sam", "tham_quan"]
-        areas: ["vinh-long", "ben-tre", "tra-vinh"]
+        areas: ["vinh-long"]
         month: 1-12 (ưu tiên mùa vụ)
         budget: "thap" | "trung_binh" | "cao"
         meal_anchors: Mốc bữa ăn cố định; None dùng mặc định 12:00, [] để tắt
@@ -108,7 +109,7 @@ def generate_itinerary(
     knowledge._ensure()
     days = max(1, min(5, days))
     interests = interests or ["tong_hop"]
-    areas = areas or ["vinh-long", "ben-tre", "tra-vinh"]
+    areas = knowledge.normalize_current_areas(areas)
     meal_anchor_values = ["12:00"] if meal_anchors is None else list(meal_anchors)
     rest_anchor_values = [] if rest_anchors is None else list(rest_anchors)
 
@@ -117,8 +118,13 @@ def generate_itinerary(
 
     # Sort by score
     candidates.sort(key=lambda c: c["score"], reverse=True)
-    meal_candidates = _collect_candidates(["am_thuc"], areas, month, budget)
-    meal_candidates.sort(key=lambda c: c["score"], reverse=True)
+    if any(i in ("tong_hop", "am_thuc") for i in interests):
+        meal_candidates = [
+            c for c in candidates if c["entity"]["type"] in ("dish", "product")
+        ]
+    else:
+        meal_candidates = _collect_candidates(["am_thuc"], areas, month, budget)
+        meal_candidates.sort(key=lambda c: c["score"], reverse=True)
 
     # 2. Phân bổ stops theo ngày
     stops_per_day = 5 if days == 1 else 4
@@ -170,7 +176,9 @@ def _collect_candidates(interests: list, areas: list, month: int, budget: str) -
         p = knowledge.get_place(e["id"])
         if not p:
             continue
-        area = p.get("area")
+        area = knowledge.normalize_current_area(p.get("area"))
+        if area != knowledge.CURRENT_PROVINCE_SLUG and knowledge.current_scope_matches(e):
+            area = knowledge.CURRENT_PROVINCE_SLUG
         if area not in areas:
             continue
 
@@ -238,6 +246,9 @@ def _nonnegative_finite(parsed: float) -> float | None:
     return parsed if math.isfinite(parsed) and parsed >= 0 else None
 
 
+_FEE_NUMBER_RE = re.compile(r"\d+(?:[.,]\d+)?")
+
+
 def _candidate_fee_value(item: dict) -> float | None:
     value = _raw_fee_value(item)
     if isinstance(value, bool):
@@ -246,7 +257,7 @@ def _candidate_fee_value(item: dict) -> float | None:
         return _nonnegative_finite(float(value))
     if not isinstance(value, str):
         return None
-    match = re.search(r"\d+(?:[.,]\d+)?", value)
+    match = _FEE_NUMBER_RE.search(value)
     if match is None:
         return None
     try:
@@ -383,13 +394,16 @@ def _build_joint_candidate_pools(
     extras = [
         item for item in candidates if item["entity"]["id"] not in seed_ids
     ]
+    seed_day_areas = [_day_area(day) for day in seed_days]
+    all_indices = list(range(len(pools)))
     for item in extras:
+        item_area = item.get("area")
         matching = [
             index
-            for index, day in enumerate(seed_days)
-            if _day_area(day) == item.get("area")
+            for index, day_area in enumerate(seed_day_areas)
+            if day_area == item_area
         ]
-        eligible = matching or list(range(len(pools)))
+        eligible = matching or all_indices
         target_index = min(eligible, key=lambda index: (len(pools[index]), index))
         pools[target_index].append(item)
 
@@ -1381,7 +1395,6 @@ def _day_area(entities: list) -> str:
     areas = [e["area"] for e in entities if "area" in e]
     if not areas:
         return ""
-    from collections import Counter
     return Counter(areas).most_common(1)[0][0]
 
 
@@ -1390,35 +1403,35 @@ def _gen_note(e: dict, month: int) -> str:
     if e.get("season") and month:
         peak = e["season"].get("peak", [])
         if month in peak:
-            notes.append("⭐ Đang vào mùa cao điểm!")
+            notes.append("Đang vào mùa cao điểm")
     attrs = e.get("attributes", {})
     _ocop = ocop_display_label(e)
     if _ocop:
-        notes.append(f"🏅 {_ocop}")
+        notes.append(f"{_ocop}")
     fee = attrs.get("admission_fee") or attrs.get("gia")
     if fee:
-        notes.append(f"💰 {fee}")
+        notes.append(f"Giá vé: {fee}")
     hours = attrs.get("hours") or attrs.get("open_hours")
     if hours:
-        notes.append(f"🕐 {hours}")
+        notes.append(f"Giờ mở cửa: {hours}")
     return " | ".join(notes) if notes else ""
 
 
 def _gen_tips(interests: list, areas: list, month: int, budget: str) -> list[str]:
     tips = []
     if month and month in [6, 7, 8, 9, 10]:
-        tips.append("☔ Tháng mùa mưa — nên mang áo mưa và giày chống trượt")
+        tips.append("Tháng mùa mưa — nên mang áo mưa và giày chống trượt")
     if month and month in [12, 1, 2, 3]:
-        tips.append("☀️ Mùa khô — thời tiết lý tưởng cho tham quan ngoài trời")
+        tips.append("Mùa khô — thời tiết lý tưởng cho tham quan ngoài trời")
     if "ben-tre" in areas:
-        tips.append("🥥 Bến Tre: nên thử dừa tươi và kẹo dừa tại xưởng")
+        tips.append("Bến Tre: nên thử dừa tươi và kẹo dừa tại xưởng")
     if "tra-vinh" in areas:
-        tips.append("🛕 Trà Vinh: tôn trọng phong tục chùa Khmer (cởi giày, trang phục lịch sự)")
+        tips.append("Trà Vinh: tôn trọng phong tục chùa Khmer (cởi giày, trang phục lịch sự)")
     if budget == "thap":
-        tips.append("💡 Ăn quán bình dân và di chuyển xe máy để tiết kiệm")
+        tips.append("Ăn quán bình dân và di chuyển xe máy để tiết kiệm")
     if budget == "cao":
-        tips.append("🏨 Nên đặt resort/homestay cao cấp trước, đặc biệt cuối tuần")
+        tips.append("Nên đặt resort/homestay cao cấp trước, đặc biệt cuối tuần")
     if "am_thuc" in interests:
-        tips.append("🍴 Hỏi dân địa phương quán nào ngon — thường ngon hơn quán du lịch")
-    tips.append("📱 Lưu số hotline du lịch Vĩnh Long: 1900.xxxx")
+        tips.append("Hỏi dân địa phương quán nào ngon — thường ngon hơn quán du lịch")
+    tips.append("Kiểm tra trước số điện thoại/hotline của điểm đến hoặc cơ quan địa phương trước khi khởi hành")
     return tips

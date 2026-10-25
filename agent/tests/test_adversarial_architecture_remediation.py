@@ -547,6 +547,47 @@ def test_campaign_lambda_multi_agent_architecture_optimizations(tmp_path):
     assert versioned_json_store.load_json(test_json) == {"ok": True}
 
 
+def test_campaign_mu_multi_agent_architecture_optimizations():
+    import inspect
+    import bot_gateway
+    import cost_tracker
+    import erasure
+    import experience_memory
+    import moderation
+    import notifications
+    import proactive
+    import prompt_compiler
+    import ratelimit
+    import recommender
+    import reflexion
+    import saved
+    from itineraries import itinerary_gen, itinerary_optimizer, itinerary_schedule
+
+    # 1. Ban 1: Itinerary LRU caches, recommender related_entity_ids, saved batching, notifications single DB thread
+    assert hasattr(itinerary_optimizer.haversine_km, "cache_info")
+    assert hasattr(itinerary_schedule._candidate_windows, "cache_info")
+    assert hasattr(itinerary_gen, "_FEE_NUMBER_RE")
+    assert callable(recommender._related_entity_ids)
+    assert callable(saved._fetch_public_entity_ids)
+    assert callable(notifications._toggle_follow_row_conn)
+
+    # 2. Ban 2: Proactive mtime-cached trending, experience_memory, reflexion, prompt_compiler token caches
+    assert callable(proactive._get_sorted_entity_hits)
+    assert hasattr(experience_memory._tokens_cached, "cache_info")
+    assert hasattr(reflexion._rel_tokens_cached, "cache_info")
+    assert hasattr(prompt_compiler._tokens_cached, "cache_info")
+
+    # 3. Ban 4: RateLimit GC helpers, BotGateway Lock, Erasure combined SQL, Moderation dedup, CostTracker period spent
+    assert callable(ratelimit._gc_violations)
+    assert callable(ratelimit._gc_slow_rate_tracking)
+    limiter = bot_gateway.UserRateLimiter(max_requests=2, window_seconds=60, max_keys=10)
+    assert limiter.is_allowed("u1") is True
+    assert "combined_sql" in inspect.getsource(erasure._assert_structured_absent)
+    assert "coordinated_hit" in inspect.getsource(moderation._enhanced_extra_signals)
+    assert callable(cost_tracker.CostAttribution.get_period_spent)
+
+
+
 
 
 

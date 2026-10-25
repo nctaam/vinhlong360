@@ -526,30 +526,26 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
     if target_type == "user" and target_id == str(user["id"]):
         raise HTTPException(400, "Không thể tự follow chính mình")
 
-    # Guard: không tạo follow rác trỏ đối tượng không tồn tại
-    if target_type == "entity" and not await asyncio.to_thread(db.get_entity, target_id):
-        raise HTTPException(404, "Không tìm thấy địa điểm")
-    if target_type == "user":
-        ph = db._ph
-        def _check_user():
-            with db._conn() as conn:
-                return db._fetchone(conn, f"SELECT 1 FROM users WHERE id::text = {ph} AND is_active = TRUE", (target_id,))
-        if not await asyncio.to_thread(_check_user):
-            raise HTTPException(404, "Không tìm thấy người dùng")
-
-        uid = str(user["id"])
-        def _check_block():
-            with db._conn() as conn:
-                return db._fetchone(conn, f"""
-                    SELECT 1 FROM blocks
-                    WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
-                       OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
-                """, (uid, target_id, target_id, uid))
-        if await asyncio.to_thread(_check_block):
-            raise HTTPException(403, "Không thể follow người dùng này")
-
     uid = str(user["id"])
-    following = await asyncio.to_thread(_toggle_follow_row, uid, target_type, target_id)
+    ph = db._ph
+
+    def _validate_and_toggle() -> bool:
+        if target_type == "entity":
+            if not db.get_entity(target_id):
+                raise HTTPException(404, "Không tìm thấy địa điểm")
+            return _toggle_follow_row(uid, target_type, target_id)
+        with db._conn() as conn:
+            if not db._fetchone(conn, f"SELECT 1 FROM users WHERE id::text = {ph} AND is_active = TRUE", (target_id,)):
+                raise HTTPException(404, "Không tìm thấy người dùng")
+            if db._fetchone(conn, f"""
+                SELECT 1 FROM blocks
+                WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                   OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+            """, (uid, target_id, target_id, uid)):
+                raise HTTPException(403, "Không thể follow người dùng này")
+            return _toggle_follow_row_conn(conn, uid, target_type, target_id)
+
+    following = await asyncio.to_thread(_validate_and_toggle)
 
     await _run_follow_side_effects(user, target_id, target_type, following)
 
@@ -560,29 +556,33 @@ _MAX_FOLLOW_USER = 500
 _MAX_FOLLOW_ENTITY = 1000
 
 
-def _toggle_follow_row(uid: str, target_type: str, target_id: str) -> bool:
+def _toggle_follow_row_conn(conn, uid: str, target_type: str, target_id: str) -> bool:
     ph = db._ph
+    deleted = db._fetchone(conn, f"""
+        DELETE FROM follows
+        WHERE follower_id = {ph}::uuid AND target_type = {ph} AND target_id = {ph}
+        RETURNING 1
+    """, (uid, target_type, target_id))
+    if deleted:
+        return False
+    cap = _MAX_FOLLOW_USER if target_type == "user" else _MAX_FOLLOW_ENTITY
+    cnt = db._fetchone(conn, f"""
+        SELECT COUNT(*) as c FROM follows
+        WHERE follower_id = {ph}::uuid AND target_type = {ph}
+    """, (uid, target_type))
+    if cnt and db._row_to_dict(cnt)["c"] >= cap:
+        raise HTTPException(400, f"Đã đạt giới hạn follow ({cap})")
+    db._execute(conn, f"""
+        INSERT INTO follows (follower_id, target_type, target_id)
+        VALUES ({ph}::uuid, {ph}, {ph})
+        ON CONFLICT DO NOTHING
+    """, (uid, target_type, target_id))
+    return True
+
+
+def _toggle_follow_row(uid: str, target_type: str, target_id: str) -> bool:
     with db._conn() as conn:
-        deleted = db._fetchone(conn, f"""
-            DELETE FROM follows
-            WHERE follower_id = {ph}::uuid AND target_type = {ph} AND target_id = {ph}
-            RETURNING 1
-        """, (uid, target_type, target_id))
-        if deleted:
-            return False
-        cap = _MAX_FOLLOW_USER if target_type == "user" else _MAX_FOLLOW_ENTITY
-        cnt = db._fetchone(conn, f"""
-            SELECT COUNT(*) as c FROM follows
-            WHERE follower_id = {ph}::uuid AND target_type = {ph}
-        """, (uid, target_type))
-        if cnt and db._row_to_dict(cnt)["c"] >= cap:
-            raise HTTPException(400, f"Đã đạt giới hạn follow ({cap})")
-        db._execute(conn, f"""
-            INSERT INTO follows (follower_id, target_type, target_id)
-            VALUES ({ph}::uuid, {ph}, {ph})
-            ON CONFLICT DO NOTHING
-        """, (uid, target_type, target_id))
-        return True
+        return _toggle_follow_row_conn(conn, uid, target_type, target_id)
 
 
 async def _run_follow_side_effects(user, target_id: str, target_type: str, following: bool):

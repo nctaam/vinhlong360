@@ -263,11 +263,13 @@ def _structured_checks(user_id: str):
 
 
 def _assert_structured_absent(conn, user_id: str) -> None:
+    checks = _structured_checks(user_id)
+    combined_sql = "SELECT " + " + ".join(f"({sql})" for sql, _ in checks)
+    combined_params = tuple(param for _, params in checks for param in params)
     with conn.cursor() as cursor:
-        for sql, params in _structured_checks(user_id):
-            cursor.execute(sql, params)
-            if _count_row(cursor.fetchone()) > 0:
-                raise RuntimeError("structured reference residue")
+        cursor.execute(combined_sql, combined_params)
+        if _count_row(cursor.fetchone()) > 0:
+            raise RuntimeError("structured reference residue")
 
 
 def _finalize_database(user_id: str, now: datetime) -> str:

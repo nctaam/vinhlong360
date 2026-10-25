@@ -39,7 +39,7 @@ def _shared_rate_pg_enabled() -> bool:
 def _mark_shared_pg_failed(exc: Exception) -> None:
     global _SHARED_PG_FAIL_UNTIL, _SHARED_PG_FAILURES
     with _SHARED_PG_FAIL_LOCK:
-        _SHARED_PG_FAIL_UNTIL = time.time() + 60
+        _SHARED_PG_FAIL_UNTIL = time.time() + 10
         _SHARED_PG_FAILURES += 1
     logger.debug("Shared PG rate limit disabled briefly: %s", exc, exc_info=True)
 
@@ -82,18 +82,6 @@ def _check_rate_pg(key: str, limit: int, window: int, msg: str) -> bool:
             hits = [float(t) for t in raw_hits if float(t) > cutoff]
             if len(hits) >= limit:
                 retry_after = int(window - (now - hits[0])) + 1
-                db._execute(
-                    conn,
-                    """
-                    INSERT INTO shared_rate_limits(key, hits, expires_at, updated_at)
-                    VALUES (%s, %s, %s, NOW())
-                    ON CONFLICT (key) DO UPDATE
-                    SET hits = EXCLUDED.hits,
-                        expires_at = EXCLUDED.expires_at,
-                        updated_at = NOW()
-                    """,
-                    (key, hits, expires_at),
-                )
                 raise HTTPException(
                     429,
                     msg,
@@ -208,6 +196,21 @@ _violations: dict[str, list[float]] = {}
 _VIOLATION_DECAY = 3600  # 1 hour window for counting violations
 
 
+def _gc_violations(now: float) -> None:
+    cutoff = now - _VIOLATION_DECAY
+    dead = [k for k, ts in _violations.items() if not ts or ts[-1] < cutoff]
+    for k in dead:
+        _violations.pop(k, None)
+
+
+def _adaptive_window(violation_count: int, base_limit: int, base_window: int) -> tuple[int, int]:
+    if violation_count >= 3:
+        return max(1, base_limit // 4), base_window * 2
+    if violation_count >= 1:
+        return max(1, base_limit // 2), base_window
+    return base_limit, base_window
+
+
 def check_rate_adaptive(key: str, base_limit: int, base_window: int,
                          msg: str = "Bạn thao tác quá nhanh. Vui lòng thử lại sau.") -> None:
     """Rate-limit with progressive penalties on repeated violations.
@@ -219,16 +222,7 @@ def check_rate_adaptive(key: str, base_limit: int, base_window: int,
     now = _now()
     with _rl_lock:
         violation_count = len([t for t in _violations.get(key, []) if now - t < _VIOLATION_DECAY])
-
-        if violation_count >= 3:
-            effective_limit = max(1, base_limit // 4)
-            effective_window = base_window * 2
-        elif violation_count >= 1:
-            effective_limit = max(1, base_limit // 2)
-            effective_window = base_window
-        else:
-            effective_limit = base_limit
-            effective_window = base_window
+        effective_limit, effective_window = _adaptive_window(violation_count, base_limit, base_window)
 
         hits = [t for t in _buckets.get(key, []) if now - t < effective_window]
         if len(hits) >= effective_limit:
@@ -237,11 +231,15 @@ def check_rate_adaptive(key: str, base_limit: int, base_window: int,
                 _violations[key] = []
             _violations[key].append(now)
             _violations[key] = [t for t in _violations[key] if now - t < _VIOLATION_DECAY]
+            if len(_violations) > _MAX_KEYS:
+                _gc_violations(now)
             raise HTTPException(429, msg)
         hits.append(now)
         _buckets[key] = hits
         if len(_buckets) > _MAX_KEYS:
             _gc(now)
+        if len(_violations) > _MAX_KEYS:
+            _gc_violations(now)
 
 
 # ── Global IP budget (total requests across all endpoints) ──
@@ -355,6 +353,13 @@ _SLOW_RATE_THRESHOLD = 50  # steady 50+ requests over 5min from one IP
 _SLOW_RATE_MIN_INTERVAL_MS = 3000  # requests spaced suspiciously evenly
 
 
+def _gc_slow_rate_tracking(now: float) -> None:
+    cutoff = now - _SLOW_RATE_WINDOW
+    dead = [k for k, ts in _slow_rate_tracking.items() if not ts or ts[-1] < cutoff]
+    for k in dead:
+        _slow_rate_tracking.pop(k, None)
+
+
 def detect_slow_attack(ip: str) -> dict:
     """Detect slow-rate L7 attacks (e.g., Slowloris-style).
 
@@ -368,6 +373,8 @@ def detect_slow_attack(ip: str) -> dict:
         hits = [t for t in hits if now - t < _SLOW_RATE_WINDOW]
         hits.append(now)
         _slow_rate_tracking[ip] = hits
+        if len(_slow_rate_tracking) > _MAX_KEYS:
+            _gc_slow_rate_tracking(now)
 
     if len(hits) < _SLOW_RATE_THRESHOLD:
         return {"is_slow_attack": False, "request_count": len(hits), "regularity": 0.0}
@@ -608,11 +615,26 @@ _penalty_box: dict[str, float] = {}  # ip -> unban_time
 _PENALTY_DURATION = 600  # 10 minutes
 
 
+def _gc_penalty_box(now: float) -> None:
+    dead = [k for k, exp in _penalty_box.items() if now >= exp]
+    for k in dead:
+        _penalty_box.pop(k, None)
+
+
+def _gc_penalty_violations() -> None:
+    if len(_penalty_violations) > _MAX_KEYS:
+        for k in list(_penalty_violations.keys())[: len(_penalty_violations) - _MAX_KEYS]:
+            _penalty_violations.pop(k, None)
+
+
 def add_to_penalty_box(ip: str, duration: int = 0):
     """Put an IP in the penalty box (temporary ban)."""
     dur = duration if duration > 0 else _PENALTY_DURATION
+    now = _now()
     with _rl_lock:
-        _penalty_box[ip] = _now() + dur
+        _penalty_box[ip] = now + dur
+        if len(_penalty_box) > _MAX_KEYS:
+            _gc_penalty_box(now)
 
 
 def is_in_penalty_box(ip: str) -> bool:
@@ -651,10 +673,14 @@ def check_rate_with_penalty(
     try:
         check_rate(key, limit, window)
     except HTTPException:
+        now = _now()
         with _rl_lock:
             _penalty_violations[ip] = _penalty_violations.get(ip, 0) + 1
             if _penalty_violations[ip] >= penalty_after:
-                _penalty_box[ip] = _now() + _PENALTY_DURATION
+                _penalty_box[ip] = now + _PENALTY_DURATION
+            if len(_penalty_box) > _MAX_KEYS:
+                _gc_penalty_box(now)
+            _gc_penalty_violations()
         raise
 
 
@@ -664,45 +690,45 @@ _sliding_counters: dict[str, list[tuple[float, int]]] = {}
 _COUNTER_RESOLUTION = 1  # 1-second granularity
 
 
+def _gc_sliding_counters(cutoff: float) -> None:
+    dead = [k for k, v in _sliding_counters.items() if not v or v[-1][0] < cutoff]
+    for k in dead:
+        _sliding_counters.pop(k, None)
+
+
 def get_sliding_window_count(key: str, window: int) -> int:
     """Get precise request count over a sliding window.
 
     Uses sub-second bucketing for more accurate counting than list-of-timestamps.
     """
     now = _now()
-    buckets = _sliding_counters.get(key, [])
     cutoff = now - window
-    total = sum(count for ts, count in buckets if ts > cutoff)
-    return total
+    with _rl_lock:
+        buckets = _sliding_counters.get(key, [])
+        return sum(count for ts, count in buckets if ts > cutoff)
 
 
 def increment_sliding_counter(key: str, window: int = 60) -> int:
     """Increment counter and return current count for the window."""
     now = _now()
     bucket_ts = int(now / _COUNTER_RESOLUTION) * _COUNTER_RESOLUTION
-
-    if key not in _sliding_counters:
-        _sliding_counters[key] = []
-    buckets = _sliding_counters[key]
-
-    # Add to current bucket or create new
-    if buckets and int(buckets[-1][0] / _COUNTER_RESOLUTION) == int(bucket_ts / _COUNTER_RESOLUTION):
-        buckets[-1] = (buckets[-1][0], buckets[-1][1] + 1)
-    else:
-        buckets.append((bucket_ts, 1))
-
-    # Prune old buckets
     cutoff = now - window - _COUNTER_RESOLUTION
-    _sliding_counters[key] = [(ts, c) for ts, c in buckets if ts > cutoff]
+    window_cutoff = now - window
 
-    # GC
-    if len(_sliding_counters) > _MAX_KEYS:
-        dead = [k for k, v in _sliding_counters.items()
-                if not v or v[-1][0] < cutoff]
-        for k in dead:
-            _sliding_counters.pop(k, None)
+    with _rl_lock:
+        buckets = _sliding_counters.setdefault(key, [])
+        if buckets and int(buckets[-1][0] / _COUNTER_RESOLUTION) == int(bucket_ts / _COUNTER_RESOLUTION):
+            buckets[-1] = (buckets[-1][0], buckets[-1][1] + 1)
+        else:
+            buckets.append((bucket_ts, 1))
 
-    return get_sliding_window_count(key, window)
+        pruned = [(ts, c) for ts, c in buckets if ts > cutoff]
+        _sliding_counters[key] = pruned
+
+        if len(_sliding_counters) > _MAX_KEYS:
+            _gc_sliding_counters(cutoff)
+
+        return sum(count for ts, count in pruned if ts > window_cutoff)
 
 
 # ── Rate limit event callbacks ──

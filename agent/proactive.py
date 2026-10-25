@@ -17,11 +17,15 @@ Output: danh sách proactive suggestions inject vào responses.
 import json
 import logging
 from datetime import datetime, timedelta, timezone
-
-_VN_TZ = timezone(timedelta(hours=7))
 from pathlib import Path
+from threading import Lock
 
 import knowledge
+
+_VN_TZ = timezone(timedelta(hours=7))
+_TRENDING_LOCK = Lock()
+_trending_cache_key: tuple[str, int, int] | None = None
+_trending_sorted_hits: list[tuple[str, int]] = []
 
 logger = logging.getLogger(__name__)
 
@@ -31,52 +35,52 @@ logger = logging.getLogger(__name__)
 
 SEASONAL_EVENTS = {
     1: [
-        {"type": "festival", "text": "🎆 Tết Nguyên Đán — chợ hoa, bánh tét, đua ghe"},
-        {"type": "fruit", "text": "🍈 Mùa bưởi Năm Roi chín rộ"},
+        {"type": "festival", "text": "Tết Nguyên Đán — chợ hoa, bánh tét, đua ghe"},
+        {"type": "fruit", "text": "Mùa bưởi Năm Roi chín rộ"},
     ],
     2: [
-        {"type": "festival", "text": "🏮 Lễ hội Chùa Bà (rằm tháng Giêng)"},
-        {"type": "fruit", "text": "🥭 Bắt đầu mùa xoài cát Hòa Lộc"},
+        {"type": "festival", "text": "Lễ hội Chùa Bà (rằm tháng Giêng)"},
+        {"type": "fruit", "text": "Bắt đầu mùa xoài cát Hòa Lộc"},
     ],
     3: [
-        {"type": "festival", "text": "🛕 Lễ Chôl Chnăm Thmây (Tết Khmer) — chùa Trà Vinh"},
-        {"type": "fruit", "text": "🍊 Mùa cam sành Tam Bình"},
+        {"type": "festival", "text": "Lễ Chôl Chnăm Thmây (Tết Khmer) — chùa Trà Vinh"},
+        {"type": "fruit", "text": "Mùa cam sành Tam Bình"},
     ],
     4: [
-        {"type": "event", "text": "🎭 Mùa đờn ca tài tử — hòa nhạc sông nước"},
-        {"type": "fruit", "text": "🍈 Mùa sầu riêng bắt đầu"},
+        {"type": "event", "text": "Mùa đờn ca tài tử — hòa nhạc sông nước"},
+        {"type": "fruit", "text": "Mùa sầu riêng bắt đầu"},
     ],
     5: [
-        {"type": "nature", "text": "🌾 Mùa nước nổi bắt đầu — cảnh quan đẹp nhất"},
-        {"type": "fruit", "text": "🫐 Mùa chôm chôm An Bình rộ"},
+        {"type": "nature", "text": "Mùa nước nổi bắt đầu — cảnh quan đẹp nhất"},
+        {"type": "fruit", "text": "Mùa chôm chôm An Bình rộ"},
     ],
     6: [
-        {"type": "fruit", "text": "🫐 Mùa chôm chôm & măng cụt chín rộ"},
-        {"type": "experience", "text": "🚣 Mùa mưa — chèo xuồng rạch An Bình tuyệt đẹp"},
+        {"type": "fruit", "text": "Mùa chôm chôm & măng cụt chín rộ"},
+        {"type": "experience", "text": "Mùa mưa — chèo xuồng rạch An Bình"},
     ],
     7: [
-        {"type": "nature", "text": "🌊 Mùa nước nổi — lũ về, cá linh nhiều"},
-        {"type": "fruit", "text": "🍊 Mùa cam sành vụ 2"},
+        {"type": "nature", "text": "Mùa nước nổi — lũ về, cá linh nhiều"},
+        {"type": "fruit", "text": "Mùa cam sành vụ 2"},
     ],
     8: [
-        {"type": "festival", "text": "🏁 Lễ hội đua ghe Ngo — Trà Vinh"},
-        {"type": "nature", "text": "🐟 Mùa cá linh — đặc sản mùa nước nổi"},
+        {"type": "festival", "text": "Lễ hội đua ghe Ngo — Trà Vinh"},
+        {"type": "nature", "text": "Mùa cá linh — đặc sản mùa nước nổi"},
     ],
     9: [
-        {"type": "festival", "text": "🌕 Tết Trung Thu — lồng đèn truyền thống"},
-        {"type": "fruit", "text": "🥥 Mùa dừa sáp Cầu Kè"},
+        {"type": "festival", "text": "Tết Trung Thu — lồng đèn truyền thống"},
+        {"type": "fruit", "text": "Mùa dừa sáp Cầu Kè"},
     ],
     10: [
-        {"type": "festival", "text": "🛕 Lễ Ok Om Bok (cúng trăng Khmer) — Trà Vinh"},
-        {"type": "nature", "text": "🌿 Mùa nước rút — hoa súng nở rộ"},
+        {"type": "festival", "text": "Lễ Ok Om Bok (cúng trăng Khmer) — Trà Vinh"},
+        {"type": "nature", "text": "Mùa nước rút — hoa súng nở rộ"},
     ],
     11: [
-        {"type": "event", "text": "🎪 Festival trái cây miền Tây"},
-        {"type": "fruit", "text": "🍊 Mùa quýt đường"},
+        {"type": "event", "text": "Mùa trái cây đặc sản Vĩnh Long"},
+        {"type": "fruit", "text": "Mùa quýt đường"},
     ],
     12: [
-        {"type": "fruit", "text": "🍈 Mùa bưởi da xanh Bến Tre"},
-        {"type": "event", "text": "🎄 Mùa du lịch cao điểm — nên đặt trước"},
+        {"type": "fruit", "text": "Mùa bưởi da xanh Bến Tre"},
+        {"type": "event", "text": "Mùa du lịch cao điểm — nên đặt trước"},
     ],
 }
 
@@ -86,15 +90,15 @@ SEASONAL_EVENTS = {
 
 TIME_SUGGESTIONS = {
     "early_morning": {  # 5-8h
-        "text": "🌅 Buổi sáng sớm",
+        "text": "Buổi sáng sớm",
         "activities": [
-            "Chợ nổi Cái Bè (5h-8h)",
+            "Chợ nổi Trà Ôn hoặc bến sông Long Hồ (5h-8h)",
             "Ngắm bình minh sông Cổ Chiên",
             "Tập thể dục ven sông",
         ],
     },
     "morning": {  # 8-11h
-        "text": "☀️ Buổi sáng",
+        "text": "Buổi sáng",
         "activities": [
             "Tham quan vườn trái cây",
             "Đạp xe miệt vườn",
@@ -102,7 +106,7 @@ TIME_SUGGESTIONS = {
         ],
     },
     "noon": {  # 11-14h
-        "text": "🍜 Giờ trưa",
+        "text": "Giờ trưa",
         "activities": [
             "Thưởng thức ẩm thực địa phương",
             "Nghỉ ngơi tại homestay",
@@ -110,7 +114,7 @@ TIME_SUGGESTIONS = {
         ],
     },
     "afternoon": {  # 14-17h
-        "text": "🌤 Buổi chiều",
+        "text": "Buổi chiều",
         "activities": [
             "Chèo xuồng rạch",
             "Làm bánh dân gian",
@@ -118,7 +122,7 @@ TIME_SUGGESTIONS = {
         ],
     },
     "evening": {  # 17-21h
-        "text": "🌙 Buổi tối",
+        "text": "Buổi tối",
         "activities": [
             "Đờn ca tài tử trên sông",
             "Dạo phố đêm",
@@ -159,6 +163,23 @@ def get_time_suggestions() -> dict:
     return TIME_SUGGESTIONS.get(period, TIME_SUGGESTIONS["morning"])
 
 
+def _get_sorted_entity_hits(analytics_path: Path) -> list[tuple[str, int]]:
+    """Đọc và sắp xếp entity_hits từ analytics.json với cache theo mtime/size."""
+    global _trending_cache_key, _trending_sorted_hits
+    st = analytics_path.stat()
+    cache_key = (str(analytics_path), st.st_mtime_ns, st.st_size)
+    with _TRENDING_LOCK:
+        if _trending_cache_key == cache_key:
+            return _trending_sorted_hits
+    data = json.loads(analytics_path.read_text(encoding="utf-8"))
+    hits = data.get("entity_hits", {})
+    sorted_hits = sorted(hits.items(), key=lambda x: x[1], reverse=True)
+    with _TRENDING_LOCK:
+        _trending_cache_key = cache_key
+        _trending_sorted_hits = sorted_hits
+    return sorted_hits
+
+
 def get_trending_entities(limit: int = 5) -> list[dict]:
     """Lấy entities đang được hỏi nhiều."""
     try:
@@ -166,10 +187,7 @@ def get_trending_entities(limit: int = 5) -> list[dict]:
         if not analytics_path.exists():
             return []
 
-        data = json.loads(analytics_path.read_text(encoding="utf-8"))
-        hits = data.get("entity_hits", {})
-        sorted_hits = sorted(hits.items(), key=lambda x: x[1], reverse=True)
-
+        sorted_hits = _get_sorted_entity_hits(analytics_path)
         trending = []
         for eid, count in sorted_hits[:limit]:
             e = knowledge.get_entity(eid)
@@ -222,11 +240,11 @@ def generate_welcome_message(user_preferences: dict = None) -> dict:
     seasonal = get_seasonal_suggestions(month)
 
     # Build personalized greeting
-    greeting = "Xin chào! 👋 Tôi là hướng dẫn viên AI của vinhlong360.vn"
+    greeting = "Chào bạn, sổ tay thực địa Vĩnh Long sẵn sàng hỗ trợ tra cứu lịch trình, ẩm thực và điểm đến tại 124 xã/phường."
 
     # Add seasonal highlight
     if seasonal:
-        greeting += f"\n\n📅 Tháng này: {seasonal[0]['text']}"
+        greeting += f"\n\nTháng này: {seasonal[0]['text']}"
 
     # Add time-aware suggestion
     greeting += f"\n\n{time_info['text']}: {time_info['activities'][0]}"
@@ -235,7 +253,7 @@ def generate_welcome_message(user_preferences: dict = None) -> dict:
     if user_preferences:
         interests = user_preferences.get("interests", [])
         if interests:
-            greeting += f"\n\n💡 Dựa trên sở thích của bạn ({', '.join(interests[:2])}), tôi có vài gợi ý mới!"
+            greeting += f"\n\nDựa trên sở thích của bạn ({', '.join(interests[:2])}), đây là vài gợi ý phù hợp."
 
     suggestions = [
         f"Tháng {month} nên đi đâu?",

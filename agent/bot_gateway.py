@@ -326,10 +326,19 @@ class UserRateLimiter:
     Default: 10 messages per 60 seconds per user.
     """
 
-    def __init__(self, max_requests: int = 10, window_seconds: int = 60):
+    def __init__(self, max_requests: int = 10, window_seconds: int = 60, max_keys: int = 10_000):
         self.max_requests = max_requests
         self.window = window_seconds
+        self.max_keys = max_keys
+        self._lock = Lock()
         self._requests: dict[str, list[float]] = defaultdict(list)
+
+    def _gc_locked(self, cutoff: float) -> None:
+        if len(self._requests) <= self.max_keys:
+            return
+        dead = [k for k, ts in self._requests.items() if not ts or ts[-1] <= cutoff]
+        for k in dead:
+            self._requests.pop(k, None)
 
     def is_allowed(self, user_key: str) -> bool:
         """Check if the user can send another message.
@@ -342,26 +351,30 @@ class UserRateLimiter:
         """
         now = time.time()
         cutoff = now - self.window
-        self._requests[user_key] = [
-            t for t in self._requests[user_key] if t > cutoff
-        ]
-        if len(self._requests[user_key]) >= self.max_requests:
-            return False
-        self._requests[user_key].append(now)
-        return True
+        with self._lock:
+            self._gc_locked(cutoff)
+            recent = [t for t in self._requests.get(user_key, []) if t > cutoff]
+            if len(recent) >= self.max_requests:
+                self._requests[user_key] = recent
+                return False
+            recent.append(now)
+            self._requests[user_key] = recent
+            return True
 
     def remaining(self, user_key: str) -> int:
         """Return how many requests the user has left in the current window."""
         now = time.time()
         cutoff = now - self.window
-        recent = [t for t in self._requests.get(user_key, []) if t > cutoff]
+        with self._lock:
+            recent = [t for t in self._requests.get(user_key, []) if t > cutoff]
         return max(0, self.max_requests - len(recent))
 
     def retry_after(self, user_key: str) -> int:
         """Seconds until the user can send again. 0 if not limited."""
         now = time.time()
         cutoff = now - self.window
-        recent = [t for t in self._requests.get(user_key, []) if t > cutoff]
+        with self._lock:
+            recent = [t for t in self._requests.get(user_key, []) if t > cutoff]
         if len(recent) < self.max_requests:
             return 0
         oldest = min(recent)
@@ -627,13 +640,13 @@ class BotGateway:
     async def _tg_start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /start command."""
         welcome = (
-            "🌴 *Xin chào!* Tôi là hướng dẫn viên AI của vinhlong360.vn\n\n"
-            "Bạn có thể hỏi tôi về:\n"
-            "🏛 Điểm tham quan Vĩnh Long, Bến Tre, Trà Vinh\n"
-            "🍜 Ẩm thực & đặc sản OCOP\n"
-            "🗺 Lịch trình du lịch tự động\n"
-            "🎭 Lễ hội & văn hóa Khmer\n"
-            "📊 So sánh các khu vực\n\n"
+            "*Xin chào!* Đây là Sổ tay thực địa vinhlong360.vn\n\n"
+            "Bạn có thể tra cứu về tỉnh Vĩnh Long (124 xã/phường):\n"
+            "• Điểm tham quan, di tích & làng nghề\n"
+            "• Ẩm thực địa phương & đặc sản OCOP\n"
+            "• Lịch trình tham quan gợi ý\n"
+            "• Lễ hội & không gian văn hóa Khmer\n"
+            "• Tra cứu thông tin theo từng xã/phường\n\n"
             "Gõ câu hỏi bất kỳ để bắt đầu!\n\n"
             "Lệnh: /help · /map · /reset"
         )
@@ -644,19 +657,19 @@ class BotGateway:
     async def _tg_help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /help command."""
         help_text = (
-            "🤖 *Các khả năng của tôi:*\n\n"
-            "🔍 Tìm kiếm điểm du lịch, ẩm thực, đặc sản OCOP\n"
-            "🗺 Lập lịch trình du lịch tự động\n"
-            "🌸 Thông tin theo mùa (trái cây, lễ hội)\n"
-            "⚖ So sánh các vùng (Vĩnh Long vs Bến Tre...)\n"
-            "📍 Tìm địa điểm gần nhau\n"
-            "🌐 Tìm kiếm web khi cần\n\n"
+            "*Hướng dẫn tra cứu vinhlong360.vn:*\n\n"
+            "• Tìm kiếm điểm du lịch, ẩm thực, đặc sản OCOP\n"
+            "• Gợi ý lịch trình tham quan theo nhu cầu\n"
+            "• Thông tin mùa vụ (trái cây, lễ hội)\n"
+            "• So sánh đặc trưng giữa các khu vực trong tỉnh\n"
+            "• Tìm địa điểm lân cận\n"
+            "• Tra cứu danh bạ hành chính 124 xã/phường\n\n"
             "*Lệnh:*\n"
             "/start — Lời chào\n"
             "/help  — Trợ giúp này\n"
             "/map   — Xem bản đồ\n"
             "/reset — Xóa lịch sử hội thoại\n\n"
-            "💬 Gõ bất kỳ câu hỏi nào về Vĩnh Long!"
+            "Gõ bất kỳ câu hỏi nào về Vĩnh Long!"
         )
         await update.message.reply_text(
             help_text, parse_mode="Markdown"
@@ -665,7 +678,7 @@ class BotGateway:
     async def _tg_map(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /map command."""
         await update.message.reply_text(
-            f"🗺 Bản đồ du lịch Vĩnh Long:\n{MAP_URL}",
+            f"Bản đồ thực địa Vĩnh Long:\n{MAP_URL}",
             disable_web_page_preview=False,
         )
 
@@ -676,7 +689,7 @@ class BotGateway:
         with _sessions_lock:
             _sessions.pop(key, None)
         await update.message.reply_text(
-            "✅ Đã xóa lịch sử hội thoại. Bắt đầu cuộc trò chuyện mới!"
+            "Đã xóa lịch sử hội thoại. Bắt đầu cuộc trò chuyện mới!"
         )
 
     # ── Quản trị (admin-only) ──────────────────────────────────────────
@@ -686,7 +699,7 @@ class BotGateway:
         return bool(ADMIN_TELEGRAM_IDS) and uid in ADMIN_TELEGRAM_IDS
 
     async def _deny(self, update: Update):
-        await update.message.reply_text("⛔ Lệnh quản trị chỉ dành cho admin.")
+        await update.message.reply_text("Lệnh quản trị chỉ dành cho admin.")
 
     async def _admin_api(self, method: str, path: str, **kwargs):
         """Gọi /admin/* (hoặc /reload) trên agent với X-Admin-Key. Trả JSON hoặc ném lỗi."""
@@ -700,7 +713,7 @@ class BotGateway:
         if not self._is_admin(update):
             return await self._deny(update)
         await update.message.reply_text(
-            "🛠 *Quản trị vinhlong360*\n"
+            "*Quản trị vinhlong360*\n"
             "/thongke — số liệu tri thức (entities/quan hệ/cần xem lại)\n"
             "/choduyet — bài cộng đồng chờ duyệt\n"
             "/baosai — báo cáo sai thông tin gần đây\n"
@@ -713,7 +726,7 @@ class BotGateway:
         try:
             s = await self._admin_api("GET", "/admin/stats")
             await update.message.reply_text(
-                f"📊 *Thống kê tri thức*\n"
+                f"*Thống kê tri thức*\n"
                 f"• Entities: {s.get('total_entities', 0)}\n"
                 f"• Địa điểm: {s.get('total_places', 0)}\n"
                 f"• Quan hệ: {s.get('total_relationships', 0)}\n"
@@ -721,7 +734,7 @@ class BotGateway:
                 f"• Cần xem lại (conf<0.7): {s.get('low_confidence', 0)}",
                 parse_mode="Markdown")
         except Exception as e:  # noqa: BLE001
-            await update.message.reply_text(f"⚠️ Lỗi lấy thống kê: {e}")
+            await update.message.reply_text(f"Lỗi lấy thống kê: {e}")
 
     async def _tg_choduyet(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not self._is_admin(update):
@@ -729,10 +742,10 @@ class BotGateway:
         try:
             m = await self._admin_api("GET", "/admin/moderation/stats")
             await update.message.reply_text(
-                f"🧐 *Kiểm duyệt cộng đồng*\n• Chờ duyệt: {m.get('pending', 0)}\n"
+                f"*Kiểm duyệt cộng đồng*\n• Chờ duyệt: {m.get('pending', 0)}\n"
                 f"Mở /admin/kiem-duyet trên web để xử lý.", parse_mode="Markdown")
         except Exception as e:  # noqa: BLE001
-            await update.message.reply_text(f"⚠️ Lỗi (UGC cần Postgres?): {e}")
+            await update.message.reply_text(f"Lỗi (UGC cần Postgres?): {e}")
 
     async def _tg_baosai(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not self._is_admin(update):
@@ -741,24 +754,24 @@ class BotGateway:
             data = await self._admin_api("GET", "/admin/info-reports?limit=5")
             reports = data.get("reports", [])
             if not reports:
-                return await update.message.reply_text("✅ Không có báo cáo sai thông tin nào.")
-            lines = [f"⚠️ *Báo sai gần đây* (tổng {data.get('total', 0)}):"]
+                return await update.message.reply_text("Không có báo cáo sai thông tin nào.")
+            lines = [f"*Báo sai gần đây* (tổng {data.get('total', 0)}):"]
             for r in reports:
                 lines.append(f"• [{r.get('target_type')}] {r.get('target_id')} — {r.get('reason', '')[:60]}")
             await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
         except Exception as e:  # noqa: BLE001
-            await update.message.reply_text(f"⚠️ Lỗi lấy báo sai: {e}")
+            await update.message.reply_text(f"Lỗi lấy báo sai: {e}")
 
     async def _tg_reloadkb(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not self._is_admin(update):
             return await self._deny(update)
         try:
-            await update.message.reply_text("⏳ Đang nạp lại tri thức từ DB…")
+            await update.message.reply_text("Đang nạp lại tri thức từ DB…")
             res = await self._admin_api("POST", "/reload")
             await update.message.reply_text(
-                f"✅ Đã reload: {res.get('entities', '?')} entities (nguồn: {res.get('source', '?')})")
+                f"Đã reload: {res.get('entities', '?')} entities (nguồn: {res.get('source', '?')})")
         except Exception as e:  # noqa: BLE001
-            await update.message.reply_text(f"⚠️ Reload lỗi: {e}")
+            await update.message.reply_text(f"Reload lỗi: {e}")
 
     async def _tg_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle incoming text messages."""
@@ -770,7 +783,7 @@ class BotGateway:
         if not self.rate_limiter.is_allowed(user_key):
             wait = self.rate_limiter.retry_after(user_key)
             await update.message.reply_text(
-                f"⏳ Bạn gửi tin nhắn quá nhanh. Vui lòng đợi {wait} giây."
+                f"Bạn gửi tin nhắn quá nhanh. Vui lòng đợi {wait} giây."
             )
             return
 
@@ -832,7 +845,7 @@ class BotGateway:
         if not self.rate_limiter.is_allowed(user_key):
             wait = self.rate_limiter.retry_after(user_key)
             await query.message.reply_text(
-                f"⏳ Bạn gửi tin nhắn quá nhanh. Vui lòng đợi {wait} giây."
+                f"Bạn gửi tin nhắn quá nhanh. Vui lòng đợi {wait} giây."
             )
             return
 
@@ -961,9 +974,9 @@ class BotGateway:
             user_id = body.get("follower", {}).get("id", "")
             if user_id:
                 welcome = (
-                    "Chao ban! Toi la tro ly AI cua vinhlong360.vn\n\n"
-                    "Ban co the hoi toi ve du lich, am thuc, lich su, "
-                    "van hoa tinh Vinh Long (bao gom Ben Tre va Tra Vinh).\n\n"
+                    "Chao ban! Day la So tay thuc dia vinhlong360.vn\n\n"
+                    "Ban co the hoi ve du lich, am thuc, lich su, "
+                    "van hoa tinh Vinh Long (124 xa/phuong).\n\n"
                     "Go cau hoi bat ky de bat dau!"
                 )
                 await self._zalo_send(user_id, welcome)

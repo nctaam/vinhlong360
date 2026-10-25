@@ -1,4 +1,4 @@
-import { ref, computed, onBeforeUnmount, type Ref } from 'vue'
+import { ref, computed, getCurrentScope, onScopeDispose, type Ref } from 'vue'
 import { escapeHtml } from '~/utils/safe'
 import { entityPath } from '~/utils/routePaths'
 
@@ -40,20 +40,26 @@ export function useSearchTypeahead(options: UseSearchTypeaheadOptions) {
   }
 
   function sugClose() {
+    if (sugTimer) { clearTimeout(sugTimer); sugTimer = null }
+    if (blurTimer) { clearTimeout(blurTimer); blurTimer = null }
+    sugAbort?.abort()
+    sugAbort = null
+    sugLoading.value = false
     showSuggestions.value = false
     sugIdx.value = -1
   }
 
   function onTypeahead() {
     const term = searchInput.value.trim()
-    if (sugTimer) clearTimeout(sugTimer)
+    if (sugTimer) { clearTimeout(sugTimer); sugTimer = null }
+    if (blurTimer) { clearTimeout(blurTimer); blurTimer = null }
     if (term.length < 2) {
       sugClose()
-      sugLoading.value = false
       return
     }
     sugLoading.value = true
     sugTimer = setTimeout(async () => {
+      sugTimer = null
       sugAbort?.abort()
       const ctrl = new AbortController()
       sugAbort = ctrl
@@ -68,8 +74,11 @@ export function useSearchTypeahead(options: UseSearchTypeaheadOptions) {
           suggestions.value = []
           showSuggestions.value = false
         }
+      } finally {
+        if (!ctrl.signal.aborted) {
+          sugLoading.value = false
+        }
       }
-      sugLoading.value = false
     }, 300)
   }
 
@@ -84,7 +93,11 @@ export function useSearchTypeahead(options: UseSearchTypeaheadOptions) {
   }
 
   function sugBlur() {
-    blurTimer = setTimeout(sugClose, 150)
+    if (blurTimer) clearTimeout(blurTimer)
+    blurTimer = setTimeout(() => {
+      blurTimer = null
+      sugClose()
+    }, 150)
   }
 
   function onInputBlur() {
@@ -108,11 +121,11 @@ export function useSearchTypeahead(options: UseSearchTypeaheadOptions) {
     }
   }
 
-  onBeforeUnmount(() => {
-    if (sugTimer) clearTimeout(sugTimer)
-    if (blurTimer) clearTimeout(blurTimer)
-    sugAbort?.abort()
-  })
+  if (getCurrentScope()) {
+    onScopeDispose(() => {
+      sugClose()
+    })
+  }
 
   return {
     suggestions,
