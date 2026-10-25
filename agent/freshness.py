@@ -46,7 +46,14 @@ DEFAULT_MIN_SUMMARY_LEN = 30
 # ══════════════════════════════════════════════════
 
 def _load_data() -> dict:
-    """Load entities from web/data.json."""
+    """Load entities from DB-backed knowledge when active, or fallback to web/data.json."""
+    if DATA_JSON == ROOT / "web" / "data.json":
+        try:
+            import knowledge
+            if getattr(knowledge, "_data_source", None) == "db" and getattr(knowledge, "_entities", None):
+                return {"entities": list(knowledge._entities.values())}
+        except Exception:
+            pass
     if not DATA_JSON.exists():
         return {"entities": []}
     with open(DATA_JSON, encoding="utf-8") as f:
@@ -429,9 +436,9 @@ def schedule_refresh(entity_ids: list[str]) -> dict:
     queue["pending"] = pending
     queue["last_updated"] = now_str
 
-    tmp = REFRESH_QUEUE_FILE.with_suffix(".tmp")
-    tmp.write_text(json.dumps(queue, ensure_ascii=False, indent=2), encoding="utf-8")
-    tmp.replace(REFRESH_QUEUE_FILE)
+    from versioned_json_store import atomic_write_json
+
+    atomic_write_json(REFRESH_QUEUE_FILE, queue, indent=2)
 
     return {
         "scheduled": added,

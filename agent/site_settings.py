@@ -20,6 +20,8 @@ from database import db
 
 _cache: dict[str, object] | None = None
 _cache_ts: float = 0
+_llm_cache: dict[str, object] | None = None
+_llm_cache_ts: float = 0
 _cache_lock = Lock()
 _CACHE_TTL = 60  # seconds
 # Key khớp các marker này (hoặc prefix llm.) KHÔNG bao giờ được trả qua public API.
@@ -87,10 +89,12 @@ def _ensure_history_table():
 
 
 def _invalidate():
-    global _cache, _cache_ts
+    global _cache, _cache_ts, _llm_cache, _llm_cache_ts
     with _cache_lock:
         _cache = None
         _cache_ts = 0
+        _llm_cache = None
+        _llm_cache_ts = 0
 
 
 def get_all_public() -> dict[str, object]:
@@ -130,6 +134,56 @@ def get_all_public() -> dict[str, object]:
         return {}
 
 
+def is_sensitive_key(key: str) -> bool:
+    """Return True if key holds a secret/token/api_key/password."""
+    kl = str(key).lower()
+    return any(m in kl for m in _SENSITIVE_MARKERS)
+
+
+def _mask_secret_value(val: object) -> str:
+    if isinstance(val, str) and len(val) >= 2 and val[0] == '"' and val[-1] == '"':
+        val = val[1:-1]
+    s = str(val or "")
+    if s.endswith("***"):
+        return s
+    return s[:4] + "***" if len(s) > 8 else "***"
+
+
+def _mask_if_sensitive(key: str, val: object) -> object:
+    return _mask_secret_value(val) if is_sensitive_key(key) and val is not None else val
+
+
+def get_llm_settings() -> dict[str, object]:
+    """Return internal llm.* settings from site_settings (for llm_config runtime, cached 60s)."""
+    global _llm_cache, _llm_cache_ts
+    with _cache_lock:
+        if _llm_cache is not None and (time.time() - _llm_cache_ts) < _CACHE_TTL:
+            return dict(_llm_cache)
+    if not db._use_pg:
+        return {}
+    try:
+        with db._conn() as conn:
+            rows = db._fetchall(conn, "SELECT key, value FROM site_settings WHERE category = 'llm'")
+        out: dict[str, object] = {}
+        for row in rows:
+            r = db._row_to_dict(row)
+            val = r["value"]
+            if isinstance(val, str):
+                try:
+                    val = json.loads(val)
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            key = str(r["key"])
+            if key.startswith("llm."):
+                out[key] = val
+        with _cache_lock:
+            _llm_cache = dict(out)
+            _llm_cache_ts = time.time()
+        return out
+    except Exception:
+        return {}
+
+
 def get_by_category(category: str) -> list[dict]:
     """Return all settings for a category with full metadata (for admin editor)."""
     if not db._use_pg:
@@ -150,7 +204,7 @@ def get_by_category(category: str) -> list[dict]:
                 val = json.loads(val)
             except (json.JSONDecodeError, TypeError):
                 pass
-        r["value"] = val
+        r["value"] = _mask_if_sensitive(str(r["key"]), val)
         if r.get("updated_at"):
             r["updated_at"] = str(r["updated_at"])
         result.append(r)
@@ -175,7 +229,7 @@ def get_all_grouped() -> dict[str, list[dict]]:
                 val = json.loads(val)
             except (json.JSONDecodeError, TypeError):
                 pass
-        r["value"] = val
+        r["value"] = _mask_if_sensitive(str(r["key"]), val)
         if r.get("updated_at"):
             r["updated_at"] = str(r["updated_at"])
         grouped.setdefault(r["category"], []).append(r)
@@ -200,8 +254,8 @@ def _record_history(conn, *, key: str, category: str, previous: object, next_val
         str(uuid.uuid4()),
         key,
         category,
-        json.dumps(previous, ensure_ascii=False),
-        json.dumps(next_value, ensure_ascii=False),
+        json.dumps(_mask_if_sensitive(key, previous), ensure_ascii=False),
+        json.dumps(_mask_if_sensitive(key, next_value), ensure_ascii=False),
         action,
         actor,
     ))
@@ -308,6 +362,9 @@ def load_history(category: str | None = None, key: str | None = None, limit: int
     out = []
     for row in rows:
         item = db._row_to_dict(row)
+        skey = str(item.get("setting_key") or "")
+        item["previous_value"] = _mask_if_sensitive(skey, item.get("previous_value"))
+        item["next_value"] = _mask_if_sensitive(skey, item.get("next_value"))
         if item.get("created_at"):
             item["created_at"] = str(item["created_at"])
         out.append(item)

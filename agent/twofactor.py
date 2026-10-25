@@ -41,14 +41,18 @@ def _app_secret() -> bytes:
     if override:
         return override.encode()
     # Dùng lại bí mật app sẵn có (KHÔNG tạo secret mới).
+    is_prod = False
     try:
         from config import settings as _cfg  # noqa
+        is_prod = bool(getattr(_cfg, "is_production", False))
         for attr in ("JWT_SECRET", "ADMIN_API_KEY"):
             val = getattr(_cfg, attr, None)
             if val:
                 return str(val).encode()
     except Exception:  # noqa: BLE001
         pass
+    if is_prod:
+        raise RuntimeError("TOTP encryption key missing in production (set TOTP_ENC_KEY, JWT_SECRET, or ADMIN_API_KEY)")
     # Dev-only fallback (cảnh báo: prod PHẢI đặt TOTP_ENC_KEY hoặc bí mật app).
     return b"vl360-dev-totp-fallback-do-not-use-in-prod"
 

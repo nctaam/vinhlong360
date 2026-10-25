@@ -357,20 +357,56 @@ class ColdMemory:
 
     def _save_all(self):
         """Save all profiles to disk (encrypted)."""
+        tmp_path: str | None = None
         try:
+            import tempfile
             data = {uid: p.to_dict() for uid, p in self._profiles.items()}
             plaintext = json.dumps(data, ensure_ascii=False, indent=2)
             encrypted = _encrypt(plaintext)
-            tmp = self._profiles_file.with_suffix(".tmp")
-            tmp.write_text(encrypted, encoding="utf-8")
-            tmp.replace(self._profiles_file)
+            self._profiles_file.parent.mkdir(parents=True, exist_ok=True)
+            fd, tmp_path = tempfile.mkstemp(
+                dir=str(self._profiles_file.parent),
+                prefix=f".{self._profiles_file.name}.",
+                suffix=".tmp",
+            )
+            with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                fh.write(encrypted)
+                fh.flush()
+                os.fsync(fh.fileno())
+            os.replace(tmp_path, self._profiles_file)
+            tmp_path = None
         except Exception as e:
             logger.warning("Failed to save profiles: %s", e)
+        finally:
+            if tmp_path:
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
+
+    def _evict_if_needed(self, exclude_key: str = "") -> None:
+        """Keep _profiles bounded at _MAX_ERASURE_PROFILES so purge_owner never hits scan-limit DoS."""
+        while len(self._profiles) >= self._MAX_ERASURE_PROFILES:
+            victim = next(
+                (
+                    uid
+                    for uid, prof in self._profiles.items()
+                    if uid != exclude_key
+                    and (str(uid).startswith("anon") or getattr(prof, "interaction_count", 0) <= 1)
+                ),
+                None,
+            )
+            if victim is None:
+                victim = next((uid for uid in self._profiles if uid != exclude_key), None)
+            if victim is None:
+                break
+            self._profiles.pop(victim, None)
 
     def get_profile(self, user_id: str) -> UserProfile:
         with self._lock:
             if user_id not in self._profiles:
                 owner_write_gate.assert_writable(user_id)
+                self._evict_if_needed(exclude_key=user_id)
                 self._profiles[user_id] = UserProfile(user_id)
             return self._profiles[user_id]
 
@@ -512,12 +548,8 @@ class SkillDocumentStore:
 
     def _save(self):
         try:
-            tmp = self._skills_file.with_suffix(".tmp")
-            tmp.write_text(
-                json.dumps(self._skills, ensure_ascii=False, indent=2),
-                encoding="utf-8"
-            )
-            tmp.replace(self._skills_file)
+            from versioned_json_store import atomic_write_json
+            atomic_write_json(self._skills_file, self._skills)
         except Exception as exc:
             logger.warning("Failed to save skill documents: %s", exc)
 

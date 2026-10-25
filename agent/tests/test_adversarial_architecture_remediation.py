@@ -12,12 +12,17 @@ import config  # noqa: E402
 import contextual_retrieval  # noqa: E402
 import database  # noqa: E402
 import entity_details as _entity_details  # noqa: E402
+import freshness  # noqa: E402
 import guardrails  # noqa: E402
+import memory  # noqa: E402
 import middleware  # noqa: E402
 import orchestrator  # noqa: E402
 import privacy_boundary  # noqa: E402
+import pytest  # noqa: E402
 import semantic_cache  # noqa: E402
 import seo  # noqa: E402
+import site_settings  # noqa: E402
+import twofactor  # noqa: E402
 import vector_search  # noqa: E402
 from cases import admin_api, correction, public_api, publication, store  # noqa: E402
 from chat import api as chat_api  # noqa: E402
@@ -122,9 +127,59 @@ def test_paired_remediation_modules_contracts():
     assert hasattr(store, "PostgresCaseStore")
     assert hasattr(chat_api, "_resolve_rerank_allowed_ids")
     assert hasattr(siteops_admin_api, "router")
-    assert hasattr(seo, "build_sitemap_images_xml")
+    assert hasattr(seo, "_load_seo_data")
     assert hasattr(database, "Database")
     assert hasattr(contextual_retrieval, "enhanced_hybrid_search")
     assert isinstance(config.settings.is_production, bool)
+
+
+def test_site_settings_get_llm_settings_uses_ttl_cache_and_invalidates(monkeypatch):
+    site_settings._invalidate()
+    site_settings._llm_cache = {"llm.model": "gpt-4o-mini"}
+    site_settings._llm_cache_ts = site_settings.time.time()
+
+    class _ExplodeDB:
+        _use_pg = True
+
+        def _conn(self):
+            raise AssertionError("DB should not be queried when _llm_cache is warm")
+
+    monkeypatch.setattr(site_settings, "db", _ExplodeDB())
+    assert site_settings.get_llm_settings() == {"llm.model": "gpt-4o-mini"}
+    site_settings._invalidate()
+    assert site_settings._llm_cache is None
+
+
+def test_cold_memory_evicts_oldest_anonymous_profile_at_erasure_cap(monkeypatch):
+    cold = memory.ColdMemory.__new__(memory.ColdMemory)
+    cold._profiles = {"anon_1": memory.UserProfile("anon_1"), "user_keep": memory.UserProfile("user_keep")}
+    cold._profiles["user_keep"].interaction_count = 10
+    cold._lock = memory.RLock()
+    monkeypatch.setattr(cold, "_MAX_ERASURE_PROFILES", 2)
+    prof = cold.get_profile("user_new")
+    assert prof.user_id == "user_new"
+    assert len(cold._profiles) == 2
+    assert "anon_1" not in cold._profiles
+    assert "user_keep" in cold._profiles
+
+
+def test_freshness_load_data_prefers_db_when_default_path(monkeypatch):
+    import knowledge
+
+    monkeypatch.setattr(freshness, "DATA_JSON", freshness.ROOT / "web" / "data.json")
+    monkeypatch.setattr(knowledge, "_data_source", "db")
+    monkeypatch.setattr(knowledge, "_entities", {"db-ent-1": {"id": "db-ent-1", "type": "dish"}})
+    loaded = freshness._load_data()
+    assert loaded == {"entities": [{"id": "db-ent-1", "type": "dish"}]}
+
+
+def test_twofactor_app_secret_raises_in_production_without_secret(monkeypatch):
+    monkeypatch.delenv("TOTP_ENC_KEY", raising=False)
+    monkeypatch.setattr(config.settings, "ENVIRONMENT", "production")
+    monkeypatch.setattr(config.settings, "JWT_SECRET", "")
+    monkeypatch.setattr(config.settings, "ADMIN_API_KEY", "")
+    with pytest.raises(RuntimeError, match="TOTP encryption key missing in production"):
+        twofactor._app_secret()
+
 
 
