@@ -308,19 +308,21 @@ export function validateReadinessManifest(value: unknown): LaunchReadinessManife
   })
 }
 
+const READY_CHECKS: readonly ReadinessCheck[] = deepFreeze([
+  { name: 'manifest-schema', ok: true, reason: 'manifest-valid' },
+  { name: 'artifact-evidence', ok: true, reason: 'artifact-evidence-valid' },
+  { name: 'compiled-cache-rules', ok: true, reason: 'compiled-cache-rules-safe' },
+  { name: 'public-prerender', ok: true, reason: 'public-prerender-safe' },
+  { name: 'service-worker-cache-purge', ok: true, reason: 'cache-purge-verified' },
+])
+
 export function inspectReadinessManifest(value: unknown): ReadinessManifestCheckResult {
   try {
     const manifest = validateReadinessManifest(value)
     return {
       ok: true,
       reason: 'manifest-valid',
-      checks: Object.freeze([
-        { name: 'manifest-schema', ok: true, reason: 'manifest-valid' },
-        { name: 'artifact-evidence', ok: true, reason: 'artifact-evidence-valid' },
-        { name: 'compiled-cache-rules', ok: true, reason: 'compiled-cache-rules-safe' },
-        { name: 'public-prerender', ok: true, reason: 'public-prerender-safe' },
-        { name: 'service-worker-cache-purge', ok: true, reason: 'cache-purge-verified' },
-      ]),
+      checks: READY_CHECKS,
       manifest,
     }
   } catch {
@@ -408,7 +410,7 @@ export function loadReadinessManifest(
       disclosureRevision: manifest.artifacts.ai_disclosure.revision,
       disclosureDigest: manifest.artifacts.ai_disclosure.sha256,
     },
-    checks: { ...READY_CHECKS },
+    checks: READY_CHECKS,
   })
   if (cacheKey) {
     readinessManifestCache = { cacheKey, manifest, loaded }
@@ -435,7 +437,7 @@ export function loadAndValidateReadinessManifest(
           disclosureRevision: manifest.artifacts.ai_disclosure.revision,
           disclosureDigest: manifest.artifacts.ai_disclosure.sha256,
         },
-        checks: { ...READY_CHECKS },
+        checks: READY_CHECKS,
       })
 }
 
