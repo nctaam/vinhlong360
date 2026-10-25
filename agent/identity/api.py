@@ -259,7 +259,7 @@ def _cleanup_expired_data_impl(*, limit: int = 500) -> dict:
     """Xoá phiên/OTP hết hạn, login_history cũ, thông báo đã đọc cũ, pending_2fa +
     trusted_devices hết hạn.
 
-    CHƯA CÓ AI GỌI (2026-08): scheduler không đăng ký hàm này. Bốn bảng đầu vẫn
+    Được gọi định kỳ qua cleanup_expired_data(limit=500, lease="session-cleanup") trong task_session_cleanup (agent/scheduler.py). Bốn bảng đầu vẫn
     được dọn nhờ task_session_cleanup + task_notification_cleanup trong
     agent/scheduler.py, nhưng pending_2fa và trusted_devices thì KHÔNG — chúng
     chỉ bị xoá khi user tự thao tác. Việc đăng ký task định kỳ là thao tác
@@ -555,8 +555,21 @@ def _generate_otp() -> str:
     return "".join([str(secrets.randbelow(10)) for _ in range(OTP_LENGTH)])
 
 
+def _otp_hmac_key() -> bytes:
+    raw = (
+        os.environ.get("OTP_HMAC_SECRET", "").strip()
+        or os.environ.get("JWT_SECRET", "").strip()
+        or getattr(_cfg, "JWT_SECRET", "").strip()
+    )
+    if raw:
+        return raw.encode("utf-8")
+    if getattr(_cfg, "is_production", False):
+        raise RuntimeError("OTP_HMAC_SECRET or JWT_SECRET is required in production")
+    return b"vl360-dev-otp-hmac-key"
+
+
 def _hash_otp(code: str) -> str:
-    return hashlib.sha256(code.encode()).hexdigest()
+    return hmac.new(_otp_hmac_key(), code.encode("utf-8"), hashlib.sha256).hexdigest()
 
 
 def _generate_token() -> str:
@@ -711,7 +724,7 @@ async def _finish_login(user: dict, phone: str, method: str, request: Request, r
             with db._conn() as conn:
                 check_achievements(conn, uid, notify=True)
         except Exception:
-            pass
+            logger.debug("Background achievement check failed", exc_info=True)
     asyncio.create_task(asyncio.to_thread(_ach_bg))
     return {
         "success": True,
@@ -843,6 +856,12 @@ def _consume_verified_otp(conn, phone: str, hashed_code: str) -> dict:
     return otp
 
 
+def _validate_new_user_password(pwd: str) -> str:
+    if len(pwd) < 8 or not any(c.isalpha() for c in pwd) or not any(c.isdigit() for c in pwd):
+        raise HTTPException(400, "Mật khẩu cần ít nhất 8 ký tự, bao gồm chữ cái và chữ số")
+    return _hash_password(pwd)
+
+
 def _register_new_user(phone: str, body: "OTPVerify") -> dict:
     """Tạo user mới từ luồng verify-otp (yêu cầu consent). Trích nguyên văn từ
     nhánh 'chưa có tài khoản' của _get_or_create_user — không đổi hành vi."""
@@ -861,10 +880,7 @@ def _register_new_user(phone: str, body: "OTPVerify") -> dict:
                 raise HTTPException(409, "Username đã được sử dụng")
             reg_kwargs["username"] = uname
     if body.password:
-        pwd = body.password
-        if len(pwd) < 8:
-            raise HTTPException(400, "Mật khẩu phải từ 8 ký tự trở lên")
-        reg_kwargs["password_hash"] = _hash_password(pwd)
+        reg_kwargs["password_hash"] = _validate_new_user_password(body.password)
     if body.date_of_birth:
         reg_kwargs["date_of_birth"] = body.date_of_birth
     return db.create_user(phone, consent_version=CONSENT_VERSION, **reg_kwargs)
@@ -1119,6 +1135,11 @@ def _reset_password_state(phone: str, hashed_code: str, new_password: str) -> di
             f"DELETE FROM pending_2fa WHERE user_id::text = {db._ph}",
             (uid,),
         )
+        db._execute(
+            conn,
+            f"DELETE FROM trusted_devices WHERE user_id::text = {db._ph}",
+            (uid,),
+        )
         return user
 
 
@@ -1150,7 +1171,7 @@ async def reset_password_otp(body: ResetPasswordOTP, request: Request, response:
             with db._conn() as conn:
                 check_achievements(conn, uid, notify=True)
         except Exception:
-            pass
+            logger.debug("Background achievement check failed", exc_info=True)
     asyncio.create_task(asyncio.to_thread(_ach_bg))
 
     _clear_session_cookie(response, request)
@@ -1642,7 +1663,7 @@ def _check_suspicious_login(user_id: str, ip: str, ua: str, display_name: str = 
         create_notification(
             user_id=user_id,
             notif_type="security_alert",
-            title="🔐 Đăng nhập mới",
+            title="Cảnh báo đăng nhập mới",
             body=f"Đăng nhập mới từ {device} (IP {_mask_ip(ip)}). Nếu không phải bạn, hãy đổi mật khẩu ngay.",
             ref_type="login_history",
         )

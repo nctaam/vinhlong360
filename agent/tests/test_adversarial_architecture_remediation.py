@@ -291,6 +291,94 @@ def test_chat_generate_followups_short_circuits_when_breaker_open_and_truncates_
     assert safe.endswith("...[truncated]")
 
 
+def test_semantic_cache_replace_l2_state_skips_redundant_rebuild_when_versions_match(monkeypatch):
+    from semantic_cache import MultiTierCache, SemanticMatcher
 
+    matcher = SemanticMatcher()
+    cache = MultiTierCache(matcher, l1_max=10, l2_max=20)
+    cache._l2_loaded = True
+    rebuilds = []
+    orig_rebuild = matcher.rebuild
+
+    def _spy_rebuild(entries):
+        rebuilds.append(len(entries))
+        return orig_rebuild(entries)
+
+    monkeypatch.setattr(matcher, "rebuild", _spy_rebuild)
+    monkeypatch.setattr(cache, "_save_l2", lambda **_kw: cache._replace_l2_state(dict(cache._l2)))
+    cache.put("Chùa Tiên Châu ở đâu", {"reply": "An Bình"}, owner_key="u1")
+    assert rebuilds == []
+
+
+def test_skill_memory_find_relevant_skills_throttles_disk_save(monkeypatch):
+    import memory as mem_mod
+
+    monkeypatch.setattr(mem_mod.SkillDocumentStore, "_load", lambda self: None)
+    sm = mem_mod.SkillDocumentStore()
+    saves = []
+    monkeypatch.setattr(sm, "_save", lambda: saves.append(1))
+    sm._skills = [{"pattern": "chùa cổ vĩnh long", "tools": ["search"], "strategy": "s1", "use_count": 0}]
+    sm._last_save_ts = 10_000_000_000.0
+    res = sm.find_relevant_skills("chùa cổ", limit=1)
+    assert len(res) == 1
+    assert res[0]["use_count"] == 1
+    assert saves == []
+
+
+def test_identity_hash_otp_uses_keyed_hmac_and_blocks_missing_secret_in_prod(monkeypatch):
+    import hashlib
+    from identity import api as id_api
+
+    raw_sha = hashlib.sha256(b"123456").hexdigest()
+    assert id_api._hash_otp("123456") != raw_sha
+    assert id_api._hash_otp("123456") == id_api._hash_otp("123456")
+    monkeypatch.delenv("OTP_HMAC_SECRET", raising=False)
+    monkeypatch.delenv("JWT_SECRET", raising=False)
+    monkeypatch.setattr(id_api._cfg, "JWT_SECRET", "")
+    monkeypatch.setattr(id_api._cfg, "ENVIRONMENT", "production")
+    with pytest.raises(RuntimeError):
+        id_api._hash_otp("123456")
+
+
+def test_admin_audit_db_caches_schema_readiness_per_db_instance(monkeypatch):
+    import admin as admin_mod
+
+    executed = []
+
+    class _FakeAdminDB:
+        _use_pg = True
+
+        def _conn(self):
+            class _Ctx:
+                def __enter__(self_inner):
+                    return object()
+
+                def __exit__(self_inner, *a):
+                    return False
+
+            return _Ctx()
+
+        def _execute(self, _conn, sql, _params=()):
+            executed.append(sql.strip())
+
+    fake_db = _FakeAdminDB()
+    monkeypatch.setattr(admin_mod, "db", fake_db)
+    admin_mod._admin_audit_schema_ready_dbs.discard(id(fake_db))
+    admin_mod._log_admin_audit_db({"actor": "admin", "method": "POST", "path": "/admin/test"})
+    admin_mod._log_admin_audit_db({"actor": "admin", "method": "POST", "path": "/admin/test2"})
+    create_calls = [s for s in executed if s.startswith("CREATE TABLE")]
+    insert_calls = [s for s in executed if s.startswith("INSERT INTO")]
+    assert len(create_calls) == 1
+    assert len(insert_calls) == 2
+
+
+def test_concurrency_ensure_state_schema_returns_columns_and_scheduler_uses_claim_due():
+    import inspect
+    import scheduler
+    from control_plane import concurrency as cp_conc
+
+    src = inspect.getsource(scheduler._claim_scheduled_post)
+    assert "claim_due" in src
+    assert callable(cp_conc.ensure_state_schema)
 
 

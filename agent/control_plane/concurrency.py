@@ -157,13 +157,16 @@ def _verify_pg_state_schema(db, conn, table: str, columns: set[str], additions: 
         raise RuntimeError("community_state_schema_constraint_missing:posts_moderation_status_check")
 
 
-def _add_sqlite_state_columns(db, conn, table: str, columns: set[str], additions: dict[str, str]) -> None:
+def _add_sqlite_state_columns(db, conn, table: str, columns: set[str], additions: dict[str, str]) -> set[str]:
+    updated = set(columns)
     for name, definition in additions.items():
-        if name not in columns:
+        if name not in updated:
             db._execute(conn, f"ALTER TABLE {table} ADD COLUMN {name} {definition}", ())
+            updated.add(name)
+    return updated
 
 
-def ensure_state_schema(transaction, table: str = "posts") -> None:
+def ensure_state_schema(transaction, table: str = "posts") -> set[str]:
     """Verify the migrated state schema; only SQLite may add compatibility fields."""
     table = _table_name(table)
     db, conn = _ctx(transaction)
@@ -171,8 +174,8 @@ def ensure_state_schema(transaction, table: str = "posts") -> None:
     additions = _state_schema_additions(db, table)
     if getattr(db, "_use_pg", False):
         _verify_pg_state_schema(db, conn, table, columns, additions)
-        return
-    _add_sqlite_state_columns(db, conn, table, columns, additions)
+        return columns
+    return _add_sqlite_state_columns(db, conn, table, columns, additions)
 
 
 def _idempotency_storage_key(key: IdempotencyKey | str) -> str:
@@ -285,11 +288,11 @@ def record_idempotency_receipt(transaction, claim: ClaimResult, receipt: Any) ->
     db._execute(conn, sql, (meta, claim.key))
 
 
-def _status_column(db, conn, table: str) -> str:
-    columns = _column_names(db, conn, table)
-    if "moderation_status" in columns:
+def _status_column(db, conn, table: str, columns: set[str] | None = None) -> str:
+    cols = columns if columns is not None else _column_names(db, conn, table)
+    if "moderation_status" in cols:
         return "moderation_status"
-    if "status" in columns:
+    if "status" in cols:
         return "status"
     raise ValueError("state_status_column_missing")
 
@@ -302,11 +305,9 @@ def cas_transition(transaction, table: str, row_id: str, *, expected_status: str
     if not all(isinstance(value, str) and value for value in (row_id, expected_status, new_status, actor_id, reason, correlation_id)):
         raise ValueError("invalid_transition")
     db, conn = _ctx(transaction)
-    ensure_state_schema(transaction, table)
-    status_col = _status_column(db, conn, table)
-    id_col = "id"
-    if "case_id" in _column_names(db, conn, table):
-        id_col = "case_id"
+    columns = ensure_state_schema(transaction, table)
+    status_col = _status_column(db, conn, table, columns)
+    id_col = "case_id" if "case_id" in columns else "id"
     lock = " FOR UPDATE" if getattr(db, "_use_pg", False) else ""
     id_expr = f"{id_col}::text" if getattr(db, "_use_pg", False) else id_col
     row = db._fetchone(conn, f"SELECT {status_col} AS state_status, revision FROM {table} WHERE {id_expr} = {db._ph}{lock}", (row_id,))
@@ -376,8 +377,7 @@ def claim_due(transaction, table: str, *, due_before: datetime, worker_id: str,
     if not isinstance(now, datetime) or now.tzinfo is None:
         raise ValueError("invalid_due_claim_now")
     db, conn = _ctx(transaction)
-    ensure_state_schema(transaction, table)
-    columns = _column_names(db, conn, table)
+    columns = ensure_state_schema(transaction, table)
     if "scheduled_at" not in columns:
         raise ValueError("scheduled_at_column_missing")
     # The schedule cutoff can be intentionally stale after a restart. Lease

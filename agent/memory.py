@@ -544,11 +544,15 @@ class SkillDocumentStore:
     """
 
     _MAX_SKILLS = 200
+    _FLUSH_USE_BATCH = 10
+    _FLUSH_INTERVAL_SEC = 60.0
 
     def __init__(self):
         self._skills_file = MEMORY_DIR / "skill_documents.json"
         self._skills: list[dict] = []
         self._lock = Lock()
+        self._dirty_uses = 0
+        self._last_save_ts = 0.0
         self._load()
 
     def _load(self):
@@ -563,6 +567,8 @@ class SkillDocumentStore:
         try:
             from versioned_json_store import atomic_write_json
             atomic_write_json(self._skills_file, self._skills)
+            self._dirty_uses = 0
+            self._last_save_ts = time.time()
         except Exception as exc:
             logger.warning("Failed to save skill documents: %s", exc)
 
@@ -597,27 +603,27 @@ class SkillDocumentStore:
             return s.replace("đ", "d")
 
         q_norm = normalize(query)
-        scored = []
-        for skill in self._skills:
-            pattern_norm = normalize(skill["pattern"])
-            # Simple keyword overlap
-            q_words = set(q_norm.split())
-            p_words = set(pattern_norm.split())
-            overlap = len(q_words & p_words)
-            if overlap > 0:
-                scored.append((overlap, skill))
+        q_words = set(q_norm.split())
+        with self._lock:
+            scored = []
+            for skill in self._skills:
+                p_words = set(normalize(skill["pattern"]).split())
+                overlap = len(q_words & p_words)
+                if overlap > 0:
+                    scored.append((overlap, skill))
 
-        scored.sort(key=lambda x: x[0], reverse=True)
-
-        # Mark usage
-        results = [s for _, s in scored[:limit]]
-        for s in results:
-            s["use_count"] = s.get("use_count", 0) + 1
-        if results:
-            with self._lock:
-                self._save()
-
-        return results
+            scored.sort(key=lambda x: x[0], reverse=True)
+            results = [s for _, s in scored[:limit]]
+            for s in results:
+                s["use_count"] = s.get("use_count", 0) + 1
+            if results:
+                self._dirty_uses += len(results)
+                if (
+                    self._dirty_uses >= self._FLUSH_USE_BATCH
+                    or (time.time() - self._last_save_ts) >= self._FLUSH_INTERVAL_SEC
+                ):
+                    self._save()
+            return results
 
     def get_skill_prompt(self, query: str) -> str:
         """Tạo prompt bổ sung từ relevant skills."""

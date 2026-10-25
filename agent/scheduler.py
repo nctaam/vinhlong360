@@ -585,7 +585,7 @@ def _digest_reports_part(parts: list):
         rf = AGENT_DIR / "data" / "reports.jsonl"
         n = sum(1 for ln in rf.read_text(encoding="utf-8").splitlines() if ln.strip()) if rf.exists() else 0
         if n:
-            parts.append(f"• ⚠️ Báo sai: {n} (xem /baosai)")
+            parts.append(f"• Báo sai: {n} (xem /baosai)")
     except Exception as e:
         _sched_logger.warning("digest reports read error: %s", e)
 
@@ -598,7 +598,7 @@ def _digest_moderation_part(parts: list):
         with db._conn() as conn:
             row = db._fetchone(conn, f"SELECT COUNT(*) AS c FROM posts WHERE moderation_status = {ph}", ("pending",))
             if row and row["c"]:
-                parts.append(f"• 🧐 Chờ duyệt: {row['c']}")
+                parts.append(f"• Chờ duyệt: {row['c']}")
     except Exception as e:
         _sched_logger.warning("digest moderation check skipped: %s", e)
 
@@ -609,8 +609,8 @@ def _digest_budget_part(parts: list):
         import autonomous_budget as ab
         if ab.enabled():
             st = ab.status()
-            warn = " ⚠️ GẦN CAP!" if st["remaining_today"] <= max(1, st["cap_per_day"] // 5) else ""
-            parts.append(f"• 💰 Agent LLM: {st['used_today']}/{st['cap_per_day']} hôm nay{warn}")
+            warn = " [GẦN CAP]" if st["remaining_today"] <= max(1, st["cap_per_day"] // 5) else ""
+            parts.append(f"• Agent LLM: {st['used_today']}/{st['cap_per_day']} hôm nay{warn}")
     except Exception as e:
         _sched_logger.warning("digest budget status error: %s", e)
 
@@ -645,7 +645,7 @@ def task_admin_digest():
 
     if not parts:
         return
-    text = "📊 *vinhlong360 — digest quản lý*\n" + "\n".join(parts)
+    text = "*vinhlong360 — digest quản lý*\n" + "\n".join(parts)
     _digest_send(token, admin_ids, text)
 
 
@@ -755,7 +755,7 @@ def task_autonomous_agent():
         return  # LLM lỗi → không gửi (cap đã trừ; lần sau thử lại)
 
     st = ab.status()
-    _send_telegram_admins(f"🤖 *Agent quản trị* (LLM dùng {st['used_today']}/{st['cap_per_day']} hôm nay)\n{suggestion}")
+    _send_telegram_admins(f"*Báo cáo quản trị tự động* (LLM dùng {st['used_today']}/{st['cap_per_day']} hôm nay)\n{suggestion}")
     _sched_logger.info("autonomous-agent: đã gửi gợi ý quản trị")
 
 
@@ -1172,15 +1172,14 @@ def _hard_delete_stale_posts(db, conn):
         """, ())
         if deleted_ids:
             ids = [str(db._row_to_dict(r)["id"]) for r in deleted_ids]
-            for pid in ids:
-                db._execute(conn, "DELETE FROM comments WHERE post_id::text = %s", (pid,))
-                db._execute(conn, "DELETE FROM likes WHERE post_id::text = %s", (pid,))
-                db._execute(conn, "DELETE FROM bookmarks WHERE post_id::text = %s", (pid,))
-                db._execute(conn, "DELETE FROM notifications WHERE ref_type = 'post' AND ref_id = %s", (pid,))
-            db._execute(conn, """
-                DELETE FROM posts WHERE deleted_at IS NOT NULL
-                AND deleted_at < NOW() - INTERVAL '30 days'
-            """, ())
+            ph = getattr(db, "_ph", "%s")
+            placeholders = ", ".join([ph] * len(ids))
+            params = tuple(ids)
+            db._execute(conn, f"DELETE FROM comments WHERE post_id::text IN ({placeholders})", params)
+            db._execute(conn, f"DELETE FROM likes WHERE post_id::text IN ({placeholders})", params)
+            db._execute(conn, f"DELETE FROM bookmarks WHERE post_id::text IN ({placeholders})", params)
+            db._execute(conn, f"DELETE FROM notifications WHERE ref_type = 'post' AND ref_id IN ({placeholders})", params)
+            db._execute(conn, f"DELETE FROM posts WHERE id::text IN ({placeholders})", params)
             _sched_logger.info("Session cleanup: hard-deleted %d soft-deleted posts past grace period", len(ids))
     except Exception as e:
         _sched_logger.warning("Post hard-delete cleanup error: %s", e)
@@ -1199,7 +1198,7 @@ def task_moderation_auto_escalation():
 
 
 def _claim_scheduled_post(db, now, worker_id):
-    from control_plane.concurrency import claim_due, ensure_state_schema
+    from control_plane.concurrency import claim_due
 
     class _Tx:
         def __init__(self, connection):
@@ -1208,7 +1207,6 @@ def _claim_scheduled_post(db, now, worker_id):
 
     with db._conn(commit_on_success=False) as conn:
         tx = _Tx(conn)
-        ensure_state_schema(tx, "posts")
         lease = claim_due(
             tx,
             "posts",

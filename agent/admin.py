@@ -169,6 +169,8 @@ def _admin_actor_context(request: Request | None, actor: str) -> dict[str, Any]:
         "request_id": request_id,
     }
 
+_admin_audit_schema_ready_dbs: set[int] = set()
+
 def _ensure_admin_audit_events_table(conn) -> None:
     db._execute(conn, """
         CREATE TABLE IF NOT EXISTS admin_audit_events (
@@ -188,6 +190,7 @@ def _ensure_admin_audit_events_table(conn) -> None:
         )
     """, ())
     db._execute(conn, "CREATE INDEX IF NOT EXISTS idx_admin_audit_events_created_at ON admin_audit_events(created_at DESC)", ())
+    _admin_audit_schema_ready_dbs.add(id(db))
 
 def _admin_audit_insert_params(record: dict[str, Any]) -> tuple:
     return (
@@ -209,7 +212,8 @@ def _log_admin_audit_db(record: dict[str, Any]) -> None:
         return
     try:
         with db._conn() as conn:
-            _ensure_admin_audit_events_table(conn)
+            if id(db) not in _admin_audit_schema_ready_dbs:
+                _ensure_admin_audit_events_table(conn)
             db._execute(conn, """
                 INSERT INTO admin_audit_events
                     (actor, actor_role, actor_scopes, method, path, request_id, ip, reason, before_json, after_json, meta)
@@ -342,9 +346,21 @@ def _maybe_rotate_audit() -> None:
             return
         archive = _AUDIT_FILE.with_suffix(f".{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}.jsonl")
         archive.write_text("\n".join(lines[:-keep]) + "\n", encoding="utf-8")
-        tmp = _AUDIT_FILE.with_suffix(".tmp")
-        tmp.write_text("\n".join(lines[-keep:]) + "\n", encoding="utf-8")
-        tmp.replace(_AUDIT_FILE)
+        import tempfile
+
+        fd, tmp_name = tempfile.mkstemp(
+            dir=str(_AUDIT_FILE.parent),
+            prefix=f".{_AUDIT_FILE.name}.",
+            suffix=".tmp",
+        )
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                f.write("\n".join(lines[-keep:]) + "\n")
+                f.flush()
+                os.fsync(f.fileno())
+            Path(tmp_name).replace(_AUDIT_FILE)
+        finally:
+            Path(tmp_name).unlink(missing_ok=True)
     except Exception:
         logger.exception("Audit log rotation failed")
 
@@ -363,7 +379,7 @@ async def _require_admin_mutation_side_effects(request: Request, actor: str, adm
         await require_csrf(request)
     # P2-7: audit các thao tác THAY ĐỔI (đọc/GET không log để tránh nhiễu)
     if request.method in ("POST", "PUT", "DELETE", "PATCH"):
-        _log_admin_audit(actor, request.method, request.url.path, client_ip, request=request)
+        await asyncio.to_thread(_log_admin_audit, actor, request.method, request.url.path, client_ip, request=request)
 
 async def require_admin(request: Request, required_scope_override: str | None = None):
     """FastAPI dependency: verify admin auth + rate limit (+ audit log mọi mutation)."""
@@ -1173,12 +1189,12 @@ async def dashboard_alerts(request: Request):
                 report_row = db._fetchone(conn, "SELECT COUNT(*) as c FROM reports WHERE status = 'pending'", ())
                 open_reports += db._row_to_dict(report_row)["c"] if report_row else 0
         if flagged:
-            alerts.append({"type": "flagged", "count": flagged, "label": f"{flagged} bài viết bị gắn cờ", "icon": "🚩", "link": "/admin/kiem-duyet?tab=flagged", "priority": 1})
+            alerts.append({"type": "flagged", "count": flagged, "label": f"{flagged} bài viết bị gắn cờ", "icon": "flag", "link": "/admin/kiem-duyet?tab=flagged", "priority": 1})
         if pending_mod:
-            alerts.append({"type": "moderation", "count": pending_mod, "label": f"{pending_mod} bài chờ duyệt", "icon": "📝", "link": "/admin/kiem-duyet", "priority": 2})
+            alerts.append({"type": "moderation", "count": pending_mod, "label": f"{pending_mod} bài chờ duyệt", "icon": "file-text", "link": "/admin/kiem-duyet", "priority": 2})
         open_reports += _count_open_info_reports()
         if open_reports:
-            alerts.append({"type": "reports", "count": open_reports, "label": f"{open_reports} báo cáo chưa xử lý", "icon": "⚠️", "link": "/admin/bao-cao", "priority": 3})
+            alerts.append({"type": "reports", "count": open_reports, "label": f"{open_reports} báo cáo chưa xử lý", "icon": "alert-triangle", "link": "/admin/bao-cao", "priority": 3})
         _dashboard_alerts_images(alerts)
         _dashboard_alerts_unclassified(alerts)
         _dashboard_alerts_provisional(alerts)
@@ -1195,7 +1211,7 @@ def _dashboard_alerts_images(alerts) -> None:
     try:
         img_pending = _imgq.status_counts().get("pending", 0)
         if img_pending:
-            alerts.append({"type": "images", "count": img_pending, "label": f"{img_pending} ảnh chờ duyệt", "icon": "🖼️", "link": "/admin/duyet-anh", "priority": 4})
+            alerts.append({"type": "images", "count": img_pending, "label": f"{img_pending} ảnh chờ duyệt", "icon": "image", "link": "/admin/duyet-anh", "priority": 4})
     except Exception:
         logger.debug("Alert image queue count failed", exc_info=True)
 
@@ -1206,7 +1222,7 @@ def _dashboard_alerts_unclassified(alerts) -> None:
         unc_row = db._fetchone(conn2, f"SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND ({_pid} IS NULL OR {_pid} = '')", ())
         unc_count = db._row_to_dict(unc_row)["c"] if unc_row else 0
     if unc_count:
-        alerts.append({"type": "unclassified", "count": unc_count, "label": f"{unc_count} entity chưa phân loại", "icon": "📍", "link": "/admin/chua-phan-loai", "priority": 5})
+        alerts.append({"type": "unclassified", "count": unc_count, "label": f"{unc_count} entity chưa phân loại", "icon": "pin", "link": "/admin/chua-phan-loai", "priority": 5})
 
 
 def _dashboard_alerts_provisional(alerts) -> None:
@@ -1215,7 +1231,7 @@ def _dashboard_alerts_provisional(alerts) -> None:
         s = kb_curation.normalize_curation_summary(kb_curation.stats())
         prov = s["provisional_count"]
         if prov:
-            alerts.append({"type": "provisional", "count": prov, "label": f"{prov} entity chờ xét duyệt", "icon": "🔬", "link": "/admin/duyet-tu-hoc", "priority": 6})
+            alerts.append({"type": "provisional", "count": prov, "label": f"{prov} entity chờ xét duyệt", "icon": "search", "link": "/admin/duyet-tu-hoc", "priority": 6})
     except Exception:
         logger.debug("Alert kb_curation stats failed", exc_info=True)
 
@@ -1226,7 +1242,7 @@ def _dashboard_alerts_appeals(alerts) -> None:
             appeal_row = db._fetchone(conn3, "SELECT COUNT(*) as c FROM moderation_appeals WHERE status = 'pending'", ())
         appeal_count = db._row_to_dict(appeal_row)["c"] if appeal_row else 0
         if appeal_count:
-            alerts.append({"type": "appeals", "count": appeal_count, "label": f"{appeal_count} khiếu nại chờ xử lý", "icon": "📩", "link": "/admin/kiem-duyet", "priority": 2})
+            alerts.append({"type": "appeals", "count": appeal_count, "label": f"{appeal_count} khiếu nại chờ xử lý", "icon": "mail", "link": "/admin/kiem-duyet", "priority": 2})
     except Exception:
         logger.debug("Alert appeals count failed", exc_info=True)
 
@@ -1735,7 +1751,8 @@ async def admin_cleanup_orphan_entity_refs():
     """Remove UGC records referencing entity IDs that no longer exist in knowledge base."""
     if not db._use_pg:
         raise HTTPException(503, detail="Chức năng này yêu cầu PostgreSQL")
-    valid_ids = {e["id"] for e in db.list_entities(limit=10000, offset=0)}
+    entities = await asyncio.to_thread(db.list_entities, 10000, 0)
+    valid_ids = {e["id"] for e in entities}
     if not valid_ids:
         return {"success": True, "cleaned": {}}
 

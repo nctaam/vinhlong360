@@ -447,7 +447,16 @@ class MultiTierCache:
                     self._l2[key] = local
             merged[key] = local
 
+    def _matcher_keys_match_l2(self) -> bool:
+        expected_keys = {
+            key
+            for key, entry in self._l2.items()
+            if isinstance(entry, dict) and entry.get("query")
+        }
+        return set(self._matcher._vectors.keys()) == expected_keys
+
     def _replace_l2_state(self, merged: dict[str, dict]) -> None:
+        prev_versions = {key: self._record_version(val) for key, val in self._l2.items()}
         self._l2 = OrderedDict(
             (key, value)
             for key, value in merged.items()
@@ -458,7 +467,9 @@ class MultiTierCache:
             for key, value in merged.items()
             if isinstance(value, dict) and value.get("deleted")
         }
-        self._matcher.rebuild(self._l2)
+        next_versions = {key: self._record_version(val) for key, val in self._l2.items()}
+        if next_versions != prev_versions or not self._matcher_keys_match_l2():
+            self._matcher.rebuild(self._l2)
 
     def _save_l2(self, *, merge_disk: bool = True, deleted_keys: set[str] | None = None):
         try:
