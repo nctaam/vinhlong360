@@ -425,10 +425,10 @@ watch([areaFilter, typeFilter, q], () => {
   font-family: var(--font-editorial);
   font-size: var(--text-lg);
   font-weight: 600;
+  line-height: 1.32;
   color: var(--color-text);
   margin: 0;
   overflow-wrap: break-word;
-  word-break: break-word;
   text-wrap: pretty;
 }
 
@@ -439,7 +439,7 @@ watch([areaFilter, typeFilter, q], () => {
   margin: 0;
   flex: 1;
   overflow-wrap: break-word;
-  word-break: break-word;
+  text-wrap: pretty;
 }
 
 .cuisine-tile-tag {
@@ -450,7 +450,6 @@ watch([areaFilter, typeFilter, q], () => {
   padding-top: var(--space-2);
   border-top: 1px solid var(--color-border);
   overflow-wrap: break-word;
-  word-break: break-word;
 }
 
 .cuisine-divider {

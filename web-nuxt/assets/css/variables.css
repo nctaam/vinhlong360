@@ -216,7 +216,6 @@
   --success-border: rgba(46, 125, 50, .25);
   --info: #1565C0;
   --warning: var(--color-warning);
-  --on-warning: #FFFFFF;
   --warning-bg: rgba(230, 126, 34, .08);
   --warning-border: rgba(230, 126, 34, .25);
   --error: var(--color-error);
@@ -959,7 +958,6 @@
   --success-bg: rgba(102, 187, 106, .12);
   --success-border: rgba(102, 187, 106, .3);
   --info: #64B5F6;
-  --on-warning: #4A2800;
   --warning-border: rgba(240, 160, 80, .3);
   --error-border: rgba(255, 105, 97, .3);
   /* Skeleton (dark) */

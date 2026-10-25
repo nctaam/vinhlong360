@@ -8,7 +8,6 @@ cho Knowledge Agent (tương đương store.js phía Python).
 import json
 import logging
 import os
-import re
 from ocop import is_ocop_certified
 import threading
 from pathlib import Path
@@ -224,19 +223,18 @@ def query_relevance(query: str, entity: dict) -> bool:
         appears in the entity NAME (high-precision signal).
     """
     qn = _normalize_vn(query)
+    if not qn:
+        return False
     name_n = _normalize_vn(entity.get("name", ""))
     summary_n = _normalize_vn(entity.get("summary", ""))
-    hay = name_n + " " + summary_n
-
-    if qn and len(qn) >= 4 and qn in hay:
+    if len(qn) >= 4 and qn in f"{name_n} {summary_n}":
         return True
 
-    q_tokens = [t for t in re.split(r"\s+", qn) if len(t) >= 3 and t not in _RELEVANCE_STOPWORDS]
-    name_tokens = set(re.split(r"\s+", name_n))
-    for t in q_tokens:
-        if t in name_tokens:
-            return True
-    return False
+    name_tokens = set(name_n.split())
+    return any(
+        len(t) >= 3 and t not in _RELEVANCE_STOPWORDS and t in name_tokens
+        for t in qn.split()
+    )
 
 
 # ── Query functions (tools cho agent) ──
@@ -389,23 +387,22 @@ def places(area: str = None) -> list[dict]:
     return sorted(out, key=lambda p: p["name"])
 
 
+_AREA_PROV = {
+    "ben-tre": "Bến Tre",
+    "tra-vinh": "Trà Vinh",
+    "vinh-long": "Vĩnh Long",
+}
+
+
 def _search_area_match(e: dict, area: str) -> bool:
     """GĐ: entity khớp bộ lọc area (qua places HOẶC province_old fallback)."""
     if area == CURRENT_PROVINCE_SLUG:
         return current_scope_matches(e)
     p = get_place(e["id"])
-    # Primary: check via places data
-    area_match = p and p.get("area") == area
-    # Fallback: check province_old attribute (for new ward-crawl entities)
-    if not area_match:
-        prov = (e.get("attributes") or {}).get("province_old", "")
-        _AREA_PROV = {
-            "ben-tre": "Bến Tre",
-            "tra-vinh": "Trà Vinh",
-            "vinh-long": "Vĩnh Long",
-        }
-        area_match = prov == _AREA_PROV.get(area, "")
-    return area_match
+    if p and p.get("area") == area:
+        return True
+    prov = (e.get("attributes") or {}).get("province_old", "")
+    return bool(prov and prov == _AREA_PROV.get(area, ""))
 
 
 _geo_buckets: tuple[dict[str, list[dict]], dict[str, list[dict]]] | None = None
@@ -444,21 +441,25 @@ def _get_geo_buckets() -> tuple[dict[str, list[dict]], dict[str, list[dict]]]:
     return _geo_buckets
 
 
-def _search_q_match(e: dict, q: str) -> bool:
-    """GĐ: entity khớp truy vấn text q (so cả bản gốc lẫn bản normalize dấu)."""
-    ql = q.lower()
-    ql_norm = _normalize_vn(q)
+def _entity_searchable_text(e: dict) -> str:
     place_info = get_place(e["id"]) or {}
     attrs = e.get("attributes") or {}
-    searchable = " ".join(filter(None, [
+    return " ".join(filter(None, (
         e.get("name"), e.get("summary"),
         place_info.get("alias"), place_info.get("legacyArea"), place_info.get("name"),
         attrs.get("ward"), attrs.get("district"),
         attrs.get("province_old"), attrs.get("address"),
-    ])).lower()
-    if ql in searchable:
+    ))).lower()
+
+
+def _search_q_match(e: dict, q: str, ql: str | None = None, ql_norm: str | None = None) -> bool:
+    """GĐ: entity khớp truy vấn text q (so cả bản gốc lẫn bản normalize dấu)."""
+    ql_val = ql if ql is not None else q.lower()
+    searchable = _entity_searchable_text(e)
+    if ql_val in searchable:
         return True
-    return ql_norm in _normalize_vn(searchable)
+    norm_val = ql_norm if ql_norm is not None else _normalize_vn(q)
+    return bool(norm_val and norm_val in _normalize_vn(searchable))
 
 
 def _search_month_ok(e: dict, month: int) -> bool:
@@ -690,24 +691,20 @@ def health_check() -> dict:
 def compare_areas(area_1: str, area_2: str) -> dict:
     """So sánh 2 khu vực theo nhiều tiêu chí."""
     _ensure()
+    _, by_area = _get_geo_buckets()
 
     def area_stats(area: str) -> dict:
-        by_type = {}
-        total = 0
-        for e in _entities.values():
-            if e["type"] not in CARD_TYPES:
-                continue
-            p = get_place(e["id"])
-            if not p or p.get("area") != area:
-                continue
-            by_type[e["type"]] = by_type.get(e["type"], 0) + 1
-            total += 1
+        area_entities = by_area.get(area, ())
+        by_type: dict[str, int] = {}
+        for e in area_entities:
+            etype = e["type"]
+            by_type[etype] = by_type.get(etype, 0) + 1
 
         ps = places(area)
         return {
             "area": area,
             "area_name": AREA_META.get(area, {}).get("name", area),
-            "total_content": total,
+            "total_content": len(area_entities),
             "by_type": by_type,
             "places_count": len(ps),
             "highlights": _top_entities(area, 5),
@@ -722,16 +719,12 @@ def compare_areas(area_1: str, area_2: str) -> dict:
 def _top_entities(area: str, limit: int = 5) -> list[dict]:
     """Top entities của 1 area."""
     _ensure()
-    entries = []
-    for e in _entities.values():
-        if e["type"] not in CARD_TYPES:
-            continue
-        p = get_place(e["id"])
-        if not p or p.get("area") != area:
-            continue
-        entries.append(e)
-    entries.sort(key=lambda e: e.get("name", ""))
-    return [{"id": e["id"], "name": e["name"], "type": e["type"], "summary": e.get("summary", "")[:100]} for e in entries[:limit]]
+    _, by_area = _get_geo_buckets()
+    entries = sorted(by_area.get(area, ()), key=lambda e: e.get("name", ""))
+    return [
+        {"id": e["id"], "name": e["name"], "type": e["type"], "summary": e.get("summary", "")[:100]}
+        for e in entries[:limit]
+    ]
 
 
 def _nearby_same_place(nearby, entity_id, pid, limit):
@@ -764,14 +757,18 @@ def _nearby_same_area(nearby, entity_id, pid, area, limit):
 
 def _nearby_via_relationships(nearby, entity_id, limit):
     """GĐ: gom entity qua relationships (khối 3, tách nguyên văn — mutate nearby)."""
-    rels = related(entity_id)
-    for r in rels:
+    if len(nearby) >= limit:
+        return
+    seen_ids = {n["id"] for n in nearby}
+    for r in related(entity_id):
         if len(nearby) >= limit:
             break
-        if r["id"] not in {n["id"] for n in nearby}:
-            re_entity = _entities.get(r["id"])
+        rid = r["id"]
+        if rid not in seen_ids:
+            re_entity = _entities.get(rid)
             if re_entity:
-                nearby.append({"id": r["id"], "name": r["entity"], "type": re_entity.get("type", ""),
+                seen_ids.add(rid)
+                nearby.append({"id": rid, "name": r["entity"], "type": re_entity.get("type", ""),
                                "summary": re_entity.get("summary", "")[:80], "proximity": r["label"]})
 
 

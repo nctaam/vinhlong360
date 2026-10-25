@@ -326,19 +326,11 @@ function onAvatarFallback(e: Event) {
   flex-wrap: wrap;
 }
 
-.editorial-folio-tag {
-  font-size: 11px;
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.12em;
-  color: var(--mangthit-600);
-  text-transform: uppercase;
-}
-
 .archival-gps-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 10.5px;
   color: var(--color-text-muted);
   letter-spacing: 0.04em;
@@ -364,45 +356,13 @@ function onAvatarFallback(e: Event) {
 }
 
 .home-intent-anchors__title {
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: clamp(var(--text-xl), 3vw, var(--text-2xl));
+  line-height: var(--leading-snug, 1.3);
+  text-wrap: balance;
   color: var(--color-text);
   margin: 0;
   letter-spacing: -0.01em;
-}
-
-/* Artisanal Red Lacquer Seal */
-.artisanal-terroir-seal {
-  flex-shrink: 0;
-  display: none;
-}
-
-@media (min-width: 640px) {
-  .artisanal-terroir-seal {
-    display: block;
-  }
-}
-
-.artisanal-terroir-seal__ring {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 1.5px solid color-mix(in srgb, var(--mangthit-600) 80%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--mangthit-600) 25%, transparent),
-              inset 0 0 4px color-mix(in srgb, var(--mangthit-600) 20%, transparent);
-}
-
-.artisanal-terroir-seal__inner {
-  font-family: var(--font-editorial-display);
-  font-size: 8px;
-  font-weight: var(--weight-bold);
-  color: var(--mangthit-600);
-  line-height: 1.15;
-  text-align: center;
-  letter-spacing: 0.08em;
 }
 
 .home-intent-anchors__grid {
@@ -623,7 +583,7 @@ function onAvatarFallback(e: Event) {
 
 .home-persona-spot__meta::before {
   content: counter(persona-spot, decimal-leading-zero);
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-style: italic;
   font-size: 1.05rem;
   font-weight: var(--weight-semibold);
@@ -645,17 +605,21 @@ function onAvatarFallback(e: Event) {
 }
 
 .home-persona-spot__title {
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: clamp(1rem, 1.25vw, 1.12rem);
   font-weight: var(--weight-semibold);
   color: var(--color-text);
-  line-height: 1.3;
+  line-height: var(--leading-snug, 1.35);
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .home-persona-spot__highlight {
   font-size: var(--text-xs);
   color: var(--color-text-muted);
-  line-height: 1.45;
+  line-height: 1.5;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
   margin: 0;
 }
 

@@ -112,7 +112,7 @@
             <pre class="admin-error-detail">{{ error }}</pre>
             <div class="admin-error-actions">
               <button type="button" class="btn btn-primary" @click="clearError">Thử lại</button>
-              <NuxtLink to="/admin" class="btn" @click="clearError">Về Dashboard</NuxtLink>
+              <NuxtLink to="/admin" class="btn" @click="clearError">Về Bảng điều khiển</NuxtLink>
             </div>
           </div>
         </template>
@@ -200,21 +200,20 @@ function toggleDark() {
 }
 
 let badgeInterval: ReturnType<typeof setInterval> | undefined
-function _badgeTick() { if (!document.hidden) loadBadges() }
-function _onVisChange() { if (!document.hidden) loadBadges() }
+function refreshBadgesWhenVisible() { if (!document.hidden) loadBadges() }
 onMounted(async () => {
   if (!user.value) await fetchMe()
   isDark.value = document.documentElement.classList.contains('dark')
   loadBadges()
-  badgeInterval = setInterval(_badgeTick, 60_000)
-  document.addEventListener('visibilitychange', _onVisChange)
+  badgeInterval = setInterval(refreshBadgesWhenVisible, 60_000)
+  document.addEventListener('visibilitychange', refreshBadgesWhenVisible)
 })
 watch(() => route.fullPath, () => {
   closeMobileSidebar()
 })
 onUnmounted(() => {
   if (badgeInterval) clearInterval(badgeInterval)
-  document.removeEventListener('visibilitychange', _onVisChange)
+  document.removeEventListener('visibilitychange', refreshBadgesWhenVisible)
 })
 
 useSeoMeta({
@@ -276,8 +275,6 @@ useSeoMeta({
 .sidebar-toggle:hover { color: rgba(var(--white-rgb),.9); background: rgba(var(--white-rgb),.08); }
 .sidebar-toggle:active { transform: scale(.88); transition-duration: .08s; }
 .sidebar-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.toggle-icon { display: inline-block; transition: transform .35s var(--ease-soft); }
-.toggle-icon.rotated { transform: rotate(90deg); }
 
 /* ── Nav groups ── */
 .admin-nav {
@@ -633,9 +630,7 @@ useSeoMeta({
   .sidebar-toggle:active { transform: none; }
   .back-link:hover { transform: none; }
   .admin-nav a:hover .nav-icon { transform: none; }
-  .toggle-icon { transition: none; }
   .admin-user-info:hover .admin-user-avatar { transform: none; }
-  .admin-loading .spinner, .refresh-spin { animation: none; }
   .collapsed .admin-nav a[title]:is(:hover, :focus-visible)::after { animation: none; }
   .cs-skel-label, .cs-skel-input { animation: none; }
   .cs-fade-enter-active { transition: none; }
@@ -706,8 +701,8 @@ useSeoMeta({
   content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%;
   transform: translateX(-50%); padding: 6px 10px; border-radius: 8px;
   background: var(--ink); color: var(--text-on-dark); font-size: .72rem; font-weight: 400;
-  white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .15s;
-  z-index: var(--z-sticky); max-width: 260px; white-space: normal; line-height: 1.4;
+  pointer-events: none; opacity: 0; transition: opacity .15s;
+  z-index: var(--z-sticky); max-width: 260px; white-space: normal; overflow-wrap: break-word; line-height: 1.4;
 }
 .admin-help:hover::after, .admin-help:focus::after { opacity: 1; }
 
@@ -725,7 +720,7 @@ useSeoMeta({
      đúng là `--bg-alt` — chính file này đã dùng nó 4 chỗ khác, và nó có giá trị
      ở CẢ hai chế độ (sáng `--sand-200`, tối `--color-surface-raised`). */
   background: var(--bg-alt); padding: .75rem; border-radius: var(--radius);
-  margin-bottom: 1.5rem; white-space: pre-wrap; word-break: break-word;
+  margin-bottom: 1.5rem; white-space: pre-wrap; overflow-wrap: break-word;
 }
 .admin-error-actions { display: flex; gap: .75rem; justify-content: center; }
 </style>

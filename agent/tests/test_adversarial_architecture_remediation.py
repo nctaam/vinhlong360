@@ -799,6 +799,55 @@ def test_campaign_pi_multi_agent_architecture_optimizations():
     assert callable(legacy_scrub._read_store_text)
 
 
+def test_campaign_rho_multi_agent_architecture_optimizations():
+    from pathlib import Path
+    import entities.api as entities_api
+    import knowledge
+    import public_api
+    import site_settings
+
+    repo_root = Path(__file__).resolve().parent.parent.parent
+
+    # 1. Ban 1: Global CSS Vietnamese Typography & Token Deduplication
+    base_css = (repo_root / "web-nuxt" / "assets" / "css" / "base.css").read_text(encoding="utf-8")
+    assert "font-synthesis: style;" in base_css
+    assert "font-kerning: normal;" in base_css
+    variables_css = (repo_root / "web-nuxt" / "assets" / "css" / "variables.css").read_text(encoding="utf-8")
+    assert variables_css.count("--on-warning:") == 2
+
+    # 2. Ban 2 & Ban 3: Vue Pages, Layouts & Shared Components Decluttering & Vietnamese Font Tokens
+    entity_card = (repo_root / "web-nuxt" / "components" / "EntityCard.vue").read_text(encoding="utf-8")
+    assert "const ID_TOKEN_RE =" in entity_card
+    assert "const PARAGRAPH_SPLIT_RE =" in entity_card
+    assert ".card-type { display: none; }" not in entity_card
+
+    search_drawer = (repo_root / "web-nuxt" / "components" / "SearchDrawer.vue").read_text(encoding="utf-8")
+    assert "var(--font-body" not in search_drawer
+    assert "font-family: monospace;" not in search_drawer
+
+    intent_anchors = (repo_root / "web-nuxt" / "components" / "home" / "HomeIntentAnchors.vue").read_text(encoding="utf-8")
+    assert "--font-editorial-display" not in intent_anchors
+    assert ".artisanal-terroir-seal" not in intent_anchors
+
+    local_briefing = (repo_root / "web-nuxt" / "components" / "home" / "HomeLocalBriefing.vue").read_text(encoding="utf-8")
+    assert "VN_CLOCK_FMT" in local_briefing
+    assert "RONG_LUNAR_DAYS" in local_briefing
+
+    # 3. Ban 4: Core Backend & Display Composables Deduplication
+    assert isinstance(knowledge._AREA_PROV, dict)
+    assert callable(knowledge._entity_searchable_text)
+    assert callable(site_settings._ensure_history_once)
+    assert callable(site_settings._parse_setting_value)
+    assert callable(site_settings._format_admin_setting_row)
+    assert callable(site_settings._update_setting_with_history)
+    assert hasattr(public_api, "_NAME_KEY_PREFIX_RE")
+    assert hasattr(public_api, "_NAME_KEY_SUFFIX_RE")
+    assert hasattr(public_api, "_FIRST_INT_RE")
+    assert isinstance(public_api._TRENDING_ENTITY_KEYS, tuple)
+    assert callable(entities_api._fetch_best_answers_by_id)
+
+
+
 
 
 

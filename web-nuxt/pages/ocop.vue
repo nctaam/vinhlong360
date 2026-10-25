@@ -310,15 +310,6 @@ const allOcop = computed(() => {
   return (raw.entities || []).filter((e: Entity) => isOcopCertified(e))
 })
 
-// Total catalog size (san-pham.vue's full scope) minus the certified subset —
-// resolves the "why two pages exist" confusion on the cross-link (concept §6):
-// this page is the OCOP subset, san-pham is everything.
-const otherProductsCount = computed(() => {
-  const raw = data.value
-  if (!raw) return 0
-  return (raw.entities || []).length - allOcop.value.length
-})
-
 // `parseInt(attributes.ocop)` cũ trả 0 cho gần như mọi sản phẩm: `ocop` là văn
 // xuôi ("OCOP 3 sao"), không phải số. Hậu quả đo được trên trang đang chạy: sổ
 // vinh danh 3 sản phẩm thay vì 77, dải "Bậc 5 sao" không render, triện son khai
@@ -547,9 +538,6 @@ useHead(() => {
   background: var(--color-brand);
 }
 
-.dark .hero-cred-seal { color: var(--color-brand); }
-.dark .honor-banner { background: transparent; border-inline-start-color: var(--color-brand); }
-
 @media (prefers-reduced-motion: reduce) {
   .honor-roll :deep(.card:hover) { transform: none; }
 }
@@ -644,11 +632,12 @@ useHead(() => {
   color: var(--color-brand);
   margin: 0 0 var(--space-2);
 }
-.dark .catalog-hero-inner p.ledger-kicker { color: var(--color-brand); }
 .catalog-hero-inner p.ledger-dek {
   font-family: var(--font-editorial);
   font-size: clamp(1rem, .94rem + .3vw, 1.1rem);
   line-height: var(--leading-snug);
+  text-wrap: pretty;
+  overflow-wrap: break-word;
   color: var(--ink);
   max-width: 58ch;
   margin: var(--space-2) 0 0;
@@ -716,6 +705,9 @@ useHead(() => {
 }
 .ocop-band--5 .section-head h2 {
   font-size: clamp(1.6rem, 1.3rem + 1vw, 2.1rem);
+  line-height: 1.28;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 .ocop-band--4 {
   border-block-start: 1px solid color-mix(in srgb, var(--color-material-amber) 50%, var(--line));
@@ -727,8 +719,6 @@ useHead(() => {
   padding: var(--space-4) 0 var(--space-2);
 }
 .ocop-band--3 .section-head h2 { font-size: var(--text-lg); }
-.dark .ocop-band--5,
-.dark .ocop-band--4 { background: transparent; }
 
 /* Explicit top-down stagger reinforcement (5 settles first, 3 last) — modest
    nudge on top of each band's own independent scroll-triggered reveal. */
@@ -756,7 +746,6 @@ useHead(() => {
 
 @media (max-width: 640px) {
   .ocop-band { padding: var(--space-4) 0 var(--space-2); }
-  .ocop-band--4 { padding: var(--space-4) 0 var(--space-2); }
   .ocop-band--3 { padding: var(--space-3) 0 var(--space-2); }
 }
 </style>

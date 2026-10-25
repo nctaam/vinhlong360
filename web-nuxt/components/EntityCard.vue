@@ -53,7 +53,7 @@
         <span v-if="cardMeta.access" class="cm-item"><IconLine name="car" /> {{ cardMeta.access }}</span>
       </div>
       <div v-if="ratingDisplay" class="card-rating">
-        <span class="cr-stars">{{ ratingDisplay.stars }}</span>
+        <span class="cr-stars" aria-hidden="true"><IconLine v-for="s in ratingDisplay.full" :key="s" name="star" />{{ ratingDisplay.half }}</span>
         <span class="cr-score">{{ ratingDisplay.score }}</span>
         <span class="cr-count">({{ ratingDisplay.count }})</span>
       </div>
@@ -61,28 +61,30 @@
         <span v-for="a in amenityIcons" :key="a.key" class="ca-icon" :title="a.label" aria-hidden="true"><IconLine :name="a.icon" /></span>
         <span v-if="amenityExtra > 0" class="ca-more" :title="`${amenityExtra} tiện ích khác`">+{{ amenityExtra }}</span>
       </div>
-      <div class="badges">
-        <span v-if="isNew" class="badge new-badge">Mới</span>
-        <span v-if="isPeak" class="badge peak"><span class="peak-dot" aria-hidden="true"></span> Đang mùa {{ peakLabel }}</span>
-        <span v-else-if="isYearRoundSeason" class="badge year">Quanh năm</span>
-        <span v-else-if="seasonLabel" class="badge season">{{ seasonLabel }}</span>
-        <span v-if="ocopBadge" :class="['badge', 'ocop', { 'ocop-5': ocopTier === 5, 'ocop-4': ocopTier === 4, 'ocop-3': ocopTier === 3 }]"><IconLine name="star" /> {{ ocopBadge }}</span>
-        <span v-if="heritageBadge" class="badge heritage"><IconLine name="shield-check" /> {{ heritageBadge }}</span>
+      <div v-if="primaryBadge" class="badges">
+        <span v-if="primaryBadge.kind === 'heritage'" class="badge heritage"><IconLine name="shield-check" /> {{ primaryBadge.label }}</span>
+        <span v-else-if="primaryBadge.kind === 'ocop'" :class="['badge', 'ocop', { 'ocop-5': ocopTier === 5, 'ocop-4': ocopTier === 4, 'ocop-3': ocopTier === 3 }]"><IconLine name="star" /> {{ primaryBadge.label }}</span>
+        <span v-else-if="primaryBadge.kind === 'peak'" class="badge peak"><span class="peak-dot" aria-hidden="true"></span> Đang mùa {{ peakLabel }}</span>
+        <span v-else-if="primaryBadge.kind === 'season'" class="badge season">{{ primaryBadge.label }}</span>
+        <span v-else-if="primaryBadge.kind === 'new'" class="badge new-badge">Mới</span>
       </div>
     </NuxtLink>
   </article>
 </template>
 
 <script lang="ts">
+const ID_TOKEN_RE = /[^A-Za-z0-9_-]+/g
+const PARAGRAPH_SPLIT_RE = /\n\s*\n/
+
 const AMENITY_ICONS: Record<string, { icon: string; label: string }> = {
   wifi: { icon: 'wind', label: 'Wi-Fi' },
   free_entry: { icon: 'tag', label: 'Miễn phí' },
-  kid_friendly: { icon: 'users', label: 'Trẻ em OK' },
-  wheelchair: { icon: 'compass', label: 'Xe lăn' },
-  pet_friendly: { icon: 'heart', label: 'Thú cưng OK' },
+  kid_friendly: { icon: 'users', label: 'Phù hợp trẻ nhỏ' },
+  wheelchair: { icon: 'compass', label: 'Lối đi xe lăn' },
+  pet_friendly: { icon: 'heart', label: 'Đón thú cưng' },
   air_conditioned: { icon: 'wind', label: 'Máy lạnh' },
-  restroom: { icon: 'building', label: 'WC' },
-  photography: { icon: 'camera', label: 'Chụp ảnh OK' },
+  restroom: { icon: 'building', label: 'Nhà vệ sinh' },
+  photography: { icon: 'camera', label: 'Điểm chụp ảnh' },
 }
 </script>
 
@@ -120,11 +122,9 @@ const allDescriptors = computed<ImageDescriptor[]>(() => {
 })
 const activeDescriptor = computed(() => allDescriptors.value[activeSlide.value] || allDescriptors.value[0]!)
 const displayDescriptor = computed(() => imgError.value ? describeEntityPlaceholder(props.entity) : activeDescriptor.value)
-const disclosureInstance = useId().replace(/[^A-Za-z0-9_-]+/g, '-')
-const activeDisclosureId = computed(() => {
-  const token = String(props.entity.id || 'entity').replace(/[^A-Za-z0-9_-]+/g, '-')
-  return `entity-card-${token}-${disclosureInstance}-${activeSlide.value}`
-})
+const disclosureInstance = useId().replace(ID_TOKEN_RE, '-')
+const entityToken = computed(() => String(props.entity.id || 'entity').replace(ID_TOKEN_RE, '-'))
+const activeDisclosureId = computed(() => `entity-card-${entityToken.value}-${disclosureInstance}-${activeSlide.value}`)
 // Deterministic per-entity placeholder (no real photos exist yet) — seeded by id.
 const placeholderBg = computed(() => generateCategoryPlaceholder(props.entity.id, typeMeta.value.cat))
 const placeholderSvg = computed(() => generateCategoryIcon(typeMeta.value.cat))
@@ -141,7 +141,7 @@ const isPeak = computed(() => props.seasonFilter && relevanceScore(props.entity,
 const cardSummary = computed(() => {
   const desc = props.entity.description
   if (desc && typeof desc === 'string') {
-    const first = desc.split(/\n\s*\n/)[0]?.trim()
+    const first = desc.split(PARAGRAPH_SPLIT_RE)[0]?.trim()
     if (first && first.length > 20) return first
   }
   return props.entity.summary || ''
@@ -189,6 +189,14 @@ const peakLabel = computed(() => {
   if (sf === 'flood') return 'nước nổi'
   return `T${sf}`
 })
+const primaryBadge = computed<{ kind: 'heritage' | 'ocop' | 'peak' | 'season' | 'new'; label?: string } | null>(() => {
+  if (heritageBadge.value) return { kind: 'heritage', label: heritageBadge.value }
+  if (ocopBadge.value) return { kind: 'ocop', label: ocopBadge.value }
+  if (isPeak.value && peakLabel.value) return { kind: 'peak' }
+  if (seasonLabel.value && !isYearRoundSeason.value) return { kind: 'season', label: seasonLabel.value }
+  if (isNew.value) return { kind: 'new' }
+  return null
+})
 const ratingDisplay = computed(() => {
   const a = props.entity.attributes
   const r = parseFloat(a?.rating)
@@ -196,12 +204,11 @@ const ratingDisplay = computed(() => {
   if (!r || r <= 0 || c < 1) return null
   const full = Math.floor(r)
   const half = r - full >= 0.5 ? '½' : ''
-  return { stars: '★'.repeat(full) + half, score: r.toFixed(1), count: c }
+  return { full, half, score: r.toFixed(1), count: c }
 })
 </script>
 
 <style scoped>
-.card-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 :deep(.card) { contain: content; }
 /* 3:2 aspect ratio for card images */
 .cover-img { aspect-ratio: 3 / 2; height: auto; }
@@ -292,22 +299,18 @@ const ratingDisplay = computed(() => {
 }
 .card-amenities { display: none; }
 /* ── Story Card (Wave 1 keystone) — editorial treatment on every grid card ── */
-.card-type { display: none; }
-.card-name { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; line-height: var(--leading-snug, 1.25); word-break: break-word; overflow-wrap: anywhere; hyphens: auto; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card-name { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; line-height: var(--leading-snug, 1.32); padding-block: 1px; overflow-wrap: break-word; text-wrap: pretty; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 /* dateline eyebrow — small-caps, hairline accent, NOT a solid pill */
 .card-dateline {
   display: inline-block; margin-bottom: 2px;
   font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
   letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
 }
-/* Legacy callers retain the existing sediment rule until they opt into the recipe. */
+/* Decorative card rule is hidden to eliminate visual clutter and maintain One Primary Focal Point */
 .card-rule {
-  display: block; width: 26px; height: 2px; border-radius: 2px; margin: 5px 0 6px;
-  background: linear-gradient(90deg, var(--catalog-legacy-rule-river) 0%, var(--catalog-legacy-rule-amber) 52%, var(--catalog-legacy-rule-clay) 100%);
+  display: none;
 }
-.dark .card-rule { background: linear-gradient(90deg, var(--catalog-legacy-rule-river-dark) 0%, var(--catalog-legacy-rule-amber-dark) 52%, var(--catalog-legacy-rule-clay-dark) 100%); }
-.card[data-color-recipe='tri-region-v1'] .card-rule { background: var(--tri-region-material-accent); }
-.card-teaser { color: var(--muted); }
+.card-teaser { color: var(--muted); overflow-wrap: break-word; text-wrap: pretty; }
 /* grain overlay turns the flat placeholder gradient into an intentional illustration */
 .cover-grain {
   position: absolute; inset: 0; z-index: 1; pointer-events: none;
@@ -317,7 +320,7 @@ const ratingDisplay = computed(() => {
 .ca-icon { font-size: .7rem; opacity: .7; cursor: default; }
 .ca-more { font-size: var(--text-2xs); color: var(--muted); font-weight: 600; margin-left: 1px; }
 .card-rating { display: flex; align-items: center; gap: .25rem; font-size: .8rem; margin-top: .25rem; }
-.cr-stars { color: var(--color-material-amber); letter-spacing: -1px; }
+.cr-stars { display: inline-flex; align-items: center; gap: 1px; color: var(--color-material-amber); }
 .cr-score { font-weight: 600; color: var(--ink); }
 .cr-count { color: var(--muted); font-size: .75rem; }
 .badge.new-badge {

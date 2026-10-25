@@ -1,4 +1,4 @@
-import { onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
+import { getCurrentInstance, getCurrentScope, onBeforeUnmount, onMounted, onScopeDispose, ref, type Ref } from 'vue'
 
 import {
   DEFAULT_ACCESSIBILITY_PROFILE,
@@ -88,23 +88,30 @@ export function readAccessibilityPreferences(storage: AccessibilityStorage | nul
 export function persistAccessibilityPreferences(profile: AccessibilityProfile, storage: AccessibilityStorage | null | undefined): void {
   if (!storage) return
   try {
-    storage.setItem(ACCESSIBILITY_STORAGE_KEY, JSON.stringify({
+    const serialized = JSON.stringify({
       theme: profile.theme,
       density: profile.density,
       textScale: profile.textScale,
-    } satisfies AccessibilityPreferences))
+    } satisfies AccessibilityPreferences)
+    if (storage.getItem(ACCESSIBILITY_STORAGE_KEY) !== serialized) {
+      storage.setItem(ACCESSIBILITY_STORAGE_KEY, serialized)
+    }
   } catch {
     // Storage failures must never block the public task.
   }
 }
 
+function setDatasetIfChanged(dataset: DOMStringMap, key: string, value: string): void {
+  if (dataset[key] !== value) dataset[key] = value
+}
+
 export function applyAccessibilityProfile(profile: AccessibilityProfile, root: AccessibilityRoot | null | undefined): void {
   if (!root) return
-  root.dataset.theme = profile.theme
-  root.dataset.density = profile.density
-  root.dataset.reducedMotion = String(profile.reducedMotion)
-  root.dataset.highContrast = String(profile.highContrast)
-  root.dataset.keyboardFirst = String(profile.keyboardFirst)
+  setDatasetIfChanged(root.dataset, 'theme', profile.theme)
+  setDatasetIfChanged(root.dataset, 'density', profile.density)
+  setDatasetIfChanged(root.dataset, 'reducedMotion', String(profile.reducedMotion))
+  setDatasetIfChanged(root.dataset, 'highContrast', String(profile.highContrast))
+  setDatasetIfChanged(root.dataset, 'keyboardFirst', String(profile.keyboardFirst))
   root.style.setProperty('--a11y-text-scale', String(profile.textScale))
   root.style.setProperty('--a11y-text-scale-percent', `${profile.textScale * 100}%`)
 }
@@ -193,8 +200,9 @@ export function useAccessibilityProfile(options: AccessibilityProfileOptions = {
     return profile.value
   }
 
-  if (options.autoHydrate !== false) onMounted(hydrate)
-  onBeforeUnmount(() => removeMediaListeners?.())
+  if (options.autoHydrate !== false && getCurrentInstance()) onMounted(hydrate)
+  if (getCurrentInstance()) onBeforeUnmount(() => removeMediaListeners?.())
+  if (getCurrentScope()) onScopeDispose(() => removeMediaListeners?.())
 
   return { profile, hydrate, setProfile }
 }

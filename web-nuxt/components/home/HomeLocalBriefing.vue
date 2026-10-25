@@ -105,15 +105,23 @@ const windLabel = computed(() => {
   return wind === null ? '' : `${vnNumber(wind)} m/s`
 })
 
-/** HH:mm theo giờ Việt Nam. Không có Intl/timeZone thì bỏ mốc giờ, không đoán. */
-function vnClock(at: Date): string {
+const VN_CLOCK_FMT = (() => {
   try {
     return new Intl.DateTimeFormat('vi-VN', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
       timeZone: 'Asia/Ho_Chi_Minh',
-    }).format(at)
+    })
+  } catch {
+    return null
+  }
+})()
+
+/** HH:mm theo giờ Việt Nam. Không có Intl/timeZone thì bỏ mốc giờ, không đoán. */
+function vnClock(at: Date): string {
+  try {
+    return VN_CLOCK_FMT ? VN_CLOCK_FMT.format(at) : ''
   } catch {
     return ''
   }
@@ -168,12 +176,15 @@ interface TidePhaseInfo {
   desc: string
 }
 
+const RONG_LUNAR_DAYS = new Set([29, 30, 1, 2, 3, 14, 15, 16, 17])
+const KEM_LUNAR_DAYS = new Set([7, 8, 9, 22, 23, 24])
+
 const tidePhase = computed<TidePhaseInfo>(() => {
   const now = new Date()
   const lunar = solarToLunar(now.getDate(), now.getMonth() + 1, now.getFullYear())
   const day = lunar.day
 
-  if ([29, 30, 1, 2, 3, 14, 15, 16, 17].includes(day)) {
+  if (RONG_LUNAR_DAYS.has(day)) {
     return {
       lunarDay: day,
       phase: 'rong',
@@ -181,7 +192,7 @@ const tidePhase = computed<TidePhaseInfo>(() => {
       desc: 'Triều dâng cao theo tuần trăng',
     }
   }
-  if ([7, 8, 9, 22, 23, 24].includes(day)) {
+  if (KEM_LUNAR_DAYS.has(day)) {
     return {
       lunarDay: day,
       phase: 'kem',
@@ -244,9 +255,10 @@ const seasonLink = computed(() => `/theo-mua?mua=${currentMonth.value}`)
   gap: var(--space-2);
   margin: 0;
   color: var(--tri-region-material-accent);
-  font-family: var(--font-editorial, 'Lora', serif);
+  font-family: var(--font-editorial);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
+  line-height: var(--leading-snug, 1.35);
   letter-spacing: .08em;
   text-transform: uppercase;
 }
@@ -283,8 +295,7 @@ const seasonLink = computed(() => `/theo-mua?mua=${currentMonth.value}`)
 /* Dòng nguồn và dòng "ước theo mùa" cùng cỡ chữ: cái sau KHÔNG được nhỏ hơn phần nội dung
    nó đang chú thích, nếu không nó thành dòng chú thích mờ dễ lướt qua — đúng cách một số
    đo giả lọt vào mắt người đọc. Ở trạng thái `estimated` nó là nội dung chính. */
-.home-local-briefing__source,
-.home-local-briefing__estimate {
+.home-local-briefing__source {
   margin: 0;
   color: var(--color-text-muted);
   font-size: var(--text-xs);
@@ -299,9 +310,14 @@ const seasonLink = computed(() => `/theo-mua?mua=${currentMonth.value}`)
 }
 
 .home-local-briefing__estimate {
+  margin: 0;
+  color: var(--color-text-muted);
   flex: 1 1 20rem;
   max-width: 62ch;
   font-size: var(--text-sm);
+  line-height: var(--leading-relaxed, 1.6);
+  text-wrap: pretty;
+  overflow-wrap: break-word;
 }
 
 .home-local-briefing__tide {
@@ -369,6 +385,7 @@ const seasonLink = computed(() => `/theo-mua?mua=${currentMonth.value}`)
 
 .home-local-briefing__link:hover {
   color: var(--color-brand);
+  text-decoration: underline;
 }
 
 .home-local-briefing__link:active {
@@ -381,8 +398,6 @@ const seasonLink = computed(() => `/theo-mua?mua=${currentMonth.value}`)
   flex-shrink: 0;
   transition: transform .2s var(--ease-out-expo);
 }
-
-.home-local-briefing__link:hover { text-decoration: underline; }
 .home-local-briefing__link:focus-visible {
   text-decoration: underline;
   outline: 2px solid var(--color-focus);

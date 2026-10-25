@@ -808,7 +808,11 @@ async def get_entity_reviews(
     rows, total_row, dist_rows, my_review = await asyncio.to_thread(_query)
     td = db._row_to_dict(total_row) if total_row else {}
     total = td.get("c", 0)
-    distribution = {str(db._row_to_dict(r).get("rating", 0)): db._row_to_dict(r).get("cnt", 0) for r in dist_rows}
+    distribution = {
+        str(d.get("rating", 0)): d.get("cnt", 0)
+        for r in dist_rows
+        if (d := db._row_to_dict(r)) is not None
+    }
     reviews = [_shape_review_row(db._row_to_dict(r)) for r in rows]
     result = {
         "reviews": reviews,
@@ -1275,7 +1279,7 @@ def _format_best_answer_row(a: dict) -> dict:
 
 
 def _fetch_best_answers_by_id(conn, row_dicts: list[dict], ph: str) -> dict:
-    answer_ids = [d["best_answer_id"] for d in row_dicts if d.get("best_answer_id")]
+    answer_ids = list({d["best_answer_id"] for d in row_dicts if d.get("best_answer_id")})
     if not answer_ids:
         return {}
     in_ph = ", ".join([ph] * len(answer_ids))
@@ -1287,8 +1291,9 @@ def _fetch_best_answers_by_id(conn, row_dicts: list[dict], ph: str) -> dict:
         WHERE c.id IN ({in_ph})
     """, tuple(answer_ids))
     return {
-        db._row_to_dict(ans)["id"]: _format_best_answer_row(db._row_to_dict(ans))
+        d["id"]: _format_best_answer_row(d)
         for ans in (ans_rows or [])
+        if (d := db._row_to_dict(ans)) is not None
     }
 
 

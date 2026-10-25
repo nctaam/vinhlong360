@@ -42,7 +42,8 @@ export function useTimeAgo() {
     const date = new Date(dateStr)
     const then = date.getTime()
     if (Number.isNaN(then)) return ''
-    if (!hydrated.value || !now.value) return formatAbsoluteDate(date)
+    if (!hydrated.value) return formatAbsoluteDate(date)
+    if (!now.value) return formatAbsoluteDate(date)
 
     const diff = Math.floor((now.value - then) / 1000)
     if (diff < 60) return 'Vừa xong'

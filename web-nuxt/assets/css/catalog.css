@@ -390,7 +390,6 @@
 }
 
 @container catalog-results (min-width: 48rem) {
-  [data-page-recipe="discovery"] .catalog-result-surface:not(.list-view) > .catalog-result-item:first-child,
   .catalog-result-surface:not(.list-view) > :is(.catalog-result-item:first-child, .catalog-result-item:nth-child(7n + 1)) {
     grid-column: span 2;
   }
@@ -606,7 +605,7 @@
 .cat-map .catalog-hero-icon { color: var(--color-material-river); }
 .cat-season .catalog-hero-icon { color: var(--color-material-leaf); }
 /* H1 lớn hơn, editorial (đồng-nhất với hero trang chủ) */
-.catalog-hero h1 { margin: 0 0 var(--space-2); font-family: var(--font-editorial); font-size: clamp(1.7rem, 4.4vw, 2.6rem); line-height: 1.1; font-weight: 600; letter-spacing: var(--tracking-tight); }
+.catalog-hero h1 { margin: 0 0 var(--space-2); font-family: var(--font-editorial); font-size: clamp(1.7rem, 4.4vw, 2.6rem); line-height: 1.22; font-weight: 600; letter-spacing: var(--tracking-tight); text-wrap: balance; overflow-wrap: break-word; }
 .catalog-hero p { margin: 0; color: var(--muted); font-size: var(--text-base); line-height: var(--leading-relaxed); max-width: 600px; }
 .catalog-stats {
   display: flex; gap: var(--space-6); margin-top: var(--space-5); padding-top: var(--space-4);
@@ -635,10 +634,8 @@
 .scroll-row::-webkit-scrollbar { display: none; }
 .scroll-row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-surface); }
 .scroll-row > * { flex: 0 0 260px; scroll-snap-align: start; min-width: 0; }
-.scroll-row > .card { flex: 0 0 260px; }
 @media (max-width: 640px) {
   .scroll-row > * { flex: 0 0 220px; }
-  .scroll-row > .card { flex: 0 0 220px; }
   .scroll-row { gap: var(--space-3); }
 }
 .scroll-row.scroll-end {
@@ -700,10 +697,7 @@
 .catalog-cross h2::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
   width: 3px; height: 1em; border-radius: var(--radius-pill, 999px);
-  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
-}
-.dark .catalog-cross h2::before {
-  background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+  background: var(--sediment-tick);
 }
 .cross-links {
   display: grid;
@@ -1274,6 +1268,7 @@
   width: auto;
   border: .5px solid var(--line);
   box-shadow: var(--shadow-xs);
+  animation: result-pulse .5s var(--ease-out);
 }
 .result-meta::before {
   content: "";
@@ -1281,9 +1276,6 @@
   background: var(--color-success);
   flex: 0 0 auto;
 }
-/* gentle fade-in on (re)render so a filter change reads as fresh status,
-   plus a calm breathing pulse on the status dot. CSS-only; safe fallback. */
-.result-meta { animation: result-pulse .5s var(--ease-out); }
 @keyframes result-pulse {
   from { opacity: 0; transform: translateY(-2px); }
   to   { opacity: 1; transform: translateY(0); }

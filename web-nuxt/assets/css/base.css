@@ -12,7 +12,7 @@ html { scroll-behavior: smooth; scroll-padding-top: 72px; font-size: var(--a11y-
    drawer…). Gỡ nó là mời tràn ngang quay lại ở một chỗ khác. */
 #main-content { overflow-x: clip; }
 html, body { margin: 0; padding: 0; }
-body { font-family: var(--font-sans); color: var(--ink); background: var(--bg); line-height: var(--leading-normal); font-optical-sizing: var(--font-optical-sizing-policy); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-feature-settings: 'cv11' 1; text-rendering: optimizeLegibility; -webkit-tap-highlight-color: transparent; overflow-x: hidden; overflow-wrap: break-word; accent-color: var(--color-action); transition: background .35s var(--ease-out), color .35s var(--ease-out); }
+body { font-family: var(--font-sans); color: var(--ink); background: var(--bg); line-height: var(--leading-normal); font-optical-sizing: var(--font-optical-sizing-policy); font-kerning: normal; font-variant-ligatures: common-ligatures; font-synthesis: style; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-feature-settings: 'cv11' 1; text-rendering: optimizeLegibility; -webkit-tap-highlight-color: transparent; overflow-x: hidden; overflow-wrap: break-word; accent-color: var(--color-action); transition: background .35s var(--ease-out), color .35s var(--ease-out); }
 h1, h2, h3 { text-wrap: balance; }
 .icon-inline { vertical-align: -2px; margin-inline-end: var(--space-1); }
 p, li, figcaption { text-wrap: pretty; }
@@ -153,7 +153,7 @@ h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var
 /* Mobile: hero nhẹ thay 1280w — tiết kiệm data + LCP (WebP, perf-P0) */
 @media (max-width: 640px) { .hero { background-image: linear-gradient(105deg, rgba(var(--ink-rgb),.86) 0%, rgba(var(--ink-rgb),.52) 46%, rgba(var(--ink-rgb),.12) 100%), url('/img/hero-mobile.webp'); } }
 .hero-inner { max-width: var(--maxw); margin: 0 auto; padding: var(--space-16) var(--space-5) calc(var(--space-16) + var(--space-2)); position: relative; z-index: 1; }
-.hero h1 { margin: 0; font-size: clamp(2rem, 6vw, 3.25rem); letter-spacing: var(--tracking-tighter); line-height: 1.08; font-weight: var(--weight-extrabold); }
+.hero h1 { margin: 0; font-size: clamp(2rem, 6vw, 3.25rem); letter-spacing: var(--tracking-tighter); line-height: 1.2; font-weight: var(--weight-extrabold); text-wrap: balance; overflow-wrap: break-word; }
 .hero p { margin: var(--space-4) 0 0; font-size: 1.15rem; opacity: .88; max-width: 640px; line-height: var(--leading-relaxed); }
 
 .hero-search { display: flex; gap: var(--space-3); margin: var(--space-6) 0 0; max-width: 560px; }
@@ -401,7 +401,6 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 }
 /* Outdoor High-Contrast Mode */
 [data-outdoor-contrast="high"] .maplibregl-canvas {
-  filter: contrast(1.6) saturate(1.2) brightness(0.95);
   filter: var(--contrast-glare-map-filter, contrast(1.6) saturate(1.2) brightness(0.95));
 }
 [data-outdoor-contrast="high"] .map-locator-marker {
@@ -667,7 +666,7 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 .thread-post:hover { background: var(--overlay-subtle); }
 .thread-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 40px; }
 .thread-avatar { width: 36px; height: 36px; font-size: var(--text-xs); flex-shrink: 0; transition: transform .35s var(--ease-out-expo); }
-.thread-avatar-link { display: block; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+.thread-avatar-link { min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
 .thread-avatar-link:hover .thread-avatar { transform: scale(1.08); }
 .thread-avatar-link:active .thread-avatar { transform: scale(.94); transition-duration: .08s; }
 .thread-line { width: 2px; flex: 1; min-height: 20px; background: var(--line); border-radius: 1px; margin-top: var(--space-2); }
@@ -972,7 +971,7 @@ a.thread-author:hover { color: var(--color-action); }
 .dark img:not(.no-dim) { opacity: .92; }
 .dark .footer-bottom { border-top-color: var(--glass-light); }
 .dark .footer-col a:hover { color: var(--ink); }
-.dark .nav-backdrop.show { background: rgba(var(--black-rgb), .45); }
+.dark .nav-backdrop.show,
 .dark .nav-backdrop.closing { background: rgba(var(--black-rgb), .45); }
 .dark .main-nav a:hover { background: var(--glass-light); }
 .dark .theme-toggle:hover { background: var(--overlay-light); }

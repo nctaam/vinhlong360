@@ -1406,7 +1406,7 @@ def _search_users_for_contract(q: str, user: dict | None, limit: int) -> tuple[l
             ORDER BY post_count DESC, u.display_name
             LIMIT {ph}
         """, tuple(params))
-    users = [_compact_user_result(db._row_to_dict(r)) for r in rows if db._row_to_dict(r).get("display_name")]
+    users = [_compact_user_result(d) for r in rows if (d := db._row_to_dict(r)).get("display_name")]
     total = db._row_to_dict(total_row)["c"] if total_row else 0
     return users, int(total or 0)
 
@@ -1775,13 +1775,15 @@ def _homepage_score(e: dict, month: int) -> float:
     return s
 
 
+_NAME_KEY_PREFIX_RE = re.compile(r"^(hái|mùa|tham quan|khu du lịch|làng nghề)\s+")
+_NAME_KEY_SUFFIX_RE = re.compile(r"\s+(tại|ở|cù lao|cồn)\s+.*$")
+_FIRST_INT_RE = re.compile(r"(\d+)")
+
+
 def _name_key(name: str) -> str:
     """Normalize name for dedup: lowercase, strip common prefixes/suffixes."""
-    import re
-    n = name.lower().strip()
-    n = re.sub(r"^(hái|mùa|tham quan|khu du lịch|làng nghề)\s+", "", n)
-    n = re.sub(r"\s+(tại|ở|cù lao|cồn)\s+.*$", "", n)
-    return n
+    n = _NAME_KEY_PREFIX_RE.sub("", name.lower().strip())
+    return _NAME_KEY_SUFFIX_RE.sub("", n)
 
 
 def _dedup_by_name(entities: list[dict], limit: int) -> list[dict]:
@@ -1897,14 +1899,9 @@ def _score_one_itinerary(it: dict, public_by_id: dict, month: int) -> float:
                 it_score += 0.5
     dur = it.get("duration") or ""
     if dur:
-        m = re.search(r"(\d+)", str(dur))
-        if m:
-            try:
-                d = int(m.group(1))
-                if 1 <= d <= 3:
-                    it_score += 1.0
-            except (ValueError, TypeError):
-                pass
+        m = _FIRST_INT_RE.search(str(dur))
+        if m and 1 <= int(m.group(1)) <= 3:
+            it_score += 1.0
     return it_score
 
 
@@ -2004,14 +2001,20 @@ def _select_top_dishes(public: list[dict]) -> list[dict]:
     return _dedup_by_name(dishes_pool, limit=6)
 
 
+_TRENDING_ENTITY_KEYS = ("id", "name", "type", "summary", "images", "place_name", "place_area")
+
+
 def _build_homepage_trending(public: list[dict]) -> list[dict]:
     from proactive import get_trending_entities
     trending_raw = get_trending_entities(limit=6)
+    if not trending_raw:
+        return []
+    public_by_id = {e["id"]: e for e in public}
     trending = []
     for t in trending_raw:
-        ent = next((e for e in public if e["id"] == t["id"]), None)
+        ent = public_by_id.get(t["id"])
         if ent:
-            item = {k: ent[k] for k in ("id", "name", "type", "summary", "images", "place_name", "place_area") if k in ent}
+            item = {k: ent[k] for k in _TRENDING_ENTITY_KEYS if k in ent}
             item["hit_count"] = t["hit_count"]
             trending.append(item)
     return trending

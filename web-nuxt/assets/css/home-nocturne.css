@@ -133,8 +133,9 @@
   color: var(--color-text);
   font-family: var(--font-editorial-display);
   font-size: clamp(var(--text-4xl), 7vw, var(--text-5xl));
-  line-height: 1.12;
+  line-height: 1.2;
   letter-spacing: -.02em;
+  overflow-wrap: break-word;
   text-shadow: none;
 }
 

@@ -8,12 +8,14 @@
     :data-atmosphere="atmosphereMode"
   >
     <!-- One editorial thesis: useful action first, one disclosed media dossier second. -->
-    <div class="sr-only" data-home-section="context" aria-label="Ngữ cảnh khám phá">Khu vực khám phá: Vĩnh Long</div>
+    <div class="sr-only" role="region" data-home-section="context" aria-label="Ngữ cảnh khám phá">Khu vực khám phá: Vĩnh Long</div>
     <section class="hero" aria-label="Giới thiệu" data-home-section="editorial-lead">
       <div class="hero-cinematic" aria-hidden="true">
         <img
           class="hero-cinematic__img"
           src="/img/spread/song-nuoc.webp"
+          srcset="/img/spread/song-nuoc-640.webp 640w, /img/spread/song-nuoc-1024.webp 1024w, /img/spread/song-nuoc.webp 1920w"
+          sizes="100vw"
           alt=""
           width="1920"
           height="1080"
@@ -29,12 +31,6 @@
           <h1>{{ seasonalTagline }}</h1>
           <p class="hero-sub">{{ heroSubtitle }}</p>
           <div class="hero-cognitive-banner" role="region" aria-label="Khuyến nghị thời vụ lữ hành">
-            <div class="hero-cognitive-chip hero-cognitive-chip--weather">
-              <IconLine name="sun" class="hero-cognitive-chip__icon" aria-hidden="true" />
-              <strong class="hero-cognitive-chip__title">Trời êm gió mát</strong>
-              <span class="hero-cognitive-chip__sep" aria-hidden="true">·</span>
-              <span class="hero-cognitive-chip__desc">28°C Nắng dịu, thuận đường sông nước</span>
-            </div>
             <div class="hero-cognitive-chip hero-cognitive-chip--fruit">
               <IconLine name="leaf" class="hero-cognitive-chip__icon" aria-hidden="true" />
               <span class="hero-cognitive-chip__fruit-text">{{ seasonalFruitHighlight }}</span>
@@ -94,29 +90,28 @@
     <div class="home-river-divider" aria-hidden="true" />
 
     <HomeRiversideStays v-if="!homeFailed" />
-    <HomeTravelPlanner v-if="!homeFailed" class="sr-only" />
-
     <div class="home-river-divider" aria-hidden="true" />
 
     <CatalogAeoPlaque
       data-home-section="aeo-plaque"
       data-home-aeo-plaque
       title="Cẩm nang du lịch theo mùa"
-      kicker="Góc nhìn bản địa · Giải đáp nhanh AEO"
+      kicker="Góc nhìn bản địa · Giải đáp nhanh"
       accent="amber"
       icon="bulb"
       :entries="homeAeoEntries"
       cta-to="/theo-mua"
       cta-label="Lịch trình theo mùa"
     />
-    <HomeFieldworkFaq class="sr-only" />
 
-    <div class="home-quick-decisions sr-only" data-home-section="quick-decisions">
-      <HomeDecisionLedger :entries="homePresentation.decisionEntries" class="sr-only" />
+    <div class="home-quick-decisions" data-home-section="quick-decisions">
+      <HomeIntentAnchors v-if="!homeFailed" />
+      <HomeDecisionLedger :entries="homePresentation.decisionEntries" class="sr-only" inert />
       <HomeCategoryIndex
         v-if="!homePending"
         :groups="homePresentation.categoryGroups"
         class="sr-only"
+        inert
       />
     </div>
 
@@ -137,9 +132,9 @@
     </section>
 
     <div class="home-signals" data-home-section="signals">
-      <HomeLocalBriefing class="sr-only" />
+      <HomeLocalBriefing class="sr-only" inert />
 
-      <section v-if="upcomingEventList.length || seasonalList.length" class="block reveal sr-only" aria-label="Tín hiệu địa phương" data-material-accent="amber">
+      <section v-if="upcomingEventList.length || seasonalList.length" class="block reveal" aria-label="Tín hiệu địa phương" data-material-accent="amber">
         <div class="section-head">
           <div class="sh-text">
             <h2>Tín hiệu địa phương <em class="editorial-italic-accent" aria-hidden="true">theo mùa</em></h2>
@@ -265,7 +260,7 @@
     <ClientOnly>
       <section
         v-if="communityPosts.length"
-        class="block reveal sr-only"
+        class="block reveal"
         aria-label="Cộng đồng"
         data-image-surface="home-community"
         data-source-class="user-uploaded"
@@ -287,7 +282,7 @@
           :top-members="topMembers"
         />
       </section>
-      <section v-else class="block reveal sr-only" aria-label="Cộng đồng" data-home-section="community" data-material-accent="neutral">
+      <section v-else class="block reveal" aria-label="Cộng đồng" data-home-section="community" data-material-accent="neutral">
         <EmptyState tone="empty" title="Cộng đồng đang khởi động"
           message="Chưa có bài viết nổi bật tuần này — bạn là người kể chuyện đầu tiên nhé!">
           <template #actions>
@@ -313,7 +308,7 @@
         </EmptyState>
       </section>
       <template #fallback>
-        <section class="block reveal sr-only" aria-hidden="true" data-home-section="community" style="min-height: 240px;">
+        <section class="block reveal" aria-hidden="true" data-home-section="community" style="min-height: 240px;">
           <div class="section-head">
             <div class="sh-text">
               <h2>Từ <em class="ac-neutral">cộng đồng</em></h2>
@@ -369,22 +364,19 @@ import { generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { useJourneyActions } from '~/composables/useJourneyActions'
 import HomeCategoryIndex from '~/components/home/HomeCategoryIndex.vue'
 import HomeDecisionLedger from '~/components/home/HomeDecisionLedger.vue'
+import HomeIntentAnchors from '~/components/home/HomeIntentAnchors.vue'
 import HomeFeatureDossier from '~/components/home/HomeFeatureDossier.vue'
 import HomeLocalBriefing from '~/components/home/HomeLocalBriefing.vue'
 import HomeCommunityFeed from '~/components/home/HomeCommunityFeed.vue'
 import HomeContinuation from '~/components/home/HomeContinuation.vue'
-import HomeFieldworkFaq from '~/components/home/HomeFieldworkFaq.vue'
 import HomeCuratedShowcase from '~/components/home/HomeCuratedShowcase.vue'
 import HomeCulinaryTrail from '~/components/home/HomeCulinaryTrail.vue'
 import HomeRiversideStays from '~/components/home/HomeRiversideStays.vue'
-import HomeTravelPlanner from '~/components/home/HomeTravelPlanner.vue'
-import HomeAtmosphereControl from '~/components/home/HomeAtmosphereControl.vue'
 import type { AtmosphereMode } from '~/components/home/HomeAtmosphereControl.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describeEntityImages, describeEntityPlaceholder, isCanonicalLegacyEntityImageUrl } from '~/utils/imageDescriptors'
 import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'
 import type { HomePresentationEntity } from '~/utils/homeNocturnePresentation'
-import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
 
 const HERO_TERROIR_CHIPS = [
   { label: 'Cù lao An Bình', q: 'Cù lao An Bình' },
@@ -401,7 +393,7 @@ const homeAeoEntries = [
   },
   {
     heading: 'Mùa di sản gốm & Hoa xuân (Tháng 1 – 3)',
-    text: 'Vương quốc gốm đỏ Mang Thít vào vụ nung đỏ lửa bên dòng Cổ Chiên. Khí hậu mát dịu lý tưởng cho các tour di sản kiến trúc tâm linh, làng nghề truyền thống và lễ hội đầu năm.',
+    text: 'Vương quốc gốm đỏ Mang Thít vào vụ nung đỏ lửa bên dòng Cổ Chiên. Tiết trời mát dịu đầu xuân thích hợp cho các chuyến điền dã di sản kiến trúc tâm linh, làng nghề truyền thống và hội hè bản địa.',
   },
   {
     heading: 'Mùa trái cây rộ hè (Tháng 5 – 7)',
@@ -409,8 +401,6 @@ const homeAeoEntries = [
   },
 ]
 import {
-  formatFreshnessLabel,
-  eventMetadata,
   eventSourceTier,
   eventSourceTitle,
   eventSourceUrl,
@@ -418,7 +408,6 @@ import {
   eventFreshnessStatus,
   eventFreshnessLabel,
 } from '~/utils/homeSignalFormatters'
-import { aiDisclosure } from '~/utils/aiDisclosure'
 import type { ImageDescriptor } from '~/types/image'
 import { useId, ref, computed } from 'vue'
 
@@ -598,7 +587,6 @@ const spotlight = computed<any>(() => {
     return (cur?.summary || '').length > (best?.summary || '').length ? cur : best
   })
 })
-const spotId = computed(() => spotlight.value?.id)
 
 const heroFeature = computed<any>(() => {
   const pool = [...experiences.value, ...(homeData.value?.experiences || [])]
@@ -662,15 +650,6 @@ const hfMapTo = computed<string>(() => {
   if (!heroFeature.value?.id) return '/ban-do'
   return `/ban-do?selected=${encodeURIComponent(heroFeature.value.id)}`
 })
-
-// Măng-sét ngày âm–dương — ĐỌC TỪ PAYLOAD, không tính ở trình duyệt.
-// Oracle âm lịch là Python (agent/lunar_calendar.py); tính tại nguồn thì không
-// có rủi ro lệch bản port, trang chủ khỏi nạp ~7kB gz bản port JS chỉ để in một
-// dòng chữ (bundle đang vượt trần), và hết hẳn rủi ro SSR bất đồng client.
-// Backend cũng đã lấy ngày theo giờ VN nên không còn lệch 7 tiếng.
-const masthead = computed(() => homeData.value?.masthead || null)
-const mastheadSolar = computed(() => masthead.value?.solar_label || '')
-const mastheadLunar = computed(() => masthead.value?.lunar_label || '')
 
 // ── Tin dẫn tín hiệu: luật 3 bậc (sự kiện -> hàng mùa -> không ai) ───────
 const signalLead = computed<any>(() =>
@@ -772,7 +751,7 @@ useHead({
 /* ═══════════════════════════════════════════════════
    HERO DISPLAY & PROTECTED CONSUMER CONTRACT
    ═══════════════════════════════════════════════════ */
-.home .hero-main h1 { letter-spacing: -.02em; }
+.home .hero-main h1 { letter-spacing: -.02em; text-wrap: balance; overflow-wrap: break-word; }
 
 /* Premium search capsule */
 .home .hero-search {
@@ -852,59 +831,7 @@ useHead({
    ═══════════════════════════════════════════════════ */
 .for-you-row { align-items: stretch; }
 .fy-disclosure { max-width: 60px; color: var(--muted); overflow-wrap: anywhere; }
-.fy-disclosure :deep([data-short-label]) { font-size: var(--text-2xs); font-weight: var(--weight-semibold); line-height: 1.15; }
+.fy-disclosure :is([data-short-label]) { font-size: var(--text-2xs); font-weight: var(--weight-semibold); line-height: 1.35; overflow-wrap: break-word; }
 
-/* ═══════════════════════════════════════════════════
-   COGNITIVE CONTEXTUAL BANNER (ASTRONOMICAL TIDE & SEASONS)
-   ═══════════════════════════════════════════════════ */
-.hero-cognitive-banner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 4px 12px;
-  border-radius: var(--radius-pill, 9999px);
-  background: rgba(var(--white-rgb), 0.08);
-  border: 1px solid var(--border-liquid-glass);
-  backdrop-filter: blur(16px);
-  margin-bottom: var(--space-3);
-  width: fit-content;
-}
-
-.hero-cognitive-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--text-xs);
-  color: var(--surface-white);
-}
-
-.hero-cognitive-chip--weather {
-  color: var(--surface-white);
-}
-
-.hero-cognitive-chip--weather .line-icon {
-  color: var(--alluvial-gold);
-}
-
-.hero-cognitive-chip__title {
-  font-weight: var(--weight-bold);
-  color: var(--surface-white);
-}
-
-.hero-cognitive-chip__sep {
-  opacity: 0.6;
-}
-
-.hero-cognitive-chip__desc {
-  opacity: 0.9;
-}
-
-.hero-cognitive-chip--fruit {
-  padding-left: var(--space-2);
-  border-left: 1px solid var(--border-liquid-glass);
-  color: var(--alluvial-gold);
-  font-weight: var(--weight-medium);
-}
 </style>
 <style src="~/assets/css/home-nocturne.css"></style>

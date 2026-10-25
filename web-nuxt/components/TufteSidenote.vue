@@ -266,7 +266,7 @@ onUnmounted(() => {
 }
 
 .tufte-trigger__glyph {
-  font-family: var(--font-sans, 'Be Vietnam Pro', sans-serif);
+  font-family: var(--font-sans);
   font-weight: var(--weight-bold, 700);
   font-size: var(--text-sm, 0.875rem);
   line-height: 1;
@@ -341,7 +341,8 @@ onUnmounted(() => {
 
 .tufte-sidenote__body {
   margin-bottom: var(--space-2);
-  word-break: break-word;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
 }
 
 .tufte-sidenote__footer {
@@ -429,16 +430,18 @@ onUnmounted(() => {
 }
 
 .tufte-sheet-glyph {
-  font-family: var(--font-sans, 'Be Vietnam Pro', sans-serif);
+  font-family: var(--font-sans);
   font-weight: var(--weight-bold, 700);
   font-size: var(--text-base, 1rem);
   color: var(--alluvial-gold);
 }
 
 .tufte-sheet-title {
-  font-family: var(--font-editorial, 'Lora', serif);
+  font-family: var(--font-editorial);
   font-size: var(--text-base, 1rem);
   font-weight: var(--weight-semibold, 600);
+  line-height: var(--leading-snug, 1.35);
+  text-wrap: balance;
   color: var(--color-text);
   margin: 0;
 }
@@ -463,16 +466,18 @@ onUnmounted(() => {
 }
 
 .tufte-sheet-content {
-  font-family: var(--font-editorial, 'Lora', serif);
+  font-family: var(--font-editorial);
   font-style: italic;
   font-size: var(--text-sm, 0.875rem);
   line-height: var(--leading-relaxed, 1.625);
+  overflow-wrap: break-word;
+  text-wrap: pretty;
   color: var(--color-text);
   margin-bottom: var(--space-4, 16px);
 }
 
 .tufte-sheet-citation {
-  font-family: var(--font-sans, 'Be Vietnam Pro', sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--text-xs, 0.75rem);
   color: var(--color-text-muted);
   border-top: 1px solid var(--color-border);

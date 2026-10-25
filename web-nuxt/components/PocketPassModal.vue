@@ -488,7 +488,7 @@ onUnmounted(() => {
 }
 
 .pocket-pass-code {
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-weight: var(--weight-bold);
   letter-spacing: 0.08em;
   color: var(--color-material-clay);
@@ -508,15 +508,19 @@ onUnmounted(() => {
 
 .pocket-pass-title {
   margin: 0;
-  font-family: var(--font-editorial, 'Lora', serif);
+  font-family: var(--font-editorial);
   font-size: var(--font-size-title);
   font-weight: var(--weight-title);
-  line-height: 1.3;
+  line-height: var(--leading-snug, 1.35);
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .pocket-pass-subtitle {
   margin: 0;
   font-size: var(--font-size-caption);
+  line-height: 1.45;
+  text-wrap: pretty;
   color: var(--color-text-muted);
 }
 
@@ -587,6 +591,8 @@ onUnmounted(() => {
 .waypoint-name {
   font-size: var(--font-size-body);
   font-weight: var(--weight-title-sm);
+  line-height: var(--leading-snug, 1.35);
+  overflow-wrap: break-word;
   color: var(--color-text);
 }
 
@@ -662,7 +668,7 @@ onUnmounted(() => {
 
 .qr-caption {
   font-size: 0.6rem;
-  font-family: monospace;
+  font-family: var(--font-mono);
   letter-spacing: 0.05em;
   color: var(--color-text-muted);
 }
@@ -699,7 +705,8 @@ onUnmounted(() => {
   font-size: var(--font-size-label);
   font-weight: var(--weight-title-sm);
   color: var(--color-text);
-  line-height: 1.3;
+  line-height: var(--leading-snug, 1.35);
+  text-wrap: balance;
 }
 
 .emergency-box-subtitle {

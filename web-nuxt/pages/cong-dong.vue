@@ -264,7 +264,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Post, Entity } from '~/types'
+import type { Post } from '~/types'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describePostPreviewRows } from '~/utils/imageDescriptors'
 import {
@@ -482,7 +482,6 @@ const displayPosts = computed(() => {
 // ── Sổ tay hôm nay & Vệt phù sa mới (Composable useCommunityAlmanac) ──
 const {
   todayLabel,
-  latestPost,
   almanacHeadline,
   hasFreshPost,
   showNewPostHint,
@@ -538,7 +537,6 @@ const {
   focusComposer,
   startQuote,
   cancelQuote,
-  autoGrow,
   onComposerKeydown,
   onComposerInput,
   focusComposerFromRoute,
@@ -642,8 +640,6 @@ function setTab(tab: FeedTab) {
 
 // ── Feed navigation & A11y phím tắt (Composable useCommunityFeedNavigation) ──
 const {
-  focusFeedTab,
-  focusTypeFilter,
   onFeedTabKeydown,
   onTypeFilterKeydown,
   setFilterType,
@@ -757,7 +753,6 @@ const { reportPost } = useReport()
 
 // ── Tương tác bài viết đa bộ sưu tập (Composable useCommunityPostInteractions) ──
 const {
-  _copies,
   toggleLike,
   toggleBookmark,
   deletePost,
@@ -945,20 +940,16 @@ useHead({
 /* ── Responsive ── */
 @media (max-width: 820px) {
   .threads-layout { grid-template-columns: 1fr; }
-  .threads-sidebar { display: none; }
   .threads-page { max-width: 100%; }
   .threads-feed { padding-inline: var(--space-1); }
   .threads-compose { padding-inline: 0; }
   .compose-input { min-height: 48px; font-size: var(--text-base); }
-  .cd-input { font-size: var(--text-base, 16px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .img-preview-row { animation: none; }
-  .post-list-enter-active, .post-list-leave-active, .post-list-move,
-  .fab-fade-enter-active, .fab-fade-leave-active { transition: none; }
+  .post-list-enter-active, .post-list-leave-active, .post-list-move { transition: none; }
   .img-preview-item:hover, .compose-attach:hover, .compose-attach:active,
   .post-type-selector .chip-sm.active, .post-type-selector .chip-sm:active,
   .threads-load-more:hover, .threads-load-more:active { transform: none; }
 }
-.btn-xs { padding: var(--space-1) var(--space-2h); font-size: .72rem; border-radius: var(--radius-control); }
 </style>

@@ -82,6 +82,7 @@
 .public-context-label {
   color: var(--color-text-muted);
   font-size: 0.66rem;
+  line-height: 1.35;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   opacity: 0.85;
@@ -691,7 +692,7 @@
 }
 
 .display-settings-badge-kbd {
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-size: 0.62rem;
   padding: 1px 4px;
   border-radius: 4px;
@@ -1214,20 +1215,13 @@ html[data-density="compact"] .public-bottom-nav-item {
     display: block;
     background: var(--color-shell-scrim);
   }
-}
 
-/* 820px, KHÔNG phải 767px: `.public-shell-task-row` tắt ở `max-width: 820px`
-   (:461) còn cả hệ thanh điều hướng dưới trước đây chỉ bật ở 767px, nên dải
-   768–820px KHÔNG CÒN thanh điều hướng chính nào — đo ở 800px: task row cao 0px,
-   .public-bottom-nav display:none, người dùng chỉ còn nút ba-gạch.
-   Khối này thuần về thanh dưới và phần đệm nội dung dành chỗ cho nó, nên nâng
-   ngưỡng không kéo theo quy tắc mobile nào khác. */
-@media (max-width: 820px) {
-  /* html khai scroll-padding-top: 72px cho header dính (base.css:3) nhưng KHÔNG
-     khai -bottom, trong khi thanh dưới là position:fixed cao ≥64px. Mọi thao tác
-     cuộn-vào-tầm do trình duyệt tự làm — Tab chuyển tiêu điểm, nhảy tới #anchor,
-     scrollIntoView — chỉ trừ hao phía trên, nên phần tử vừa nhận tiêu điểm bị
-     thanh dưới che kín. Dùng đúng token chiều cao đã dành sẵn cho thanh đó. */
+  /* 820px, KHÔNG phải 767px: `.public-shell-task-row` tắt ở `max-width: 820px`
+     (:461) còn cả hệ thanh điều hướng dưới trước đây chỉ bật ở 767px, nên dải
+     768–820px KHÔNG CÒN thanh điều hướng chính nào — đo ở 800px: task row cao 0px,
+     .public-bottom-nav display:none, người dùng chỉ còn nút ba-gạch.
+     Khối này thuần về thanh dưới và phần đệm nội dung dành chỗ cho nó, nên nâng
+     ngưỡng không kéo theo quy tắc mobile nào khác. */
   html {
     scroll-padding-bottom: calc(var(--shell-public-bottom-nav-reserved-height) + var(--space-2));
   }

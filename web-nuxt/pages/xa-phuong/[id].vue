@@ -237,7 +237,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 import type { DetailFetchResolution } from '~/utils/detailExperience'
-import { AREA_META, OFFICE_KIND, TYPE_META } from '~/composables/useConstants'
+import { OFFICE_KIND } from '~/composables/useConstants'
 import { trackContactView } from '~/composables/useContactBeacon'
 import { isCurrentLaunchResult } from '~/composables/useLaunchSafety'
 import { resolveDetailAction, resolveDetailFetchError } from '~/utils/detailExperience'
@@ -468,11 +468,6 @@ if (import.meta.server && wardFetchResolution.value?.kind === 'not_found') {
   throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy xã/phường' })
 }
 
-const areaMeta = computed(() => {
-  const area = data.value?.place?.area
-  return (area ? AREA_META[area] : null) || { name: '', icon: 'pin', blurb: '' }
-})
-
 // Region-keyed decorative hero motif (inline SVG, no external/copyrighted assets)
 const MOTIFS: Record<string, string> = {
   'vinh-long': '<svg viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><path d="M0 60 Q25 45 50 60 T100 60 T150 60 T200 60" fill="none" stroke="var(--white)" stroke-width="2"/><path d="M0 75 Q25 60 50 75 T100 75 T150 75 T200 75" fill="none" stroke="var(--white)" stroke-width="2"/><path d="M0 45 Q25 30 50 45 T100 45 T150 45 T200 45" fill="none" stroke="var(--white)" stroke-width="2"/></svg>',
@@ -486,11 +481,6 @@ const totalContent = computed(() => {
   return (c.tourism || 0) + (c.lodging || 0) + (c.products || 0)
 })
 
-const mapUrl = computed(() => {
-  const c = normalizeCoords(data.value?.place?.coordinates)
-  if (!c) return '/ban-do'
-  return `/ban-do?lat=${c[0]}&lng=${c[1]}&zoom=15`
-})
 const wardPrimaryAction = computed(() => resolveDetailAction({
   coords: normalizeCoords(data.value?.place?.coordinates),
   phone: attrs.value.phone,
@@ -816,17 +806,11 @@ useHead({
   flex-shrink: 0;
 }
 .wp-level { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; opacity: .85; font-weight: var(--weight-bold); }
-.wp-hero h1 { margin: var(--space-1) 0 var(--space-1); font-family: var(--font-editorial); font-size: clamp(1.7rem, 4.4vw, 2.2rem); font-weight: 600; letter-spacing: var(--tracking-tight); line-height: 1.1; }
+.wp-hero h1 { margin: var(--space-1) 0 var(--space-1); font-family: var(--font-editorial); font-size: clamp(1.7rem, 4.4vw, 2.2rem); font-weight: 600; letter-spacing: var(--tracking-tight); line-height: 1.25; text-wrap: balance; overflow-wrap: break-word; }
 .wp-region { margin: 0; opacity: .9; font-size: var(--text-sm); }
 .wp-region a { color: var(--text-on-dark, var(--white)); text-decoration: underline; text-underline-offset: 3px; border-radius: var(--radius-control); }
 .wp-region a:focus-visible { outline: 2px solid var(--text-on-dark, var(--white)); outline-offset: 2px; }
 .wp-region-icon { margin-inline-end: var(--space-1); }
-
-.wp-stats { display: flex; flex-wrap: wrap; gap: var(--space-6); margin-top: var(--space-5); padding-top: var(--space-4); border-top: .5px solid rgba(var(--white-rgb),.25); }
-.dark .wp-stats { border-top-color: rgba(var(--white-rgb),.12); }
-.wp-stat { text-align: center; min-height: 44px; }
-.wp-stat-val { display: block; font-size: var(--text-xl); font-weight: var(--weight-extrabold); }
-.wp-stat-label { font-size: var(--text-xs); opacity: .8; text-transform: uppercase; letter-spacing: .03em; }
 
 /* Summary */
 .wp-summary-wrap {
@@ -943,13 +927,10 @@ useHead({
   .wp-body { grid-template-columns: 1fr; grid-template-areas: 'aside' 'main'; gap: var(--space-5); }
   .wp-aside { position: static; max-height: none; overflow-y: visible; margin-top: 0; padding-inline-right: 0; border-inline-end: 0; }
   .ward-action-dock[data-detail-action-safe-area] { padding-bottom: max(var(--space-3), env(safe-area-inset-bottom, 0px)); }
-  .wp-stats { gap: var(--space-4); }
 }
 @media (max-width: 480px) {
   .wp-hero { padding: var(--space-6) var(--space-5); border-radius: var(--radius-surface); }
   .wp-hero h1 { font-size: 1.4rem; }
-  .wp-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-4); justify-items: center; }
-  .wp-stat-val { font-size: 1.1rem; }
   .wp-map-container { height: 260px; border-radius: var(--radius-control); }
   .wp-empty-card { padding: var(--space-8) var(--space-5) var(--space-6); }
 }

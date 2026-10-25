@@ -444,8 +444,10 @@ useHead({
   color: var(--muted);
   font-size: var(--text-2xs);
   font-weight: var(--weight-bold);
+  line-height: 1.4;
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
+  overflow-wrap: break-word;
 }
 .map-field-dock,
 .map-floating-thumb-dock {
@@ -641,7 +643,7 @@ useHead({
   min-height: 46px;
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-xs);
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: var(--color-text);
   background: var(--card);
   border: 1.5px solid var(--border-liquid-glass, var(--line));
@@ -659,11 +661,7 @@ useHead({
   box-shadow: var(--shadow-md);
   background: var(--card);
 }
-[data-outdoor-contrast="high"] .map-quick-preset-btn {
-  border: 2px solid var(--color-brand);
-  font-weight: var(--weight-bold);
-  color: var(--color-text);
-}
+[data-outdoor-contrast="high"] .map-quick-preset-btn,
 [data-outdoor-contrast="high"] .map-zoom-btn,
 [data-outdoor-contrast="high"] .map-terroir-gps-btn {
   border: 2px solid var(--color-brand);

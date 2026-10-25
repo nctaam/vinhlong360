@@ -388,7 +388,6 @@
   .dc-thumb-more:hover, .dc-thumb-more:active { transform: none; }
   .desc-toggle:hover, .desc-toggle:active { transform: none; }
   .rel-more:hover:not(:disabled), .rel-more:active:not(:disabled) { transform: none; }
-  .fs-item:hover { transform: none; }
   .sticky-cta-bar a:hover, .sticky-cta-bar a:active { transform: none; }
 }
 
@@ -660,7 +659,7 @@
 .detail-cover .dc-eyebrow {
   display: inline-block; margin-bottom: var(--space-2);
   font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
-  letter-spacing: .12em; text-transform: uppercase;
+  line-height: 1.4; letter-spacing: .12em; text-transform: uppercase;
   color: rgba(var(--white-rgb), .92); padding-bottom: 4px;
   border-bottom: 1px solid rgba(var(--white-rgb), .38);
 }

@@ -88,13 +88,44 @@ def _ensure_history_table():
         return False
 
 
+_history_ensured_db_id: int | None = None
+
+
+def _ensure_history_once() -> None:
+    global _history_ensured_db_id
+    cur_db_id = id(db)
+    if _history_ensured_db_id == cur_db_id:
+        return
+    if _ensure_history_table():
+        _history_ensured_db_id = cur_db_id
+
+
 def _invalidate():
-    global _cache, _cache_ts, _llm_cache, _llm_cache_ts
+    global _cache, _cache_ts, _llm_cache, _llm_cache_ts, _history_ensured_db_id
     with _cache_lock:
         _cache = None
         _cache_ts = 0
         _llm_cache = None
         _llm_cache_ts = 0
+        _history_ensured_db_id = None
+
+
+def _parse_setting_value(val: object) -> object:
+    if isinstance(val, str):
+        try:
+            return json.loads(val)
+        except (json.JSONDecodeError, TypeError):
+            return val
+    return val
+
+
+def _format_admin_setting_row(row) -> dict:
+    r = db._row_to_dict(row)
+    val = _parse_setting_value(r["value"])
+    r["value"] = _mask_if_sensitive(str(r["key"]), val)
+    if r.get("updated_at"):
+        r["updated_at"] = str(r["updated_at"])
+    return r
 
 
 def get_all_public() -> dict[str, object]:
@@ -114,18 +145,9 @@ def get_all_public() -> dict[str, object]:
         for row in rows:
             r = db._row_to_dict(row)
             key = str(r["key"])
-            # Defense-in-depth (audit vòng 2 fix #1): endpoint public /api/site-settings
-            # trả nguyên bảng — KHÔNG bao giờ để lộ config LLM/secret nếu admin lưu
-            # chúng vào site_settings (llm_config.update_config upsert vào đúng bảng này).
             if not is_public_key(key):
                 continue
-            val = r["value"]
-            if isinstance(val, str):
-                try:
-                    val = json.loads(val)
-                except (json.JSONDecodeError, TypeError):
-                    pass
-            result[key] = val
+            result[key] = _parse_setting_value(r["value"])
         with _cache_lock:
             _cache = result
             _cache_ts = time.time()
@@ -167,15 +189,9 @@ def get_llm_settings() -> dict[str, object]:
         out: dict[str, object] = {}
         for row in rows:
             r = db._row_to_dict(row)
-            val = r["value"]
-            if isinstance(val, str):
-                try:
-                    val = json.loads(val)
-                except (json.JSONDecodeError, TypeError):
-                    pass
             key = str(r["key"])
             if key.startswith("llm."):
-                out[key] = val
+                out[key] = _parse_setting_value(r["value"])
         with _cache_lock:
             _llm_cache = dict(out)
             _llm_cache_ts = time.time()
@@ -195,20 +211,7 @@ def get_by_category(category: str) -> list[dict]:
             FROM site_settings WHERE category = {ph}
             ORDER BY key
         """, (category,))
-    result = []
-    for row in rows:
-        r = db._row_to_dict(row)
-        val = r["value"]
-        if isinstance(val, str):
-            try:
-                val = json.loads(val)
-            except (json.JSONDecodeError, TypeError):
-                pass
-        r["value"] = _mask_if_sensitive(str(r["key"]), val)
-        if r.get("updated_at"):
-            r["updated_at"] = str(r["updated_at"])
-        result.append(r)
-    return result
+    return [_format_admin_setting_row(row) for row in rows]
 
 
 def get_all_grouped() -> dict[str, list[dict]]:
@@ -222,16 +225,7 @@ def get_all_grouped() -> dict[str, list[dict]]:
         """)
     grouped: dict[str, list[dict]] = {}
     for row in rows:
-        r = db._row_to_dict(row)
-        val = r["value"]
-        if isinstance(val, str):
-            try:
-                val = json.loads(val)
-            except (json.JSONDecodeError, TypeError):
-                pass
-        r["value"] = _mask_if_sensitive(str(r["key"]), val)
-        if r.get("updated_at"):
-            r["updated_at"] = str(r["updated_at"])
+        r = _format_admin_setting_row(row)
         grouped.setdefault(r["category"], []).append(r)
     return grouped
 
@@ -244,6 +238,7 @@ def _json_value(value: object) -> str:
     if len(val_json) > _MAX_VALUE_SIZE:
         raise ValueError(f"Setting value too large ({len(val_json)} > {_MAX_VALUE_SIZE})")
     return val_json
+
 
 def _record_history(conn, *, key: str, category: str, previous: object, next_value: object, action: str, actor: str | None = None) -> None:
     ph = db._ph
@@ -260,25 +255,50 @@ def _record_history(conn, *, key: str, category: str, previous: object, next_val
         actor,
     ))
 
+
+def _update_setting_with_history(
+    conn,
+    *,
+    key: str,
+    value: object,
+    val_json: str,
+    action: str,
+    actor: str | None = None,
+    category_override: str | None = None,
+) -> bool:
+    ph = db._ph
+    current = db._fetchone(conn, f"SELECT key, value, category FROM site_settings WHERE key = {ph}", (key,))
+    if not current:
+        return False
+    cur = db._row_to_dict(current)
+    update_cur = db._execute(conn, f"""
+        UPDATE site_settings SET value = {ph}::jsonb, updated_at = NOW()
+        WHERE key = {ph}
+    """, (val_json, key))
+    if getattr(update_cur, "rowcount", 0) <= 0:
+        return False
+    resolved_cat = category_override or cur.get("category") or key.split(".")[0]
+    _record_history(
+        conn,
+        key=key,
+        category=resolved_cat,
+        previous=cur.get("value"),
+        next_value=value,
+        action=action,
+        actor=actor,
+    )
+    return True
+
+
 def upsert(key: str, value: object, *, actor: str | None = None, action: str = "update") -> bool:
     """Update a single setting's value. Invalidates cache."""
     if not db._use_pg:
         return False
-    _ensure_history_table()
-    ph = db._ph
+    _ensure_history_once()
     val_json = _json_value(value)
     with db._conn() as conn:
-        current = db._fetchone(conn, f"SELECT key, value, category FROM site_settings WHERE key = {ph}", (key,))
-        if not current:
+        if not _update_setting_with_history(conn, key=key, value=value, val_json=val_json, action=action, actor=actor):
             return False
-        cur = db._row_to_dict(current)
-        update_cur = db._execute(conn, f"""
-            UPDATE site_settings SET value = {ph}::jsonb, updated_at = NOW()
-            WHERE key = {ph}
-        """, (val_json, key))
-        if getattr(update_cur, "rowcount", 0) <= 0:
-            return False
-        _record_history(conn, key=key, category=cur.get("category") or key.split(".")[0], previous=cur.get("value"), next_value=value, action=action, actor=actor)
     _invalidate()
     return True
 
@@ -287,22 +307,12 @@ def bulk_upsert(updates: dict[str, object], *, actor: str | None = None) -> int:
     """Update multiple settings atomically. Returns count of updated rows."""
     if not db._use_pg or not updates:
         return 0
-    _ensure_history_table()
-    ph = db._ph
+    _ensure_history_once()
     count = 0
     with db._conn() as conn:
         for key, value in updates.items():
             val_json = _json_value(value)
-            current = db._fetchone(conn, f"SELECT key, value, category FROM site_settings WHERE key = {ph}", (key,))
-            if not current:
-                continue
-            cur = db._row_to_dict(current)
-            update_cur = db._execute(conn, f"""
-                UPDATE site_settings SET value = {ph}::jsonb, updated_at = NOW()
-                WHERE key = {ph}
-            """, (val_json, key))
-            if getattr(update_cur, "rowcount", 0) > 0:
-                _record_history(conn, key=key, category=cur.get("category") or key.split(".")[0], previous=cur.get("value"), next_value=value, action="bulk_update", actor=actor)
+            if _update_setting_with_history(conn, key=key, value=value, val_json=val_json, action="bulk_update", actor=actor):
                 count += 1
     _invalidate()
     return count
@@ -312,24 +322,22 @@ def reset_category(category: str, defaults: dict[str, dict], *, actor: str | Non
     """Reset all settings in a category to their default values."""
     if not db._use_pg:
         return 0
-    _ensure_history_table()
-    ph = db._ph
+    _ensure_history_once()
     count = 0
     with db._conn() as conn:
         for key, meta in defaults.items():
             if meta.get("category") != category:
                 continue
             val_json = _json_value(meta["value"])
-            current = db._fetchone(conn, f"SELECT key, value, category FROM site_settings WHERE key = {ph}", (key,))
-            if not current:
-                continue
-            cur = db._row_to_dict(current)
-            update_cur = db._execute(conn, f"""
-                UPDATE site_settings SET value = {ph}::jsonb, updated_at = NOW()
-                WHERE key = {ph}
-            """, (val_json, key))
-            if getattr(update_cur, "rowcount", 0) > 0:
-                _record_history(conn, key=key, category=category, previous=cur.get("value"), next_value=meta["value"], action="reset", actor=actor)
+            if _update_setting_with_history(
+                conn,
+                key=key,
+                value=meta["value"],
+                val_json=val_json,
+                action="reset",
+                actor=actor,
+                category_override=category,
+            ):
                 count += 1
     _invalidate()
     return count
@@ -338,7 +346,7 @@ def reset_category(category: str, defaults: dict[str, dict], *, actor: str | Non
 def load_history(category: str | None = None, key: str | None = None, limit: int = 50) -> dict[str, object]:
     if not db._use_pg:
         return {"total": 0, "history": []}
-    _ensure_history_table()
+    _ensure_history_once()
     ph = db._ph
     conditions = []
     params: list[object] = []
@@ -370,10 +378,11 @@ def load_history(category: str | None = None, key: str | None = None, limit: int
         out.append(item)
     return {"total": db._row_to_dict(total)["c"] if total else 0, "history": out}
 
+
 def rollback_history(history_id: str, *, actor: str | None = None) -> bool:
     if not db._use_pg:
         return False
-    _ensure_history_table()
+    _ensure_history_once()
     ph = db._ph
     with db._conn() as conn:
         row = db._fetchone(conn, f"""
@@ -383,17 +392,17 @@ def rollback_history(history_id: str, *, actor: str | None = None) -> bool:
         if not row:
             return False
         rec = db._row_to_dict(row)
-        key = rec["setting_key"]
-        current = db._fetchone(conn, f"SELECT value, category FROM site_settings WHERE key = {ph}", (key,))
-        if not current:
-            return False
-        cur = db._row_to_dict(current)
         prev = rec.get("previous_value")
-        db._execute(conn, f"""
-            UPDATE site_settings SET value = {ph}::jsonb, updated_at = NOW()
-            WHERE key = {ph}
-        """, (json.dumps(prev, ensure_ascii=False), key))
-        _record_history(conn, key=key, category=rec.get("category") or cur.get("category") or key.split(".")[0], previous=cur.get("value"), next_value=prev, action="rollback", actor=actor)
+        if not _update_setting_with_history(
+            conn,
+            key=rec["setting_key"],
+            value=prev,
+            val_json=json.dumps(prev, ensure_ascii=False),
+            action="rollback",
+            actor=actor,
+            category_override=rec.get("category"),
+        ):
+            return False
     _invalidate()
     return True
 

@@ -497,9 +497,11 @@ onUnmounted(() => {
 }
 
 .search-drawer-heading {
-  font-family: var(--font-editorial, 'Lora', serif);
+  font-family: var(--font-editorial);
   font-size: var(--font-size-title);
   font-weight: var(--weight-title);
+  line-height: var(--leading-snug, 1.3);
+  text-wrap: balance;
   margin: var(--space-fib-1) 0 0;
   color: var(--color-text);
 }
@@ -516,7 +518,7 @@ onUnmounted(() => {
   justify-content: center;
   padding: 2px 6px;
   font-size: var(--text-2xs);
-  font-family: monospace;
+  font-family: var(--font-mono);
   background: var(--color-surface-subtle);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-control);
@@ -559,7 +561,7 @@ onUnmounted(() => {
   width: 100%;
   min-height: 48px;
   padding: 0 var(--space-fib-5) 0 var(--space-fib-4);
-  font-family: var(--font-body, inherit);
+  font-family: var(--font-sans);
   font-size: var(--font-size-body);
   color: var(--color-text);
   background: var(--color-surface-subtle);
@@ -739,14 +741,17 @@ onUnmounted(() => {
 }
 
 .plaque-coords {
-  font-family: monospace;
+  font-family: var(--font-mono);
   color: var(--color-text-muted);
 }
 
 .plaque-title {
   margin: 0;
-  font-family: var(--font-editorial, 'Lora', serif);
+  font-family: var(--font-editorial);
   font-size: var(--font-size-title-sm);
+  line-height: var(--leading-snug, 1.35);
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .plaque-title a {
@@ -762,7 +767,9 @@ onUnmounted(() => {
   margin: 0;
   font-size: var(--font-size-caption);
   color: var(--color-text-muted);
-  line-height: 1.5;
+  line-height: 1.55;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
 }
 
 .plaque-meta {
@@ -844,9 +851,11 @@ onUnmounted(() => {
 
 .empty-state-title {
   margin: 0;
-  font-family: var(--font-editorial, 'Lora', serif);
+  font-family: var(--font-editorial);
   font-size: var(--font-size-body);
   font-weight: var(--weight-title-sm);
+  line-height: var(--leading-snug, 1.35);
+  text-wrap: balance;
   color: var(--color-text);
 }
 
@@ -855,6 +864,8 @@ onUnmounted(() => {
   font-size: var(--font-size-caption);
   color: var(--color-text-muted);
   line-height: var(--line-height-relaxed);
+  text-wrap: pretty;
+  overflow-wrap: break-word;
   max-width: 300px;
 }
 
