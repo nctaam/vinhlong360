@@ -318,27 +318,39 @@ def _log_admin_audit(
     try:
         with _audit_lock:
             _AUDIT_FILE.parent.mkdir(parents=True, exist_ok=True)
+            pre_size = _AUDIT_FILE.stat().st_size if _AUDIT_FILE.exists() else -1
             with open(_AUDIT_FILE, "a", encoding="utf-8") as f:
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
             _audit_cache["mtime"] = 0.0
+            post_size = _AUDIT_FILE.stat().st_size
+            if _audit_line_state.get("path") == _AUDIT_FILE and _audit_line_state.get("size") == pre_size:
+                next_lines = int(_audit_line_state["lines"]) + 1
+                _audit_line_state.update(size=post_size, lines=next_lines)
+                if next_lines <= _AUDIT_MAX_LINES and post_size <= _AUDIT_MAX_BYTES:
+                    _log_admin_audit_db(rec)
+                    return
             _maybe_rotate_audit()
     except Exception:
         logger.exception("Failed to write admin audit log")
     _log_admin_audit_db(rec)
 
 
+_audit_line_state: dict[str, object] = {"path": None, "size": -1, "lines": 0}
+
+
 def _maybe_rotate_audit() -> None:
     # B5b: rotate khi dòng > _AUDIT_MAX_LINES HOẶC file > _AUDIT_MAX_BYTES (OR — giữ cap dòng cũ).
     try:
         if not _AUDIT_FILE.exists():
+            _audit_line_state.update(path=_AUDIT_FILE, size=-1, lines=0)
             return
         lines = _AUDIT_FILE.read_text(encoding="utf-8").splitlines()
+        cur_size = _AUDIT_FILE.stat().st_size
         over_count = len(lines) > _AUDIT_MAX_LINES
-        over_size = _AUDIT_FILE.stat().st_size > _AUDIT_MAX_BYTES
+        over_size = cur_size > _AUDIT_MAX_BYTES
         if not (over_count or over_size):
+            _audit_line_state.update(path=_AUDIT_FILE, size=cur_size, lines=len(lines))
             return
-        # Giữ tối đa _AUDIT_MAX_LINES dòng (như cũ); nếu chỉ vượt vì dung lượng (dòng dài,
-        # ít dòng) thì cắt còn một nửa để đảm bảo dung lượng thực sự giảm.
         keep = min(_AUDIT_MAX_LINES, len(lines))
         if over_size and not over_count:
             keep = min(keep, max(1, len(lines) // 2))
@@ -359,6 +371,7 @@ def _maybe_rotate_audit() -> None:
                 f.flush()
                 os.fsync(f.fileno())
             Path(tmp_name).replace(_AUDIT_FILE)
+            _audit_line_state.update(path=_AUDIT_FILE, size=_AUDIT_FILE.stat().st_size, lines=keep)
         finally:
             Path(tmp_name).unlink(missing_ok=True)
     except Exception:

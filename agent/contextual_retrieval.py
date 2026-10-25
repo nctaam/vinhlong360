@@ -139,7 +139,17 @@ class ContextualRetrieval:
     def __init__(self):
         self._lock = Lock()
         self._cache: dict[str, str] = {}
+        self._token_sets: dict[str, frozenset[str]] = {}
+        self._token_sets_snapshot: dict[str, str] = {}
         self._loaded = False
+
+    def _rebuild_token_sets(self) -> None:
+        self._token_sets = {
+            eid: frozenset(_tokenize(text))
+            for eid, text in self._cache.items()
+            if text
+        }
+        self._token_sets_snapshot = dict(self._cache)
 
     # ── persistence ──
 
@@ -150,6 +160,7 @@ class ContextualRetrieval:
             if CONTEXTUAL_FILE.exists():
                 raw = json.loads(CONTEXTUAL_FILE.read_text(encoding="utf-8"))
                 self._cache = raw.get("texts", {})
+                self._rebuild_token_sets()
         except Exception as exc:
             logger.warning("contextual cache load failed: %s", exc, exc_info=True)
         self._loaded = True
@@ -250,6 +261,7 @@ class ContextualRetrieval:
                 texts[eid] = self.build_contextual_text(entity, relationships)
 
             self._cache = texts
+            self._rebuild_token_sets()
             self._save_cache()
 
         return texts
@@ -259,6 +271,15 @@ class ContextualRetrieval:
         with self._lock:
             self._load_cache()
             return self._cache.get(entity_id)
+
+    def get_token_sets(self) -> dict[str, frozenset[str]]:
+        """Return pre-tokenized frozensets for all cached contextual texts."""
+        with self._lock:
+            if not self._loaded and not self._cache and CONTEXTUAL_FILE.exists():
+                self._load_cache()
+            if self._cache != self._token_sets_snapshot:
+                self._rebuild_token_sets()
+            return dict(self._token_sets)
 
 
 # =====================================================================
@@ -522,19 +543,19 @@ def _collect_ctx_scores(query: str) -> dict[str, float]:
     """Contextual overlap leg of enhanced_hybrid_search (extracted verbatim)."""
     ctx_scores: dict[str, float] = {}
     try:
-        ctx_texts = contextual._cache
-        if ctx_texts:
-            q_tokens = set(_tokenize(query))
-            if q_tokens:
-                for eid, ctx_text in ctx_texts.items():
-                    doc_tokens = set(_tokenize(ctx_text))
-                    if not doc_tokens:
-                        continue
-                    # Jaccard-like overlap on enriched text
-                    overlap = len(q_tokens & doc_tokens)
-                    if overlap > 0:
-                        union = len(q_tokens | doc_tokens)
-                        ctx_scores[eid] = overlap / max(union, 1)
+        token_sets = contextual.get_token_sets()
+        if not token_sets:
+            return ctx_scores
+        q_tokens = set(_tokenize(query))
+        if not q_tokens:
+            return ctx_scores
+        for eid, doc_tokens in token_sets.items():
+            if not doc_tokens:
+                continue
+            overlap = len(q_tokens & doc_tokens)
+            if overlap > 0:
+                union = len(q_tokens | doc_tokens)
+                ctx_scores[eid] = overlap / max(union, 1)
     except Exception as exc:
         logger.debug("Contextual scoring unavailable: %s", exc)
     return ctx_scores

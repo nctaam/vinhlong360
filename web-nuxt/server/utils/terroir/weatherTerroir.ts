@@ -18,8 +18,9 @@ export interface WeatherTerroirResponse {
 }
 
 export function resolveWeatherTerroirContext(date: Date = new Date()): WeatherTerroirResponse {
-  const month = date.getMonth() + 1
-  const hours = ((date.getUTCHours() + 7) % 24)
+  const vnTime = new Date(date.getTime() + 7 * 3600_000)
+  const month = vnTime.getUTCMonth() + 1
+  const hours = vnTime.getUTCHours()
 
   // Seasonality in Mekong Delta:
   // Dry season: Dec - Apr (Tháng 12 - Tháng 4)

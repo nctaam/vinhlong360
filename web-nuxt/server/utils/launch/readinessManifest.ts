@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import { readFileSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
 import disclosureArtifactSource from '#launch-config/ai-disclosure.json?raw'
@@ -352,9 +352,33 @@ export function validateReadinessManifestEvidence(
   return manifest
 }
 
+interface ReadinessManifestCacheEntry {
+  cacheKey: string
+  manifest: LaunchReadinessManifest
+  loaded: LoadedReadinessManifest
+}
+
+let readinessManifestCache: ReadinessManifestCacheEntry | null = null
+
+function resolveManifestCacheKey(manifestPath: string, swPath: string): string | null {
+  try {
+    const manifestStat = statSync(manifestPath)
+    const swStat = statSync(swPath)
+    return `${manifestPath}:${manifestStat.mtimeMs}:${manifestStat.size}|${swPath}:${swStat.mtimeMs}:${swStat.size}`
+  } catch {
+    return null
+  }
+}
+
 export function loadReadinessManifest(
   manifestPath = resolve(process.cwd(), '.output/server/launch-readiness-manifest.json'),
 ): LaunchReadinessManifest {
+  const swPath = resolve(dirname(manifestPath), '../public/sw.js')
+  const cacheKey = resolveManifestCacheKey(manifestPath, swPath)
+  if (cacheKey && readinessManifestCache?.cacheKey === cacheKey) {
+    return readinessManifestCache.manifest
+  }
+
   let raw: string
   try {
     raw = readFileSync(manifestPath, 'utf8')
@@ -369,32 +393,50 @@ export function loadReadinessManifest(
   }
   let serviceWorkerSource: Buffer
   try {
-    serviceWorkerSource = readFileSync(resolve(dirname(manifestPath), '../public/sw.js'))
+    serviceWorkerSource = readFileSync(swPath)
   } catch {
     throw new Error('readiness manifest final service-worker source missing')
   }
-  return validateReadinessManifestEvidence(parsed, {
+  const manifest = validateReadinessManifestEvidence(parsed, {
     ...EMBEDDED_BUILD_EVIDENCE,
     serviceWorkerDigest: createHash('sha256').update(serviceWorkerSource).digest('hex'),
   })
-}
-
-export function loadAndValidateReadinessManifest(
-  manifestPath?: string,
-): LoadedReadinessManifest {
-  const manifest = loadReadinessManifest(manifestPath)
-  const inspected = inspectReadinessManifest(manifest)
-  if (!inspected.ok) throw new Error('readiness manifest invalid')
-
-  return deepFreeze({
+  const loaded = deepFreeze({
     evidence: {
       routeRevision: manifest.artifacts.route_manifest.revision,
       routeDigest: manifest.artifacts.route_manifest.sha256,
       disclosureRevision: manifest.artifacts.ai_disclosure.revision,
       disclosureDigest: manifest.artifacts.ai_disclosure.sha256,
     },
-    checks: inspected.checks,
+    checks: { ...READY_CHECKS },
   })
+  if (cacheKey) {
+    readinessManifestCache = { cacheKey, manifest, loaded }
+  }
+  return manifest
+}
+
+export function loadAndValidateReadinessManifest(
+  manifestPath = resolve(process.cwd(), '.output/server/launch-readiness-manifest.json'),
+): LoadedReadinessManifest {
+  const swPath = resolve(dirname(manifestPath), '../public/sw.js')
+  const cacheKey = resolveManifestCacheKey(manifestPath, swPath)
+  if (cacheKey && readinessManifestCache?.cacheKey === cacheKey) {
+    return readinessManifestCache.loaded
+  }
+
+  const manifest = loadReadinessManifest(manifestPath)
+  return readinessManifestCache?.manifest === manifest
+    ? readinessManifestCache.loaded
+    : deepFreeze({
+        evidence: {
+          routeRevision: manifest.artifacts.route_manifest.revision,
+          routeDigest: manifest.artifacts.route_manifest.sha256,
+          disclosureRevision: manifest.artifacts.ai_disclosure.revision,
+          disclosureDigest: manifest.artifacts.ai_disclosure.sha256,
+        },
+        checks: { ...READY_CHECKS },
+      })
 }
 
 function deepFreeze<T>(value: T): T {

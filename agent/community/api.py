@@ -2733,21 +2733,26 @@ async def report_post(post_id: str, body: ReportPostBody, user=Depends(require_u
     check_rate(f"report-post:{user['id']}", 10, 600, "Bạn báo cáo quá nhanh. Vui lòng thử lại sau.")
     uid = str(user["id"])
     ph = db._ph
-    with db._conn() as conn:
-        post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE {('id::text' if db._use_pg else 'id')} = {ph} AND deleted_at IS NULL", (post_id,))
-    if post and str(db._row_to_dict(post)["user_id"]) == uid:
-        raise HTTPException(400, "Không thể báo cáo bài viết của chính mình")
     reason = body.reason.strip() if body.reason.strip() in _POST_REPORT_REASONS else "other"
     from reports.models import ReportActor, ReportCreate
     from reports.service import ReportService, ReportError, ReportTargetNotFound
-    try:
-        record = await asyncio.to_thread(
-            ReportService(database=db).create,
+
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE {('id::text' if db._use_pg else 'id')} = {ph} AND deleted_at IS NULL", (post_id,))
+        if not post:
+            raise HTTPException(404, "Bài viết không tồn tại")
+        if str(db._row_to_dict(post)["user_id"]) == uid:
+            raise HTTPException(400, "Không thể báo cáo bài viết của chính mình")
+        return ReportService(database=db).create(
             ReportCreate(target_id=post_id, target_type="post", reason=reason, detail=body.detail.strip()),
             actor=ReportActor(actor_scope=f"user:{uid}", reporter_id=uid, source_channel="community"),
             idempotency_key=f"community:post:{post_id}",
             correlation_id=f"community:post:{post_id}",
         )
+
+    try:
+        record = await asyncio.to_thread(_query)
     except ReportTargetNotFound as exc:
         raise HTTPException(exc.status, "Bài viết không tồn tại") from exc
     except ReportError as exc:
@@ -3101,7 +3106,13 @@ async def toggle_reaction(post_id: str, reaction_type: str = Query(..., max_leng
     ph = db._ph
     uid = str(user["id"])
 
-    _REACTION_LABELS = {"heart": "❤️", "useful": "👍", "beautiful": "😍", "funny": "😄", "surprised": "😮"}
+    _REACTION_LABELS = {
+        "heart": "yêu thích",
+        "useful": "đánh giá hữu ích",
+        "beautiful": "khen ngợi",
+        "funny": "thích thú với",
+        "surprised": "ấn tượng với",
+    }
 
     def _query():
         with db._conn() as conn:
@@ -3143,11 +3154,11 @@ async def toggle_reaction(post_id: str, reaction_type: str = Query(..., max_leng
 
     reacted, counts, post_owner = await asyncio.to_thread(_query)
     if reacted and post_owner != uid:
-        emoji = _REACTION_LABELS.get(reaction_type, reaction_type)
+        label = _REACTION_LABELS.get(reaction_type, reaction_type)
         def _notify():
             create_notification(
                 post_owner, "reaction",
-                f"{user.get('display_name', 'Ai đó')} đã {emoji} bài viết của bạn",
+                f"{user.get('display_name', 'Ai đó')} đã {label} bài viết của bạn",
                 ref_type="post", ref_id=post_id, actor_id=uid,
             )
         await asyncio.to_thread(_notify)
@@ -3659,8 +3670,8 @@ async def pin_post_to_profile(post_id: str, user=Depends(require_user), _csrf=De
 # ── Image upload ──
 
 @router.post("/upload/image",
-             summary="Upload an image (rejected: AI-only media policy)",
-             description="User image uploads are unconditionally rejected under the AI-only media policy: every request returns 400 ai_only_media before any file is read. Site imagery is AI-generated out-of-band (scripts/gen_image.py).")
+             summary="Upload an image (rejected: UGC images disabled)",
+             description="User image uploads are unconditionally rejected under the UGC media policy: every request returns 400 ai_only_media before any file is read. Entity imagery is curated out-of-band under CLAUDE.md §1.5.")
 async def upload_image(file: UploadFile = File(...), user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     _reject_non_ai_media()
     check_rate(f"upload:{user['id']}", RL_UPLOAD_LIMIT, RL_UPLOAD_WINDOW,
@@ -3721,12 +3732,12 @@ def _level_for(points: int) -> tuple[int, str]:
 def _reputation_badges_contrib(reviews, photos, places, followers, likes):
     """Badge từ đóng góp nội dung (extract-method thuần — nửa 1)."""
     badges = []
-    if reviews >= 1:    badges.append({"id": "first_review", "label": "Đánh giá đầu tiên", "icon": "✍️"})
-    if reviews >= 25:   badges.append({"id": "review_master", "label": "Bậc thầy đánh giá", "icon": "⭐"})
-    if photos >= 10:    badges.append({"id": "photographer", "label": "Nhiếp ảnh cộng đồng", "icon": "📸"})
-    if places >= 10:    badges.append({"id": "explorer", "label": "Người khám phá", "icon": "🧭"})
-    if followers >= 20: badges.append({"id": "popular", "label": "Được yêu thích", "icon": "💛"})
-    if likes >= 50:     badges.append({"id": "quality", "label": "Nội dung chất lượng", "icon": "🏆"})
+    if reviews >= 1:    badges.append({"id": "first_review", "label": "Đánh giá đầu tiên", "icon": "pencil"})
+    if reviews >= 25:   badges.append({"id": "review_master", "label": "Bậc thầy đánh giá", "icon": "award"})
+    if photos >= 10:    badges.append({"id": "photographer", "label": "Nhiếp ảnh cộng đồng", "icon": "camera"})
+    if places >= 10:    badges.append({"id": "explorer", "label": "Người khám phá", "icon": "compass"})
+    if followers >= 20: badges.append({"id": "popular", "label": "Được yêu thích", "icon": "heart"})
+    if likes >= 50:     badges.append({"id": "quality", "label": "Nội dung chất lượng", "icon": "trophy"})
     return badges
 
 
@@ -3734,10 +3745,10 @@ def _reputation_badges_activity(reviews, photos, places, visits, areas_visited, 
     """Badge từ hoạt động/thâm niên (extract-method thuần — nửa 2)."""
     badges = []
     if places >= 3 and reviews >= 5 and photos >= 3:
-        badges.append({"id": "allrounder", "label": "Đa năng", "icon": "🌟"})
-    if visits >= 10:    badges.append({"id": "traveler", "label": "Lữ khách", "icon": "🎒"})
-    if areas_visited >= 3: badges.append({"id": "local", "label": "Người địa phương", "icon": "🏡"})
-    if account_age_days >= 180: badges.append({"id": "veteran", "label": "Thành viên kỳ cựu", "icon": "🎖️"})
+        badges.append({"id": "allrounder", "label": "Đa năng", "icon": "sparkle"})
+    if visits >= 10:    badges.append({"id": "traveler", "label": "Lữ khách", "icon": "map"})
+    if areas_visited >= 3: badges.append({"id": "local", "label": "Người địa phương", "icon": "home"})
+    if account_age_days >= 180: badges.append({"id": "veteran", "label": "Thành viên kỳ cựu", "icon": "landmark"})
     return badges
 
 
@@ -3844,19 +3855,19 @@ async def get_badge_progress(user=Depends(require_user)):
     reviews, photos, places, likes, followers, visits, areas, age_days = await asyncio.to_thread(_badge_progress_stats, ph, uid)
 
     badge_defs = [
-        {"id": "first_review", "label": "Đánh giá đầu tiên", "icon": "✍️", "current": reviews, "target": 1},
-        {"id": "review_master", "label": "Bậc thầy đánh giá", "icon": "⭐", "current": reviews, "target": 25},
-        {"id": "photographer", "label": "Nhiếp ảnh cộng đồng", "icon": "📸", "current": photos, "target": 10},
-        {"id": "explorer", "label": "Người khám phá", "icon": "🧭", "current": places, "target": 10},
-        {"id": "popular", "label": "Được yêu thích", "icon": "💛", "current": followers, "target": 20},
-        {"id": "quality", "label": "Nội dung chất lượng", "icon": "🏆", "current": likes, "target": 50},
-        {"id": "allrounder", "label": "Đa năng", "icon": "🌟",
+        {"id": "first_review", "label": "Đánh giá đầu tiên", "icon": "pencil", "current": reviews, "target": 1},
+        {"id": "review_master", "label": "Bậc thầy đánh giá", "icon": "award", "current": reviews, "target": 25},
+        {"id": "photographer", "label": "Nhiếp ảnh cộng đồng", "icon": "camera", "current": photos, "target": 10},
+        {"id": "explorer", "label": "Người khám phá", "icon": "compass", "current": places, "target": 10},
+        {"id": "popular", "label": "Được yêu thích", "icon": "heart", "current": followers, "target": 20},
+        {"id": "quality", "label": "Nội dung chất lượng", "icon": "trophy", "current": likes, "target": 50},
+        {"id": "allrounder", "label": "Đa năng", "icon": "sparkle",
          "current": min(places // 3, reviews // 5, photos // 3),
          "target": 1,
          "hint": f"Cần: {max(0, 3 - places)} nơi, {max(0, 5 - reviews)} đánh giá, {max(0, 3 - photos)} ảnh"},
-        {"id": "traveler", "label": "Lữ khách", "icon": "🎒", "current": visits, "target": 10},
-        {"id": "local", "label": "Người địa phương", "icon": "🏡", "current": areas, "target": 3},
-        {"id": "veteran", "label": "Thành viên kỳ cựu", "icon": "🎖️", "current": age_days, "target": 180},
+        {"id": "traveler", "label": "Lữ khách", "icon": "map", "current": visits, "target": 10},
+        {"id": "local", "label": "Người địa phương", "icon": "home", "current": areas, "target": 3},
+        {"id": "veteran", "label": "Thành viên kỳ cựu", "icon": "landmark", "current": age_days, "target": 180},
     ]
 
     for b in badge_defs:

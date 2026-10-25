@@ -1136,11 +1136,25 @@ def _build_similar_cards(raw_items: list[dict], full_entities: dict, entities_ma
     return cards
 
 
+_public_entities_cache: tuple[tuple[int, int] | None, dict[str, dict]] = (None, {})
+
+
+def _get_public_entities_map(raw_entities: dict) -> dict[str, dict]:
+    global _public_entities_cache
+    key = (id(raw_entities), len(raw_entities))
+    cached_key, cached_map = _public_entities_cache
+    if cached_key == key and cached_map:
+        return cached_map
+    public_map = {eid: e for eid, e in raw_entities.items() if _is_public(e)}
+    _public_entities_cache = (key, public_map)
+    return public_map
+
+
 def _compute_similar_entities(entity_id: str, limit: int) -> list[dict] | None:
     try:
         import knowledge
         knowledge._ensure()
-        entities_map = {eid: e for eid, e in knowledge._entities.items() if _is_public(e)}
+        entities_map = _get_public_entities_map(knowledge._entities)
         rels = knowledge._relationships if hasattr(knowledge, "_relationships") else []
     except Exception:
         logger.warning("Knowledge load failed for recommendations", exc_info=True)
@@ -1179,9 +1193,6 @@ async def get_similar_entities(
 
     result = await asyncio.to_thread(_compute_similar_entities, entity_id, limit)
     if result is None:
-        entity = await asyncio.to_thread(_get_public_entity, entity_id)
-        if not entity:
-            return _err(404, "not_found")
         return {"entity_id": entity_id, "similar": []}
 
     _similar_cache[cache_key] = (now, result)

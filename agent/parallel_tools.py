@@ -181,11 +181,13 @@ class ParallelToolExecutor:
             return []
 
         per_call_timeout = timeout if timeout is not None else self._default_timeout
-
-        # Map from future -> index so we can reassemble in order.
+        deadline = time.monotonic() + max(0.0, per_call_timeout)
         futures: list[tuple[int, dict, Future]] = []
+        results: list[dict | None] = [None] * len(tool_calls)
+        timed_out = False
 
-        with ThreadPoolExecutor(max_workers=self._max_workers) as pool:
+        pool = ThreadPoolExecutor(max_workers=self._max_workers)
+        try:
             for idx, tc in enumerate(tool_calls):
                 future = pool.submit(
                     self._run_one,
@@ -195,18 +197,18 @@ class ParallelToolExecutor:
                 )
                 futures.append((idx, tc, future))
 
-            # Collect results in original order.
-            results: list[dict | None] = [None] * len(tool_calls)
             for idx, tc, future in futures:
+                remaining = max(0.0, deadline - time.monotonic())
                 try:
                     result_str, duration_ms, error = future.result(
-                        timeout=per_call_timeout,
+                        timeout=remaining,
                     )
                 except Exception as exc:
-                    # Timeout or unexpected error from the future itself.
-                    result_str = _error_json(str(exc))
+                    timed_out = True
+                    msg = f"Tool '{tc['name']}' timed out after {per_call_timeout}s" if isinstance(exc, TimeoutError) else str(exc)
+                    result_str = _error_json(msg)
                     duration_ms = 0.0
-                    error = str(exc)
+                    error = msg
 
                 results[idx] = {
                     "id": tc["id"],
@@ -215,6 +217,8 @@ class ParallelToolExecutor:
                     "duration_ms": duration_ms,
                     "error": error,
                 }
+        finally:
+            pool.shutdown(wait=not timed_out, cancel_futures=True)
 
         return results  # type: ignore[return-value]
 

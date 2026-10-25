@@ -429,4 +429,67 @@ def test_campaign_iota_backend_security_and_hotpath_optimizations(monkeypatch):
     assert "_guarded_attempt" in inspect.getsource(circuit_breaker.safe_llm_call)
 
 
+def test_campaign_kappa_multi_agent_architecture_optimizations(tmp_path):
+    import inspect
+    import achievements
+    import admin as admin_mod
+    import analytics
+    import contextual_retrieval
+    import guardrails
+    import jsonl_store
+    import kb_versioning
+    import parallel_tools
+    import scheduler
+    from community import api as community_api
+    from entities import api as entities_api
+    from siteops import admin_api as siteops_admin_api
+
+    # 1. contextual_retrieval caches pre-tokenized frozensets
+    ctx = contextual_retrieval.ContextualRetrieval()
+    ctx._cache = {"e1": "Chùa Tiên Châu cổ kính bên sông Tiền"}
+    ctx._loaded = True
+    token_sets = ctx.get_token_sets()
+    assert "e1" in token_sets
+    assert isinstance(token_sets["e1"], frozenset)
+
+    # 2. guardrails._collect_known_names caches frozenset for >= 32 entities
+    big_entities = {f"e{i}": {"name": f"Địa điểm {i}", "aliases": []} for i in range(35)}
+    names_a = guardrails._collect_known_names(big_entities)
+    names_b = guardrails._collect_known_names(big_entities)
+    assert names_a is names_b
+    assert isinstance(names_a, frozenset)
+
+    # 3. parallel_tools.execute_parallel does not hang on timed-out tool calls
+    import time
+    executor = parallel_tools.ParallelToolExecutor(
+        call_tool_fn=lambda _n, _a: (time.sleep(0.5) or '{"ok":true}'),
+        default_timeout=0.05,
+    )
+    t0 = time.monotonic()
+    res = executor.execute_parallel([{"id": "1", "name": "slow_tool", "args": {}}], timeout=0.05)
+    elapsed = time.monotonic() - t0
+    assert elapsed < 0.45
+    assert res[0]["error"] is not None
+
+    # 4. jsonl_store tracks line count in O(1) without reading on every append
+    test_jsonl = tmp_path / "audit.jsonl"
+    jsonl_store.append_jsonl(test_jsonl, {"ev": 1})
+    jsonl_store.append_jsonl(test_jsonl, {"ev": 2})
+    assert jsonl_store._jsonl_line_state[test_jsonl][1] == 2
+
+    # 5. kb_versioning blocks path traversal in snapshot_id
+    assert kb_versioning._safe_snap_path("../evil.json") is None
+    assert kb_versioning.snapshot("test", snapshot_id="../evil") is None
+
+    # 6. Verify hot-path optimizations across achievements, analytics, community, entities, admin, scheduler, siteops
+    assert "WITH post_stats AS" in inspect.getsource(achievements._compute_metrics)
+    assert callable(analytics._read_snapshot)
+    assert "asyncio.to_thread(_query)" in inspect.getsource(community_api.report_post)
+    assert callable(entities_api._get_public_entities_map)
+    assert "_audit_line_state" in inspect.getsource(admin_mod._log_admin_audit)
+    assert "_enqueue_on_fail=False" in inspect.getsource(scheduler.retry_pending_telegram)
+    assert callable(siteops_admin_api._load_export_snapshot)
+
+
+
 

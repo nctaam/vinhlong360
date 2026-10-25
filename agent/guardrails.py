@@ -193,11 +193,10 @@ class PromptInjectionDetector:
         if not text or not text.strip():
             return {"is_injection": False, "score": 0.0, "patterns_matched": []}
 
-        matched = []
-        with self._lock:
-            for name, pattern in self._patterns:
-                if pattern.search(text):
-                    matched.append(name)
+        matched = [
+            name for name, pattern in self._patterns
+            if pattern.search(text)
+        ]
 
         total = len(self._patterns)
         score = len(matched) / total if total > 0 else 0.0
@@ -599,10 +598,9 @@ class PIIMasker:
         if not text:
             return ()
 
-        with self._lock:
-            candidates = _bounded_pii_spans(text, self._detectors)
-            candidates.extend(_overflow_pii_spans(text, self._overflow_detectors))
-            candidates.extend(_overlong_pii_spans(text))
+        candidates = _bounded_pii_spans(text, self._detectors)
+        candidates.extend(_overflow_pii_spans(text, self._overflow_detectors))
+        candidates.extend(_overlong_pii_spans(text))
         return _merge_pii_spans(candidates)
 
     def mask(self, text: str) -> tuple:
@@ -673,17 +671,30 @@ _SUSPICIOUS_PRICE_RE = re.compile(r"(\d[\d.,]*)\s*(VND|dong|đồng|vnd|trieu|tr
 _SUSPICIOUS_YEAR_RE = re.compile(r"\b(1[0-8]\d{2}|2[1-9]\d{2}|20[3-9]\d)\b")
 
 
-def _collect_known_names(entities: dict) -> set:
+_KNOWN_NAMES_CACHE_KEY: tuple[int, int] | None = None
+_KNOWN_NAMES_CACHE_SET: frozenset[str] = frozenset()
+
+
+def _collect_known_names(entities: dict) -> set | frozenset:
     """Trich xuat tat ca entity names + aliases tu knowledge base (lowercase)."""
+    global _KNOWN_NAMES_CACHE_KEY, _KNOWN_NAMES_CACHE_SET
+    cache_key = (id(entities), len(entities))
+    if len(entities) >= 32 and _KNOWN_NAMES_CACHE_KEY == cache_key:
+        return _KNOWN_NAMES_CACHE_SET
+
     known_names = set()
     for edata in entities.values():
         if isinstance(edata, dict):
             name = edata.get("name", "")
             if name:
                 known_names.add(name.lower())
-            # Them aliases neu co
             for alias in edata.get("aliases", []):
                 known_names.add(alias.lower())
+
+    if len(entities) >= 32:
+        _KNOWN_NAMES_CACHE_SET = frozenset(known_names)
+        _KNOWN_NAMES_CACHE_KEY = cache_key
+        return _KNOWN_NAMES_CACHE_SET
     return known_names
 
 
@@ -697,13 +708,12 @@ def _extract_mentioned_names(reply: str) -> set:
     return mentioned
 
 
-def _score_unknown_entities(mentioned: set, known_names: set) -> tuple:
+def _score_unknown_entities(mentioned: set, known_names: set | frozenset) -> tuple:
     """So sanh mentioned vs known_names -> (score, issues). Substring match gan dung."""
     unknown = []
     for name in mentioned:
         name_lower = name.lower()
-        # Tim gan dung: substring match
-        found = any(
+        found = name_lower in known_names or any(
             name_lower in kn or kn in name_lower
             for kn in known_names
         )
@@ -759,28 +769,25 @@ class OutputValidator:
             }
         """
         issues = []
-        hallucination_score = 0.0
 
-        with self._lock:
-            # ── Length check ──
-            if len(reply.strip()) < self.MIN_LENGTH:
-                issues.append(f"Reply qua ngan ({len(reply.strip())} chars < {self.MIN_LENGTH})")
-            if len(reply) > self.MAX_LENGTH:
-                issues.append(f"Reply qua dai ({len(reply)} chars > {self.MAX_LENGTH})")
+        # ── Length check ──
+        if len(reply.strip()) < self.MIN_LENGTH:
+            issues.append(f"Reply qua ngan ({len(reply.strip())} chars < {self.MIN_LENGTH})")
+        if len(reply) > self.MAX_LENGTH:
+            issues.append(f"Reply qua dai ({len(reply)} chars > {self.MAX_LENGTH})")
 
-            # ── Toxic content check ──
-            toxic_found = self._check_toxic(reply)
-            if toxic_found:
-                issues.extend(toxic_found)
+        # ── Toxic content check ──
+        toxic_found = self._check_toxic(reply)
+        if toxic_found:
+            issues.extend(toxic_found)
 
-            # ── Hallucination check ──
-            h_score, h_issues = self._check_hallucination(reply, entities)
-            hallucination_score = h_score
-            issues.extend(h_issues)
+        # ── Hallucination check ──
+        hallucination_score, h_issues = self._check_hallucination(reply, entities)
+        issues.extend(h_issues)
 
-            # ── Factuality check ──
-            fact_issues = self._check_factuality(reply)
-            issues.extend(fact_issues)
+        # ── Factuality check ──
+        fact_issues = self._check_factuality(reply)
+        issues.extend(fact_issues)
 
         valid = len(issues) == 0
 
@@ -810,12 +817,12 @@ class OutputValidator:
         if not entities:
             return (0.0, [])
 
-        known_names = _collect_known_names(entities)
-        if not known_names:
-            return (0.0, [])
-
         mentioned = _extract_mentioned_names(reply)
         if not mentioned:
+            return (0.0, [])
+
+        known_names = _collect_known_names(entities)
+        if not known_names:
             return (0.0, [])
 
         return _score_unknown_entities(mentioned, known_names)

@@ -37,6 +37,10 @@ CONVERSATIONS_DIR.mkdir(exist_ok=True)
 
 _lock = Lock()
 _MAX_CONVERSATION_FILES = 5_000
+_MAX_DAILY_STATS = 365
+_MAX_TOOL_USAGE = 500
+_cache_meta: tuple[str, int, int] | None = None
+_cache_data: dict | None = None
 
 
 def _default_data() -> dict:
@@ -48,6 +52,14 @@ def _default_data() -> dict:
         "daily_stats": {},       # {"2026-06-09": {queries: N, unique_users: N}}
         "sessions": 0,
     }
+
+
+def _file_meta() -> tuple[str, int, int] | None:
+    try:
+        st = ANALYTICS_FILE.stat()
+        return (str(ANALYTICS_FILE), st.st_mtime_ns, st.st_size)
+    except OSError:
+        return None
 
 
 def _load() -> dict:
@@ -63,14 +75,36 @@ def _load() -> dict:
     return _default_data()
 
 
+def _read_snapshot() -> dict:
+    global _cache_meta, _cache_data
+    meta = _file_meta()
+    if meta is not None and meta == _cache_meta and _cache_data is not None:
+        return _cache_data
+    data = _load()
+    _cache_meta = meta
+    _cache_data = data
+    return data
+
+
 def _save(data: dict):
+    global _cache_meta, _cache_data
     try:
-        tmp = ANALYTICS_FILE.with_suffix(".tmp")
-        with open(tmp, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        tmp.replace(ANALYTICS_FILE)
+        from versioned_json_store import atomic_write_json
+
+        atomic_write_json(ANALYTICS_FILE, data, indent=2)
+        _cache_meta = _file_meta()
+        _cache_data = data
     except OSError as exc:
+        _cache_meta = None
+        _cache_data = None
         logger.warning("Failed to save analytics: %s", exc)
+
+
+def _prune_daily_stats(daily_stats: dict) -> dict:
+    if len(daily_stats) <= _MAX_DAILY_STATS:
+        return daily_stats
+    recent_days = sorted(daily_stats.keys())[-_MAX_DAILY_STATS:]
+    return {day: daily_stats[day] for day in recent_days}
 
 
 def track_query(
@@ -110,14 +144,17 @@ def track_query(
 
         # Tool usage
         for tool in tools_used:
-            # Extract tool name from "tool_name({...})"
             name = tool.split("(")[0] if "(" in tool else tool
             data["tool_usage"][name] = data["tool_usage"].get(name, 0) + 1
+        if len(data["tool_usage"]) > _MAX_TOOL_USAGE:
+            top_tools = sorted(data["tool_usage"].items(), key=lambda x: x[1], reverse=True)[:_MAX_TOOL_USAGE]
+            data["tool_usage"] = dict(top_tools)
 
         # Daily stats
         if today not in data["daily_stats"]:
             data["daily_stats"][today] = {"queries": 0, "sessions": 0}
         data["daily_stats"][today]["queries"] += 1
+        data["daily_stats"] = _prune_daily_stats(data["daily_stats"])
 
         _save(data)
 
@@ -145,6 +182,7 @@ def track_session():
         if today not in data["daily_stats"]:
             data["daily_stats"][today] = {"queries": 0, "sessions": 0}
         data["daily_stats"][today]["sessions"] += 1
+        data["daily_stats"] = _prune_daily_stats(data["daily_stats"])
         _save(data)
 
 
@@ -153,19 +191,34 @@ def save_conversation(
 ):
     """Lưu lịch sử hội thoại."""
     owner_write_gate.assert_writable(owner_key)
+    tmp = None
     try:
+        import os
+        import tempfile
+
         filepath = CONVERSATIONS_DIR / f"{session_id}.json"
-        tmp = filepath.with_suffix(".tmp")
-        with open(tmp, "w", encoding="utf-8") as f:
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        fd, tmp_name = tempfile.mkstemp(
+            dir=str(filepath.parent),
+            prefix=f".{filepath.name}.",
+            suffix=".tmp",
+        )
+        tmp = Path(tmp_name)
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump({
                 "session_id": session_id,
                 "owner_key": owner_key,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "messages": messages[-50:],
             }, f, ensure_ascii=False, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
         tmp.replace(filepath)
     except OSError as exc:
         logger.warning("Failed to save conversation %s: %s", session_id, exc)
+    finally:
+        if tmp is not None:
+            tmp.unlink(missing_ok=True)
 
 
 def purge_owner_records(owner_key: str) -> int:
@@ -262,71 +315,80 @@ def verify_owner_absent(owner_key: str) -> bool:
 
 def get_popular_queries(limit: int = 20, since: str | None = None) -> list[dict]:
     """Top câu hỏi phổ biến (nhóm theo similarity)."""
-    data = _load()
-    counter = Counter()
-    for q in data["queries"]:
-        if since and q.get("timestamp", "") < since:
-            continue
-        text = q["text"].lower().strip().rstrip("?").strip()
-        if len(text) > 5:
-            counter[text] += 1
-    return [{"query": q, "count": c} for q, c in counter.most_common(limit)]
+    with _lock:
+        data = _read_snapshot()
+        counter = Counter()
+        for q in data["queries"]:
+            if since and q.get("timestamp", "") < since:
+                continue
+            text = q["text"].lower().strip().rstrip("?").strip()
+            if len(text) > 5:
+                counter[text] += 1
+        return [{"query": q, "count": c} for q, c in counter.most_common(limit)]
 
 
 def get_top_entities(limit: int = 20) -> list[dict]:
     """Entities được truy cập nhiều nhất."""
-    data = _load()
-    sorted_hits = sorted(data["entity_hits"].items(), key=lambda x: -x[1])
-    return [{"entity_id": eid, "hits": count} for eid, count in sorted_hits[:limit]]
+    with _lock:
+        data = _read_snapshot()
+        sorted_hits = sorted(data["entity_hits"].items(), key=lambda x: -x[1])
+        return [{"entity_id": eid, "hits": count} for eid, count in sorted_hits[:limit]]
 
 
 def get_knowledge_gaps(limit: int = 20, since: str | None = None) -> list[dict]:
     """Câu hỏi mà agent không trả lời được → cần bổ sung KB."""
-    data = _load()
-    counter = Counter()
-    for q in data["unanswered"]:
-        if since and q.get("timestamp", "") < since:
-            continue
-        text = q["text"].lower().strip().rstrip("?").strip()
-        if len(text) > 5:
-            counter[text] += 1
-    return [{"query": q, "count": c} for q, c in counter.most_common(limit)]
+    with _lock:
+        data = _read_snapshot()
+        counter = Counter()
+        for q in data["unanswered"]:
+            if since and q.get("timestamp", "") < since:
+                continue
+            text = q["text"].lower().strip().rstrip("?").strip()
+            if len(text) > 5:
+                counter[text] += 1
+        return [{"query": q, "count": c} for q, c in counter.most_common(limit)]
 
 
 def get_daily_stats(days: int = 30) -> list[dict]:
     """Thống kê sử dụng theo ngày."""
-    data = _load()
-    result = []
-    for i in range(days):
-        date = (datetime.now(timezone.utc) - timedelta(days=i)).strftime("%Y-%m-%d")
-        stats = data["daily_stats"].get(date, {"queries": 0, "sessions": 0})
-        result.append({"date": date, **stats})
-    return result
+    with _lock:
+        data = _read_snapshot()
+        now = datetime.now(timezone.utc)
+        result = []
+        for i in range(days):
+            date = (now - timedelta(days=i)).strftime("%Y-%m-%d")
+            stats = data["daily_stats"].get(date, {"queries": 0, "sessions": 0})
+            result.append({"date": date, **stats})
+        return result
 
 
 def get_tool_usage() -> dict:
     """Thống kê tool usage."""
-    data = _load()
-    return data.get("tool_usage", {})
+    with _lock:
+        data = _read_snapshot()
+        return dict(data.get("tool_usage", {}))
 
 
 def get_summary(since: str | None = None) -> dict:
     """Tổng quan analytics."""
-    data = _load()
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    today_stats = data["daily_stats"].get(today, {"queries": 0, "sessions": 0})
-    queries = data["queries"]
-    unanswered = data.get("unanswered", [])
-    if since:
-        queries = [q for q in queries if q.get("timestamp", "") >= since]
-        unanswered = [q for q in unanswered if q.get("timestamp", "") >= since]
-    return {
-        "total_queries": len(queries),
-        "unique_queries": len({q["text"].lower().strip() for q in queries if q.get("text")}),
-        "total_sessions": data["sessions"],
-        "today_queries": today_stats["queries"],
-        "today_sessions": today_stats["sessions"],
-        "top_entities": get_top_entities(5),
-        "knowledge_gaps": len(unanswered),
-        "tool_usage": data.get("tool_usage", {}),
-    }
+    with _lock:
+        data = _read_snapshot()
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        today_stats = data["daily_stats"].get(today, {"queries": 0, "sessions": 0})
+        queries = data["queries"]
+        unanswered = data.get("unanswered", [])
+        if since:
+            queries = [q for q in queries if q.get("timestamp", "") >= since]
+            unanswered = [q for q in unanswered if q.get("timestamp", "") >= since]
+        sorted_hits = sorted(data["entity_hits"].items(), key=lambda x: -x[1])[:5]
+        top_entities = [{"entity_id": eid, "hits": count} for eid, count in sorted_hits]
+        return {
+            "total_queries": len(queries),
+            "unique_queries": len({q["text"].lower().strip() for q in queries if q.get("text")}),
+            "total_sessions": data["sessions"],
+            "today_queries": today_stats["queries"],
+            "today_sessions": today_stats["sessions"],
+            "top_entities": top_entities,
+            "knowledge_gaps": len(unanswered),
+            "tool_usage": dict(data.get("tool_usage", {})),
+        }

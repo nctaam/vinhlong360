@@ -867,33 +867,37 @@ async def trigger_backup(request: Request = None):
 
 # ── Export toàn-DB ──
 
+def _load_export_snapshot() -> tuple[list[dict], list[dict], list[dict]]:
+    entities = db.all_entities()
+    with db._conn() as conn:
+        rels = [db._row_to_dict(r) for r in db._fetchall(conn, "SELECT from_id, to_id, type FROM relationships", ())]
+        itins = [db._row_to_dict(it) for it in db._fetchall(conn, "SELECT * FROM itineraries", ())]
+    return entities, rels, itins
+
+
 @router.post("/export",
              summary="Export entity data",
              description="Exports all entities, relationships, and itineraries as a streaming JSON file to avoid memory issues.")
 async def export_data():
     """Export toàn bộ entities từ DB — streaming JSON để không OOM."""
+    entities, rels, itins = await asyncio.to_thread(_load_export_snapshot)
 
     def _generate():
         yield '{"entities":['
-        entities = db.all_entities()
         for i, e in enumerate(entities):
             if i:
                 yield ","
             yield json.dumps(e, ensure_ascii=False, default=str)
         yield '],"relationships":['
-        with db._conn() as conn:
-            rels = db._fetchall(conn, "SELECT from_id, to_id, type FROM relationships", ())
         for i, r in enumerate(rels):
             if i:
                 yield ","
-            yield json.dumps(db._row_to_dict(r), ensure_ascii=False, default=str)
+            yield json.dumps(r, ensure_ascii=False, default=str)
         yield '],"itineraries":['
-        with db._conn() as conn:
-            itins = db._fetchall(conn, "SELECT * FROM itineraries", ())
         for i, it in enumerate(itins):
             if i:
                 yield ","
-            yield json.dumps(db._row_to_dict(it), ensure_ascii=False, default=str)  # default=str: TIMESTAMPTZ (datetime) trên PG
+            yield json.dumps(it, ensure_ascii=False, default=str)  # default=str: TIMESTAMPTZ (datetime) trên PG
         yield ']}'
 
     return StreamingResponse(_generate(), media_type="application/json",

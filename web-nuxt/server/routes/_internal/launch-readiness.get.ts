@@ -115,7 +115,4 @@ export function createLaunchReadinessHandler(
   })
 }
 
-export default defineEventHandler(async (event) => {
-  const handler = createLaunchReadinessHandler(defaultDependencies())
-  return handler(event)
-})
+export default createLaunchReadinessHandler(defaultDependencies())

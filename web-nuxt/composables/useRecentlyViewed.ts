@@ -20,8 +20,6 @@ export function clearRecentStorage(storage: Pick<Storage, 'removeItem'>): void {
   storage.removeItem(STORAGE_KEY)
 }
 
-let loaded = false
-
 function isValidItem(v: unknown): v is RecentItem {
   if (!v || typeof v !== 'object') return false
   const o = v as Record<string, unknown>
@@ -55,7 +53,6 @@ export function createRecentItem(entity: Record<string, any>, viewedAt = Date.no
     kind: entity.kind || (entity.type === 'itinerary' ? 'itinerary' : isKnownEntityType(entity.type) ? 'entity' : 'unknown'),
     images: entity.images,
     image: entity.image,
-    attributes: entity.attributes,
     ...(Object.prototype.hasOwnProperty.call(entity, 'image_descriptor') ? { image_descriptor: entity.image_descriptor } : {}),
     ...(Object.prototype.hasOwnProperty.call(entity, 'image_descriptors') ? { image_descriptors: entity.image_descriptors } : {}),
     viewedAt,
@@ -69,18 +66,21 @@ export function filterCurrentRecentItems(items: RecentItem[], now = Date.now(), 
 
 export function useRecentlyViewed() {
   const items = useState<RecentItem[]>('recentlyViewed', () => [])
+  const loaded = useState<boolean>('recentlyViewed-loaded', () => false)
 
   function load() {
-    if (loaded || !import.meta.client) return
+    if (loaded.value || !import.meta.client) return
     items.value = readRecentStorage(localStorage)
-    loaded = true
+    loaded.value = true
   }
 
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items.value)) } catch {}
   }
 
-  load()
+  if (import.meta.client) {
+    onMounted(load)
+  }
 
   function track(entity: Record<string, any>) {
     if (!import.meta.client) return

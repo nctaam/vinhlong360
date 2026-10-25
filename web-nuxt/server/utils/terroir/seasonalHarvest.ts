@@ -33,8 +33,8 @@ export interface SeasonalHarvestResponse {
 }
 
 export function resolveSeasonalHarvest(date: Date = new Date()): SeasonalHarvestResponse {
-  // Vietnam month (1-12)
-  const month = date.getMonth() + 1
+  // Vietnam month (1-12) in UTC+7 (Asia/Ho_Chi_Minh)
+  const month = new Date(date.getTime() + 7 * 3600_000).getUTCMonth() + 1
 
   let quarter: HarvestQuarter = {
     key: 'harvest',

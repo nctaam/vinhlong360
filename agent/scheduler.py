@@ -653,7 +653,7 @@ _TELEGRAM_RETRY_QUEUE: list[tuple[str, int]] = []
 _TELEGRAM_MAX_QUEUE = 50
 _telegram_queue_lock = __import__("threading").Lock()
 
-def _send_telegram_admins(text: str) -> bool:
+def _send_telegram_admins(text: str, *, _enqueue_on_fail: bool = True) -> bool:
     """Gửi 1 tin Telegram tới mọi ADMIN_TELEGRAM_IDS (free, HTTP API).
     Retry 3 lần với backoff; nếu vẫn thất bại thì xếp hàng chờ retry sau."""
     import os
@@ -677,9 +677,10 @@ def _send_telegram_admins(text: str) -> bool:
             _time.sleep(0.5 * (2 ** attempt))
         if not ok:
             _sched_logger.error("telegram send failed after 3 attempts for chat %s", cid)
-            with _telegram_queue_lock:
-                if len(_TELEGRAM_RETRY_QUEUE) < _TELEGRAM_MAX_QUEUE:
-                    _TELEGRAM_RETRY_QUEUE.append((text, int(_time.time())))
+            if _enqueue_on_fail:
+                with _telegram_queue_lock:
+                    if len(_TELEGRAM_RETRY_QUEUE) < _TELEGRAM_MAX_QUEUE:
+                        _TELEGRAM_RETRY_QUEUE.append((text, int(_time.time())))
             return False
     return True
 
@@ -697,7 +698,7 @@ def retry_pending_telegram(max_age_hours: int = 24):
             if ts < cutoff:
                 _TELEGRAM_RETRY_QUEUE.pop(0)
                 continue
-        if _send_telegram_admins(text):
+        if _send_telegram_admins(text, _enqueue_on_fail=False):
             with _telegram_queue_lock:
                 if _TELEGRAM_RETRY_QUEUE and _TELEGRAM_RETRY_QUEUE[0] == (text, ts):
                     _TELEGRAM_RETRY_QUEUE.pop(0)
@@ -1374,57 +1375,56 @@ def task_weekly_digest():
         if not db._use_pg:
             return
         from notifications import create_notification
-        ph = db._ph
         with db._conn() as conn:
-            # NOTE: users has no last-activity column (verified against init.sql +
-            # all migrations) — filter on is_active/deleted_at only, and rely on
-            # the zero-activity skip below to avoid notifying dormant accounts.
             active_users = db._fetchall(conn, """
-                SELECT id, display_name FROM users
-                WHERE is_active = TRUE AND deleted_at IS NULL
+                SELECT
+                    u.id,
+                    u.display_name,
+                    COALESCE(f.new_followers, 0) AS new_followers,
+                    COALESCE(p.week_likes, 0) AS week_likes,
+                    COALESCE(p.week_posts, 0) AS week_posts
+                FROM users u
+                LEFT JOIN (
+                    SELECT target_id, COUNT(*) AS new_followers
+                    FROM follows
+                    WHERE target_type = 'user'
+                      AND created_at > NOW() - INTERVAL '7 days'
+                    GROUP BY target_id
+                ) f ON f.target_id = u.id::text
+                LEFT JOIN (
+                    SELECT user_id::text AS uid,
+                           COALESCE(SUM(like_count), 0) AS week_likes,
+                           COUNT(*) AS week_posts
+                    FROM posts
+                    WHERE moderation_status = 'approved' AND deleted_at IS NULL
+                      AND created_at > NOW() - INTERVAL '7 days'
+                    GROUP BY user_id::text
+                ) p ON p.uid = u.id::text
+                WHERE u.is_active = TRUE AND u.deleted_at IS NULL
             """, ())
-            if not active_users:
-                _sched_logger.info("weekly-digest: no active users")
-                return
+        if not active_users:
+            _sched_logger.info("weekly-digest: no active users")
+            return
 
-            sent = 0
-            for user_row in active_users:
-                u = db._row_to_dict(user_row)
-                uid = str(u["id"])
-                name = u.get("display_name") or "bạn"
-
-                stats = db._fetchone(conn, f"""
-                    SELECT
-                        (SELECT COUNT(*) FROM follows
-                         WHERE target_type='user' AND target_id={ph}
-                           AND created_at > NOW() - INTERVAL '7 days') AS new_followers,
-                        (SELECT COALESCE(SUM(like_count), 0) FROM posts
-                         WHERE user_id::text = {ph}
-                           AND moderation_status='approved' AND deleted_at IS NULL
-                           AND created_at > NOW() - INTERVAL '7 days') AS week_likes,
-                        (SELECT COUNT(*) FROM posts
-                         WHERE user_id::text = {ph}
-                           AND moderation_status='approved' AND deleted_at IS NULL
-                           AND created_at > NOW() - INTERVAL '7 days') AS week_posts
-                """, (uid, uid, uid))
-                s = db._row_to_dict(stats) if stats else {}
-                new_followers, week_likes, week_posts = _weekly_stats_counts(s)
-
-                if new_followers == 0 and week_likes == 0 and week_posts == 0:
-                    continue
-
-                body = _format_weekly_digest_body(new_followers, week_likes, week_posts)
-                create_notification(
-                    user_id=uid,
-                    notif_type="digest",
-                    title=f"Tuần này của {name}",
-                    body=body,
-                    ref_type="digest",
-                    ref_id=None,
-                )
-                sent += 1
-
-            _sched_logger.info("weekly-digest: sent digests to %d/%d active users", sent, len(active_users))
+        sent = 0
+        for user_row in active_users:
+            u = db._row_to_dict(user_row)
+            uid = str(u["id"])
+            name = u.get("display_name") or "bạn"
+            new_followers, week_likes, week_posts = _weekly_stats_counts(u)
+            if new_followers == 0 and week_likes == 0 and week_posts == 0:
+                continue
+            body = _format_weekly_digest_body(new_followers, week_likes, week_posts)
+            create_notification(
+                user_id=uid,
+                notif_type="digest",
+                title=f"Tuần này của {name}",
+                body=body,
+                ref_type="digest",
+                ref_id=None,
+            )
+            sent += 1
+        _sched_logger.info("weekly-digest: sent digests to %d/%d active users", sent, len(active_users))
     except Exception as exc:
         _sched_logger.error("weekly-digest error: %s", exc)
 

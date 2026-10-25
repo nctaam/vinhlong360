@@ -1,5 +1,7 @@
+import { todayInVietnam } from '~/composables/useLunar'
+
 export function useSeasonTheme() {
-  const month = new Date().getMonth() + 1
+  const { month } = todayInVietnam()
   let cls: string
   if (month <= 2) cls = 'season-tet'
   else if (month <= 6) cls = 'season-he'
