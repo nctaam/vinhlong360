@@ -974,19 +974,23 @@ async def list_appeals(
                 SELECT COUNT(*) as c FROM moderation_appeals a {where}
             """, tuple(params))
         return {
-            "appeals": [{
-                "id": str(db._row_to_dict(r)["id"]),
-                "post_id": str(db._row_to_dict(r)["post_id"]),
-                "post_content": db._row_to_dict(r).get("post_content", "")[:200],
-                "post_type": db._row_to_dict(r).get("post_type"),
-                "user": {"display_name": db._row_to_dict(r).get("display_name"),
-                         "username": db._row_to_dict(r).get("username")},
-                "reason": db._row_to_dict(r).get("reason"),
-                "status": db._row_to_dict(r)["status"],
-                "reviewer_note": db._row_to_dict(r).get("reviewer_note"),
-                "reviewed_at": str(db._row_to_dict(r)["reviewed_at"]) if db._row_to_dict(r).get("reviewed_at") else None,
-                "created_at": str(db._row_to_dict(r)["created_at"]),
-            } for r in rows],
+            "appeals": [
+                {
+                    "id": str(d["id"]),
+                    "post_id": str(d["post_id"]),
+                    "post_content": d.get("post_content", "")[:200],
+                    "post_type": d.get("post_type"),
+                    "user": {"display_name": d.get("display_name"),
+                             "username": d.get("username")},
+                    "reason": d.get("reason"),
+                    "status": d["status"],
+                    "reviewer_note": d.get("reviewer_note"),
+                    "reviewed_at": str(d["reviewed_at"]) if d.get("reviewed_at") else None,
+                    "created_at": str(d["created_at"]),
+                }
+                for r in rows
+                if (d := db._row_to_dict(r)) is not None
+            ],
             "total": db._row_to_dict(total)["c"] if total else 0,
             "page": page,
         }
@@ -1533,24 +1537,28 @@ async def ban_user(user_id: str, request: Request):
 @router.post("/users/{user_id}/unban",
              summary="Unban a user",
              description="Reactivate a previously banned user account. Returns an error if the user is not currently banned.")
-async def unban_user(user_id: str):
+async def unban_user(user_id: str, request: Request = None):
     require_pg()
     user_id = validate_path_id(user_id, "user_id")
-    def _query():
-        ph = db._ph
-        with db._conn() as conn:
-            target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (user_id,))
-            if not target:
-                raise HTTPException(404, "Không tìm thấy người dùng")
-            td = db._row_to_dict(target)
-            if td["is_active"]:
-                raise HTTPException(400, "Người dùng không bị ban")
-            db._execute(conn, f"""
-                UPDATE users SET is_active = TRUE WHERE id::text = {ph}
-            """, (user_id,))
-    await asyncio.to_thread(_query)
+    admin_user = getattr(getattr(request, "state", None), "admin_user", None)
+    await asyncio.to_thread(_unban_user_query, user_id, admin_user)
     _log_mod_action("user", user_id, "unban")
     return {"success": True}
+
+
+def _unban_user_query(user_id: str, admin_user) -> None:
+    ph = db._ph
+    with db._conn() as conn:
+        target = db._fetchone(conn, f"SELECT id, is_active, role FROM users WHERE id::text = {ph} FOR UPDATE", (user_id,))
+        if not target:
+            raise HTTPException(404, "Không tìm thấy người dùng")
+        td = db._row_to_dict(target)
+        _assert_actor_can_manage_target(admin_user, td.get("role") if "role" in td else "user")
+        if td["is_active"]:
+            raise HTTPException(400, "Người dùng không bị ban")
+        db._execute(conn, f"""
+            UPDATE users SET is_active = TRUE WHERE id::text = {ph}
+        """, (user_id,))
 
 
 class BulkUserAction(BaseModel):
@@ -1610,38 +1618,51 @@ def _apply_bulk_bans(conn, ids: list[str], targets: dict[str, dict], ph: str) ->
 @router.post("/users/bulk-unban",
              summary="Bulk unban users",
              description="Unban multiple users at once. Accepts a list of user IDs and an optional reason; skips non-existent or active users.")
-async def bulk_unban_users(body: BulkUserAction):
+async def bulk_unban_users(body: BulkUserAction, request: Request = None):
     require_pg()
     from ratelimit import check_rate
     check_rate("admin:bulk-unban", 5, 60, "Thao tác quá nhanh")
-    ids = [validate_path_id(uid, "user_id") for uid in body.user_ids]
-    def _query():
-        ph = db._ph
-        unbanned = []
-        with db._conn() as conn:
-            for uid in ids:
-                target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (uid,))
-                if not target:
-                    continue
-                td = db._row_to_dict(target)
-                if td["is_active"]:
-                    continue
-                db._execute(conn, f"UPDATE users SET is_active = TRUE WHERE id::text = {ph}", (uid,))
-                unbanned.append(uid)
-        return unbanned
-    unbanned = await asyncio.to_thread(_query)
+    admin_user = getattr(getattr(request, "state", None), "admin_user", None)
+    ids = list(dict.fromkeys(validate_path_id(uid, "user_id") for uid in body.user_ids))
+    unbanned = await asyncio.to_thread(_bulk_unban_query, ids, admin_user)
     for uid in unbanned:
         _log_mod_action("user", uid, "unban", body.reason or None)
     return {"success": True, "unbanned_count": len(unbanned), "unbanned_ids": unbanned}
 
 
+def _bulk_unban_query(ids: list[str], admin_user) -> list[str]:
+    ph = db._ph
+    targets: dict[str, dict] = {}
+    with db._conn() as conn:
+        for uid in sorted(ids):
+            row = db._fetchone(conn, f"SELECT id, is_active, role FROM users WHERE id::text = {ph} FOR UPDATE", (uid,))
+            if row:
+                targets[uid] = db._row_to_dict(row)
+        for uid in ids:
+            td = targets.get(uid)
+            if td:
+                _assert_actor_can_manage_target(admin_user, td.get("role") if "role" in td else "user")
+        unbanned: list[str] = []
+        for uid in ids:
+            td = targets.get(uid)
+            if not td or td["is_active"]:
+                continue
+            db._execute(conn, f"UPDATE users SET is_active = TRUE WHERE id::text = {ph}", (uid,))
+            unbanned.append(uid)
+        return unbanned
+
+
 def _assert_role_change_allowed(admin_user, admin_role, role, target_role) -> None:
-    """Privilege-boundary guard: only superadmin/admin-key may grant/change the admin role."""
+    """Privilege-boundary guard: only superadmin/admin-key may grant/change the admin role,
+    and no session actor may modify a target of equal or higher rank."""
+    if target_role == "superadmin":
+        raise HTTPException(403, "Không đủ quyền thay đổi vai trò của superadmin")
     if admin_user and admin_role != "superadmin":
         if role == "admin" and target_role != "admin":
             raise HTTPException(403, "Chỉ superadmin hoặc admin key mới được cấp quyền admin")
         if target_role == "admin" and role != "admin":
             raise HTTPException(403, "Chỉ superadmin hoặc admin key mới được đổi quyền admin khác")
+        _assert_actor_can_manage_target(admin_user, target_role)
 
 
 def _assert_not_last_admin(conn, ph, user_id, role, target_role) -> None:

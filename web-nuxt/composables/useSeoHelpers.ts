@@ -79,13 +79,20 @@ export function profileOgImage(images?: string[] | null, fallback = DEFAULT_OG):
   return entityOgImage(images, fallback)
 }
 
+const SCRIPT_CLOSE_RE = /<\//g
+
 export function safeJsonLd(obj: unknown): string {
   const target = (obj && typeof obj === 'object' && 'value' in obj) ? (obj as any).value : obj
-  return JSON.stringify(target).replace(/<\//g, '<\\/')
+  return JSON.stringify(target).replace(SCRIPT_CLOSE_RE, '<\\/')
 }
 
 export function canonicalUrl(path = '/') {
-  const clean = path.split('#')[0]?.split('?')[0] || '/'
+  let end = path.length
+  const hashIdx = path.indexOf('#')
+  if (hashIdx !== -1 && hashIdx < end) end = hashIdx
+  const queryIdx = path.indexOf('?')
+  if (queryIdx !== -1 && queryIdx < end) end = queryIdx
+  const clean = end > 0 ? path.slice(0, end) : '/'
   const normalized = clean.startsWith('/') ? clean : `/${clean}`
   return `${SITE_URL}${normalized === '/' ? '' : normalized}`
 }
@@ -127,7 +134,7 @@ export const TOURISM_CATALOG_FAQS: FaqItem[] = [
 export const PRODUCT_CATALOG_FAQS: FaqItem[] = [
   {
     q: 'Vĩnh Long có những loại đặc sản nào nổi tiếng nhất để mua làm quà?',
-    a: 'Các đặc sản nức tiếng gồm bưởi năm roi Bình Minh, khoai lang Bình Tân, sầu riêng Ri6, bánh tráng cù lao Mây, cam sành Tam Bình và các sản phẩm thủ công gốm đỏ Mang Thít.',
+    a: 'Các đặc sản tiêu biểu gồm bưởi năm roi Bình Minh, khoai lang Bình Tân, sầu riêng Ri6, bánh tráng cù lao Mây, cam sành Tam Bình và các sản phẩm thủ công gốm đỏ Mang Thít.',
   },
   {
     q: 'Làm thế nào để chọn mua được trái cây và đặc sản Vĩnh Long đúng nguồn gốc?',
@@ -192,41 +199,45 @@ export function buildSpeakableSpecification(cssSelectors: string[] = ['.lead', '
   }
 }
 
+const WEBSITE_SCHEMA_NODE: Readonly<Record<string, any>> = Object.freeze({
+  '@type': 'WebSite',
+  '@id': `${SITE_URL}/#website`,
+  url: SITE_URL,
+  name: 'vinhlong360',
+  description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long.',
+  inLanguage: 'vi-VN',
+  publisher: Object.freeze({ '@id': `${SITE_URL}/#organization` }),
+})
+
+const ORGANIZATION_SCHEMA_NODE: Readonly<Record<string, any>> = Object.freeze({
+  '@type': 'Organization',
+  '@id': `${SITE_URL}/#organization`,
+  name: 'vinhlong360',
+  url: SITE_URL,
+  logo: `${SITE_URL}/icons/icon-512.png`,
+  description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long.',
+  inLanguage: 'vi-VN',
+  areaServed: Object.freeze({
+    '@type': 'AdministrativeArea',
+    name: 'Tỉnh Vĩnh Long',
+    '@id': `${SITE_URL}/#province`,
+  }),
+  knowsAbout: Object.freeze([
+    'Du lịch Vĩnh Long',
+    'Văn hóa Khmer',
+    'Đặc sản OCOP Vĩnh Long',
+    'Làng nghề gốm Mang Thít',
+    'Cù lao An Bình',
+    'Lễ hội truyền thống Vĩnh Long',
+  ]),
+})
+
 export function buildWebSiteSchema(): Record<string, any> {
-  return {
-    '@type': 'WebSite',
-    '@id': `${SITE_URL}/#website`,
-    url: SITE_URL,
-    name: 'vinhlong360',
-    description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long.',
-    inLanguage: 'vi-VN',
-    publisher: { '@id': `${SITE_URL}/#organization` },
-  }
+  return WEBSITE_SCHEMA_NODE
 }
 
 export function buildOrganizationSchema(): Record<string, any> {
-  return {
-    '@type': 'Organization',
-    '@id': `${SITE_URL}/#organization`,
-    name: 'vinhlong360',
-    url: SITE_URL,
-    logo: `${SITE_URL}/icons/icon-512.png`,
-    description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long.',
-    inLanguage: 'vi-VN',
-    areaServed: {
-      '@type': 'AdministrativeArea',
-      name: 'Tỉnh Vĩnh Long',
-      '@id': `${SITE_URL}/#province`,
-    },
-    knowsAbout: [
-      'Du lịch Vĩnh Long',
-      'Văn hóa Khmer',
-      'Đặc sản OCOP Vĩnh Long',
-      'Làng nghề gốm Mang Thít',
-      'Cù lao An Bình',
-      'Lễ hội truyền thống Vĩnh Long',
-    ],
-  }
+  return ORGANIZATION_SCHEMA_NODE
 }
 
 export function buildUnifiedSchemaGraph(nodes: Array<Record<string, any> | null | undefined>): Record<string, any> {
@@ -994,6 +1005,7 @@ export function buildNewsArticleSchemaGraph(options: NewsArticleSchemaOptions): 
     ...(typeof a.author === 'object' && a.author?.url ? { url: a.author.url } : {}),
   }
 
+  const fallbackPublishedAt = a.datePublished || new Date().toISOString()
   const articleMeta: Record<string, any> = {
     '@type': 'NewsArticle',
     '@id': `${articleUrl}#article`,
@@ -1004,8 +1016,8 @@ export function buildNewsArticleSchemaGraph(options: NewsArticleSchemaOptions): 
     url: articleUrl,
     mainEntityOfPage: { '@id': `${articleUrl}#webpage` },
     inLanguage: 'vi-VN',
-    datePublished: a.datePublished || new Date().toISOString(),
-    dateModified: a.dateModified || a.datePublished || new Date().toISOString(),
+    datePublished: fallbackPublishedAt,
+    dateModified: a.dateModified || fallbackPublishedAt,
     author: authorNode,
     publisher: { '@id': `${SITE_URL}/#organization` },
   }

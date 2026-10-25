@@ -174,13 +174,11 @@ async def remove_plan(plan_id: str, user=Depends(require_user), _csrf=Depends(re
         ph = db._ph
         with db._conn() as conn:
             row = db._fetchone(conn, f"""
-                SELECT 1 FROM user_plans WHERE id::text = {ph} AND user_id = {ph}::uuid
+                DELETE FROM user_plans WHERE id::text = {ph} AND user_id = {ph}::uuid
+                RETURNING 1 AS ok
             """, (plan_id, str(user["id"])))
             if not row:
                 raise HTTPException(404, "Lịch trình không tồn tại hoặc không thuộc về bạn")
-            db._execute(conn, f"""
-                DELETE FROM user_plans WHERE id::text = {ph} AND user_id = {ph}::uuid
-            """, (plan_id, str(user["id"])))
     await asyncio.to_thread(_query)
     return {"deleted": True}
 
@@ -281,7 +279,7 @@ async def list_shared(limit: int = Query(30, ge=1, le=60)):
         out = []
         for r in rows:
             d = db._row_to_dict(r)
-            plan = _row_plan(r)
+            plan = _row_plan(d)
             plan["author"] = d.get("author")
             plan["stop_count"] = len(plan["stops"])
             out.append(plan)
@@ -305,7 +303,8 @@ async def get_shared(plan_id: str):
             """, (plan_id,))
         if not row:
             raise HTTPException(404, "Lịch trình không tồn tại hoặc chưa công khai")
-        plan = _row_plan(row)
-        plan["author"] = db._row_to_dict(row).get("author")
+        d = db._row_to_dict(row)
+        plan = _row_plan(d)
+        plan["author"] = d.get("author")
         return {"plan": plan}
     return await asyncio.to_thread(_query)

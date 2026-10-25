@@ -5,6 +5,22 @@ const ATTESTATION_PATH = '/_internal/launch-policy-attestation'
 const FINGERPRINT_PATTERN = /^[0-9a-f]{64}$/u
 const ROUTE_REVISION = 'launch-indexing-policy-v1'
 const BACKEND_POLICY_REVISION = 'index-policy-v1'
+const DEFAULT_ATTESTATION_CACHE_TTL_MS = 5_000
+const MAX_ATTESTATION_CACHE_ENTRIES = 8
+
+interface CachedAttestationEntry {
+  readonly value: Readonly<BackendAttestation>
+  readonly expiresAt: number
+}
+
+const attestationCache = new Map<string, CachedAttestationEntry>()
+const inflightAttestations = new Map<string, Promise<BackendAttestation>>()
+const verifiedAttestations = new WeakSet<BackendAttestation>()
+
+export function clearBackendAttestationCache(): void {
+  attestationCache.clear()
+  inflightAttestations.clear()
+}
 
 export class BackendAttestationMismatchError extends Error {
   constructor(message = 'Backend launch policy attestation mismatch') {
@@ -49,6 +65,9 @@ function validRevision(value: unknown, expected: string): value is string {
 }
 
 export function parseBackendAttestation(value: unknown): BackendAttestation {
+  if (typeof value === 'object' && value !== null && verifiedAttestations.has(value as BackendAttestation)) {
+    return value as BackendAttestation
+  }
   if (!isPlainRecord(value) || !hasExactKeys(value)) {
     throw new BackendAttestationMismatchError('Backend launch policy attestation shape mismatch')
   }
@@ -64,11 +83,13 @@ export function parseBackendAttestation(value: unknown): BackendAttestation {
     throw new BackendAttestationMismatchError('Backend policy revision is stale')
   }
 
-  return {
+  const parsed = Object.freeze({
     policy_fingerprint: fingerprint,
     route_manifest_revision: value.route_manifest_revision,
     backend_policy_revision: value.backend_policy_revision,
-  }
+  })
+  verifiedAttestations.add(parsed)
+  return parsed
 }
 
 export type BackendAttestationFetcher = (
@@ -90,24 +111,54 @@ function defaultFetcher(request: string, options: Parameters<BackendAttestationF
 export async function fetchBackendAttestation(input: {
   baseURL: string
   fetcher?: BackendAttestationFetcher
+  cacheTtlMs?: number
 }): Promise<BackendAttestation> {
   const baseURL = typeof input.baseURL === 'string' ? input.baseURL.trim().replace(/\/+$/u, '') : ''
   if (!baseURL) throw new BackendAttestationUnavailableError()
 
-  try {
-    const payload = await withRequestDeadline(ATTESTATION_TIMEOUT_MS, signal => (
-      input.fetcher ?? defaultFetcher
-    )(ATTESTATION_PATH, {
-      baseURL,
-      method: 'GET',
-      headers: { accept: 'application/json' },
-      signal,
-    }))
-    return parseBackendAttestation(payload)
-  } catch (error: unknown) {
-    if (error instanceof BackendAttestationMismatchError) throw error
-    if (error instanceof BackendAttestationUnavailableError) throw error
-    const message = error instanceof Error ? error.message : 'request failed'
-    throw new BackendAttestationUnavailableError(`Backend launch policy attestation unavailable: ${message}`)
+  const ttlMs = input.cacheTtlMs ?? (input.fetcher ? 0 : DEFAULT_ATTESTATION_CACHE_TTL_MS)
+  const now = Date.now()
+  if (ttlMs > 0) {
+    const cached = attestationCache.get(baseURL)
+    if (cached && cached.expiresAt > now) {
+      return cached.value
+    }
+    attestationCache.delete(baseURL)
+    const existingInflight = inflightAttestations.get(baseURL)
+    if (existingInflight) return existingInflight
   }
+
+  const execute = async (): Promise<BackendAttestation> => {
+    try {
+      const payload = await withRequestDeadline(ATTESTATION_TIMEOUT_MS, signal => (
+        input.fetcher ?? defaultFetcher
+      )(ATTESTATION_PATH, {
+        baseURL,
+        method: 'GET',
+        headers: { accept: 'application/json' },
+        signal,
+      }))
+      const parsed = parseBackendAttestation(payload)
+      if (ttlMs > 0) {
+        if (attestationCache.size >= MAX_ATTESTATION_CACHE_ENTRIES) {
+          const oldestKey = attestationCache.keys().next().value
+          if (oldestKey !== undefined) attestationCache.delete(oldestKey)
+        }
+        attestationCache.set(baseURL, { value: parsed, expiresAt: Date.now() + ttlMs })
+      }
+      return parsed
+    } catch (error: unknown) {
+      attestationCache.delete(baseURL)
+      if (error instanceof BackendAttestationMismatchError) throw error
+      if (error instanceof BackendAttestationUnavailableError) throw error
+      const message = error instanceof Error ? error.message : 'request failed'
+      throw new BackendAttestationUnavailableError(`Backend launch policy attestation unavailable: ${message}`)
+    } finally {
+      if (ttlMs > 0) inflightAttestations.delete(baseURL)
+    }
+  }
+
+  const promise = execute()
+  if (ttlMs > 0) inflightAttestations.set(baseURL, promise)
+  return promise
 }

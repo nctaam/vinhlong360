@@ -29,10 +29,35 @@ import time
 import unicodedata
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
+from functools import lru_cache
 from pathlib import Path
 from threading import Lock
 
 from owner_write_gate import owner_write_gate
+
+_GRAPH_DIACRITICS_RE = re.compile(r"[\u0300-\u036f]")
+_KNOWN_GRAPH_ENTITIES: tuple[tuple[str, str], ...] = (
+    ("cu lao an binh", "Cu Lao An Binh"),
+    ("homestay ut trinh", "Homestay Ut Trinh"),
+    ("bun nuoc leo", "Bun nuoc leo"),
+    ("cho noi cai be", "Cho noi Cai Be"),
+    ("vinh long", "Vinh Long"),
+    ("ben tre", "Ben Tre"),
+    ("tra vinh", "Tra Vinh"),
+    ("nha co", "Nha co"),
+    ("vuon trai cay", "Vuon trai cay"),
+    ("banh trang", "Banh trang"),
+    ("hu tieu", "Hu tieu"),
+    ("chua", "Chua"),
+    ("cho", "Cho"),
+)
+
+
+@lru_cache(maxsize=2048)
+def _norm_graph_text(text: str) -> str:
+    s = unicodedata.normalize("NFD", text.lower())
+    s = _GRAPH_DIACRITICS_RE.sub("", s)
+    return s.replace("đ", "d").replace("Đ", "D")
 
 logger = logging.getLogger(__name__)
 
@@ -767,39 +792,9 @@ class MemoryGraph:
 
         Simple heuristic approach -- looks for known Vietnamese tourism terms.
         """
-        combined = f"{message} {reply}".lower()
+        combined_norm = _norm_graph_text(f"{message} {reply}")
+        found = [name for key, name in _KNOWN_GRAPH_ENTITIES if key in combined_norm]
 
-        # Normalize Vietnamese
-        def _norm(text: str) -> str:
-            s = unicodedata.normalize("NFD", text.lower())
-            s = re.sub(r"[̀-ͯ]", "", s)
-            return s.replace("đ", "d").replace("Đ", "D")
-
-        combined_norm = _norm(combined)
-
-        # Common Vinh Long tourism entities for keyword extraction
-        known_entities = {
-            "cu lao an binh": "Cu Lao An Binh",
-            "homestay ut trinh": "Homestay Ut Trinh",
-            "bun nuoc leo": "Bun nuoc leo",
-            "cho noi cai be": "Cho noi Cai Be",
-            "vinh long": "Vinh Long",
-            "ben tre": "Ben Tre",
-            "tra vinh": "Tra Vinh",
-            "nha co": "Nha co",
-            "vuon trai cay": "Vuon trai cay",
-            "banh trang": "Banh trang",
-            "hu tieu": "Hu tieu",
-            "chua": "Chua",
-            "cho": "Cho",
-        }
-
-        found = []
-        for key, name in known_entities.items():
-            if key in combined_norm:
-                found.append(name)
-
-        # Generate triples from found entities
         triples = []
         for i, entity in enumerate(found):
             triples.append((entity, "discussed", "conversation"))

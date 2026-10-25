@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import threading as _threading
 from collections import OrderedDict
-from dataclasses import asdict
 from typing import Optional
 
 from fastapi import HTTPException
@@ -169,28 +168,41 @@ def _public_facilities_by_place(place_id: str | None = None) -> list[dict]:
     ]
 
 
+EXTERNAL_GATEWAY_PLACE_IDS: frozenset[str] = frozenset({"gateway-hcm"})
+
+
 def _get_place(place_id: str) -> dict | None:
+    if not place_id or place_id in EXTERNAL_GATEWAY_PLACE_IDS:
+        return None
     with _place_cache_lock:
         if place_id in _place_cache:
             _place_cache.move_to_end(place_id)
             return _place_cache[place_id]
     place = db.get_entity(place_id)
-    if place:
-        with _place_cache_lock:
-            _place_cache[place_id] = {"name": place["name"], "area": place.get("area")}
-            if len(_place_cache) > _PLACE_CACHE_MAX:
-                _place_cache.popitem(last=False)
+    if not place:
+        return None
+    entry = {"name": place["name"], "area": place.get("area")}
     with _place_cache_lock:
-        return _place_cache.get(place_id)
+        _place_cache[place_id] = entry
+        _place_cache.move_to_end(place_id)
+        if len(_place_cache) > _PLACE_CACHE_MAX:
+            _place_cache.popitem(last=False)
+    return entry
 
 
-def _apply_cached_place(e: dict) -> None:
+_PLACE_MISSING = object()
+
+
+def _apply_cached_place(e: dict, *, cached_place: dict | object = _PLACE_MISSING) -> None:
     explicit_area = e.get("area")
     pid = e.get("placeId")
     if pid:
-        with _place_cache_lock:
-            p = _place_cache.get(pid)
-        if p:
+        if cached_place is _PLACE_MISSING:
+            with _place_cache_lock:
+                p = _place_cache.get(pid)
+        else:
+            p = cached_place
+        if isinstance(p, dict):
             e["place_name"] = p["name"]
             e["place_area"] = explicit_area or p.get("area")
     elif explicit_area:
@@ -198,16 +210,26 @@ def _apply_cached_place(e: dict) -> None:
     e["quality"] = entity_quality(e)
 
 
-def _enrich_place(entities: list[dict]):
+def _warm_and_snapshot_places(needed_ids: set[str]) -> dict[str, dict | None]:
     with _place_cache_lock:
-        uncached = {e["placeId"] for e in entities if e.get("placeId") and e["placeId"] not in _place_cache}
+        uncached = [pid for pid in needed_ids if pid not in _place_cache]
     if uncached:
-        batch = db.get_entities_batch(list(uncached))
+        batch = db.get_entities_batch(uncached)
         with _place_cache_lock:
             for pid, place in batch.items():
                 _place_cache[pid] = {"name": place["name"], "area": place.get("area")}
+            while len(_place_cache) > _PLACE_CACHE_MAX:
+                _place_cache.popitem(last=False)
+    with _place_cache_lock:
+        return {pid: _place_cache.get(pid) for pid in needed_ids}
+
+
+def _enrich_place(entities: list[dict]):
+    needed_ids = {e["placeId"] for e in entities if e.get("placeId")}
+    place_snapshot = _warm_and_snapshot_places(needed_ids) if needed_ids else {}
     for e in entities:
-        _apply_cached_place(e)
+        pid = e.get("placeId")
+        _apply_cached_place(e, cached_place=place_snapshot.get(pid) if pid else None)
 
 
 def _project_public_entity_media(entity: dict, *, limit: int | None = None) -> dict:
@@ -254,7 +276,7 @@ def _gallery_editorial_images(entity: dict) -> list[dict]:
         entity,
         disclosure=_GALLERY_DISCLOSURE,
     ):
-        serialized = asdict(descriptor)
+        serialized = dict(vars(descriptor))
         if is_renderable_entity_descriptor(serialized):
             images.append(serialized)
     return images

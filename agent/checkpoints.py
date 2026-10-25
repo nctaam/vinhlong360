@@ -25,13 +25,14 @@ Persistence: agent/data/checkpoints/  (một JSON file mỗi checkpoint)
 
 import json
 import logging
-import os
 import time
 import uuid
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from threading import Lock
 from typing import Optional
+
+from versioned_json_store import atomic_write_json
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,7 @@ class CheckpointManager:
         self._dir = directory
         self._dir.mkdir(parents=True, exist_ok=True)
         self._lock = Lock()
+        self._summary_cache: dict[Path, tuple[int, int, dict]] = {}
 
     # ── Internal helpers ──
 
@@ -98,12 +100,31 @@ class CheckpointManager:
         return self._dir / f"{safe_id}.json"
 
     def _atomic_write(self, path: Path, data: dict) -> None:
-        """Write JSON atomically: write to .tmp then rename."""
-        tmp_path = path.with_suffix(".tmp")
-        content = json.dumps(data, ensure_ascii=False, indent=2)
-        tmp_path.write_text(content, encoding="utf-8")
-        # os.replace is atomic on the same filesystem
-        os.replace(str(tmp_path), str(path))
+        """Write JSON atomically via unique temp file then rename."""
+        atomic_write_json(path, data, indent=2)
+
+    def _read_summary_unlocked(self, fp: Path) -> Optional[dict]:
+        """Read checkpoint summary with (mtime_ns, size) cache under self._lock."""
+        try:
+            st = fp.stat()
+            sig = (st.st_mtime_ns, st.st_size)
+            cached = self._summary_cache.get(fp)
+            if cached is not None and cached[0] == sig[0] and cached[1] == sig[1]:
+                return cached[2]
+            data = json.loads(fp.read_text(encoding="utf-8"))
+            summary = {
+                "checkpoint_id": data["checkpoint_id"],
+                "session_id": data["session_id"],
+                "timestamp": data["timestamp"],
+                "tools_count": len(data.get("tools_used", [])),
+                "message_count": len(data.get("messages", [])),
+                "metadata": data.get("metadata", {}),
+            }
+            self._summary_cache[fp] = (sig[0], sig[1], summary)
+            return summary
+        except (json.JSONDecodeError, KeyError, OSError):
+            self._summary_cache.pop(fp, None)
+            return None
 
     # ── Public API ──
 
@@ -171,20 +192,10 @@ class CheckpointManager:
         results = []
         with self._lock:
             for fp in self._dir.glob("cp_*.json"):
-                try:
-                    data = json.loads(fp.read_text(encoding="utf-8"))
-                    if data.get("session_id") != session_id:
-                        continue
-                    results.append({
-                        "checkpoint_id": data["checkpoint_id"],
-                        "session_id": data["session_id"],
-                        "timestamp": data["timestamp"],
-                        "tools_count": len(data.get("tools_used", [])),
-                        "message_count": len(data.get("messages", [])),
-                        "metadata": data.get("metadata", {}),
-                    })
-                except (json.JSONDecodeError, KeyError):
+                summary = self._read_summary_unlocked(fp)
+                if summary is None or summary.get("session_id") != session_id:
                     continue
+                results.append(dict(summary))
 
         # Sort by timestamp descending (newest first)
         results.sort(key=lambda x: x["timestamp"], reverse=True)
@@ -210,6 +221,7 @@ class CheckpointManager:
         """
         path = self._path(checkpoint_id)
         with self._lock:
+            self._summary_cache.pop(path, None)
             if path.exists():
                 path.unlink()
                 return True
@@ -225,13 +237,16 @@ class CheckpointManager:
         removed = 0
         with self._lock:
             for fp in list(self._dir.glob("cp_*.json")):
-                try:
-                    data = json.loads(fp.read_text(encoding="utf-8"))
-                    if data.get("timestamp", 0) < cutoff:
-                        fp.unlink()
-                        removed += 1
-                except (json.JSONDecodeError, KeyError, OSError):
+                summary = self._read_summary_unlocked(fp)
+                if summary is None:
                     continue
+                if summary.get("timestamp", 0) < cutoff:
+                    try:
+                        fp.unlink()
+                        self._summary_cache.pop(fp, None)
+                        removed += 1
+                    except OSError:
+                        continue
         return removed
 
 
@@ -303,10 +318,9 @@ class ConfirmationManager:
         return self._dir / f"{safe_id}.json"
 
     def _atomic_write(self, path: Path, data: dict) -> None:
-        tmp_path = path.with_suffix(".tmp")
-        content = json.dumps(data, ensure_ascii=False, indent=2)
-        tmp_path.write_text(content, encoding="utf-8")
-        os.replace(str(tmp_path), str(path))
+        from versioned_json_store import atomic_write_json
+
+        atomic_write_json(path, data, indent=2)
 
     def _load(self, confirmation_id: str) -> Optional[PendingConfirmation]:
         path = self._path(confirmation_id)

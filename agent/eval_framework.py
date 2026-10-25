@@ -30,6 +30,7 @@ import time
 import unicodedata
 from collections import defaultdict
 from dataclasses import dataclass, field, asdict
+from functools import lru_cache
 from pathlib import Path
 from threading import Lock
 from typing import Callable, Dict, List, Optional, Tuple
@@ -53,10 +54,21 @@ EVAL_DIR.mkdir(parents=True, exist_ok=True)
 # Helpers
 # ---------------------------------------------------------------------------
 
+_DIACRITICS_RE = re.compile(r"[\u0300-\u036f]")
+_POTENTIAL_NAME_RE = re.compile(r"[A-ZÀ-ɏ][a-zÀ-ɏ]+(?:\s+[A-ZÀ-ɏ][a-zÀ-ɏ]+)*")
+_MD_HEADING_RE = re.compile(r"^#{1,3}\s", re.MULTILINE)
+_MD_LIST_RE = re.compile(r"^[\-\*]\s", re.MULTILINE)
+_MD_BOLD_RE = re.compile(r"\*\*[^*]+\*\*")
+_SENTENCE_SPLIT_RE = re.compile(r"[.!?\n]")
+
+_KNOWN_EVAL_NAMES_CACHE: tuple[int, int, frozenset[str]] = (0, -1, frozenset())
+
+
+@lru_cache(maxsize=4096)
 def _normalize_vn(text: str) -> str:
     """Remove Vietnamese diacritics for fuzzy matching."""
     s = unicodedata.normalize("NFD", text.lower())
-    s = re.sub(r"[̀-ͯ]", "", s)
+    s = _DIACRITICS_RE.sub("", s)
     s = s.replace("đ", "d").replace("Đ", "D")
     return s
 
@@ -697,6 +709,30 @@ class CompletenessScorer:
         )
 
 
+def _known_eval_names(entities: Dict[str, dict]) -> frozenset[str]:
+    global _KNOWN_EVAL_NAMES_CACHE
+    cache_id, cache_len, cached_names = _KNOWN_EVAL_NAMES_CACHE
+    if cache_id == id(entities) and cache_len == len(entities):
+        return cached_names
+    names = set()
+    for eid, entity in entities.items():
+        n1 = _normalize_vn(entity.get("name", ""))
+        if len(n1) > 3:
+            names.add(n1)
+        n2 = _normalize_vn(eid.replace("-", " "))
+        if len(n2) > 3:
+            names.add(n2)
+    frozen = frozenset(names)
+    _KNOWN_EVAL_NAMES_CACHE = (id(entities), len(entities), frozen)
+    return frozen
+
+
+def _matches_known_eval_name(norm: str, known_names: frozenset[str]) -> bool:
+    if norm in known_names:
+        return True
+    return any(norm in kn or kn in norm for kn in known_names)
+
+
 class HallucinationScorer:
     """Detect entity names in reply that don't exist in the knowledge base.
 
@@ -716,20 +752,8 @@ class HallucinationScorer:
             return 10.0  # No reply = no hallucination
 
         max_pts = 10.0
-
-        # Extract entity names from knowledge base
-        known_names = set()
-        for eid, entity in entities.items():
-            known_names.add(_normalize_vn(entity.get("name", "")))
-            known_names.add(_normalize_vn(eid.replace("-", " ")))
-
-        # Look for capitalized phrases that might be entity references
-        # Vietnamese place names are typically capitalized
-        potential_names = re.findall(
-            r"[A-ZÀ-ɏ][a-zÀ-ɏ]+(?:\s+[A-ZÀ-ɏ][a-zÀ-ɏ]+)*",
-            reply,
-        )
-
+        known_names = _known_eval_names(entities)
+        potential_names = _POTENTIAL_NAME_RE.findall(reply)
         if not potential_names:
             return max_pts
 
@@ -737,20 +761,16 @@ class HallucinationScorer:
         checked = 0
         for name in potential_names:
             norm = _normalize_vn(name)
-            if len(norm) < 4:
-                continue
-            if norm in HallucinationScorer.IGNORE_PATTERNS:
+            if len(norm) < 4 or norm in HallucinationScorer.IGNORE_PATTERNS:
                 continue
             checked += 1
-            # Check if this name exists in knowledge base
-            if not any(norm in kn or kn in norm for kn in known_names if len(kn) > 3):
+            if not _matches_known_eval_name(norm, known_names):
                 hallucinated += 1
 
         if checked == 0:
             return max_pts
 
         hallucination_rate = hallucinated / checked
-        # Allow some unknown names (20% threshold before penalising)
         if hallucination_rate <= 0.2:
             return max_pts
         adjusted_rate = (hallucination_rate - 0.2) / 0.8
@@ -769,12 +789,11 @@ class FormatScorer:
         scores = []
 
         # --- Markdown structure (headings, lists, bold) ---
-        has_heading = bool(re.search(r"^#{1,3}\s", reply, re.MULTILINE))
-        has_list = bool(re.search(r"^[\-\*]\s", reply, re.MULTILINE))
-        has_bold = bool(re.search(r"\*\*[^*]+\*\*", reply))
-        has_emoji = bool(re.search(r"[\U0001F300-\U0001F9FF]", reply))
+        has_heading = bool(_MD_HEADING_RE.search(reply))
+        has_list = bool(_MD_LIST_RE.search(reply))
+        has_bold = bool(_MD_BOLD_RE.search(reply))
 
-        md_features = sum([has_heading, has_list, has_bold, has_emoji])
+        md_features = sum([has_heading, has_list, has_bold])
         # Short replies don't need heavy formatting
         if len(reply) < 100:
             md_score = min(md_features / 2.0, 1.0)
@@ -783,7 +802,7 @@ class FormatScorer:
         scores.append(md_score)
 
         # --- Vietnamese quality: proper sentences ---
-        sentences = re.split(r"[.!?\n]", reply)
+        sentences = _SENTENCE_SPLIT_RE.split(reply)
         sentences = [s.strip() for s in sentences if len(s.strip()) > 10]
         if sentences:
             # Check that sentences start with uppercase or Vietnamese chars

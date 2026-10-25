@@ -15,7 +15,6 @@ import re
 from ocop import ocop_display_label, ocop_tier
 import threading
 import time
-from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -65,6 +64,17 @@ _ADMIN_UNIT_PREFIX_LEVEL = {
     "xã": "xa",
     "tỉnh": "tinh",
 }
+_SAFE_DATE_EXACT_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+_SAFE_DATE_PREFIX_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})[T ]")
+_NON_DIGIT_RE = re.compile(r"[^0-9]")
+_DURATION_PATTERNS = (
+    (re.compile(r"(\d+)\s*ngày\s*(\d+)\s*đêm"), lambda m: f"P{m.group(1)}D"),
+    (re.compile(r"(\d+)\s*giờ\s*(\d+)\s*phút"), lambda m: f"PT{m.group(1)}H{m.group(2)}M"),
+    (re.compile(r"(\d+)\s*ngày"), lambda m: f"P{m.group(1)}D"),
+    (re.compile(r"(\d+)\s*giờ"), lambda m: f"PT{m.group(1)}H"),
+    (re.compile(r"(\d+)\s*đêm"), lambda m: f"P{int(m.group(1)) + 1}D"),
+    (re.compile(r"(\d+)\s*phút"), lambda m: f"PT{m.group(1)}M"),
+)
 
 TYPE_SCHEMA = {
     "accommodation": "LodgingBusiness",
@@ -231,36 +241,42 @@ def _snapshot_from_knowledge_memory(db_obj: Any) -> dict[str, Any] | None:
 def _load_db_data() -> dict[str, Any] | None:
     """Load SEO data from the DB in the same rough shape as web/data.json."""
     global _db_snapshot, _db_snapshot_ts
-    if _db_snapshot is not None and (time.time() - _db_snapshot_ts) < _DB_SNAPSHOT_TTL:
+    now = time.time()
+    if _db_snapshot is not None and (now - _db_snapshot_ts) < _DB_SNAPSHOT_TTL:
         return _db_snapshot
-    try:
-        from database import db
-        snapshot = _snapshot_from_knowledge_memory(db)
-        if snapshot is None:
-            entities = db.all_entities()
-            if not entities:
-                return None
-            snapshot = {
-                "entities": entities,
-                "relationships": db.all_relationships(),
-                "itineraries": db.all_itineraries(),
-            }
-        with _db_snapshot_lock:
+    with _db_snapshot_lock:
+        now = time.time()
+        if _db_snapshot is not None and (now - _db_snapshot_ts) < _DB_SNAPSHOT_TTL:
+            return _db_snapshot
+        try:
+            from database import db
+            snapshot = _snapshot_from_knowledge_memory(db)
+            if snapshot is None:
+                entities = db.all_entities()
+                if not entities:
+                    return None
+                snapshot = {
+                    "entities": entities,
+                    "relationships": db.all_relationships(),
+                    "itineraries": db.all_itineraries(),
+                }
             _db_snapshot = snapshot
             _db_snapshot_ts = time.time()
-        return snapshot
-    except Exception:  # noqa: BLE001 - JSON fallback remains useful in dev
-        logger.debug("SEO DB load failed; falling back to data.json", exc_info=True)
-        return None
+            return snapshot
+        except Exception:  # noqa: BLE001 - JSON fallback remains useful in dev
+            logger.debug("SEO DB load failed; falling back to data.json", exc_info=True)
+            return None
 
 def invalidate_db_snapshot() -> None:
     """Clear the cached DB snapshot so SEO/JSON-LD endpoints reflect entity mutations immediately."""
-    global _db_snapshot, _db_snapshot_ts, _by_id_cache, _by_id_cache_key
+    global _db_snapshot, _db_snapshot_ts, _by_id_cache, _by_id_cache_key, _rel_adj_cache, _rel_adj_cache_key
     with _db_snapshot_lock:
         _db_snapshot = None
         _db_snapshot_ts = 0.0
         _by_id_cache = None
         _by_id_cache_key = None
+        _rel_adj_cache = None
+        _rel_adj_cache_key = None
 
 
 def _load_seo_data() -> dict[str, Any]:
@@ -359,9 +375,9 @@ def _safe_date(value: Any, fallback: str | None = None) -> str | None:
     if not isinstance(value, str):
         return fallback
     text = value.strip()
-    if re.match(r"^\d{4}-\d{2}-\d{2}$", text):
+    if _SAFE_DATE_EXACT_RE.match(text):
         return text
-    m = re.match(r"^(\d{4}-\d{2}-\d{2})[T ]", text)
+    m = _SAFE_DATE_PREFIX_RE.match(text)
     if m:
         return m.group(1)
     return fallback
@@ -444,7 +460,7 @@ def _is_jsonld_entity_image_identity(
         return False
     if not descriptor.alt.strip():
         return False
-    if not is_renderable_entity_descriptor(asdict(descriptor)):
+    if not is_renderable_entity_descriptor(vars(descriptor)):
         return False
     if descriptor.short_label != copy.short_label:
         return False
@@ -542,7 +558,7 @@ def _admin_unit_label(place_name: Any, level: Any = None) -> str:
     Tên không nhận diện được → giữ nguyên văn (không bao giờ trả chuỗi rỗng cho
     một tên có thật). `level` tường minh thắng tiền tố suy từ tên.
     """
-    raw = re.sub(r"\s+", " ", str(place_name or "")).strip()
+    raw = " ".join(str(place_name or "").split())
     if not raw:
         return ""
 
@@ -674,7 +690,7 @@ def _jsonld_attraction(ld: dict[str, Any], attrs: dict[str, Any]) -> None:
 def _jsonld_product(ld: dict[str, Any], attrs: dict[str, Any], entity_id: str,
                     entity: dict[str, Any]) -> None:
     if attrs.get("price"):
-        price_digits = re.sub(r"[^0-9]", "", str(attrs["price"]))
+        price_digits = _NON_DIGIT_RE.sub("", str(attrs["price"]))
         price_value = price_digits if price_digits else str(attrs["price"])
         if price_value.strip():
             ld["offers"] = {
@@ -837,6 +853,11 @@ def _jsonld_place_containment(ld: dict[str, Any], entity: dict[str, Any],
         ld["containsPlace"] = contained
 
 
+_rel_adj_lock = threading.Lock()
+_rel_adj_cache: dict[str, list[str]] | None = None
+_rel_adj_cache_key: tuple[int, int] | None = None
+
+
 def _rel_peer(rel: Any, entity_id: str, by_id: dict[str, dict[str, Any]]) -> str | None:
     """ID entity đối diện trong 1 quan hệ (nếu đầu kia có trong by_id), else None."""
     if not isinstance(rel, dict):
@@ -850,19 +871,42 @@ def _rel_peer(rel: Any, entity_id: str, by_id: dict[str, dict[str, Any]]) -> str
     return None
 
 
+def _build_rel_adjacency(relationships: list[dict[str, Any]]) -> dict[str, list[str]]:
+    adj: dict[str, list[str]] = {}
+    for rel in relationships:
+        if not isinstance(rel, dict):
+            continue
+        src = str(rel.get("from") or rel.get("from_id") or "")
+        dst = str(rel.get("to") or rel.get("to_id") or "")
+        if src and dst:
+            adj.setdefault(src, []).append(dst)
+            adj.setdefault(dst, []).append(src)
+    return adj
+
+
+def _peers_from_index(entity_id: str, relationships: list[dict[str, Any]]) -> list[str]:
+    global _rel_adj_cache, _rel_adj_cache_key
+    key = (id(relationships), len(relationships))
+    if _rel_adj_cache is None or _rel_adj_cache_key != key:
+        with _rel_adj_lock:
+            if _rel_adj_cache is None or _rel_adj_cache_key != key:
+                _rel_adj_cache = _build_rel_adjacency(relationships)
+                _rel_adj_cache_key = key
+    return _rel_adj_cache.get(entity_id, [])
+
+
 def _jsonld_related_links(ld: dict[str, Any], entity_id: str,
                           by_id: dict[str, dict[str, Any]],
                           relationships: list[dict[str, Any]]) -> None:
     """relatedLink: URL các entity liên quan (tối đa 10, khử trùng)."""
     related_urls: list[str] = []
-    for rel in relationships:
-        peer = _rel_peer(rel, entity_id, by_id)
-        if peer:
-            url = _entity_url(peer)
-            if url not in related_urls:
-                related_urls.append(url)
-        if len(related_urls) >= 10:
-            break
+    seen_peers: set[str] = set()
+    for peer in _peers_from_index(entity_id, relationships):
+        if peer in by_id and peer not in seen_peers:
+            seen_peers.add(peer)
+            related_urls.append(_entity_url(peer))
+            if len(related_urls) >= 10:
+                break
     if related_urls:
         ld["relatedLink"] = related_urls
 
@@ -1123,25 +1167,10 @@ def _parse_duration(value: Any) -> str | None:
     if not isinstance(value, str):
         return None
     text = value.strip().lower()
-    m = re.match(r"(\d+)\s*ngày\s*(\d+)\s*đêm", text)
-    if m:
-        return f"P{m.group(1)}D"
-    m = re.match(r"(\d+)\s*giờ\s*(\d+)\s*phút", text)
-    if m:
-        return f"PT{m.group(1)}H{m.group(2)}M"
-    m = re.match(r"(\d+)\s*ngày", text)
-    if m:
-        return f"P{m.group(1)}D"
-    m = re.match(r"(\d+)\s*giờ", text)
-    if m:
-        return f"PT{m.group(1)}H"
-    m = re.match(r"(\d+)\s*đêm", text)
-    if m:
-        days = int(m.group(1)) + 1
-        return f"P{days}D"
-    m = re.match(r"(\d+)\s*phút", text)
-    if m:
-        return f"PT{m.group(1)}M"
+    for pattern, fmt in _DURATION_PATTERNS:
+        m = pattern.match(text)
+        if m:
+            return fmt(m)
     return None
 
 
@@ -1421,7 +1450,7 @@ def collection_jsonld(collection_type: str):
 
 
 def _descriptor_image_url(descriptor: ImageDescriptor) -> str | None:
-    if not is_renderable_entity_descriptor(asdict(descriptor)) or descriptor.url is None:
+    if not is_renderable_entity_descriptor(vars(descriptor)) or descriptor.url is None:
         return None
     return f"{SITE}{descriptor.url}" if descriptor.url.startswith("/") else descriptor.url
 

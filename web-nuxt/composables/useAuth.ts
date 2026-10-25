@@ -8,11 +8,23 @@ function shouldUseSecureAuthCookie() {
   return process.env.NODE_ENV === 'production'
 }
 
-function authEndpoint(path: string) {
-  if (!import.meta.server) return path
-  const configured = useRuntimeConfig().apiBase
-  if (typeof configured !== 'string' || !configured.trim()) return path
-  return `${configured.replace(/\/+$/, '')}${path}`
+function resolveSsrApiBase(): string {
+  if (!import.meta.server) return ''
+  try {
+    const configured = useRuntimeConfig().apiBase
+    return typeof configured === 'string' ? configured.trim().replace(/\/+$/, '') : ''
+  } catch {
+    return ''
+  }
+}
+
+function resolveSsrCookieHeader(): string | undefined {
+  if (!import.meta.server) return undefined
+  try {
+    return useRequestHeaders(['cookie']).cookie
+  } catch {
+    return undefined
+  }
 }
 
 export function useAuth() {
@@ -21,12 +33,20 @@ export function useAuth() {
   const token = useCookie('vl360_token', { maxAge: 60 * 60 * 24 * 30, secure: shouldUseSecureAuthCookie(), sameSite: 'lax' })
   const csrfToken = useState<string | null>('auth-csrf-token', () => null)
   const twoFactorChallenge = useState<{ challenge_id: string } | null>('auth-2fa-challenge', () => null)
+  const sessionExpiredUntil = useState<number>('auth-session-expired-until', () => 0)
   const isLoggedIn = computed(() => !!user.value)
+  const ssrApiBase = resolveSsrApiBase()
+  const ssrCookie = resolveSsrCookieHeader()
+
+  function authEndpoint(path: string) {
+    if (!import.meta.server || !ssrApiBase) return path
+    return `${ssrApiBase}${path}`
+  }
 
   function authTransportHeaders(): Record<string, string> {
     const headers: Record<string, string> = {}
     if (import.meta.server) {
-      const cookie = useRequestHeaders(['cookie']).cookie
+      const cookie = ssrCookie ?? resolveSsrCookieHeader()
       if (cookie) headers.cookie = cookie
     }
     if (token.value) headers.Authorization = `Bearer ${token.value}`
@@ -182,19 +202,21 @@ export function useAuth() {
     return headers
   }
 
-  let sessionExpiredFired = false
   function handleSessionExpired() {
-    if (!user.value && !token.value && !sessionExpiredFired) return
-    if (sessionExpiredFired) return
-    sessionExpiredFired = true
+    const now = Date.now()
+    const isCooldownActive = now < sessionExpiredUntil.value
+    if (!user.value && !token.value && !isCooldownActive) return
+    if (isCooldownActive) return
+    sessionExpiredUntil.value = now + 2000
     token.value = null
     user.value = null
     csrfToken.value = null
-    const { show } = useToast()
-    show('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'warning', 5000)
-    const { openAuth } = useAuthModal()
-    openAuth()
-    setTimeout(() => { sessionExpiredFired = false }, 2000)
+    if (import.meta.client) {
+      const { show } = useToast()
+      show('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'warning', 5000)
+      const { openAuth } = useAuthModal()
+      openAuth()
+    }
   }
 
   async function authFetch<T>(url: string, opts: Parameters<typeof apiFetch>[1] = {}): Promise<T> {

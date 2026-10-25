@@ -587,6 +587,45 @@ def test_campaign_mu_multi_agent_architecture_optimizations():
     assert callable(cost_tracker.CostAttribution.get_period_spent)
 
 
+def test_campaign_nu_multi_agent_architecture_optimizations():
+    import inspect
+    import ab_testing
+    import checkpoints
+    import entity_read
+    import eval_framework
+    import image_descriptor
+    import learn_loop
+    import media_truth_manifest
+    import memory_graph
+    import notifications
+    import plans
+    import seo
+    from community import admin_api as community_admin_api, api as community_api
+
+    # 1. Ban 1: Community UNION ALL enrichment, admin_api single row_to_dict, notifications pre-parsed ts, plans RETURNING 1
+    assert hasattr(community_api, "_HASHTAG_RE")
+    assert "UNION ALL" in inspect.getsource(community_api._enrich_user_status)
+    assert "(d := db._row_to_dict(r))" in inspect.getsource(community_admin_api.list_appeals)
+    assert callable(notifications._parse_notif_ts)
+    assert "RETURNING 1" in inspect.getsource(plans.remove_plan)
+
+    # 2. Ban 2: Eval framework LRU & entity set cache, learn_loop precompiled regex & single-pass counts, ab_testing skip redundant save, memory_graph norm cache
+    assert hasattr(eval_framework._normalize_vn, "cache_info")
+    assert callable(eval_framework._known_eval_names)
+    assert hasattr(learn_loop._norm_entity_name, "cache_info")
+    assert callable(learn_loop._status_kb_counts)
+    assert callable(ab_testing.ABTestManager._group_variant_values)
+    assert hasattr(memory_graph._norm_graph_text, "cache_info")
+
+    # 3. Ban 4: Media truth mtime cache, SEO adjacency index & vars(descriptor), entity_read place snapshot, checkpoints summary cache, image_descriptor precompiled regex
+    assert callable(media_truth_manifest._file_sig)
+    assert callable(seo._peers_from_index)
+    assert hasattr(entity_read, "_PLACE_MISSING")
+    assert callable(checkpoints.CheckpointManager._read_summary_unlocked)
+    assert hasattr(image_descriptor, "_PORT_DIGITS")
+
+
+
 
 
 

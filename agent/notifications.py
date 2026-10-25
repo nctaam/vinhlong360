@@ -918,25 +918,31 @@ async def list_muted_users(page: int = Query(1, ge=1, le=100), limit: int = Quer
 
 # ── Helpers ──
 
+def _parse_notif_ts(val) -> object:
+    from datetime import datetime
+    if val is None:
+        return None
+    try:
+        return datetime.fromisoformat(str(val).replace("Z", "+00:00"))
+    except (ValueError, TypeError):
+        return None
+
+
 def _group_notifications(notifs: list[dict]) -> list[dict]:
     """Group same (type, ref_type, ref_id) within 24h. Latest becomes the group representative."""
-    from datetime import datetime
-    groups: dict[str, dict] = {}
+    groups: dict[str, tuple[dict, object]] = {}
     result = []
     for n in notifs:
         key = f"{n['type']}:{n.get('ref_type', '')}:{n.get('ref_id', '')}"
-        if key in groups:
-            existing = groups[key]
-            try:
-                t1 = datetime.fromisoformat(str(existing["created_at"]).replace("Z", "+00:00"))
-                t2 = datetime.fromisoformat(str(n["created_at"]).replace("Z", "+00:00"))
-                if abs((t1 - t2).total_seconds()) < 86400:
-                    existing.setdefault("group_count", 1)
-                    existing["group_count"] += 1
-                    continue
-            except (ValueError, TypeError):
-                pass
-        groups[key] = n
+        entry = groups.get(key)
+        if entry is not None:
+            existing, t1 = entry
+            t2 = _parse_notif_ts(n.get("created_at"))
+            if t1 is not None and t2 is not None and abs((t1 - t2).total_seconds()) < 86400:
+                existing.setdefault("group_count", 1)
+                existing["group_count"] += 1
+                continue
+        groups[key] = (n, _parse_notif_ts(n.get("created_at")))
         result.append(n)
     return result
 

@@ -12,6 +12,9 @@ const NORMALIZATION = Object.freeze({
 } as const)
 
 const PLACEHOLDER = /^\{([a-z_][a-z0-9_]*)\}$/
+const INVALID_PERCENT_ESCAPE = /%(?![0-9A-Fa-f]{2})/
+const ENCODED_SLASH_ESCAPE = /%2f|%5c/i
+const RESIDUAL_PERCENT_ESCAPE = /%[0-9A-Fa-f]{2}/
 
 export interface LaunchRouteManifest {
   readonly schema_version: 1
@@ -45,13 +48,77 @@ export interface RouteDecision {
   readonly canonical_path: string | null
 }
 
+export type RouteClassificationDecision = RouteDecision
 export type DynamicRouteAuthority = LaunchRouteManifest['dynamic_templates'][number]['authority']
 
-function matchesTemplate(path: string, template: string): boolean {
+interface CompiledDynamicTemplate {
+  readonly authority: DynamicRouteAuthority
+  readonly segments: ReadonlyArray<string | null>
+}
+
+interface CompiledManifestIndex {
+  readonly exactRoutes: ReadonlyMap<string, LaunchRouteManifest['exact_routes'][number]['classification']>
+  readonly dynamicByLength: ReadonlyMap<number, ReadonlyArray<CompiledDynamicTemplate>>
+  readonly staticSitemapPaths: ReadonlyArray<string>
+}
+
+const compiledManifestCache = new WeakMap<LaunchRouteManifest, CompiledManifestIndex>()
+
+function compileManifestIndex(manifest: LaunchRouteManifest): CompiledManifestIndex {
+  const exactRoutes = new Map<string, LaunchRouteManifest['exact_routes'][number]['classification']>()
+  const staticPaths: string[] = []
+  for (const item of manifest.exact_routes) {
+    if (!exactRoutes.has(item.path)) {
+      exactRoutes.set(item.path, item.classification)
+    }
+    if (item.classification === 'indexable-public' && item.sitemap === true) {
+      staticPaths.push(item.path)
+    }
+  }
+  staticPaths.sort(compareCodePointOrder)
+
+  const dynamicByLength = new Map<number, CompiledDynamicTemplate[]>()
+  for (const item of manifest.dynamic_templates) {
+    const rawSegments = item.template.split('/').slice(1)
+    const segments = rawSegments.map(seg => (PLACEHOLDER.test(seg) ? null : seg))
+    const bucket = dynamicByLength.get(segments.length)
+    if (bucket) bucket.push({ authority: item.authority, segments })
+    else dynamicByLength.set(segments.length, [{ authority: item.authority, segments }])
+  }
+
+  return {
+    exactRoutes,
+    dynamicByLength,
+    staticSitemapPaths: Object.freeze(staticPaths),
+  }
+}
+
+function getManifestIndex(manifest: LaunchRouteManifest): CompiledManifestIndex {
+  if (!Object.isFrozen(manifest)) return compileManifestIndex(manifest)
+  let compiled = compiledManifestCache.get(manifest)
+  if (!compiled) {
+    compiled = compileManifestIndex(manifest)
+    compiledManifestCache.set(manifest, compiled)
+  }
+  return compiled
+}
+
+function matchDynamicAuthority(path: string, index: CompiledManifestIndex): DynamicRouteAuthority | null {
   const pathSegments = path.split('/').slice(1)
-  const templateSegments = template.split('/').slice(1)
-  return pathSegments.length === templateSegments.length
-    && templateSegments.every((segment, index) => PLACEHOLDER.test(segment) || segment === pathSegments[index])
+  const candidates = index.dynamicByLength.get(pathSegments.length)
+  if (!candidates) return null
+  for (const candidate of candidates) {
+    let matched = true
+    for (let i = 0; i < pathSegments.length; i += 1) {
+      const expected = candidate.segments[i]
+      if (expected !== null && expected !== pathSegments[i]) {
+        matched = false
+        break
+      }
+    }
+    if (matched) return candidate.authority
+  }
+  return null
 }
 
 function hasUnpairedSurrogate(value: string): boolean {
@@ -68,12 +135,26 @@ function hasUnpairedSurrogate(value: string): boolean {
   return false
 }
 
+function hasDotSegment(path: string): boolean {
+  const segments = path.split('/')
+  for (let i = 0; i < segments.length; i += 1) {
+    const seg = segments[i]
+    if (seg === '.' || seg === '..') return true
+  }
+  return false
+}
+
 function decodeOnce(rawPath: string): string | null {
-  if (
-    hasUnpairedSurrogate(rawPath)
-    || /%(?![0-9A-Fa-f]{2})/.test(rawPath)
-    || /%2f|%5c/i.test(rawPath)
-  ) return null
+  if (hasUnpairedSurrogate(rawPath)) return null
+
+  if (!rawPath.includes('%')) {
+    if (rawPath.includes('\0') || hasDotSegment(rawPath)) return null
+    return rawPath
+  }
+
+  if (INVALID_PERCENT_ESCAPE.test(rawPath) || ENCODED_SLASH_ESCAPE.test(rawPath)) {
+    return null
+  }
 
   let decoded: string
   try {
@@ -84,9 +165,9 @@ function decodeOnce(rawPath: string): string | null {
   if (
     hasUnpairedSurrogate(decoded)
     || decoded.includes('\0')
-    || /%[0-9A-Fa-f]{2}/.test(decoded)
+    || RESIDUAL_PERCENT_ESCAPE.test(decoded)
+    || hasDotSegment(decoded)
   ) return null
-  if (decoded.split('/').some(segment => segment === '.' || segment === '..')) return null
   return decoded
 }
 
@@ -98,7 +179,9 @@ export function parseLaunchRouteManifest(
   value: unknown,
   expectedRevision = EXPECTED_REVISION,
 ): LaunchRouteManifest {
-  return parseLaunchRouteManifestArtifact(value, expectedRevision) as LaunchRouteManifest
+  const parsed = parseLaunchRouteManifestArtifact(value, expectedRevision) as LaunchRouteManifest
+  getManifestIndex(parsed)
+  return parsed
 }
 
 export const launchRouteManifest = parseLaunchRouteManifest(manifestJson)
@@ -119,7 +202,9 @@ export function classifyRequestTarget(
   if (decoded === null) return { classification: 'reject', canonical_path: null }
 
   const rawWithoutEmpty = `/${rawPath.split('/').filter(Boolean).join('/')}`
-  const normalized = `/${decoded.split('/').filter(Boolean).join('/')}`
+  const normalized = decoded === rawPath
+    ? rawWithoutEmpty
+    : `/${decoded.split('/').filter(Boolean).join('/')}`
 
   for (const item of manifest.sensitive_prefixes) {
     if (segmentMatch(rawWithoutEmpty, item.prefix) || segmentMatch(normalized, item.prefix)) {
@@ -138,11 +223,12 @@ export function classifyRequestTarget(
     return { classification: 'noindex-follow-public', canonical_path: normalized }
   }
 
-  const exact = manifest.exact_routes.find(item => item.path === normalized)
-  if (exact) return { classification: exact.classification, canonical_path: normalized }
+  const index = getManifestIndex(manifest)
+  const exactClassification = index.exactRoutes.get(normalized)
+  if (exactClassification) return { classification: exactClassification, canonical_path: normalized }
 
-  const dynamic = manifest.dynamic_templates.find(item => matchesTemplate(normalized, item.template))
-  if (dynamic) return { classification: dynamic.authority, canonical_path: normalized }
+  const dynamicAuthority = matchDynamicAuthority(normalized, index)
+  if (dynamicAuthority) return { classification: dynamicAuthority, canonical_path: normalized }
 
   return { classification: manifest.unknown_policy, canonical_path: normalized }
 }
@@ -159,24 +245,23 @@ export function resolveRequestTargetAuthority(
 ): DynamicRouteAuthority | null {
   const canonical = classifyRequestTarget(target, manifest, method).canonical_path
   if (!canonical) return null
-  return manifest.dynamic_templates.find(item => matchesTemplate(canonical, item.template))?.authority ?? null
+  return matchDynamicAuthority(canonical, getManifestIndex(manifest))
 }
 
 export function extractStaticSitemapPaths(manifest: LaunchRouteManifest): string[] {
-  return manifest.exact_routes
-    .filter(item => item.classification === 'indexable-public' && item.sitemap === true)
-    .map(item => item.path)
-    .sort(compareCodePointOrder)
+  return [...getManifestIndex(manifest).staticSitemapPaths]
 }
 
 function compareCodePointOrder(left: string, right: string): number {
-  // Match Python's Unicode code-point ordering for deterministic parity.
-  const leftPoints = Array.from(left, character => character.codePointAt(0)!)
-  const rightPoints = Array.from(right, character => character.codePointAt(0)!)
-  const sharedLength = Math.min(leftPoints.length, rightPoints.length)
-  for (let index = 0; index < sharedLength; index += 1) {
-    const difference = leftPoints[index]! - rightPoints[index]!
-    if (difference !== 0) return difference
+  // Match Python's Unicode code-point ordering without allocating per-character arrays.
+  let leftIndex = 0
+  let rightIndex = 0
+  while (leftIndex < left.length && rightIndex < right.length) {
+    const leftPoint = left.codePointAt(leftIndex)!
+    const rightPoint = right.codePointAt(rightIndex)!
+    if (leftPoint !== rightPoint) return leftPoint - rightPoint
+    leftIndex += leftPoint > 0xFFFF ? 2 : 1
+    rightIndex += rightPoint > 0xFFFF ? 2 : 1
   }
-  return leftPoints.length - rightPoints.length
+  return (left.length - leftIndex) - (right.length - rightIndex)
 }

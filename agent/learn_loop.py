@@ -30,7 +30,9 @@ import os
 import re
 import sys
 import time
+import unicodedata
 from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
@@ -88,7 +90,7 @@ def _web_search_light(query: str, max_results: int = 3) -> list[dict]:
     try:
         from ddgs import DDGS
         with DDGS() as ddgs:
-            results = list(ddgs.text(query + " Vĩnh Long Bến Tre Trà Vinh",
+            results = list(ddgs.text(query + " tỉnh Vĩnh Long (vùng Bến Tre Trà Vinh trước 7-2025)",
                                      region="vn-vi", max_results=max_results))
         return results
     except Exception as e:
@@ -96,42 +98,56 @@ def _web_search_light(query: str, max_results: int = 3) -> list[dict]:
         return []
 
 
+_LOCATION_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("vinh-long", re.compile(r"[Vv]ĩnh\s*[Ll]ong")),
+    ("ben-tre", re.compile(r"[Bb]ến\s*[Tt]re")),
+    ("tra-vinh", re.compile(r"[Tt]rà\s*[Vv]inh")),
+)
+
+_TYPE_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("dish", ("món", "ẩm thực", "bún", "phở", "bánh", "cơm", "lẩu", "nướng", "chè", "gỏi")),
+    ("product", ("đặc sản", "ocop", "nông sản", "trái cây", "dừa", "cam", "bưởi", "xoài", "sầu riêng")),
+    ("attraction", ("chùa", "đền", "miếu", "nhà thờ", "bảo tàng", "khu du lịch", "di tích", "cầu")),
+    ("experience", ("du lịch", "trải nghiệm", "tham quan", "chèo xuồng", "đạp xe", "homestay")),
+    ("event", ("lễ hội", "festival", "sự kiện", "mùa")),
+    ("nature", ("sông", "cù lao", "rừng", "vườn", "hồ", "biển", "cồn")),
+    ("craft_village", ("làng nghề", "thủ công", "gốm", "dệt", "đan")),
+    ("person", ("nhà thơ", "danh nhân", "anh hùng", "nghệ nhân", "giáo sư")),
+    ("history", ("lịch sử", "kháng chiến", "cách mạng", "thời kỳ")),
+)
+
+_CLEAN_SUFFIX_RE = re.compile(r"\s*[-|–—]\s*.{0,30}$")
+_CLEAN_PARENS_RE = re.compile(r"\s*\(.*?\)\s*$")
+_DIACRITICS_RE = re.compile(r"[\u0300-\u036f]")
+_SLUG_NON_ALNUM_RE = re.compile(r"[^a-z0-9]+")
+_MULTI_SPACE_RE = re.compile(r"\s+")
+_GEOCODE_PREFIX_RE = re.compile(
+    r"^(khu di tích|khu lưu niệm|khu du lịch|di tích|làng nghề|cơ sở|vườn quốc gia)\s+",
+    re.IGNORECASE,
+)
+
+
 def _detect_area(text: str) -> str | None:
     """Nhận diện vùng (VL/BT/TV) từ text; None nếu không liên quan."""
-    location_patterns = {
-        "vinh-long": r"[Vv]ĩnh\s*[Ll]ong",
-        "ben-tre": r"[Bb]ến\s*[Tt]re",
-        "tra-vinh": r"[Tt]rà\s*[Vv]inh",
-    }
-    for area_id, pattern in location_patterns.items():
-        if re.search(pattern, text):
+    for area_id, pattern in _LOCATION_PATTERNS:
+        if pattern.search(text):
             return area_id
     return None
 
 
 def _detect_entity_type(text: str) -> str:
     """Đoán entity type từ keyword; mặc định 'attraction'."""
-    type_keywords = {
-        "dish": ["món", "ẩm thực", "bún", "phở", "bánh", "cơm", "lẩu", "nướng", "chè", "gỏi"],
-        "product": ["đặc sản", "ocop", "nông sản", "trái cây", "dừa", "cam", "bưởi", "xoài", "sầu riêng"],
-        "attraction": ["chùa", "đền", "miếu", "nhà thờ", "bảo tàng", "khu du lịch", "di tích", "cầu"],
-        "experience": ["du lịch", "trải nghiệm", "tham quan", "chèo xuồng", "đạp xe", "homestay"],
-        "event": ["lễ hội", "festival", "sự kiện", "mùa"],
-        "nature": ["sông", "cù lao", "rừng", "vườn", "hồ", "biển", "cồn"],
-        "craft_village": ["làng nghề", "thủ công", "gốm", "dệt", "đan"],
-        "person": ["nhà thơ", "danh nhân", "anh hùng", "nghệ nhân", "giáo sư"],
-        "history": ["lịch sử", "kháng chiến", "cách mạng", "thời kỳ"],
-    }
-    for etype, keywords in type_keywords.items():
-        if any(kw in text.lower() for kw in keywords):
+    text_lower = text.lower()
+    for etype, keywords in _TYPE_KEYWORDS:
+        if any(kw in text_lower for kw in keywords):
             return etype
     return "attraction"  # default
 
 
 def _clean_entity_name(title: str) -> str | None:
     """Làm sạch tên entity từ title; None nếu độ dài không hợp lệ."""
-    name = re.sub(r"\s*[-|–—]\s*.{0,30}$", "", title)  # Remove " - SiteName" suffix
-    name = re.sub(r"\s*\(.*?\)\s*$", "", name)  # Remove trailing (...)
+    name = _CLEAN_SUFFIX_RE.sub("", title)  # Remove " - SiteName" suffix
+    name = _CLEAN_PARENS_RE.sub("", name)  # Remove trailing (...)
     name = name.strip()
     if len(name) < 4 or len(name) > 100:
         return None
@@ -140,11 +156,10 @@ def _clean_entity_name(title: str) -> str | None:
 
 def _slugify_entity_name(name: str) -> str | None:
     """Sinh slug ID từ name; None nếu slug quá ngắn."""
-    import unicodedata
     slug = unicodedata.normalize("NFD", name.lower())
-    slug = re.sub(r"[̀-ͯ]", "", slug)
+    slug = _DIACRITICS_RE.sub("", slug)
     slug = slug.replace("đ", "d").replace("Đ", "d")
-    slug = re.sub(r"[^a-z0-9]+", "-", slug).strip("-")[:60]
+    slug = _SLUG_NON_ALNUM_RE.sub("-", slug).strip("-")[:60]
     if not slug or len(slug) < 3:
         return None
     return slug
@@ -192,12 +207,12 @@ def _extract_entity_from_snippet(snippet: str, title: str, url: str, query: str)
     }
 
 
+@lru_cache(maxsize=8192)
 def _norm_entity_name(s: str) -> str:
     """Chuẩn hoá tên (bỏ dấu, lower, gộp khoảng trắng) để dedup."""
-    import unicodedata
     x = unicodedata.normalize("NFD", (s or "").lower())
-    x = re.sub(r"[̀-ͯ]", "", x).replace("đ", "d")
-    return re.sub(r"\s+", " ", x).strip()
+    x = _DIACRITICS_RE.sub("", x).replace("đ", "d")
+    return _MULTI_SPACE_RE.sub(" ", x).strip()
 
 
 def _collect_existing_keys(kb: dict) -> tuple[set, set]:
@@ -387,12 +402,9 @@ def _load_feedback() -> list[dict]:
 
 def _save_feedback(data: list[dict]):
     """Save feedback history (atomic write)."""
-    tmp = FEEDBACK_FILE.with_suffix(".tmp")
-    tmp.write_text(
-        json.dumps(data[-1000:], ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-    tmp.replace(FEEDBACK_FILE)
+    from versioned_json_store import atomic_write_json
+
+    atomic_write_json(FEEDBACK_FILE, data[-1000:], indent=2)
 
 
 def record_feedback(query: str, rating: int, entity_id: str = None, session_id: str = None):
@@ -656,9 +668,22 @@ def _log_event(event_type: str, data: dict):
         if LEARN_LOG.exists() and LEARN_LOG.stat().st_size > 2 * 1024 * 1024:
             lines = LEARN_LOG.read_text(encoding="utf-8").strip().split("\n")
             if len(lines) > _MAX_LEARN_LOG_LINES:
-                tmp = LEARN_LOG.with_suffix(".tmp")
-                tmp.write_text("\n".join(lines[-_MAX_LEARN_LOG_LINES:]) + "\n", encoding="utf-8")
-                tmp.replace(LEARN_LOG)
+                import os
+                import tempfile
+
+                fd, tmp_name = tempfile.mkstemp(
+                    dir=str(LEARN_LOG.parent),
+                    prefix=f".{LEARN_LOG.name}.",
+                    suffix=".tmp",
+                )
+                try:
+                    with os.fdopen(fd, "w", encoding="utf-8") as f:
+                        f.write("\n".join(lines[-_MAX_LEARN_LOG_LINES:]) + "\n")
+                        f.flush()
+                        os.fsync(f.fileno())
+                    os.replace(tmp_name, LEARN_LOG)
+                finally:
+                    Path(tmp_name).unlink(missing_ok=True)
                 _logger.info("Trimmed learn_loop_log to %d lines", _MAX_LEARN_LOG_LINES)
     except Exception as exc:
         _logger.debug("Failed to write learn log: %s", exc)
@@ -668,15 +693,18 @@ def _status_kb_counts() -> tuple[int, int, int]:
     """Đếm (missing_summaries, low_confidence, total) entity non-place từ KB."""
     try:
         kb = _load_kb()
-        missing = len([
-            e for e in kb["entities"]
-            if e.get("type") != "place" and (not e.get("summary") or len(e.get("summary", "")) < 10)
-        ])
-        low_conf = len([
-            e for e in kb["entities"]
-            if e.get("type") != "place" and e.get("confidence", 1) < 0.5
-        ])
-        total = len([e for e in kb["entities"] if e.get("type") != "place"])
+        missing = 0
+        low_conf = 0
+        total = 0
+        for e in kb["entities"]:
+            if e.get("type") == "place":
+                continue
+            total += 1
+            summary = e.get("summary")
+            if not summary or len(summary) < 10:
+                missing += 1
+            if e.get("confidence", 1) < 0.5:
+                low_conf += 1
         return missing, low_conf, total
     except Exception as e:
         _logger.debug("Failed to load KB for status: %s", e)
@@ -737,10 +765,7 @@ def _geocode_candidate(_geo, e: dict, places_by_id: dict):
             c = _geo.geocode(e["name"], region=pname)
     # Variant 3: name without category prefix (e.g. "Khu di tích X" → "X")
     if not c:
-        import re as _re
-        stripped = _re.sub(
-            r"^(khu di tích|khu lưu niệm|khu du lịch|di tích|làng nghề|cơ sở|vườn quốc gia)\s+",
-            "", e["name"], flags=_re.IGNORECASE).strip()
+        stripped = _GEOCODE_PREFIX_RE.sub("", e["name"]).strip()
         if stripped and stripped != e["name"] and len(stripped) >= 4:
             c = _geo.geocode(stripped)
     return c

@@ -181,43 +181,57 @@ POST_TYPES = ("review", "share", "recommend", "question")
 ENTITY_LINK_REQUIRED = ("review",)  # These types must link to an entity
 
 
-def _enrich_user_status(posts: list[dict], user) -> list[dict]:
+def _enrich_user_status(posts: list[dict], user, conn=None) -> list[dict]:
     """Add is_liked + is_bookmarked to a list of posts for the given user."""
     if not user or not posts:
         return posts
     ph = db._ph
     post_ids = [p["id"] for p in posts]
     uid = str(user["id"])
-    with db._conn() as conn:
-        liked = db._fetchall(conn, f"""
-            SELECT post_id::text as pid FROM likes
-            WHERE user_id = {ph}::uuid AND post_id::text = ANY({ph}::text[])
-        """, (uid, post_ids))
-        liked_set = {r["pid"] for r in liked}
-        bookmarked = db._fetchall(conn, f"""
-            SELECT post_id::text as pid FROM bookmarks
-            WHERE user_id = {ph}::uuid AND post_id::text = ANY({ph}::text[])
-        """, (uid, post_ids))
-        bm_set = {r["pid"] for r in bookmarked}
+    sql = f"""
+        SELECT 'like' AS kind, post_id::text AS pid FROM likes
+        WHERE user_id = {ph}::uuid AND post_id::text = ANY({ph}::text[])
+        UNION ALL
+        SELECT 'bm' AS kind, post_id::text AS pid FROM bookmarks
+        WHERE user_id = {ph}::uuid AND post_id::text = ANY({ph}::text[])
+    """
+    params = (uid, post_ids, uid, post_ids)
+    if conn is not None:
+        rows = db._fetchall(conn, sql, params)
+    else:
+        with db._conn() as c:
+            rows = db._fetchall(c, sql, params)
+    liked_set: set[str] = set()
+    bm_set: set[str] = set()
+    for r in rows:
+        d = db._row_to_dict(r)
+        if d.get("kind") == "bm":
+            bm_set.add(d["pid"])
+        else:
+            liked_set.add(d["pid"])
     for p in posts:
         p["is_liked"] = p["id"] in liked_set
         p["is_bookmarked"] = p["id"] in bm_set
     return posts
 
 
-def _enrich_reactions(posts: list[dict]) -> list[dict]:
+def _enrich_reactions(posts: list[dict], conn=None) -> list[dict]:
     """Batch-fetch reaction counts for a list of formatted posts."""
     if not posts:
         return posts
     ph = db._ph
     post_ids = [p["id"] for p in posts]
-    with db._conn() as conn:
-        rows = db._fetchall(conn, f"""
-            SELECT post_id::text AS pid, reaction_type, COUNT(*) AS c
-            FROM post_reactions
-            WHERE post_id::text = ANY({ph}::text[])
-            GROUP BY post_id, reaction_type
-        """, (post_ids,))
+    sql = f"""
+        SELECT post_id::text AS pid, reaction_type, COUNT(*) AS c
+        FROM post_reactions
+        WHERE post_id::text = ANY({ph}::text[])
+        GROUP BY post_id, reaction_type
+    """
+    if conn is not None:
+        rows = db._fetchall(conn, sql, (post_ids,))
+    else:
+        with db._conn() as c:
+            rows = db._fetchall(c, sql, (post_ids,))
     counts: dict[str, dict[str, int]] = {}
     for r in rows:
         d = db._row_to_dict(r)
@@ -227,14 +241,22 @@ def _enrich_reactions(posts: list[dict]) -> list[dict]:
     return posts
 
 
-def _enrich_all(posts: list[dict], user) -> list[dict]:
+def _enrich_all(posts: list[dict], user, conn=None) -> list[dict]:
     """Combine user-status + reaction enrichment in a single thread call."""
-    _enrich_user_status(posts, user)
-    _enrich_reactions(posts)
+    if not posts:
+        return posts
+    if conn is not None:
+        _enrich_user_status(posts, user, conn=conn)
+        _enrich_reactions(posts, conn=conn)
+        return posts
+    with db._conn() as shared_conn:
+        _enrich_user_status(posts, user, conn=shared_conn)
+        _enrich_reactions(posts, conn=shared_conn)
     return posts
 
 
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
+_HASHTAG_RE = re.compile(r"#(\w{1,30})", re.UNICODE)
 
 def _strip_html_tags(s: str) -> str:
     """Remove HTML tags from user content (defense-in-depth against stored XSS)."""
@@ -244,7 +266,7 @@ def _strip_html_tags(s: str) -> str:
 def _extract_hashtags(content: str) -> list[str]:
     """Trích #hashtag (Unicode, tiếng Việt OK) → lowercase, dedup, cap 10."""
     seen, out = set(), []
-    for t in re.findall(r'#(\w{1,30})', content or '', re.UNICODE):
+    for t in _HASHTAG_RE.findall(content or ""):
         tl = t.lower()
         if tl not in seen:
             seen.add(tl)
@@ -1631,35 +1653,29 @@ async def user_counts(response: Response, user=Depends(require_user)):
     uid = str(user["id"])
     def _query():
         with db._conn() as conn:
-            notif = db._fetchone(conn, f"""
-                SELECT COUNT(*) as c FROM notifications
-                WHERE user_id = {ph}::uuid AND is_read = FALSE
-            """, (uid,))
-            posts = db._fetchone(conn, f"""
-                SELECT COUNT(*) as c FROM posts
-                WHERE user_id = {ph}::uuid AND moderation_status != 'rejected'
-                  AND (is_draft IS NOT TRUE) AND deleted_at IS NULL
-            """, (uid,))
-            drafts = db._fetchone(conn, f"""
-                SELECT COUNT(*) as c FROM posts
-                WHERE user_id = {ph}::uuid AND is_draft = TRUE
-            """, (uid,))
-            bookmarks = db._fetchone(conn, f"""
-                SELECT COUNT(*) as c FROM saved_entities
+            row = db._fetchone(conn, f"""
+                SELECT
+                    (SELECT COUNT(*) FROM notifications
+                     WHERE user_id = {ph}::uuid AND is_read = FALSE) AS unread_notifications,
+                    COUNT(*) FILTER (
+                        WHERE moderation_status != 'rejected'
+                          AND (is_draft IS NOT TRUE) AND deleted_at IS NULL
+                    ) AS posts,
+                    COUNT(*) FILTER (WHERE is_draft = TRUE) AS drafts,
+                    (SELECT COUNT(*) FROM saved_entities
+                     WHERE user_id = {ph}::uuid) AS bookmarks,
+                    (SELECT COUNT(*) FROM user_visits
+                     WHERE user_id = {ph}::uuid) AS visits
+                FROM posts
                 WHERE user_id = {ph}::uuid
-            """, (uid,))
-            visits = db._fetchone(conn, f"""
-                SELECT COUNT(*) as c FROM user_visits
-                WHERE user_id = {ph}::uuid
-            """, (uid,))
-        def _c(r):
-            return db._row_to_dict(r)["c"] if r else 0
+            """, (uid, uid, uid, uid))
+        d = db._row_to_dict(row) if row else {}
         return {
-            "unread_notifications": _c(notif),
-            "posts": _c(posts),
-            "drafts": _c(drafts),
-            "bookmarks": _c(bookmarks),
-            "visits": _c(visits),
+            "unread_notifications": int(d.get("unread_notifications") or 0),
+            "posts": int(d.get("posts") or 0),
+            "drafts": int(d.get("drafts") or 0),
+            "bookmarks": int(d.get("bookmarks") or 0),
+            "visits": int(d.get("visits") or 0),
         }
     return await asyncio.to_thread(_query)
 
@@ -1673,54 +1689,60 @@ async def user_stats(user=Depends(require_user)):
     uid = str(user["id"])
     def _query():
         with db._conn() as conn:
-            reviews = db._fetchone(conn, f"""
-                SELECT COUNT(*) AS c, COALESCE(AVG(rating), 0) AS avg
-                FROM posts WHERE user_id = {ph}::uuid AND post_type = 'review'
-                  AND moderation_status != 'rejected' AND rating IS NOT NULL
-            """, (uid,))
-            questions = db._fetchone(conn, f"""
-                SELECT COUNT(*) AS c FROM posts
-                WHERE user_id = {ph}::uuid AND post_type = 'question'
-                  AND moderation_status != 'rejected'
-            """, (uid,))
-            followers = db._fetchone(conn, f"""
-                SELECT COUNT(*) AS c FROM follows
-                WHERE target_type = 'user' AND target_id = {ph}
-            """, (uid,))
-            following = db._fetchone(conn, f"""
-                SELECT COUNT(*) AS c FROM follows
-                WHERE follower_id = {ph}::uuid AND target_type = 'user'
-            """, (uid,))
-            likes_received = db._fetchone(conn, f"""
-                SELECT COALESCE(SUM(like_count), 0) AS c FROM posts
-                WHERE user_id = {ph}::uuid AND moderation_status = 'approved' AND deleted_at IS NULL
-            """, (uid,))
-            entities_reviewed = db._fetchone(conn, f"""
-                SELECT COUNT(DISTINCT entity_id) AS c FROM posts
-                WHERE user_id = {ph}::uuid AND post_type = 'review'
-                  AND moderation_status = 'approved' AND deleted_at IS NULL AND entity_id IS NOT NULL
-            """, (uid,))
-            reactions_received = db._fetchone(conn, f"""
-                SELECT COUNT(*) AS c FROM post_reactions r
-                JOIN posts p ON p.id = r.post_id
-                WHERE p.user_id = {ph}::uuid
-            """, (uid,))
-            collections_count = db._fetchone(conn, f"""
-                SELECT COUNT(*) AS c FROM user_collections WHERE user_id = {ph}::uuid
-            """, (uid,))
-        def _c(r, col="c"):
-            return db._row_to_dict(r)[col] if r else 0
-        rd = db._row_to_dict(reviews) if reviews else {"c": 0, "avg": 0}
+            row = db._fetchone(conn, f"""
+                SELECT
+                    COUNT(*) FILTER (
+                        WHERE post_type = 'review'
+                          AND moderation_status != 'rejected'
+                          AND rating IS NOT NULL
+                    ) AS reviews,
+                    COALESCE(
+                        AVG(rating) FILTER (
+                            WHERE post_type = 'review'
+                              AND moderation_status != 'rejected'
+                              AND rating IS NOT NULL
+                        ),
+                        0
+                    ) AS avg_rating,
+                    COUNT(*) FILTER (
+                        WHERE post_type = 'question'
+                          AND moderation_status != 'rejected'
+                    ) AS questions,
+                    COALESCE(
+                        SUM(like_count) FILTER (
+                            WHERE moderation_status = 'approved' AND deleted_at IS NULL
+                        ),
+                        0
+                    ) AS likes_received,
+                    COUNT(DISTINCT entity_id) FILTER (
+                        WHERE post_type = 'review'
+                          AND moderation_status = 'approved'
+                          AND deleted_at IS NULL
+                          AND entity_id IS NOT NULL
+                    ) AS entities_reviewed,
+                    (SELECT COUNT(*) FROM follows
+                     WHERE target_type = 'user' AND target_id = {ph}) AS followers,
+                    (SELECT COUNT(*) FROM follows
+                     WHERE follower_id = {ph}::uuid AND target_type = 'user') AS following,
+                    (SELECT COUNT(*) FROM post_reactions r
+                     JOIN posts p ON p.id = r.post_id
+                     WHERE p.user_id = {ph}::uuid) AS reactions_received,
+                    (SELECT COUNT(*) FROM user_collections
+                     WHERE user_id = {ph}::uuid) AS collections
+                FROM posts
+                WHERE user_id = {ph}::uuid
+            """, (uid, uid, uid, uid, uid))
+        d = db._row_to_dict(row) if row else {}
         return {
-            "reviews": int(rd["c"]),
-            "avg_rating": round(float(rd["avg"]), 2),
-            "questions": _c(questions),
-            "followers": _c(followers),
-            "following": _c(following),
-            "likes_received": int(_c(likes_received)),
-            "reactions_received": int(_c(reactions_received)),
-            "entities_reviewed": _c(entities_reviewed),
-            "collections": int(_c(collections_count)),
+            "reviews": int(d.get("reviews") or 0),
+            "avg_rating": round(float(d.get("avg_rating") or 0), 2),
+            "questions": int(d.get("questions") or 0),
+            "followers": int(d.get("followers") or 0),
+            "following": int(d.get("following") or 0),
+            "likes_received": int(d.get("likes_received") or 0),
+            "reactions_received": int(d.get("reactions_received") or 0),
+            "entities_reviewed": int(d.get("entities_reviewed") or 0),
+            "collections": int(d.get("collections") or 0),
             "reputation": user.get("reputation", 0),
         }
     return await asyncio.to_thread(_query)

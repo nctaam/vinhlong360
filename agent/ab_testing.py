@@ -182,17 +182,15 @@ class ABTestManager:
 
     def _save(self):
         """Persist current state to JSON file (caller must hold _lock)."""
+        from versioned_json_store import atomic_write_json
+
         data = {
             "experiments": [e.to_dict() for e in self._experiments.values()],
             "outcomes": self._outcomes,
             "outcome_owners": self._outcome_owners,
             "assignments": self._assignments,
         }
-        self._filepath.parent.mkdir(parents=True, exist_ok=True)
-        tmp = self._filepath.with_suffix(".tmp")
-        with open(tmp, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        tmp.replace(self._filepath)
+        atomic_write_json(self._filepath, data, indent=2)
 
     # -- public API -----------------------------------------------------------
 
@@ -276,8 +274,10 @@ class ABTestManager:
             exp = self._get_experiment(experiment_name)
             chosen = self._select_variant(experiment_name, user_id, exp)
             if persist:
-                self._assignments.setdefault(experiment_name, {})[user_id] = chosen["id"]
-                self._save()
+                exp_assignments = self._assignments.setdefault(experiment_name, {})
+                if exp_assignments.get(user_id) != chosen["id"]:
+                    exp_assignments[user_id] = chosen["id"]
+                    self._save()
             return dict(chosen)
 
     def record_outcome(
@@ -352,39 +352,21 @@ class ABTestManager:
                 for stored_owner in owners.values()
             )
 
+    def _group_variant_values(self, experiment_name: str, exp: Experiment) -> dict[str, list[float]]:
+        assignments = self._assignments.get(experiment_name, {})
+        outcomes = self._outcomes.get(experiment_name, {})
+        variant_values: dict[str, list[float]] = {v["id"]: [] for v in exp.variants}
+        for uid, vid in assignments.items():
+            if uid in outcomes:
+                variant_values.setdefault(vid, []).extend(outcomes[uid])
+        return variant_values
+
     def get_results(self, experiment_name: str) -> dict:
-        """Return per-variant statistics for an experiment.
-
-        Returns:
-            {
-                "experiment": str,
-                "metric_name": str,
-                "active": bool,
-                "variants": {
-                    "control": {
-                        "count": int,
-                        "mean": float,
-                        "std_dev": float,
-                        "confidence_interval_95": [float, float],
-                    },
-                    ...
-                }
-            }
-
-        Raises:
-            KeyError: If experiment does not exist.
-        """
+        """Return per-variant statistics for an experiment."""
         _ensure_defaults()
         with self._lock:
             exp = self._get_experiment(experiment_name)
-            assignments = self._assignments.get(experiment_name, {})
-            outcomes = self._outcomes.get(experiment_name, {})
-
-            # Group metric values by variant
-            variant_values: dict[str, list[float]] = {v["id"]: [] for v in exp.variants}
-            for uid, vid in assignments.items():
-                if uid in outcomes:
-                    variant_values.setdefault(vid, []).extend(outcomes[uid])
+            variant_values = self._group_variant_values(experiment_name, exp)
 
             result_variants = {}
             for vid, values in variant_values.items():
@@ -398,33 +380,11 @@ class ABTestManager:
             }
 
     def is_significant(self, experiment_name: str) -> dict:
-        """Run a basic statistical significance test between the first two variants.
-
-        Uses a z-test for binary/proportion metrics (all values are 0 or 1)
-        and Welch's t-test otherwise.
-
-        Returns:
-            {
-                "significant": bool,
-                "p_value_approx": float,
-                "winner": str | None,
-                "test_used": "z-test" | "welch-t-test",
-            }
-
-        Raises:
-            KeyError: If experiment does not exist.
-        """
+        """Run a basic statistical significance test between the first two variants."""
         _ensure_defaults()
         with self._lock:
             exp = self._get_experiment(experiment_name)
-            assignments = self._assignments.get(experiment_name, {})
-            outcomes = self._outcomes.get(experiment_name, {})
-
-            # Build per-variant value lists
-            variant_values: dict[str, list[float]] = {v["id"]: [] for v in exp.variants}
-            for uid, vid in assignments.items():
-                if uid in outcomes:
-                    variant_values.setdefault(vid, []).extend(outcomes[uid])
+            variant_values = self._group_variant_values(experiment_name, exp)
 
             # Need at least two variants with data
             populated = [(vid, vals) for vid, vals in variant_values.items() if len(vals) >= 2]
@@ -441,8 +401,10 @@ class ABTestManager:
             vid_b, vals_b = populated[1]
 
             # Decide test type: if all values are 0 or 1 -> z-test for proportions
-            all_values = vals_a + vals_b
-            is_binary = all(v == 0.0 or v == 1.0 for v in all_values)
+            is_binary = (
+                all(v == 0.0 or v == 1.0 for v in vals_a)
+                and all(v == 0.0 or v == 1.0 for v in vals_b)
+            )
 
             if is_binary:
                 return self._z_test_proportions(vid_a, vals_a, vid_b, vals_b)
@@ -684,6 +646,8 @@ _DEFAULT_EXPERIMENTS = [
 def create_default_experiments(manager: ABTestManager):
     """Register the pre-configured experiments if they don't already exist."""
     for exp_def in _DEFAULT_EXPERIMENTS:
+        if exp_def["name"] in manager._experiments:
+            continue
         try:
             manager.create_experiment(
                 name=exp_def["name"],
@@ -702,6 +666,7 @@ def create_default_experiments(manager: ABTestManager):
 ab_manager = ABTestManager()
 
 _defaults_initialized = False
+_defaults_lock = Lock()
 
 
 def _ensure_defaults():
@@ -709,8 +674,10 @@ def _ensure_defaults():
     global _defaults_initialized
     if _defaults_initialized:
         return
-    _defaults_initialized = True
-    create_default_experiments(ab_manager)
+    with _defaults_lock:
+        if not _defaults_initialized:
+            create_default_experiments(ab_manager)
+            _defaults_initialized = True
 
 
 # ---------------------------------------------------------------------------
