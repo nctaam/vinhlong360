@@ -27,7 +27,7 @@ class _CandidateMap(dict[str, SelectionCandidate]):
     reserved_ids: frozenset[str] = frozenset()
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class MultiDayDayInput:
     day_index: int
     candidates: tuple[SelectionCandidate, ...]
@@ -41,7 +41,7 @@ class MultiDayDayInput:
         object.__setattr__(self, "baseline_order", tuple(self.baseline_order))
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class MultiDayOptions:
     min_content_per_day: int = 2
     max_count_delta: int = 1
@@ -65,7 +65,7 @@ class MultiDayOptions:
             raise ValueError("Maximum labels per endpoint must be positive")
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class MultiDayDayResult:
     day_index: int
     content_ids: tuple[str, ...]
@@ -75,7 +75,7 @@ class MultiDayDayResult:
     load_minutes: float
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class MultiDayResult:
     days: tuple[MultiDayDayResult, ...]
     solver: str
@@ -88,7 +88,7 @@ class MultiDayResult:
     warnings: tuple[str, ...]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class _AllocationLabel:
     day_results: tuple[MultiDayDayResult, ...]
     current_end_id: str
@@ -98,7 +98,7 @@ class _AllocationLabel:
     area_switches: int
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class _AllocationNeighbor:
     kind: str
     allocation: Allocation
@@ -420,11 +420,8 @@ def _label_dominates(left: _AllocationLabel, right: _AllocationLabel) -> bool:
         return False
     left_metrics = _label_metrics(left)
     right_metrics = _label_metrics(right)
-    return all(
+    return left_metrics != right_metrics and all(
         left_value <= right_value
-        for left_value, right_value in zip(left_metrics, right_metrics)
-    ) and any(
-        left_value < right_value
         for left_value, right_value in zip(left_metrics, right_metrics)
     )
 
@@ -491,6 +488,20 @@ def _endpoint_choices(
     return content_ids
 
 
+def _nondominated_for_endpoint(
+    endpoint_labels: list[_AllocationLabel],
+    max_labels_per_endpoint: int,
+) -> list[_AllocationLabel]:
+    nondominated: list[_AllocationLabel] = []
+    for label in sorted(endpoint_labels, key=_label_objective):
+        if any(_label_dominates(other, label) for other in nondominated):
+            continue
+        nondominated.append(label)
+        if len(nondominated) >= max_labels_per_endpoint:
+            break
+    return nondominated
+
+
 def _prune_labels(
     labels: list[_AllocationLabel],
     max_labels_per_endpoint: int,
@@ -501,17 +512,12 @@ def _prune_labels(
 
     kept: list[_AllocationLabel] = []
     for endpoint in sorted(by_endpoint):
-        ordered = sorted(by_endpoint[endpoint], key=_label_objective)
-        nondominated = [
-            label
-            for label in ordered
-            if not any(
-                _label_dominates(other, label)
-                for other in ordered
-                if other is not label
+        kept.extend(
+            _nondominated_for_endpoint(
+                by_endpoint[endpoint],
+                max_labels_per_endpoint,
             )
-        ]
-        kept.extend(nondominated[:max_labels_per_endpoint])
+        )
     return tuple(sorted(kept, key=_label_objective))
 
 
@@ -730,13 +736,11 @@ def _pair_boundary_ids(
 def _pair_swap_proposals(
     left: tuple[str, ...], right: tuple[str, ...], locked_ids: frozenset[str]
 ) -> list[tuple[str, tuple[str, ...], tuple[str, ...]]]:
+    unlocked_left = tuple(stop_id for stop_id in left if stop_id not in locked_ids)
+    unlocked_right = tuple(stop_id for stop_id in right if stop_id not in locked_ids)
     proposals = []
-    for left_id in left:
-        if left_id in locked_ids:
-            continue
-        for right_id in right:
-            if right_id in locked_ids:
-                continue
+    for left_id in unlocked_left:
+        for right_id in unlocked_right:
             proposals.append((
                 "swap",
                 tuple(right_id if stop_id == left_id else stop_id for stop_id in left),
@@ -810,12 +814,15 @@ def _generate_neighbors(
         candidate = list(allocation)
         candidate[pair_index] = left_ids
         candidate[pair_index + 1] = right_ids
-        canonical = _canonical_allocation(tuple(candidate), baseline_rank)
-        if canonical in seen or not _allocation_within_count_bounds(
-            canonical,
+        candidate_tuple = tuple(candidate)
+        if not _allocation_within_count_bounds(
+            candidate_tuple,
             baseline_counts,
             options,
         ):
+            return
+        canonical = _canonical_allocation(candidate_tuple, baseline_rank)
+        if canonical in seen:
             return
         seen.add(canonical)
         neighbor = _AllocationNeighbor(kind=kind, allocation=canonical)

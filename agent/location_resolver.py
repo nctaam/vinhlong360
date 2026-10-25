@@ -44,6 +44,7 @@ _HEMISPHERE_COORDINATE_RE = re.compile(
 )
 _IPV4_LIKE_RE = re.compile(r"(?<![0-9.])(?:\d{1,3}\.){3}\d{1,3}(?![0-9.])")
 _IP_CANDIDATE_RE = re.compile(r"[0-9A-Fa-f:.]+")
+_FLOAT_MARKERS = frozenset(".eE+-")
 LOCATION_CONFIRMATION_TTL_SECONDS = 300
 _LOCATION_CONFIRMATION_PURPOSE = "location-confirmation-v2"
 
@@ -79,7 +80,7 @@ class LocationResolution:
     location_accuracy: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class VerifiedLocationConfirmation:
     resolution: LocationResolution
     preference_revision: int
@@ -141,17 +142,28 @@ def is_normalized_region_label(value: Any) -> bool:
     )
 
 
+def _canonical_ip(raw: str) -> ipaddress.IPv4Address | ipaddress.IPv6Address | None:
+    candidate = raw.strip(".,;()[]{}")
+    if "." not in candidate and ":" not in candidate:
+        return None
+    try:
+        parsed = ipaddress.ip_address(candidate)
+    except ValueError:
+        return None
+    if isinstance(parsed, ipaddress.IPv6Address) and parsed.ipv4_mapped is not None:
+        return parsed.ipv4_mapped
+    return parsed
+
+
 def _matches_ip_shape(value: str) -> bool:
     if _IPV4_LIKE_RE.search(value):
         return True
-    for match in _IP_CANDIDATE_RE.finditer(value):
-        candidate = match.group().strip(".,;()[]{}")
-        try:
-            ipaddress.ip_address(candidate)
-        except ValueError:
-            continue
-        return True
-    return False
+    if "." not in value and ":" not in value:
+        return False
+    return any(
+        _canonical_ip(match.group()) is not None
+        for match in _IP_CANDIDATE_RE.finditer(value)
+    )
 
 
 def _pair_looks_like_coordinates(value: str) -> bool:
@@ -173,7 +185,7 @@ def _pair_looks_like_coordinates(value: str) -> bool:
 def _has_coordinate_float(value: str) -> bool:
     for match in _NUMBER_RE.finditer(value):
         token = match.group()
-        if not any(marker in token for marker in (".", "e", "E", "+", "-")):
+        if _FLOAT_MARKERS.isdisjoint(token):
             continue
         try:
             candidate = float(token)
@@ -287,7 +299,7 @@ def _text_has_dms_echo(text: str, coordinates: tuple[float, float]) -> bool:
 def _text_has_float_echo(text: str, coordinates: tuple[float, float]) -> bool:
     for match in _NUMBER_RE.finditer(text):
         token = match.group()
-        if not any(marker in token for marker in (".", "e", "E", "+", "-")):
+        if _FLOAT_MARKERS.isdisjoint(token):
             continue
         try:
             candidate = float(token)
@@ -305,6 +317,8 @@ def _contains_gps_echo(
 ) -> bool:
     coordinates = (latitude, longitude)
     for text in _returned_text(resolution):
+        if not text:
+            continue
         if _text_has_pair_echo(text, coordinates):
             return True
         if _text_has_dms_echo(text, coordinates):
@@ -315,20 +329,15 @@ def _contains_gps_echo(
 
 
 def _contains_ip_echo(resolution: LocationResolution, client_ip: str) -> bool:
-    target = ipaddress.ip_address(client_ip)
-    if isinstance(target, ipaddress.IPv6Address) and target.ipv4_mapped is not None:
-        target = target.ipv4_mapped
+    target = _canonical_ip(client_ip)
+    if target is None:
+        return False
     for text in _returned_text(resolution):
+        if "." not in text and ":" not in text:
+            continue
         for match in _IP_CANDIDATE_RE.finditer(text):
-            candidate = match.group().strip(".,;()[]{}")
-            try:
-                parsed = ipaddress.ip_address(candidate)
-                if isinstance(parsed, ipaddress.IPv6Address) and parsed.ipv4_mapped:
-                    parsed = parsed.ipv4_mapped
-                if candidate and parsed == target:
-                    return True
-            except ValueError:
-                continue
+            if _canonical_ip(match.group()) == target:
+                return True
     return False
 
 
@@ -400,9 +409,9 @@ def issue_location_confirmation(
 
     if not resolution.region_id or resolution.location_source not in {"gps", "ip"}:
         return None
-    now = _utc_now()
+    issued_at = int(_utc_now().timestamp())
     payload = {
-        "issued_at": int(now.timestamp()),
+        "issued_at": issued_at,
         "preference_revision": _validated_preference_revision(preference_revision),
         "region_id": resolution.region_id,
         "region_label": resolution.region_label,
@@ -414,7 +423,7 @@ def issue_location_confirmation(
         _LOCATION_CONFIRMATION_PURPOSE,
         user_id,
         payload,
-        expires_at=int(now.timestamp()) + LOCATION_CONFIRMATION_TTL_SECONDS,
+        expires_at=issued_at + LOCATION_CONFIRMATION_TTL_SECONDS,
     )
 
 

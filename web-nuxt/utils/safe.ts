@@ -3,24 +3,39 @@
 
 import { entityPath } from './routePaths'
 
+const HTTP_URL_RE = /^https?:\/\//i
+const REMOTE_URL_RE = /^https?:\/\//
+const HTML_ESCAPE_RE = /[&<>"']/g
+const HTML_ESCAPE_MAP: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+}
+const CALENDAR_DATE_RE = /^(\d{4})-?(\d{2})-?(\d{2})/
+const ICS_ESCAPE_RE = /[,;\\]/g
+const NON_DIGIT_PLUS_RE = /[^\d+]/g
+const HASHTAG_RE = /#([\p{L}\p{N}_]{1,30})/gu
+const LEVEL_ICONS = ['', 'sprout', 'users', 'award', 'trophy'] as const
+const LEVEL_TIER_TITLES = ['', 'Khởi hành', 'Thực địa', 'Nòng cốt', 'Đại sứ bản địa'] as const
+
 /** Allow only http(s) URLs into an href; anything else (javascript:, data:, …) → '#'. */
 export function safeUrl(url?: string | null): string {
   if (!url) return '#'
   const u = String(url).trim()
-  return /^https?:\/\//i.test(u) ? u : '#'
+  return HTTP_URL_RE.test(u) ? u : '#'
 }
 
 /** Escape a string for safe interpolation into innerHTML / setHTML (map popups, etc.). */
 export function escapeHtml(s?: string | null): string {
   if (s == null) return ''
-  return String(s).replace(/[&<>"']/g, (c) => (
-    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string
-  ))
+  return String(s).replace(HTML_ESCAPE_RE, c => HTML_ESCAPE_MAP[c] || c)
 }
 
 /** True if the string is an absolute http(s) URL (used to pick NuxtImg vs plain img). */
 export function isRemoteUrl(url: string): boolean {
-  return /^https?:\/\//.test(url)
+  return REMOTE_URL_RE.test(url)
 }
 
 /** Truncate text at a word boundary, appending '…' if trimmed. */
@@ -32,6 +47,49 @@ export function truncateText(text: string, max: number): string {
 /** Get the area slug from an entity (place_area or area field). */
 export function getEntityArea(e: { place_area?: string; area?: string }): string {
   return e.place_area || e.area || ''
+}
+
+// Current province scope keeps legacy provenance buckets searchable while the
+// UI exposes only the canonical Vĩnh Long selector.
+const CURRENT_PROVINCE_ALIASES = new Set([
+  'vinh-long',
+  'ben-tre',
+  'tra-vinh',
+  'province-vl',
+  'province-bt',
+  'province-tv',
+])
+
+function normalizeSlug(value: unknown): string {
+  return String(value ?? '').trim().toLowerCase().replace(/_/g, '-')
+}
+
+export function normalizeCurrentArea(value?: unknown): string {
+  const slug = normalizeSlug(value)
+  return CURRENT_PROVINCE_ALIASES.has(slug) ? 'vinh-long' : slug
+}
+
+export function isCurrentProvinceArea(value?: unknown): boolean {
+  return normalizeCurrentArea(value) === 'vinh-long'
+}
+
+/** Match a raw area/provenance value against a user-facing area scope. */
+export function areaMatchesScope(value: unknown, scope: unknown): boolean {
+  const target = normalizeSlug(scope)
+  if (!target || target === 'all') return true
+  const candidate = normalizeSlug(value)
+  if (!candidate) return false
+  return target === 'vinh-long'
+    ? CURRENT_PROVINCE_ALIASES.has(candidate)
+    : candidate === target
+}
+
+/** Match either the entity's explicit area or its enriched place area. */
+export function entityMatchesAreaScope(
+  entity: { area?: unknown; place_area?: unknown; legacyArea?: unknown },
+  scope: unknown,
+): boolean {
+  return [entity.area, entity.place_area, entity.legacyArea].some(value => areaMatchesScope(value, scope))
 }
 
 // ── iCalendar (.ics) generation ──
@@ -56,7 +114,7 @@ export interface IcsEventInput {
  * into the next month, so bad data can never shift an event to a wrong date.
  */
 function parseCalendarDate(value?: string | null): Date | null {
-  const m = /^(\d{4})-?(\d{2})-?(\d{2})/.exec(String(value ?? '').trim())
+  const m = CALENDAR_DATE_RE.exec(String(value ?? '').trim())
   if (!m) return null
   const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])]
   const dt = new Date(Date.UTC(y, mo - 1, d))
@@ -69,6 +127,13 @@ function formatCalendarDate(d: Date): string {
   return String(d.getUTCFullYear()).padStart(4, '0')
     + String(d.getUTCMonth() + 1).padStart(2, '0')
     + String(d.getUTCDate()).padStart(2, '0')
+}
+
+function icsExclusiveEndFromParsedStart(start: Date, dateEndInclusive?: string | null): string {
+  const end = parseCalendarDate(dateEndInclusive) || start
+  // Bad data (end before start) collapses to one day instead of an inverted range.
+  const last = end.getTime() < start.getTime() ? start : end
+  return formatCalendarDate(new Date(last.getTime() + 86_400_000))
 }
 
 /**
@@ -86,15 +151,25 @@ function formatCalendarDate(d: Date): string {
 export function icsAllDayEnd(dateStart: string, dateEndInclusive?: string | null): string {
   const start = parseCalendarDate(dateStart)
   if (!start) return ''
-  const end = parseCalendarDate(dateEndInclusive) || start
-  // Bad data (end before start) collapses to one day instead of an inverted range.
-  const last = end.getTime() < start.getTime() ? start : end
-  return formatCalendarDate(new Date(last.getTime() + 86_400_000))
+  return icsExclusiveEndFromParsedStart(start, dateEndInclusive)
 }
 
 /** Strip the characters that would break ICS line structure (RFC 5545 delimiters). */
 function icsEscape(s?: string | null): string {
-  return String(s || '').replace(/[,;\\]/g, ' ')
+  return String(s || '').replace(ICS_ESCAPE_RE, ' ')
+}
+
+function appendIcsEvent(lines: string[], e: IcsEventInput, start: Date): void {
+  lines.push(
+    'BEGIN:VEVENT',
+    `DTSTART;VALUE=DATE:${formatCalendarDate(start)}`,
+    `DTEND;VALUE=DATE:${icsExclusiveEndFromParsedStart(start, e.dateEnd)}`,
+    `SUMMARY:${icsEscape(e.name)}`,
+    `DESCRIPTION:${icsEscape((e.summary || '').slice(0, 200)).replace(/\r?\n/g, '\\n')}`,
+    `LOCATION:${icsEscape(e.place_name)}`,
+    `URL:https://vinhlong360.vn${entityPath(e.id)}`,
+    'END:VEVENT',
+  )
 }
 
 /** Build a complete VCALENDAR document; entries without a usable start date are skipped. */
@@ -103,16 +178,7 @@ export function buildIcsCalendar(items: IcsEventInput[]): string {
   for (const e of items || []) {
     const start = parseCalendarDate(e?.dateStart)
     if (!start) continue
-    lines.push(
-      'BEGIN:VEVENT',
-      `DTSTART;VALUE=DATE:${formatCalendarDate(start)}`,
-      `DTEND;VALUE=DATE:${icsAllDayEnd(e.dateStart, e.dateEnd)}`,
-      `SUMMARY:${icsEscape(e.name)}`,
-      `DESCRIPTION:${icsEscape((e.summary || '').slice(0, 200)).replace(/\r?\n/g, '\\n')}`,
-      `LOCATION:${icsEscape(e.place_name)}`,
-      `URL:https://vinhlong360.vn${entityPath(e.id)}`,
-      'END:VEVENT',
-    )
+    appendIcsEvent(lines, e, start)
   }
   lines.push('END:VCALENDAR')
   return lines.join('\r\n')
@@ -120,9 +186,17 @@ export function buildIcsCalendar(items: IcsEventInput[]): string {
 
 /** Download a multi-event .ics; no-op when nothing has a usable date. */
 export function downloadIcsBundle(items: IcsEventInput[], filename: string) {
-  const usable = (items || []).filter(i => parseCalendarDate(i?.dateStart))
-  if (!usable.length) return
-  downloadBlob(new Blob([buildIcsCalendar(usable)], { type: 'text/calendar;charset=utf-8' }), filename)
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//vinhlong360.vn//VI']
+  let count = 0
+  for (const e of items || []) {
+    const start = parseCalendarDate(e?.dateStart)
+    if (!start) continue
+    appendIcsEvent(lines, e, start)
+    count += 1
+  }
+  if (!count) return
+  lines.push('END:VCALENDAR')
+  downloadBlob(new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' }), filename)
 }
 
 /** Generate and download an .ics calendar file for an entity with date attributes. */
@@ -184,11 +258,13 @@ export function eventDateRange(e: EventLike): string {
 /** Format an ISO date string to Vietnamese locale (dd/mm/yyyy). */
 export function formatDateVN(d?: string | null): string {
   if (!d) return ''
-  return new Date(d).toLocaleDateString('vi-VN')
+  const parsed = new Date(d)
+  return isNaN(parsed.getTime()) ? '' : parsed.toLocaleDateString('vi-VN')
 }
 
 /** Trigger a file download from a Blob (used by admin CSV/JSON export and iCal). */
 export function downloadBlob(blob: Blob, filename: string) {
+  if (!import.meta.client || typeof URL === 'undefined' || typeof document === 'undefined') return
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -208,18 +284,18 @@ export function goBackOr(fallback: string) {
 
 /** Semantic icon name for a user reputation level (1–4: sprout, users, award, trophy). */
 export function levelIcon(level: number): string {
-  return (['', 'sprout', 'users', 'award', 'trophy'][level]) || 'sprout'
+  return LEVEL_ICONS[level] || 'sprout'
 }
 
 /** Semantic title for a user reputation honor tier (1–4). */
 export function levelTierTitle(level: number): string {
-  return (['', 'Khởi hành', 'Thực địa', 'Nòng cốt', 'Đại sứ bản địa'][level]) || 'Khởi hành'
+  return LEVEL_TIER_TITLES[level] || 'Khởi hành'
 }
 
 /** Build a dialable tel: href, stripping dots/spaces/parens (keeps leading +). */
 export function telHref(phone?: string | null): string {
   if (!phone) return '#'
-  const digits = String(phone).replace(/[^\d+]/g, '')
+  const digits = String(phone).replace(NON_DIGIT_PLUS_RE, '')
   return digits ? `tel:${digits}` : '#'
 }
 
@@ -239,7 +315,7 @@ export function linkifyContent(content: string, mentions?: Array<{ label?: strin
   }
   // \p{L}\p{N} (Unicode) để khớp hashtag tiếng Việt (#đặcsản) như backend _extract_hashtags
   // (Python \w+UNICODE). JS \w LUÔN chỉ [A-Za-z0-9_] kể cả cờ u → phải dùng property escape.
-  html = html.replace(/#([\p{L}\p{N}_]{1,30})/gu, (_m, tag) =>
+  html = html.replace(HASHTAG_RE, (_m, tag) =>
     `<a class="hashtag-link" href="/cong-dong?tag=${encodeURIComponent(tag.toLowerCase())}">#${tag}</a>`)
   return html
 }

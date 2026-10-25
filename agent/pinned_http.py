@@ -98,11 +98,12 @@ class ResolverSaturatedError(PinnedTransportError):
 
 
 security_logger = logging.getLogger("security.egress")
+_AUDIT_CONTEXT_RE = re.compile(r"[^a-z0-9._-]+")
 
 
 def _sanitize_audit_context(value: str) -> str:
     ascii_text = str(value).encode("ascii", "ignore").decode("ascii").lower()
-    sanitized = re.sub(r"[^a-z0-9._-]+", "_", ascii_text).strip("._-")[:64]
+    sanitized = _AUDIT_CONTEXT_RE.sub("_", ascii_text).strip("._-")[:64]
     return sanitized or "unknown"
 
 
@@ -315,6 +316,7 @@ _NAT64_NETWORKS = (
 # networks, and .ipv4_mapped is None throughout this one, so the mapped check
 # below does not cover it even though it also embeds an IPv4 address.
 _IPV4_TRANSLATED_NETWORK = ipaddress.ip_network("::ffff:0:0:0/96")
+_IPV4_COMPATIBLE_NETWORK = ipaddress.ip_network("::/96")
 # Ranges that reach somewhere internal or unexpected but that
 # ipaddress.is_global reports as global, so the is_global test cannot catch
 # them. Mixing address families is safe: ip_network.__contains__ returns False
@@ -359,7 +361,7 @@ def _is_transition_address(address: ipaddress.IPv6Address) -> bool:
     return (
         address.ipv4_mapped is not None
         or address in _IPV4_TRANSLATED_NETWORK
-        or address in ipaddress.ip_network("::/96")
+        or address in _IPV4_COMPATIBLE_NETWORK
         or any(address in network for network in _NAT64_NETWORKS)
         or address.sixtofour is not None
         or address.teredo is not None
@@ -752,6 +754,9 @@ class _PinnedNetworkStream(httpcore.NetworkStream):
         except (ssl.SSLError, OSError) as exc:
             self.close()
             raise httpcore.ConnectError(str(exc)) from exc
+        except BaseException:
+            self.close()
+            raise
         return _PinnedNetworkStream(
             wrapped,
             policy=self._policy,
@@ -857,6 +862,46 @@ class _PinnedNetworkBackend(httpcore.NetworkBackend):
     ) -> httpcore.NetworkStream:
         raise httpcore.UnsupportedProtocol("pinned HTTP supports TCP only")
 
+    def _dial_pinned_address(
+        self,
+        address: ResolvedAddress,
+        approved: set[tuple[ipaddress.IPv4Address | ipaddress.IPv6Address, int]],
+        timeout: float | None,
+        local_address: str | None,
+        socket_options: Iterable[SocketOption] | None,
+    ) -> httpcore.NetworkStream:
+        self._budget.socket_timeout(
+            timeout,
+            self._policy.inactivity_timeout_seconds,
+            monotonic=self._monotonic,
+        )
+        sock: socket.socket | None = None
+        try:
+            sock = self._socket_factory(address.family, address.socktype, address.protocol)
+            operation_timeout = self._budget.socket_timeout(
+                timeout,
+                self._policy.inactivity_timeout_seconds,
+                monotonic=self._monotonic,
+            )
+            _configure_connecting_socket(
+                sock,
+                operation_timeout,
+                local_address,
+                socket_options,
+            )
+            sock.connect(address.sockaddr)
+            _check_peer_matches_approved(sock, approved)
+            return _PinnedNetworkStream(
+                sock,
+                policy=self._policy,
+                budget=self._budget,
+                monotonic=self._monotonic,
+            )
+        except BaseException:
+            if sock is not None:
+                sock.close()
+            raise
+
     def connect_tcp(
         self,
         host: str,
@@ -869,50 +914,21 @@ class _PinnedNetworkBackend(httpcore.NetworkBackend):
         approved = {(item.ip, item.port) for item in self._hop.addresses}
         last_error: Exception | None = None
         for address in self._hop.addresses:
-            self._budget.socket_timeout(
-                timeout,
-                self._policy.inactivity_timeout_seconds,
-                monotonic=self._monotonic,
-            )
-            sock: socket.socket | None = None
             try:
-                sock = self._socket_factory(address.family, address.socktype, address.protocol)
-                operation_timeout = self._budget.socket_timeout(
+                return self._dial_pinned_address(
+                    address,
+                    approved,
                     timeout,
-                    self._policy.inactivity_timeout_seconds,
-                    monotonic=self._monotonic,
-                )
-                _configure_connecting_socket(
-                    sock,
-                    operation_timeout,
                     local_address,
                     socket_options,
                 )
-                sock.connect(address.sockaddr)
-                _check_peer_matches_approved(sock, approved)
-                return _PinnedNetworkStream(
-                    sock,
-                    policy=self._policy,
-                    budget=self._budget,
-                    monotonic=self._monotonic,
-                )
-            except PinnedDeadlineExceeded:
-                if sock is not None:
-                    sock.close()
-                raise
-            except PeerMismatchError:
-                if sock is not None:
-                    sock.close()
+            except (PinnedDeadlineExceeded, PeerMismatchError):
                 raise
             except socket.timeout as exc:
                 self._budget.remaining(monotonic=self._monotonic)
                 last_error = httpcore.ConnectTimeout(str(exc))
-                if sock is not None:
-                    sock.close()
             except OSError as exc:
                 last_error = httpcore.ConnectError(str(exc))
-                if sock is not None:
-                    sock.close()
         _raise_pinned_connect_error(last_error)
 
 
@@ -1134,12 +1150,17 @@ def _fetch_hop(
         }
         if cookie_header:
             client_headers["Cookie"] = cookie_header
-        with httpx.Client(
-            transport=transport,
-            follow_redirects=False,
-            trust_env=False,
-            headers=client_headers,
-        ) as client:
+        try:
+            client = httpx.Client(
+                transport=transport,
+                follow_redirects=False,
+                trust_env=False,
+                headers=client_headers,
+            )
+        except BaseException:
+            transport.close()
+            raise
+        with client:
             # Built via the client (for default-header merging and timeout-extension
             # conversion) but dispatched straight to the transport: httpx.Client.send()
             # unconditionally pre-builds the (unfollowed) redirect request whenever a

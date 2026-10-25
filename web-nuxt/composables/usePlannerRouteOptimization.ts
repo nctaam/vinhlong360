@@ -1,4 +1,4 @@
-import { ref, computed, watch, nextTick, getCurrentInstance, onBeforeUnmount, type Ref, type ComputedRef } from 'vue'
+import { ref, computed, watch, nextTick, getCurrentScope, onScopeDispose, type Ref, type ComputedRef } from 'vue'
 import {
   fetchRoute,
   fetchRouteTable,
@@ -68,6 +68,7 @@ export function usePlannerRouteOptimization(options: UsePlannerRouteOptimization
   } | null = null
   const suspendAutoRoute = ref(false)
   let latestAutoRouteRequest: number | null = null
+  let computeRouteGeneration = 0
   const candidateOpeningHourConflicts = ref<OpeningHourConflict[]>([])
   const confirmedOpeningHourConflicts = ref<OpeningHourConflict[]>([])
 
@@ -132,6 +133,7 @@ export function usePlannerRouteOptimization(options: UsePlannerRouteOptimization
     routeError.value = false
     clearPendingOptimizationPreview()
     optimizationMessage.value = ''
+    computeRouteGeneration += 1
     autoRouteScheduler.cancelScheduled()
 
     try {
@@ -188,6 +190,7 @@ export function usePlannerRouteOptimization(options: UsePlannerRouteOptimization
     optimizing.value = true
     suspendAutoRoute.value = true
     routeLoading.value = true
+    computeRouteGeneration += 1
     autoRouteScheduler.cancelScheduled()
     const routeRequestBeforeCommit = latestAutoRouteRequest
     let reorderInputVersion: number | null = null
@@ -253,20 +256,29 @@ export function usePlannerRouteOptimization(options: UsePlannerRouteOptimization
   }
 
   async function computeRoute() {
+    if (!isPlannerLifecycleActive()) return
+    const generation = ++computeRouteGeneration
     const coords = stops.value.map(s => s.coords).filter(Boolean) as [number, number][]
     if (coords.length < 2) {
       routeResult.value = null
       routeError.value = false
-      updateMap(null)
+      routeLoading.value = false
+      await updateMap(null)
       return
     }
     routeLoading.value = true
     routeError.value = false
-    const result = await fetchRoute(coords, transportMode.value)
+    let result: RouteResult | null = null
+    try {
+      result = await fetchRoute(coords, transportMode.value)
+    } catch {
+      result = null
+    }
+    if (!isPlannerLifecycleActive() || generation !== computeRouteGeneration) return
     routeResult.value = result
     routeError.value = resolvePlannerRouteSurface(coords.length, result).kind === 'fallback'
     routeLoading.value = false
-    updateMap(result)
+    await updateMap(result)
   }
 
   const autoRouteScheduler = createSuspendedRouteScheduler(
@@ -280,13 +292,14 @@ export function usePlannerRouteOptimization(options: UsePlannerRouteOptimization
 
   // Recalculate route when stop coords or transport mode change
   watch(
-    () => [stops.value.map(s => (s.coords ? s.coords.join(',') : 'x')).join('|'), transportMode.value],
+    () => `${transportMode.value}:${stops.value.map(s => (s.coords ? `${s.coords[0]},${s.coords[1]}` : 'x')).join('|')}`,
     scheduleRouteCalc,
   )
   watch(transportMode, invalidatePlannerSchedule)
 
-  if (getCurrentInstance()) {
-    onBeforeUnmount(() => {
+  if (getCurrentScope()) {
+    onScopeDispose(() => {
+      computeRouteGeneration += 1
       autoRouteScheduler.dispose()
     })
   }

@@ -19,15 +19,18 @@ Chạy:
   python agent/auto_learn.py --continuous       # chạy liên tục (mỗi 30 phút)
 """
 
+from datetime import datetime, timezone
+from functools import lru_cache
+import hashlib
 import json
 import logging
 import os
+from pathlib import Path
 import re
 import sys
+from threading import Lock
 import time
-import hashlib
-from datetime import datetime, timezone
-from pathlib import Path
+import unicodedata
 
 logger = logging.getLogger(__name__)
 from structured_logging import install_redaction_filter
@@ -55,8 +58,8 @@ from pinned_http import (
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 client = OpenAI(
-    api_key=os.environ["LLM_API_KEY"],
-    base_url=os.environ["LLM_BASE_URL"],
+    api_key=os.environ.get("LLM_API_KEY") or "not-configured",
+    base_url=os.environ.get("LLM_BASE_URL") or None,
     timeout=30,
 )
 
@@ -223,27 +226,38 @@ PLACE_KEYWORDS = {
     "bình đại": "p-binh-dai", "thạnh phú": "xa-thanh-phu",
 }
 PROVINCE_FALLBACK_KEYWORDS = {"vĩnh long", "bến tre", "trà vinh"}
+_SORTED_PLACE_KEYWORDS = tuple(
+    sorted(
+        PLACE_KEYWORDS.items(),
+        key=lambda item: (item[0] in PROVINCE_FALLBACK_KEYWORDS, -len(item[0])),
+    )
+)
+_COMBINING_MARKS_RE = re.compile(r"[\u0300-\u036f]")
+_SLUG_NON_ALNUM_RE = re.compile(r"[^a-z0-9]+")
+_NORM_NON_ALNUM_RE = re.compile(r"[^a-z0-9]")
+_SCRIPT_TAG_RE = re.compile(r"<script[^>]*>.*?</script>", re.S)
+_STYLE_TAG_RE = re.compile(r"<style[^>]*>.*?</style>", re.S)
+_HTML_TAG_RE = re.compile(r"<[^>]+>")
+_WHITESPACE_RE = re.compile(r"\s+")
+_FENCE_JSON_START_RE = re.compile(r"^```json\s*")
+_FENCE_JSON_END_RE = re.compile(r"\s*```$")
 
 
 def guess_place_id(text: str) -> str | None:
     if not text:
         return None
     t = text.lower()
-    for key, pid in sorted(
-        PLACE_KEYWORDS.items(),
-        key=lambda item: (item[0] in PROVINCE_FALLBACK_KEYWORDS, -len(item[0])),
-    ):
+    for key, pid in _SORTED_PLACE_KEYWORDS:
         if key in t:
             return pid
     return None
 
 
 def make_slug(name: str) -> str:
-    import unicodedata
     s = unicodedata.normalize("NFD", name.lower())
-    s = re.sub(r"[̀-ͯ]", "", s)
+    s = _COMBINING_MARKS_RE.sub("", s)
     s = s.replace("đ", "d").replace("Đ", "d")
-    s = re.sub(r"[^a-z0-9]+", "-", s)
+    s = _SLUG_NON_ALNUM_RE.sub("-", s)
     return s.strip("-")[:60]
 
 
@@ -253,10 +267,22 @@ def content_hash(text: str) -> str:
 
 # ── Load existing knowledge ──
 
+_KB_CACHE_LOCK = Lock()
+_KB_CACHE: tuple[int, int, dict] | None = None
+
+
 def load_knowledge() -> dict:
+    global _KB_CACHE
+    st = DATA_JSON.stat()
+    with _KB_CACHE_LOCK:
+        if _KB_CACHE is not None and _KB_CACHE[0] == st.st_mtime_ns and _KB_CACHE[1] == st.st_size:
+            return dict(_KB_CACHE[2])
     with open(DATA_JSON, encoding="utf-8") as f:
         data = json.load(f)
-    return {e["id"]: e for e in data.get("entities", [])}
+    kb = {e["id"]: e for e in data.get("entities", [])}
+    with _KB_CACHE_LOCK:
+        _KB_CACHE = (st.st_mtime_ns, st.st_size, kb)
+    return dict(kb)
 
 
 def existing_names() -> set:
@@ -289,10 +315,10 @@ def fetch_url(url: str) -> str | None:
         if response.status_code != 200:
             return None
         text = _decode_pinned_httpx_text(response)
-        text = re.sub(r"<script[^>]*>.*?</script>", "", text, flags=re.S)
-        text = re.sub(r"<style[^>]*>.*?</style>", "", text, flags=re.S)
-        text = re.sub(r"<[^>]+>", " ", text)
-        text = re.sub(r"\s+", " ", text).strip()
+        text = _SCRIPT_TAG_RE.sub("", text)
+        text = _STYLE_TAG_RE.sub("", text)
+        text = _HTML_TAG_RE.sub(" ", text)
+        text = _WHITESPACE_RE.sub(" ", text).strip()
         return text[:6000]
     except (BlockedAddressError, PeerMismatchError, RedirectPolicyError):
         return None
@@ -330,8 +356,8 @@ Chỉ trả JSON, không text khác."""
             temperature=0.8,
         )
         content = response.choices[0].message.content.strip()
-        content = re.sub(r"^```json\s*", "", content)
-        content = re.sub(r"\s*```$", "", content)
+        content = _FENCE_JSON_START_RE.sub("", content)
+        content = _FENCE_JSON_END_RE.sub("", content)
         return json.loads(content)
     except Exception as e:
         logger.warning("Gap analysis error: %s", e)
@@ -376,8 +402,8 @@ Chỉ trả JSON array, không text khác."""
             temperature=0.1,
         )
         content = response.choices[0].message.content.strip()
-        content = re.sub(r"^```json\s*", "", content)
-        content = re.sub(r"\s*```$", "", content)
+        content = _FENCE_JSON_START_RE.sub("", content)
+        content = _FENCE_JSON_END_RE.sub("", content)
         items = json.loads(content)
         if not isinstance(items, list):
             return []
@@ -449,6 +475,11 @@ LEGAL_PATTERNS = [
     r"luật\s", r"số\s+\d+", r"nq-", r"ct/tw", r"qđ-",
     r"ubnd", r"hđnd", r"vincom", r"plaza",
 ]
+_COMPILED_LEGAL_PATTERNS = tuple((pat, re.compile(pat)) for pat in LEGAL_PATTERNS)
+_VN_DIACRITICS_RE = re.compile(
+    r"[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]"
+)
+_NON_ALPHA_RE = re.compile(r"[^a-zA-ZÀ-ỹ]")
 
 # Từ tiếng Anh phổ biến → dấu hiệu tên English
 ENGLISH_MARKERS = [
@@ -460,7 +491,7 @@ ENGLISH_MARKERS = [
 
 
 def _has_vietnamese_diacritics(text: str) -> bool:
-    return bool(re.search(r"[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]", text.lower()))
+    return bool(_VN_DIACRITICS_RE.search(text.lower()))
 
 
 def _is_english_name(name: str) -> bool:
@@ -472,7 +503,7 @@ def _is_english_name(name: str) -> bool:
         if marker in name_lower:
             return not has_vn
     # Toàn bộ ASCII, >= 3 từ, không dấu → English
-    alpha_chars = re.sub(r"[^a-zA-ZÀ-ỹ]", "", name)
+    alpha_chars = _NON_ALPHA_RE.sub("", name)
     if not alpha_chars or len(alpha_chars) < 6:
         return False
     if has_vn:
@@ -480,14 +511,22 @@ def _is_english_name(name: str) -> bool:
     return len(name.split()) >= 3
 
 
+@lru_cache(maxsize=8192)
 def _normalize(s: str) -> str:
     """Chuẩn hóa text để so sánh tương đồng."""
-    import unicodedata
     s = unicodedata.normalize("NFD", s.lower())
-    s = re.sub(r"[̀-ͯ]", "", s)
+    s = _COMBINING_MARKS_RE.sub("", s)
     s = s.replace("đ", "d")
-    s = re.sub(r"[^a-z0-9]", "", s)
+    s = _NORM_NON_ALNUM_RE.sub("", s)
     return s
+
+
+def _is_substring_near_match(norm: str, enorm: str) -> bool:
+    if len(norm) <= 6 or len(enorm) <= 6:
+        return False
+    if norm not in enorm and enorm not in norm:
+        return False
+    return min(len(norm), len(enorm)) / max(len(norm), len(enorm)) > 0.6
 
 
 def is_near_duplicate(name: str, known_names: set) -> str | None:
@@ -499,16 +538,8 @@ def is_near_duplicate(name: str, known_names: set) -> str | None:
         enorm = _normalize(existing)
         if not enorm:
             continue
-        # Exact normalized match
-        if norm == enorm:
+        if norm == enorm or _is_substring_near_match(norm, enorm):
             return existing
-        # One contains the other (> 80% length)
-        if len(norm) > 6 and len(enorm) > 6:
-            if norm in enorm or enorm in norm:
-                shorter = min(len(norm), len(enorm))
-                longer = max(len(norm), len(enorm))
-                if shorter / longer > 0.6:
-                    return existing
     return None
 
 
@@ -534,9 +565,9 @@ def _reject_outside_vl(name_lower: str, location: str) -> tuple[bool, str] | Non
 
 def _reject_legal(name_lower: str) -> tuple[bool, str] | None:
     """Check 5: văn bản pháp luật / thương mại. Trả reject-tuple nếu loại, None nếu qua."""
-    for pat in LEGAL_PATTERNS:
-        if re.search(pat, name_lower):
-            return False, f"văn bản/thương mại ({pat.strip()})"
+    for raw_pat, compiled_pat in _COMPILED_LEGAL_PATTERNS:
+        if compiled_pat.search(name_lower):
+            return False, f"văn bản/thương mại ({raw_pat.strip()})"
     return None
 
 

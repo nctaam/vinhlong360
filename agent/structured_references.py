@@ -111,6 +111,26 @@ _REGISTERED_DELETE_ACTIONS = (
     DeleteActionPolicy("user_visits", "user_id", "cascade"),
 )
 
+_REGISTERED_DELETE_ACTION_MAP: dict[tuple[str, str], DeleteActionPolicy] = {
+    (policy.table, policy.column): policy
+    for policy in _REGISTERED_DELETE_ACTIONS
+}
+
+_CATALOG_ACTION_ALIASES: dict[str, str] = {
+    "C": "cascade",
+    "CASCADE": "cascade",
+    "N": "set_null",
+    "SET NULL": "set_null",
+    "A": "no_action",
+    "NO ACTION": "no_action",
+    "R": "restrict",
+    "RESTRICT": "restrict",
+    "D": "set_default",
+    "SET DEFAULT": "set_default",
+}
+
+_MENTION_TABLES = ("posts", "comments")
+
 
 def registered_delete_actions() -> tuple[DeleteActionPolicy, ...]:
     return _REGISTERED_DELETE_ACTIONS
@@ -124,19 +144,7 @@ def _catalog_value(row, index: int, key: str):
 
 def _normalize_catalog_action(action: str) -> str:
     normalized = str(action).strip().upper().replace("_", " ")
-    aliases = {
-        "C": "cascade",
-        "CASCADE": "cascade",
-        "N": "set_null",
-        "SET NULL": "set_null",
-        "A": "no_action",
-        "NO ACTION": "no_action",
-        "R": "restrict",
-        "RESTRICT": "restrict",
-        "D": "set_default",
-        "SET DEFAULT": "set_default",
-    }
-    return aliases.get(normalized, normalized.lower().replace(" ", "_"))
+    return _CATALOG_ACTION_ALIASES.get(normalized, normalized.lower().replace(" ", "_"))
 
 
 def validate_user_fk_actions(conn) -> tuple[DeleteActionPolicy, ...]:
@@ -177,10 +185,7 @@ def validate_user_fk_actions(conn) -> tuple[DeleteActionPolicy, ...]:
         )
         rows = cursor.fetchall()
 
-    registry = {
-        (policy.table, policy.column): policy
-        for policy in registered_delete_actions()
-    }
+    registry = _REGISTERED_DELETE_ACTION_MAP
     observed: list[DeleteActionPolicy] = []
     violations: list[str] = []
     for row in rows:
@@ -225,8 +230,15 @@ def _decode_mentions(value) -> list:
     return list(value) if isinstance(value, list) else []
 
 
-def _scrub_mentions(cursor, table: str, user_id: str) -> tuple[int, int]:
-    sentinel = json.dumps([{"type": "user", "id": user_id}], separators=(",", ":"))
+def _scrub_mentions(
+    cursor,
+    table: str,
+    user_id: str,
+    sentinel: str | None = None,
+) -> tuple[int, int]:
+    active_sentinel = sentinel or json.dumps(
+        [{"type": "user", "id": user_id}], separators=(",", ":")
+    )
     cursor.execute(
         f"""
         SELECT id, mentions FROM {table}
@@ -234,7 +246,7 @@ def _scrub_mentions(cursor, table: str, user_id: str) -> tuple[int, int]:
           AND mentions @> %s::jsonb
         FOR UPDATE
         """,
-        (sentinel,),
+        (active_sentinel,),
     )
     updated_rows = 0
     removed_mentions = 0
@@ -337,8 +349,13 @@ def scrub_user_references(conn, user_id, *, actor_policy) -> ScrubSummary:
             (canonical_user_id,),
         )
 
-        for table in ("posts", "comments"):
-            row_updates, removed = _scrub_mentions(cursor, table, canonical_user_id)
+        mention_sentinel = json.dumps(
+            [{"type": "user", "id": canonical_user_id}], separators=(",", ":")
+        )
+        for table in _MENTION_TABLES:
+            row_updates, removed = _scrub_mentions(
+                cursor, table, canonical_user_id, mention_sentinel
+            )
             updated_rows += row_updates
             mentions_removed += removed
 

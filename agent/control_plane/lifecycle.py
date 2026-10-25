@@ -77,6 +77,28 @@ _SECRET_EXCLUSIONS = (
     {"field": "pending_2fa.token_hash", "reason": "pending authentication bearer hash"},
 )
 
+_REGISTRY_PAYLOAD_CACHE: dict[str, tuple[tuple[int, int], dict[str, Any]]] = {}
+_MAX_REGISTRY_CACHE_PATHS = 8
+
+
+def _load_registry_payload(path: Path) -> dict[str, Any]:
+    target = Path(path)
+    key = str(target.resolve())
+    try:
+        stat = target.stat()
+        stamp = (stat.st_mtime_ns, stat.st_size)
+        cached = _REGISTRY_PAYLOAD_CACHE.get(key)
+        if cached is not None and cached[0] == stamp:
+            return cached[1]
+    except OSError:
+        stamp = None
+    payload = json.loads(target.read_text(encoding="utf-8"))
+    if isinstance(payload, dict) and stamp is not None:
+        if len(_REGISTRY_PAYLOAD_CACHE) >= _MAX_REGISTRY_CACHE_PATHS and key not in _REGISTRY_PAYLOAD_CACHE:
+            _REGISTRY_PAYLOAD_CACHE.pop(next(iter(_REGISTRY_PAYLOAD_CACHE)), None)
+        _REGISTRY_PAYLOAD_CACHE[key] = (stamp, payload)
+    return payload
+
 
 @dataclass(frozen=True)
 class SinkSpec:
@@ -109,13 +131,11 @@ class LifecycleRegistry:
         if len({spec.name for spec in values}) != len(values):
             raise ValueError("duplicate lifecycle sink")
         self.specs = values
-        self.names = frozenset(spec.name for spec in values)
+        self._by_name = {spec.name: spec for spec in values}
+        self.names = frozenset(self._by_name)
 
     def get(self, name: str) -> SinkSpec:
-        for spec in self.specs:
-            if spec.name == name:
-                return spec
-        raise KeyError(name)
+        return self._by_name[name]
 
     @property
     def policies(self) -> tuple[SinkSpec, ...]:
@@ -153,7 +173,7 @@ def list_lifecycle_sinks(path: Path | None = None) -> tuple[LifecycleSink, ...]:
     """Load the fail-closed cross-system lifecycle contract from config."""
     root = Path(__file__).resolve().parents[2]
     registry_path = path or root / "config" / "lifecycle-registry.json"
-    payload = json.loads(Path(registry_path).read_text(encoding="utf-8"))
+    payload = _load_registry_payload(Path(registry_path))
     raw = payload.get("lifecycle_sinks")
     if not isinstance(raw, list) or not raw:
         raise ValueError("lifecycle_sinks must be a non-empty list")
@@ -203,7 +223,7 @@ def validate_lifecycle_sinks(
 
 
 def load_lifecycle_registry(path: Path) -> LifecycleRegistry:
-    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    payload = _load_registry_payload(Path(path))
     if not isinstance(payload, dict) or payload.get("schema_version") != _VERSION:
         raise ValueError("unsupported lifecycle registry schema")
     raw = payload.get("sinks")
@@ -364,6 +384,10 @@ _TABLE_TIES = {
     "user_personalization_events": ("event_type", "id"),
     "personalization_legacy_purge_queue": ("user_id",),
 }
+_TABLE_HAS_ID: dict[str, bool] = {
+    table: "id" in {part.strip() for part in cols.split(",")}
+    for table, (_, _, cols) in _TABLES.items()
+}
 
 
 def _cursor_offset(cursor: Any, table: str) -> int:
@@ -428,7 +452,7 @@ def _table_filter(table: str, subject_id: str, cursor: Any, owner: str, order_co
     if isinstance(cursor, dict) and cursor.get("value") is not None:
         value = cursor["value"]
         tie_id = cursor.get("id")
-        has_id = "id" in {part.strip() for part in columns.split(",")}
+        has_id = _TABLE_HAS_ID.get(table, False)
         if tie_id and has_id:
             where += f" AND ({order_col} < {ph} OR ({order_col} = {ph} AND id < {ph}))"
             params.extend([value, value, tie_id])
@@ -442,7 +466,7 @@ def _table_filter(table: str, subject_id: str, cursor: Any, owner: str, order_co
 
 
 def _table_order(table: str, order_col: str, columns: str) -> str:
-    if "id" in {part.strip() for part in columns.split(",")}:
+    if _TABLE_HAS_ID.get(table, False):
         return f"{order_col} DESC, id DESC"
     ties = _TABLE_TIES.get(table, ())
     return ", ".join([f"{order_col} DESC", *[f"{col} DESC" for col in ties]])
@@ -558,8 +582,7 @@ def _digest_rows(payload: Any) -> str:
 def _table_export_entry(table: str, subject_id: str, decoded: Any, limit: int) -> tuple[list[dict[str, Any]], dict[str, Any], str, bool, str | None]:
     rows, next_cursor, truncated, error = _rows_for_table(table, subject_id, decoded, limit)
     digest = _digest_rows(rows)
-    columns = _TABLES[table][2]
-    has_id = "id" in {part.strip() for part in columns.split(",")}
+    has_id = _TABLE_HAS_ID.get(table, False)
     manifest = {
         "count": len(rows),
         "next_cursor": next_cursor,
@@ -647,15 +670,29 @@ _BROWSER_CLEAR_KEYS = (
     "vl360:journey-thread:v1",
 )
 _BROWSER_PROOFS: dict[str, dict[str, Any]] = {}
+_MAX_BROWSER_PROOFS = 1024
+_BROWSER_DB_READY_KEY: tuple[bool, str] | None = None
+
+
+def _store_browser_proof(issuance_id: str, proof: dict[str, Any]) -> None:
+    key = str(issuance_id)
+    if len(_BROWSER_PROOFS) >= _MAX_BROWSER_PROOFS and key not in _BROWSER_PROOFS:
+        _BROWSER_PROOFS.pop(next(iter(_BROWSER_PROOFS)), None)
+    _BROWSER_PROOFS[key] = dict(proof)
 
 
 def _browser_db_table() -> bool:
     """Create the durable browser-proof table on local/test databases."""
+    global _BROWSER_DB_READY_KEY
+    current_key = (bool(getattr(db, "_use_pg", False)), str(getattr(db, "db_path", "")))
+    if _BROWSER_DB_READY_KEY == current_key:
+        return True
     try:
         db.initialize()
         if getattr(db, "_use_pg", False):
             with db._conn(commit_on_success=False) as conn:
                 db._fetchone(conn, "SELECT 1 FROM browser_clear_instructions LIMIT 1", ())
+            _BROWSER_DB_READY_KEY = current_key
             return True
         with db._conn() as conn:
             db._execute(conn, """
@@ -666,6 +703,7 @@ def _browser_db_table() -> bool:
                     issued_at TEXT NOT NULL
                 )
             """, ())
+        _BROWSER_DB_READY_KEY = current_key
         return True
     except Exception:
         return False
@@ -675,7 +713,7 @@ def issue_browser_clear_instruction(subject_id: str) -> dict[str, Any]:
     token = _subject_hash(str(subject_id))
     issuance_id = uuid.uuid4().hex
     instruction = {"version": "v1", "action": "clear", "keys": list(_BROWSER_CLEAR_KEYS), "issued": True, "subject_hash": token, "issuance_id": issuance_id}
-    _BROWSER_PROOFS[issuance_id] = dict(instruction)
+    _store_browser_proof(issuance_id, instruction)
     if _browser_db_table():
         try:
             with db._conn() as conn:
@@ -699,7 +737,7 @@ def get_browser_clear_instruction(issuance_id: str) -> dict[str, Any] | None:
             value = db._row_to_dict(row).get("instruction_json")
             proof = json.loads(value) if isinstance(value, str) else value
             if isinstance(proof, dict):
-                _BROWSER_PROOFS[str(issuance_id)] = dict(proof)
+                _store_browser_proof(str(issuance_id), proof)
                 return dict(proof)
     except Exception:
         return None
@@ -741,9 +779,22 @@ def _erase_reports(owner: str) -> dict[str, Any]:
             else:
                 kept.append(line)
         if removed:
-            tmp = _INFO_REPORTS_FILE.with_suffix(".tmp")
-            tmp.write_text("\n".join(kept) + ("\n" if kept else ""), encoding="utf-8")
-            tmp.replace(_INFO_REPORTS_FILE)
+            import os
+            import tempfile
+
+            fd, tmp_name = tempfile.mkstemp(
+                dir=str(_INFO_REPORTS_FILE.parent),
+                prefix=f".{_INFO_REPORTS_FILE.name}.",
+                suffix=".tmp",
+            )
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as f:
+                    f.write("\n".join(kept) + ("\n" if kept else ""))
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(tmp_name, _INFO_REPORTS_FILE)
+            finally:
+                Path(tmp_name).unlink(missing_ok=True)
         return {"status": "deleted" if removed else "already_absent", "count": removed}
 
 
@@ -832,30 +883,30 @@ def _erase_postgres_extra(name: str, subject_id: str, *, dry_run: bool) -> dict[
         return {"status": "failed", "count": 0, "error_code": type(exc).__name__}
 
 
+def _erase_store_policy(policy: Any, subject: str, *, dry_run: bool) -> dict[str, Any]:
+    if not policy.subject_linked:
+        return {"status": "retained", "count": 0}
+    if dry_run:
+        return {"status": "already_absent", "count": 0, "dry_run": True}
+    try:
+        purge = policy.purge_owner(subject)
+        verify = policy.verify_owner_absent(subject)
+        if not verify.verified:
+            return {"status": "failed", "count": purge.removed_count, "error_code": verify.error_code or "VERIFY_FAILED"}
+        if purge.removed_count:
+            return {"status": "deleted", "count": purge.removed_count}
+        return {"status": "already_absent", "count": 0}
+    except Exception as exc:
+        return {"status": "failed", "count": 0, "error_code": type(exc).__name__}
+
+
 def erase_subject(subject_id: str, *, dry_run: bool = True) -> ErasureReport:
     from data_lifecycle import lifecycle_registry as store_registry
 
-    subject = f"user:{subject_id}" if not str(subject_id).startswith("user:") else str(subject_id)
-    outcomes: dict[str, dict[str, Any]] = {}
-    outcomes["reports"] = _erase_report_rows(subject, dry_run=dry_run)
+    subject = _canonical_owner(subject_id)
+    outcomes: dict[str, dict[str, Any]] = {"reports": _erase_report_rows(subject, dry_run=dry_run)}
     for policy in store_registry.policies:
-        if not policy.subject_linked:
-            outcomes[policy.name] = {"status": "retained", "count": 0}
-            continue
-        if dry_run:
-            outcomes[policy.name] = {"status": "already_absent", "count": 0, "dry_run": True}
-            continue
-        try:
-            purge = policy.purge_owner(subject)
-            verify = policy.verify_owner_absent(subject)
-            if not verify.verified:
-                outcomes[policy.name] = {"status": "failed", "count": purge.removed_count, "error_code": verify.error_code or "VERIFY_FAILED"}
-            elif purge.removed_count:
-                outcomes[policy.name] = {"status": "deleted", "count": purge.removed_count}
-            else:
-                outcomes[policy.name] = {"status": "already_absent", "count": 0}
-        except Exception as exc:
-            outcomes[policy.name] = {"status": "failed", "count": 0, "error_code": type(exc).__name__}
+        outcomes[policy.name] = _erase_store_policy(policy, subject, dry_run=dry_run)
     instruction = issue_browser_clear_instruction(subject_id) if not dry_run else None
     for name in ("reports-jsonl", "analytics-jsonl", "bot-memory", "object-store", "cdn"):
         outcomes[name] = _external_erase(name, subject, dry_run=dry_run)

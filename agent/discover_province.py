@@ -33,10 +33,12 @@ import logging
 import os
 import re
 import sys
+import threading
 import time
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -104,18 +106,30 @@ OUTSIDE = [
 # láng giềng, vd "Cầu Cần Thơ" phía bờ Bình Minh - Vĩnh Long).
 OUTSIDE_LOC = ["can tho"]
 
+_DIACRITIC_RE = re.compile(r"[\u0300-\u036f]")
+_SLUG_RE = re.compile(r"[^a-z0-9]+")
+_CODE_FENCE_RE = re.compile(r"^```(?:json)?|```$", re.MULTILINE)
+_JSON_ARRAY_RE = re.compile(r"\[.*\]", re.DOTALL)
+_CURSOR_LOCK = threading.Lock()
 
+
+@lru_cache(maxsize=2048)
 def _norm(s):
     s = unicodedata.normalize("NFD", (s or "").lower())
-    return re.sub(r"[̀-ͯ]", "", s).replace("đ", "d")
+    return _DIACRITIC_RE.sub("", s).replace("đ", "d")
 
 
 def _slug(name):
-    return re.sub(r"[^a-z0-9]+", "-", _norm(name)).strip("-")[:60]
+    return _SLUG_RE.sub("-", _norm(name)).strip("-")[:60]
+
+
+@lru_cache(maxsize=4)
+def _shared_client(api_key: str, base_url: str):
+    return OpenAI(api_key=api_key, base_url=base_url, timeout=30)
 
 
 def _client():
-    return OpenAI(api_key=LLM_KEY, base_url=LLM_URL, timeout=30)
+    return _shared_client(LLM_KEY, LLM_URL)
 
 
 def _district_regions():
@@ -152,8 +166,8 @@ def _build_stream_prompt(region, category, etype):
 
 def _parse_stream_items(text, region, etype):
     """Extract the JSON array from an LLM stream response (pure). Returns list of items."""
-    text = re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.MULTILINE).strip()
-    m = re.search(r"\[.*\]", text, re.DOTALL)
+    text = _CODE_FENCE_RE.sub("", text.strip()).strip()
+    m = _JSON_ARRAY_RE.search(text)
     if not m:
         return []
     try:
@@ -173,9 +187,11 @@ def _filter_stream_items(items, region, etype):
         loc = (it.get("location") or "").strip()
         if len(name) < 4:
             continue
-        if any(k in _norm(name + " " + loc) for k in OUTSIDE):
+        norm_loc = _norm(loc)
+        norm_both = f"{_norm(name)} {norm_loc}"
+        if any(k in norm_both for k in OUTSIDE):
             continue
-        if any(k in _norm(loc) for k in OUTSIDE_LOC):
+        if any(k in norm_loc for k in OUTSIDE_LOC):
             continue
         out.append({"name": name, "location": loc, "summary": (it.get("summary") or "").strip(),
                     "type": etype, "area": region["area"]})
@@ -205,10 +221,12 @@ def _place_for(area, location, places):
     Thà để placeId=None (chưa phân loại) còn hơn gán sai xã.
     """
     loc = _norm(location)
+    if not loc:
+        return None
     for p in places:
         if p.get("area") != area:
             continue
-        pn = _norm(p["name"]).replace("xa ", "").replace("phuong ", "")
+        pn = _norm(p.get("name", "")).replace("xa ", "").replace("phuong ", "")
         if pn and pn in loc:
             return p["id"]
     return None
@@ -231,18 +249,19 @@ def _dedup_candidates(found, existing_ids, data):
     # dedup within batch + vs KB (near-dup gate checks BOTH the KB and the
     # candidates already accepted this batch — fixes "Nhà xưa Cai Cường" vs
     # "Khu du lịch Nhà xưa Cai Cường" slipping through together)
-    seen, unique, accepted_pseudo = set(), [], []
+    seen, unique = set(), []
+    pool = list(data["entities"])
     for s in found:
         key = _norm(s["name"])
-        if key in seen or _slug(s["name"]) in existing_ids:
+        slug = _slug(s["name"])
+        if key in seen or slug in existing_ids:
             continue
-        if kb_curation.find_near_duplicate(s["name"], s["type"],
-                                           data["entities"] + accepted_pseudo):
+        if kb_curation.find_near_duplicate(s["name"], s["type"], pool):
             continue
         seen.add(key)
-        s["id"] = _slug(s["name"])
+        s["id"] = slug
         unique.append(s)
-        accepted_pseudo.append({"id": s["id"], "name": s["name"], "type": s["type"]})
+        pool.append({"id": slug, "name": s["name"], "type": s["type"]})
     return unique
 
 
@@ -260,12 +279,13 @@ def _geocode_candidates(unique):
 
 def _build_entity(s, places, model):
     """Build a provisional entity dict for one discovered candidate (pure)."""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     e = {"id": s["id"], "type": s["type"], "name": s["name"], "summary": s.get("summary", ""),
          "placeId": _place_for(s["area"], s.get("location", ""), places),
          "confidence": 0.45 if s.get("coords") else 0.35,
          "status": "provisional", "verified": False,
-         "learned_at": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-         "updatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+         "learned_at": today,
+         "updatedAt": today,
          "attributes": {}, "season": None, "images": [],
          "source": {"title": f"agent discovery ({model}) + OSM geocode", "method": "llm+nominatim"}}
     if s.get("coords"):
@@ -276,10 +296,13 @@ def _build_entity(s, places, model):
 def _persist_to_db(unique, data):
     """Write new entities to DB (source of truth for chat). data.json is a working copy."""
     # GĐ-audit (B1): ghi entity mới vào DB (nguồn sự thật cho chat); data.json là working copy.
+    if not unique:
+        return
     try:
         from database import db
+        by_id = {x["id"]: x for x in data["entities"] if isinstance(x, dict) and "id" in x}
         for s in unique:
-            ent = next((x for x in data["entities"] if x["id"] == s["id"]), None)
+            ent = by_id.get(s["id"])
             if ent:
                 db.upsert_entity(ent)  # upsert nhận alias "coords"->"coordinates"
     except Exception as exc:  # noqa: BLE001
@@ -335,7 +358,7 @@ def run_discovery(topics, regions, workers, model, apply, label="manual"):
         return {"error": "no valid topics", "topics": topics}
 
     data = load_json(DATA)
-    places = [e for e in data["entities"] if e["type"] == "place"]
+    places = [e for e in data["entities"] if e.get("type") == "place"]
     existing_ids = {e["id"] for e in data["entities"]}
 
     streams = [(r, cat, et) for r in regions for (cat, et) in cats]
@@ -364,19 +387,21 @@ _TOPIC_ORDER = ["tourism", "agri", "ocop"]
 
 def _next_topic():
     """Return the next topic in rotation (persisted cursor)."""
-    idx = 0
-    try:
-        if CURSOR_FILE.exists():
-            idx = json.loads(CURSOR_FILE.read_text(encoding="utf-8")).get("idx", 0)
-    except Exception as exc:
-        logger.debug("Failed to read topic cursor: %s", exc)
+    with _CURSOR_LOCK:
         idx = 0
-    topic = _TOPIC_ORDER[idx % len(_TOPIC_ORDER)]
-    try:
-        CURSOR_FILE.write_text(json.dumps({"idx": (idx + 1) % len(_TOPIC_ORDER)}), encoding="utf-8")
-    except Exception as exc:
-        logger.debug("Failed to write topic cursor: %s", exc)
-    return topic
+        try:
+            if CURSOR_FILE.exists():
+                idx = json.loads(CURSOR_FILE.read_text(encoding="utf-8")).get("idx", 0)
+        except Exception as exc:
+            logger.debug("Failed to read topic cursor: %s", exc)
+            idx = 0
+        topic = _TOPIC_ORDER[idx % len(_TOPIC_ORDER)]
+        try:
+            CURSOR_FILE.parent.mkdir(parents=True, exist_ok=True)
+            CURSOR_FILE.write_text(json.dumps({"idx": (idx + 1) % len(_TOPIC_ORDER)}), encoding="utf-8")
+        except Exception as exc:
+            logger.debug("Failed to write topic cursor: %s", exc)
+        return topic
 
 
 def run_next_rotation(workers=4, model=None, apply=True):

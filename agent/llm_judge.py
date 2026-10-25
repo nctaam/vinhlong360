@@ -18,16 +18,18 @@ Persistence: atomic write (.tmp roi rename).
 Thread-safe: moi state mutation qua threading.Lock.
 """
 
+from collections import defaultdict
+import copy
+from dataclasses import asdict, dataclass
+from datetime import datetime
+import heapq
 import json
 import logging
 import os
-import re
-import time
-from collections import defaultdict
-from dataclasses import asdict, dataclass
-from datetime import datetime
 from pathlib import Path
+import re
 from threading import Lock
+import time
 
 from dotenv import load_dotenv
 
@@ -55,9 +57,16 @@ _LLM_API_KEY = os.environ.get("LLM_API_KEY", "")
 _LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "")  # P1-3: KHÔNG hardcode tunnel URL chết
 _LLM_MODEL_DEFAULT = os.environ.get("LLM_MODEL_MINI", "cx/gpt-5.4-mini")
 
+_FENCE_START_RE = re.compile(r"^```(?:json)?\s*")
+_FENCE_END_RE = re.compile(r"\s*```$")
+_JSON_OBJECT_RE = re.compile(r"\{[^{}]+\}", re.DOTALL)
+
 # ---------------------------------------------------------------------------
 # Atomic write helper (delegates to versioned_json_store — the audited writer)
 # ---------------------------------------------------------------------------
+
+_JSON_CACHE_LOCK = Lock()
+_JSON_CACHE: dict[str, tuple[int, int, object]] = {}
 
 
 def _atomic_write(path: Path, data) -> None:
@@ -80,20 +89,54 @@ def _atomic_write(path: Path, data) -> None:
     """
     try:
         atomic_write_json(path, data)
+        try:
+            st = path.stat()
+            with _JSON_CACHE_LOCK:
+                _JSON_CACHE[str(path)] = (st.st_mtime_ns, st.st_size, copy.deepcopy(data))
+        except OSError:
+            with _JSON_CACHE_LOCK:
+                _JSON_CACHE.pop(str(path), None)
     except Exception as e:
         logger.error("Failed to write %s: %s", path, e)
 
 
 def _load_json(path: Path, default=None):
-    """Load JSON file, return *default* on any failure."""
+    """Load JSON file with (st_mtime_ns, st_size) caching, return *default* on any failure."""
     if default is None:
         default = []
+    key = str(path)
     try:
         if path.exists():
-            return json.loads(path.read_text(encoding="utf-8"))
+            st = path.stat()
+            with _JSON_CACHE_LOCK:
+                cached = _JSON_CACHE.get(key)
+                if cached and cached[0] == st.st_mtime_ns and cached[1] == st.st_size:
+                    return copy.deepcopy(cached[2])
+            parsed = json.loads(path.read_text(encoding="utf-8"))
+            with _JSON_CACHE_LOCK:
+                _JSON_CACHE[key] = (st.st_mtime_ns, st.st_size, copy.deepcopy(parsed))
+            return parsed
     except Exception as e:
         logger.warning("Failed to load %s: %s", path, e)
     return default
+
+
+def _extract_json_dict(raw: str) -> dict | None:
+    """Extract JSON dict from LLM response, tolerating markdown code fences."""
+    text = raw.strip()
+    if text.startswith("```"):
+        text = _FENCE_START_RE.sub("", text)
+        text = _FENCE_END_RE.sub("", text)
+    for candidate in (text, m.group() if (m := _JSON_OBJECT_RE.search(text)) else None):
+        if not candidate:
+            continue
+        try:
+            parsed = json.loads(candidate)
+            if isinstance(parsed, dict):
+                return parsed
+        except json.JSONDecodeError:
+            continue
+    return None
 
 
 # ============================================================================
@@ -316,17 +359,27 @@ class LLMJudge:
         self._fallback = RuleBasedFallback()
         self._bucket = _TokenBucket(max_tokens=10, interval_sec=60.0)
         self._lock = Lock()
+        self._client = None
+        self._client_config: tuple[str, str] | None = None
+        self._client_lock = Lock()
         self._cache: list[dict] = _load_json(EVALUATIONS_FILE, default=[])
 
     # -- OpenAI client (lazy init to avoid import error when key missing) -----
 
     def _get_client(self):
         from openai import OpenAI
-        return OpenAI(
-            api_key=os.environ.get("LLM_API_KEY", _LLM_API_KEY),
-            base_url=os.environ.get("LLM_BASE_URL", _LLM_BASE_URL),
-            timeout=20,  # P1-2: tránh treo nếu judge LLM chậm
-        )
+        api_key = os.environ.get("LLM_API_KEY", _LLM_API_KEY)
+        base_url = os.environ.get("LLM_BASE_URL", _LLM_BASE_URL)
+        cfg = (api_key, base_url)
+        with self._client_lock:
+            if self._client is None or self._client_config != cfg:
+                self._client = OpenAI(
+                    api_key=api_key,
+                    base_url=base_url,
+                    timeout=20,  # P1-2: tránh treo nếu judge LLM chậm
+                )
+                self._client_config = cfg
+            return self._client
 
     def _can_use_llm(self) -> bool:
         api_key = os.environ.get("LLM_API_KEY", _LLM_API_KEY)
@@ -375,36 +428,18 @@ class LLMJudge:
 
     def _parse_scores(self, raw: str) -> dict | None:
         """Extract JSON from LLM response, tolerating markdown fences."""
-        text = raw.strip()
-        # Strip markdown code fences if present
-        if text.startswith("```"):
-            text = re.sub(r"^```(?:json)?\s*", "", text)
-            text = re.sub(r"\s*```$", "", text)
-        try:
-            data = json.loads(text)
-        except json.JSONDecodeError:
-            # Try to find JSON object in the text
-            match = re.search(r"\{[^{}]+\}", text, re.DOTALL)
-            if match:
-                try:
-                    data = json.loads(match.group())
-                except json.JSONDecodeError:
-                    return None
-            else:
-                return None
+        data = _extract_json_dict(raw)
+        if data is None:
+            return None
 
         # Validate expected keys
-        expected = {c.name for c in self._criteria}
-        for key in expected:
-            if key not in data:
+        for c in self._criteria:
+            val = data.get(c.name)
+            if isinstance(val, bool) or not isinstance(val, (int, float)):
                 return None
-            val = data[key]
-            if isinstance(val, (int, float)):
-                data[key] = max(1, min(10, float(val)))
-            else:
-                return None
+            data[c.name] = max(1.0, min(10.0, float(val)))
         # feedback is optional in parse; fill empty if missing
-        if "feedback" not in data or not isinstance(data["feedback"], str):
+        if not isinstance(data.get("feedback"), str):
             data["feedback"] = ""
         return data
 
@@ -551,10 +586,11 @@ class JudgeAnalytics:
 
     # -- Daily average scores -------------------------------------------------
 
-    def get_quality_trend(self, days: int = 7) -> list[dict]:
+    def get_quality_trend(self, days: int = 7, evals: list[dict] | None = None) -> list[dict]:
         """Return daily average weighted scores for the last *days* days."""
         cutoff = time.time() - days * 86400
-        evals = self._get_evals()
+        if evals is None:
+            evals = self._get_evals()
 
         daily: dict[str, list[float]] = defaultdict(list)
         for e in evals:
@@ -576,12 +612,13 @@ class JudgeAnalytics:
 
     # -- Worst queries --------------------------------------------------------
 
-    def get_worst_queries(self, limit: int = 10) -> list[dict]:
+    def get_worst_queries(self, limit: int = 10, evals: list[dict] | None = None) -> list[dict]:
         """Return the lowest-scored queries for targeted improvement."""
-        evals = self._get_evals()
-        sorted_evals = sorted(evals, key=lambda e: e.get("weighted_score", 10))
+        if evals is None:
+            evals = self._get_evals()
+        worst = heapq.nsmallest(limit, evals, key=lambda e: e.get("weighted_score", 10))
         results = []
-        for e in sorted_evals[:limit]:
+        for e in worst:
             results.append({
                 "query": e.get("query", ""),
                 "reply_preview": e.get("reply_preview", ""),
@@ -594,9 +631,10 @@ class JudgeAnalytics:
 
     # -- Criteria breakdown ---------------------------------------------------
 
-    def get_criteria_breakdown(self) -> dict:
+    def get_criteria_breakdown(self, evals: list[dict] | None = None) -> dict:
         """Return average score per criterion across all evaluations."""
-        evals = self._get_evals()
+        if evals is None:
+            evals = self._get_evals()
         if not evals:
             return {}
 
@@ -619,12 +657,13 @@ class JudgeAnalytics:
 
     # -- Improvement suggestions from LLM feedback ----------------------------
 
-    def get_improvement_suggestions(self) -> list[str]:
+    def get_improvement_suggestions(self, evals: list[dict] | None = None) -> list[str]:
         """Extract unique improvement suggestions from LLM feedback.
 
         Groups similar feedback, returns most common patterns.
         """
-        evals = self._get_evals()
+        if evals is None:
+            evals = self._get_evals()
         feedback_counts: dict[str, int] = defaultdict(int)
         for e in evals:
             fb = e.get("feedback", "").strip()
@@ -635,8 +674,8 @@ class JudgeAnalytics:
                     feedback_counts[first_sentence] += 1
 
         # Sort by frequency and return top suggestions
-        sorted_fb = sorted(feedback_counts.items(), key=lambda x: -x[1])
-        return [fb for fb, _ in sorted_fb[:20]]
+        top_fb = heapq.nlargest(20, feedback_counts.items(), key=lambda x: x[1])
+        return [fb for fb, _ in top_fb]
 
 
 # ============================================================================
@@ -673,8 +712,8 @@ def get_judge_report() -> dict:
         "llm_judged": llm_count,
         "rule_based": rule_count,
         "avg_weighted_score": avg_score,
-        "quality_trend": judge_analytics.get_quality_trend(),
-        "worst_queries": judge_analytics.get_worst_queries(),
-        "criteria_breakdown": judge_analytics.get_criteria_breakdown(),
-        "improvement_suggestions": judge_analytics.get_improvement_suggestions(),
+        "quality_trend": judge_analytics.get_quality_trend(evals=cache),
+        "worst_queries": judge_analytics.get_worst_queries(evals=cache),
+        "criteria_breakdown": judge_analytics.get_criteria_breakdown(evals=cache),
+        "improvement_suggestions": judge_analytics.get_improvement_suggestions(evals=cache),
     }

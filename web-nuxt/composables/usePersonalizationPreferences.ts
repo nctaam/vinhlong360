@@ -1,3 +1,4 @@
+import { getCurrentScope, watch } from 'vue'
 import { apiFetch } from '~/utils/apiFetch'
 import type {
   GpsCoordinates,
@@ -51,43 +52,41 @@ function normalizeInterests(value: unknown): string[] | null {
   return values
 }
 
-function isSnapshot(value: unknown): value is PreferenceSnapshot {
-  if (!isRecord(value)) return false
+function parseSnapshot(value: unknown): PreferenceSnapshot | null {
+  if (!isRecord(value)) return null
   const revision = value.revision
-  return Number.isInteger(revision) && Number(revision) >= 0
-    && nullableText(value.region_id)
-    && nullableText(value.region_label)
-    && REGION_SCOPES.has(value.region_scope as PreferenceRegionScope)
-    && LOCATION_SOURCES.has(value.location_source as PreferenceLocationSource)
-    && LOCATION_ACCURACIES.has(value.location_accuracy as PreferenceLocationAccuracy)
-    && CONSENT_STATES.has(value.location_consent_state as PreferenceConsentState)
-    && typeof value.location_enabled === 'boolean'
-    && typeof value.personalization_enabled === 'boolean'
-    && normalizeInterests(value.explicit_interests) !== null
-    && nullableText(value.recommendation_reset_at)
-    && nullableText(value.consent_version)
-    && (value.location_reconfirm_required === undefined || typeof value.location_reconfirm_required === 'boolean')
-    && (value.derived_age_band === undefined || AGE_BANDS.has(value.derived_age_band as PreferenceAgeBand))
-}
-
-function normalizeSnapshot(value: unknown): PreferenceSnapshot {
-  if (!isSnapshot(value)) return emptyPreferenceSnapshot()
+  if (!Number.isInteger(revision) || Number(revision) < 0) return null
+  if (!nullableText(value.region_id) || !nullableText(value.region_label)) return null
+  if (!REGION_SCOPES.has(value.region_scope as PreferenceRegionScope)) return null
+  if (!LOCATION_SOURCES.has(value.location_source as PreferenceLocationSource)) return null
+  if (!LOCATION_ACCURACIES.has(value.location_accuracy as PreferenceLocationAccuracy)) return null
+  if (!CONSENT_STATES.has(value.location_consent_state as PreferenceConsentState)) return null
+  if (typeof value.location_enabled !== 'boolean' || typeof value.personalization_enabled !== 'boolean') return null
+  const explicitInterests = normalizeInterests(value.explicit_interests)
+  if (explicitInterests === null) return null
+  if (!nullableText(value.recommendation_reset_at) || !nullableText(value.consent_version)) return null
+  if (value.location_reconfirm_required !== undefined && typeof value.location_reconfirm_required !== 'boolean') return null
+  if (value.derived_age_band !== undefined && !AGE_BANDS.has(value.derived_age_band as PreferenceAgeBand)) return null
   return {
     region_id: value.region_id,
     region_label: value.region_label,
-    region_scope: value.region_scope,
-    location_source: value.location_source,
-    location_accuracy: value.location_accuracy,
-    location_consent_state: value.location_consent_state,
+    region_scope: value.region_scope as PreferenceRegionScope,
+    location_source: value.location_source as PreferenceLocationSource,
+    location_accuracy: value.location_accuracy as PreferenceLocationAccuracy,
+    location_consent_state: value.location_consent_state as PreferenceConsentState,
     location_enabled: value.location_enabled,
     personalization_enabled: value.personalization_enabled,
-    explicit_interests: normalizeInterests(value.explicit_interests) || [],
+    explicit_interests: explicitInterests,
     recommendation_reset_at: value.recommendation_reset_at,
     consent_version: value.consent_version,
     location_reconfirm_required: value.location_reconfirm_required === true,
-    revision: value.revision,
-    ...(value.derived_age_band ? { derived_age_band: value.derived_age_band } : {}),
+    revision: Number(revision),
+    ...(value.derived_age_band ? { derived_age_band: value.derived_age_band as PreferenceAgeBand } : {}),
   }
+}
+
+function normalizeSnapshot(value: unknown): PreferenceSnapshot {
+  return parseSnapshot(value) ?? emptyPreferenceSnapshot()
 }
 
 function normalizeResolution(value: unknown, source: Extract<PreferenceLocationSource, 'gps' | 'ip'>): LocationResolution {
@@ -120,19 +119,24 @@ function normalizeResolution(value: unknown, source: Extract<PreferenceLocationS
   }
 }
 
+function extractErrorData(error: unknown): Record<string, unknown> | null {
+  if (!isRecord(error)) return null
+  if (isRecord(error.data)) return error.data
+  if (isRecord(error.response) && isRecord(error.response._data)) return error.response._data
+  return null
+}
+
 function errorMessage(error: unknown, fallback: string): string {
-  if (isRecord(error)) {
-    const data = isRecord(error.data) ? error.data : isRecord(error.response) && isRecord(error.response._data) ? error.response._data : null
-    if (data && typeof data.detail === 'string') return data.detail
-    if (data && typeof data.message === 'string') return data.message
+  const data = extractErrorData(error)
+  if (data) {
+    if (typeof data.detail === 'string') return data.detail
+    if (typeof data.message === 'string') return data.message
   }
   return fallback
 }
 
 function conflictSnapshot(error: unknown): PreferenceSnapshot | null {
-  if (!isRecord(error)) return null
-  const data = isRecord(error.data) ? error.data : isRecord(error.response) && isRecord(error.response._data) ? error.response._data : null
-  return isSnapshot(data) ? normalizeSnapshot(data) : null
+  return parseSnapshot(extractErrorData(error))
 }
 
 function errorStatus(error: unknown): number | null {
@@ -249,7 +253,9 @@ export function usePersonalizationPreferences() {
   }
 
   syncOwner()
-  watch(() => [isLoggedIn.value, user.value?.id] as const, syncOwner)
+  if (getCurrentScope()) {
+    watch(currentOwner, syncOwner)
+  }
 
   async function refresh(): Promise<boolean> {
     const owner = syncOwner()

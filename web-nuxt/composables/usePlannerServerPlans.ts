@@ -1,4 +1,4 @@
-import { nextTick, type Ref, type ComputedRef } from 'vue'
+import { getCurrentScope, nextTick, onScopeDispose, type Ref, type ComputedRef } from 'vue'
 import { serializePlanStops, type PlannerScheduleMetadata } from '~/composables/useItineraryOptimization'
 import { formatDistance, formatDuration, type RouteResult } from '~/composables/useRouting'
 import {
@@ -82,6 +82,15 @@ export function usePlannerServerPlans(options: UsePlannerServerPlansOptions) {
 
   let savePulseTimer: ReturnType<typeof setTimeout> | null = null
 
+  if (getCurrentScope()) {
+    onScopeDispose(() => {
+      if (savePulseTimer) {
+        clearTimeout(savePulseTimer)
+        savePulseTimer = null
+      }
+    })
+  }
+
   function replaceSavedServerPlan(snapshot: PlanSnapshot) {
     const index = savedPlans.value.findIndex(plan => plan.id === snapshot.id)
     if (index < 0) return
@@ -108,7 +117,10 @@ export function usePlannerServerPlans(options: UsePlannerServerPlansOptions) {
   function finishSaveFeedback(title: string) {
     savePulse.value = true
     if (savePulseTimer) clearTimeout(savePulseTimer)
-    savePulseTimer = setTimeout(() => { savePulse.value = false }, 220)
+    savePulseTimer = setTimeout(() => {
+      savePulseTimer = null
+      savePulse.value = false
+    }, 220)
     showToast(`Đã lưu "${title}"${isLoggedIn.value ? ' (đồng bộ tài khoản)' : ''}`, 'success')
   }
 
@@ -232,10 +244,14 @@ export function usePlannerServerPlans(options: UsePlannerServerPlansOptions) {
   }
 
   async function loadPlan(idx: number) {
-    if (saving.value) return
+    if (saving.value || planBusy.value !== -1) return
+    const targetPlan = savedPlans.value[idx]
+    if (!targetPlan) return
     if (stops.value.length && !await confirmDialog('Thay thế lịch trình đang tạo bằng bản đã lưu?', { confirmText: 'Thay thế' })) return
-    if (saving.value) return
-    const plan = savedPlans.value[idx]
+    if (saving.value || planBusy.value !== -1) return
+    const plan = targetPlan.id
+      ? savedPlans.value.find(item => item.id === targetPlan.id)
+      : (savedPlans.value.includes(targetPlan) ? targetPlan : savedPlans.value[idx])
     if (!plan) return
     const persistenceWasReady = isDraftPersistenceReady()
     setDraftPersistenceReady(false)
@@ -262,21 +278,34 @@ export function usePlannerServerPlans(options: UsePlannerServerPlansOptions) {
     persistPlannerDraft()
     void Promise.all(stops.value
       .filter(stop => !stop.sourceFreshness)
-      .map(stop => refreshPlannerStopEvidence(stop.id)))
+      .map(stop => refreshPlannerStopEvidence(stop.id))).catch(() => {})
   }
 
   async function deletePlan(idx: number) {
-    if (saving.value) return
+    if (saving.value || planBusy.value !== -1) return
     const plan = savedPlans.value[idx]
-    if (!await confirmDialog(`Xóa lịch trình "${plan?.title || 'chưa đặt tên'}"?`, { danger: true, confirmText: 'Xóa' })) return
-    if (saving.value) return
-    planBusy.value = idx
+    if (!plan) return
+    if (!await confirmDialog(`Xóa lịch trình "${plan.title || 'chưa đặt tên'}"?`, { danger: true, confirmText: 'Xóa' })) return
+    if (saving.value || planBusy.value !== -1) return
+    const currentIdx = plan.id
+      ? savedPlans.value.findIndex(item => item.id === plan.id)
+      : savedPlans.value.indexOf(plan)
+    const targetIdx = currentIdx >= 0 ? currentIdx : idx
+    if (!savedPlans.value[targetIdx]) return
+    planBusy.value = targetIdx
     try {
-      if (plan?.id && isLoggedIn.value) {
+      if (plan.id && isLoggedIn.value) {
         await $fetch(`/api/my-plans/${plan.id}`, { method: 'DELETE', headers: authHeaders() })
       }
-      savedPlans.value.splice(idx, 1)
-      if (plan?.id === activeServerPlanId.value) {
+      const removeIdx = plan.id
+        ? savedPlans.value.findIndex(item => item.id === plan.id)
+        : savedPlans.value.indexOf(plan)
+      if (removeIdx >= 0) {
+        savedPlans.value.splice(removeIdx, 1)
+      } else if (savedPlans.value[targetIdx] === plan) {
+        savedPlans.value.splice(targetIdx, 1)
+      }
+      if (plan.id && plan.id === activeServerPlanId.value) {
         draftSource.value = 'local'
         clearActiveServerPlan()
         persistPlannerDraft()
@@ -297,7 +326,7 @@ export function usePlannerServerPlans(options: UsePlannerServerPlansOptions) {
   }
 
   async function publishPlan(idx: number) {
-    if (saving.value) return
+    if (saving.value || planBusy.value !== -1) return
     const plan = savedPlans.value[idx]
     if (!plan?.id) return
     if (publishBlockedByConflict(plan)) return
@@ -356,6 +385,7 @@ export function usePlannerServerPlans(options: UsePlannerServerPlansOptions) {
   }
 
   function sharePlan(idx: number) {
+    if (!import.meta.client || typeof navigator === 'undefined') return
     const plan = savedPlans.value[idx]
     if (!plan) return
     const legs = routeResult.value?.legs || []

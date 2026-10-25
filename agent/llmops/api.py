@@ -95,11 +95,15 @@ _SCOPED_PATHS = {"/system/learning/run", "/system/client-errors", "/vectors/buil
 
 _MIN_ERROR_EPOCH = 946684800  # 2000-01-01T00:00:00Z
 _MAX_ERROR_EPOCH = 4102444800  # 2100-01-01T00:00:00Z
+_NINE_DIGIT_RE = re.compile(r"\d{9}")
+_TEN_DIGIT_ZERO_RE = re.compile(r"0\d{9}")
+_NUMERIC_STR_RE = re.compile(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?")
+_HEX64_RE = re.compile(r"[0-9a-f]{64}")
 
 
 def _looks_like_phone_numeric(candidate: str) -> bool:
     """Reject only strongly phone-shaped 9-digit strings, not ordinary epochs."""
-    if not re.fullmatch(r"\d{9}", candidate):
+    if not _NINE_DIGIT_RE.fullmatch(candidate):
         return False
     if candidate.startswith("0"):
         return True
@@ -122,9 +126,9 @@ def _bounded_error_epoch(value: int | float | str) -> int | float | str:
 
 
 def _string_error_timestamp(candidate: str) -> int | float | str:
-    if re.fullmatch(r"0\d{9}", candidate) or _looks_like_phone_numeric(candidate):
+    if _TEN_DIGIT_ZERO_RE.fullmatch(candidate) or _looks_like_phone_numeric(candidate):
         return "unknown"
-    if re.fullmatch(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?", candidate):
+    if _NUMERIC_STR_RE.fullmatch(candidate):
         try:
             numeric = float(candidate)
         except (OverflowError, ValueError):
@@ -288,7 +292,7 @@ async def system_errors(request: Request, limit: int = Query(20, ge=1, le=200)):
         endpoint = safe_error_endpoint(row.get("endpoint", "unknown"))
         error_code = safe_error_code(row.get("error_code", "runtime_error"))
         digest = row.get("error_digest")
-        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+        if not isinstance(digest, str) or not _HEX64_RE.fullmatch(digest):
             # Legacy in-memory rows may still carry raw fields.  Derive only a
             # digest and deliberately omit those fields from the response.
             material = f"{row.get('error', '')!s}\n{row.get('details', '')!s}"
@@ -338,7 +342,11 @@ async def trigger_learning(request: Request):
     try:
         from self_evolve import guarded_evolve
         from learn_loop import run_full_cycle
-        summary = guarded_evolve("learning-loop(manual)", lambda: run_full_cycle(dry_run=False))
+        summary = await asyncio.to_thread(
+            guarded_evolve,
+            "learning-loop(manual)",
+            lambda: run_full_cycle(dry_run=False),
+        )
         return {"status": "completed", "decision": summary["decision"],
                 "reason": summary["reason"], "before": summary["before"], "after": summary["after"]}
     except Exception as e:
@@ -346,10 +354,7 @@ async def trigger_learning(request: Request):
         return _error_response(500, "Internal server error")
 
 
-@router.get("/system/self-evolution", tags=["System"])
-async def system_self_evolution(request: Request):
-    """Trạng thái cơ chế tự tiến hoá. Admin-only."""
-    await _require_admin_once(request)
+def _collect_self_evolution_status() -> dict:
     out = {}
     try:
         import self_evolve
@@ -382,6 +387,13 @@ async def system_self_evolution(request: Request):
         logger.warning("geocode stats error: %s", e)
         out["geocode"] = {"error": "unavailable"}
     return out
+
+
+@router.get("/system/self-evolution", tags=["System"])
+async def system_self_evolution(request: Request):
+    """Trạng thái cơ chế tự tiến hoá. Admin-only."""
+    await _require_admin_once(request)
+    return await asyncio.to_thread(_collect_self_evolution_status)
 
 
 @router.get("/system/memory")
@@ -438,7 +450,7 @@ async def list_checkpoints(session_id: str, request: Request):
     await _require_admin_once(request)
     if not HAS_CHECKPOINTS:
         return {"available": False}
-    return {"checkpoints": checkpoint_manager.list_checkpoints(session_id)}
+    return {"checkpoints": await asyncio.to_thread(checkpoint_manager.list_checkpoints, session_id)}
 
 
 @router.post("/checkpoints", tags=["System"])
@@ -447,7 +459,8 @@ async def save_checkpoint(req: CheckpointSaveRequest, request: Request):
     await _require_admin_once(request)
     if not HAS_CHECKPOINTS:
         return _error_response(501, "Checkpoints not available")
-    cp_id = checkpoint_manager.save_checkpoint(
+    cp_id = await asyncio.to_thread(
+        checkpoint_manager.save_checkpoint,
         session_id=req.session_id,
         messages=req.messages,
         tools_used=req.tools_used,
@@ -463,7 +476,7 @@ async def resume_checkpoint(checkpoint_id: str, request: Request):
     await _require_admin_once(request)
     if not HAS_CHECKPOINTS:
         return _error_response(501, "Checkpoints not available")
-    result = checkpoint_manager.resume_from(checkpoint_id)
+    result = await asyncio.to_thread(checkpoint_manager.resume_from, checkpoint_id)
     if result is None:
         return _error_response(404, "Checkpoint not found")
     messages, agent_state = result
@@ -487,7 +500,8 @@ async def system_client_errors(request: Request, limit: int = Query(50, ge=1, le
     limit = max(1, min(limit, 200))
     rows = logger.recent(limit * 4, level="error")
     client_rows = [r for r in rows if r.get("source") == "client"]
-    return {"errors": client_rows[-limit:], "count": len(client_rows[-limit:])}
+    tail = client_rows[-limit:]
+    return {"errors": tail, "count": len(tail)}
 
 
 @router.post("/vectors/build")
@@ -664,7 +678,7 @@ async def eval_latest(request: Request):
     await _require_admin_once(request)
     if not HAS_EVAL:
         return {"available": False}
-    report = get_latest_report()
+    report = await asyncio.to_thread(get_latest_report)
     return {"available": True, "report": report}
 
 
@@ -673,7 +687,7 @@ async def eval_history(request: Request, limit: int = Query(10, ge=1, le=100)):
     await _require_admin_once(request)
     if not HAS_EVAL:
         return {"available": False}
-    return {"available": True, "reports": get_report_history(limit)}
+    return {"available": True, "reports": await asyncio.to_thread(get_report_history, limit)}
 
 
 @router.get("/system/optimizer", tags=["Level6"])
@@ -698,10 +712,10 @@ async def semantic_cache_invalidate(req: SemanticCacheInvalidateRequest, request
     if not HAS_SEMANTIC_CACHE:
         raise HTTPException(503, detail="Semantic cache not available")
     if req.entity_id:
-        multi_tier_cache.invalidate_entity(req.entity_id)
+        await asyncio.to_thread(multi_tier_cache.invalidate_entity, req.entity_id)
         return {"success": True, "invalidated": f"entity:{req.entity_id}"}
     elif req.query:
-        multi_tier_cache.invalidate_all_namespaces(req.query)
+        await asyncio.to_thread(multi_tier_cache.invalidate_all_namespaces, req.query)
         return {"success": True, "invalidated": f"query:{req.query[:50]}"}
     raise HTTPException(400, detail="Provide entity_id or query")
 
@@ -719,7 +733,7 @@ async def judge_evaluate(req: JudgeEvaluateRequest, request: Request):
     await _require_admin_once(request)
     if not HAS_LLM_JUDGE:
         raise HTTPException(503, detail="LLM Judge not available")
-    result = judge(req.query, req.reply)
+    result = await asyncio.to_thread(judge, req.query, req.reply)
     return result
 
 
@@ -738,7 +752,8 @@ async def dynamic_agents_create(req: DynamicAgentCreateRequest, request: Request
     await _require_admin_once(request, "ops.deploy")
     if not HAS_DYNAMIC_AGENTS:
         raise HTTPException(503, detail="Dynamic agents not available")
-    spec = agent_factory.create_agent(
+    spec = await asyncio.to_thread(
+        agent_factory.create_agent,
         name=req.name,
         description=req.description,
         trigger_patterns=req.trigger_patterns,
@@ -839,7 +854,7 @@ async def image_recognize_endpoint(request: Request):
             return _error_response(413, "Image too large (max 10MB)")
         filename = getattr(file, "filename", "image.jpg")
         ct = getattr(file, "content_type", "image/jpeg")
-        result = process_upload(file_bytes, filename, ct)
+        result = await asyncio.to_thread(process_upload, file_bytes, filename, ct)
         return result
     else:
         body = await request.json()
@@ -849,6 +864,7 @@ async def image_recognize_endpoint(request: Request):
         # Limit base64 image size to ~10MB (13.3M base64 chars)
         if len(image_b64) > 13_400_000:
             return _error_response(413, "Image too large (max 10MB)")
-        knowledge._ensure()
-        result = recognize_image(image_b64, knowledge._entities)
-        return result
+        def _recognize():
+            knowledge._ensure()
+            return recognize_image(image_b64, knowledge._entities)
+        return await asyncio.to_thread(_recognize)

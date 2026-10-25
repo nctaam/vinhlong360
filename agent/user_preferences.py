@@ -114,6 +114,7 @@ _PUBLIC_SNAPSHOT_FIELDS = (
     "revision",
 )
 _PERSISTED_FIELDS = (*_PUBLIC_SNAPSHOT_FIELDS, "location_provenance_version")
+_PREFERENCE_COLUMNS_SQL = ", ".join(_PERSISTED_FIELDS)
 _PATCH_FIELDS = frozenset(
     field
     for field in _PUBLIC_SNAPSHOT_FIELDS
@@ -743,16 +744,10 @@ def quarantine_location_snapshot(
     return current
 
 
-def merge_preference_patch(
-    current: Mapping[str, Any], patch: Mapping[str, Any], expected_revision: int
-) -> PersistedPreferenceSnapshot:
-    expected = _revision_value(expected_revision)
-    current_snapshot = _snapshot_from_mapping(current)
-    if current_snapshot["revision"] != expected:
-        raise PreferenceRevisionConflict(expected, current_snapshot["revision"])
-
-    normalized = normalize_preference_patch(patch)
-    normalized.pop("revision", None)
+def _apply_region_precedence(
+    current_snapshot: Mapping[str, Any],
+    normalized: PreferencePatch,
+) -> None:
     patch_source = normalized.get("location_source", current_snapshot["location_source"])
     current_source = current_snapshot["location_source"]
     region_change = bool(_REGION_FIELDS.intersection(normalized))
@@ -782,6 +777,19 @@ def merge_preference_patch(
     elif region_change and (resolver_disabled or lower_quality):
         for field in _REGION_FIELDS:
             normalized.pop(field, None)
+
+
+def merge_preference_patch(
+    current: Mapping[str, Any], patch: Mapping[str, Any], expected_revision: int
+) -> PersistedPreferenceSnapshot:
+    expected = _revision_value(expected_revision)
+    current_snapshot = _snapshot_from_mapping(current)
+    if current_snapshot["revision"] != expected:
+        raise PreferenceRevisionConflict(expected, current_snapshot["revision"])
+
+    normalized = normalize_preference_patch(patch)
+    normalized.pop("revision", None)
+    _apply_region_precedence(current_snapshot, normalized)
 
     merged = dict(current_snapshot)
     merged.update(normalized)
@@ -828,7 +836,7 @@ def _user_param() -> str:
 
 
 def _preference_columns() -> str:
-    return ", ".join(_PERSISTED_FIELDS)
+    return _PREFERENCE_COLUMNS_SQL
 
 
 def _select_preferences(conn, user_id: str, *, for_update: bool = False):
@@ -1118,28 +1126,36 @@ def patch_preferences_with_consents(
 ) -> PreferenceSnapshot:
     owner = _user_id(user_id)
     expected = _revision_value(expected_revision)
+    normalized_patch = normalize_preference_patch(patch) if patch else patch
+    needs_consent_check = (
+        "location_consent_state" in normalized_patch
+        or "personalization_enabled" in normalized_patch
+        or confirmed_location is not None
+    )
+    fallback_version = _consent_policy_version() if needs_consent_check else None
     with db._conn() as conn:
         current, snapshot = _patch_preferences_in_connection(
             conn,
             owner,
-            patch,
+            normalized_patch,
             expected,
-            consent_version_fallback=_consent_policy_version(),
+            consent_version_fallback=fallback_version,
             confirmed_location=confirmed_location,
         )
-        for consent_type, state in _requested_consent_changes(
-            _public_snapshot(current),
-            _public_snapshot(snapshot),
-            normalize_preference_patch(patch),
-            confirmed_location=confirmed_location,
-        ):
-            _insert_preference_consent(
-                conn,
-                owner,
-                consent_type,
-                state,
-                snapshot["consent_version"],
-            )
+        if needs_consent_check:
+            for consent_type, state in _requested_consent_changes(
+                _public_snapshot(current),
+                _public_snapshot(snapshot),
+                normalized_patch,
+                confirmed_location=confirmed_location,
+            ):
+                _insert_preference_consent(
+                    conn,
+                    owner,
+                    consent_type,
+                    state,
+                    snapshot["consent_version"],
+                )
     return _public_snapshot(snapshot)
 
 

@@ -31,11 +31,18 @@ QUEUE_FILE = "review_queue.json"
 APPLY_HISTORY_FILE = "apply_history.jsonl"
 DECISION_HISTORY_FILE = "review_decisions.jsonl"
 
+_DATA_FILE_CACHE: dict[str, tuple[tuple[int, int], dict[str, Any]]] = {}
+_QUEUE_FILE_CACHE: dict[str, tuple[tuple[int, int], dict[str, Any]]] = {}
+_JSONL_HISTORY_CACHE: dict[str, tuple[tuple[int, int], list[dict[str, Any]]]] = {}
+_MAX_FILE_CACHE_ENTRIES = 16
+
+
 def is_valid_url(value: Any) -> bool:
     if not isinstance(value, str) or not value.strip():
         return False
     parsed = urlparse(value.strip())
     return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+
 
 def parse_coordinates(value: Any) -> list[float] | None:
     if isinstance(value, str):
@@ -58,20 +65,37 @@ def parse_coordinates(value: Any) -> list[float] | None:
         return [lng, lat]
     return None
 
+
+def _json_clone(value: Any) -> Any:
+    return json.loads(json.dumps(value, ensure_ascii=False))
+
+
+def _canonical_value(value: Any) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
 def load_data(path: Path | None = None) -> dict[str, Any]:
     path = path or DATA_PATH
+    key = str(path.resolve())
+    try:
+        stat = path.stat()
+        stamp = (stat.st_mtime_ns, stat.st_size)
+        cached = _DATA_FILE_CACHE.get(key)
+        if cached is not None and cached[0] == stamp:
+            return _json_clone(cached[1])
+    except OSError:
+        stamp = None
     with path.open("r", encoding="utf-8-sig") as f:
         data = json.load(f)
     data.setdefault("entities", [])
     data.setdefault("relationships", [])
     data.setdefault("itineraries", [])
+    if stamp is not None:
+        if len(_DATA_FILE_CACHE) >= _MAX_FILE_CACHE_ENTRIES and key not in _DATA_FILE_CACHE:
+            _DATA_FILE_CACHE.pop(next(iter(_DATA_FILE_CACHE)), None)
+        _DATA_FILE_CACHE[key] = (stamp, _json_clone(data))
     return data
 
-def _json_clone(value: Any) -> Any:
-    return json.loads(json.dumps(value, ensure_ascii=False))
-
-def _canonical_value(value: Any) -> str:
-    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 def _is_external_url(url: Any) -> bool:
     """Valid http(s) URL that is NOT our own site (self-citation is not a source)."""
@@ -94,6 +118,7 @@ def source_info(entity: dict[str, Any]) -> dict[str, Any]:
             "url": str(url) if _is_external_url(url) else None,
         }
     return {"title": "", "url": None}
+
 
 def entity_quality(entity: dict[str, Any]) -> dict[str, Any]:
     src = source_info(entity)
@@ -118,6 +143,7 @@ def entity_quality(entity: dict[str, Any]) -> dict[str, Any]:
         "score": score,
     }
 
+
 def summarize_data(data: dict[str, Any] | None = None) -> dict[str, Any]:
     data = data or load_data()
     entities = [e for e in data.get("entities", []) if isinstance(e, dict)]
@@ -134,6 +160,7 @@ def summarize_data(data: dict[str, Any] | None = None) -> dict[str, Any]:
         "entity_types": dict(Counter(str(e.get("type")) for e in entities).most_common()),
     }
 
+
 def candidate_id(record: dict[str, Any]) -> str:
     payload = json.dumps({
         "entity_id": record.get("entity_id"),
@@ -143,6 +170,7 @@ def candidate_id(record: dict[str, Any]) -> str:
     }, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha1(payload.encode("utf-8")).hexdigest()[:16]
 
+
 def merge_candidate_outputs(output_dir: Path = BURST_DIR) -> dict[str, Any]:
     import gpt55_quality_burst as burst
 
@@ -151,6 +179,7 @@ def merge_candidate_outputs(output_dir: Path = BURST_DIR) -> dict[str, Any]:
     usage_path = output_dir / burst.LLM_USAGE_FILE
     llm_stats = json.loads(usage_path.read_text(encoding="utf-8-sig")) if usage_path.exists() else None
     return burst.merge_outputs(output_dir, manifest=manifest, llm_stats=llm_stats)
+
 
 def _queue_cache_meta(output_dir: Path = BURST_DIR) -> dict[str, Any]:
     queue_path = output_dir / QUEUE_FILE
@@ -164,18 +193,48 @@ def _queue_cache_meta(output_dir: Path = BURST_DIR) -> dict[str, Any]:
         "modified_at": datetime.fromtimestamp(stat.st_mtime).isoformat(timespec="seconds"),
     }
 
-def load_candidate_queue(output_dir: Path = BURST_DIR, *, refresh: bool = False) -> dict[str, Any]:
-    queue_path = output_dir / QUEUE_FILE
-    if refresh or not queue_path.exists():
-        queue = merge_candidate_outputs(output_dir)
-    else:
-        queue = json.loads(queue_path.read_text(encoding="utf-8-sig"))
+
+def _file_stamp(path: Path) -> tuple[int, int] | None:
+    try:
+        stat = path.stat()
+        return (stat.st_mtime_ns, stat.st_size)
+    except OSError:
+        return None
+
+
+def _populate_queue_defaults(queue: dict[str, Any], output_dir: Path) -> None:
     for bucket in ("auto_apply", "needs_review", "reject"):
         for record in queue.get(bucket, []):
             record.setdefault("candidate_id", candidate_id(record))
             record.setdefault("kind", FIELD_KIND.get(str(record.get("field")), str(record.get("field") or "unknown")))
     queue.setdefault("cache", _queue_cache_meta(output_dir))
+
+
+def _store_queue_cache(key: str, stamp: tuple[int, int] | None, queue: dict[str, Any]) -> None:
+    if stamp is None:
+        return
+    if len(_QUEUE_FILE_CACHE) >= _MAX_FILE_CACHE_ENTRIES and key not in _QUEUE_FILE_CACHE:
+        _QUEUE_FILE_CACHE.pop(next(iter(_QUEUE_FILE_CACHE)), None)
+    _QUEUE_FILE_CACHE[key] = (stamp, _json_clone(queue))
+
+
+def load_candidate_queue(output_dir: Path = BURST_DIR, *, refresh: bool = False) -> dict[str, Any]:
+    queue_path = output_dir / QUEUE_FILE
+    key = str(queue_path.resolve())
+    if refresh or not queue_path.exists():
+        _QUEUE_FILE_CACHE.pop(key, None)
+        queue = merge_candidate_outputs(output_dir)
+        stamp = _file_stamp(queue_path) if queue_path.exists() else None
+    else:
+        stamp = _file_stamp(queue_path)
+        cached = _QUEUE_FILE_CACHE.get(key)
+        if stamp is not None and cached is not None and cached[0] == stamp:
+            return _json_clone(cached[1])
+        queue = json.loads(queue_path.read_text(encoding="utf-8-sig"))
+    _populate_queue_defaults(queue, output_dir)
+    _store_queue_cache(key, stamp, queue)
     return queue
+
 
 def filter_candidates(queue: dict[str, Any], *, kind: str | None = None, bucket: str | None = None, limit: int = 100, offset: int = 0) -> dict[str, Any]:
     buckets = [bucket] if bucket in {"auto_apply", "needs_review", "reject"} else ["auto_apply", "needs_review", "reject"]
@@ -207,27 +266,41 @@ def _apply_history_path(output_dir: Path | None = None) -> Path:
     output_dir = output_dir or BURST_DIR
     return output_dir / APPLY_HISTORY_FILE
 
+
 def _append_apply_history(record: dict[str, Any], output_dir: Path | None = None) -> None:
     output_dir = output_dir or BURST_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
-    with _apply_history_path(output_dir).open("a", encoding="utf-8", newline="\n") as f:
+    path = _apply_history_path(output_dir)
+    with path.open("a", encoding="utf-8", newline="\n") as f:
         f.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+    _JSONL_HISTORY_CACHE.pop(str(path.resolve()), None)
+
 
 def _decision_history_path(output_dir: Path | None = None) -> Path:
     output_dir = output_dir or BURST_DIR
     return output_dir / DECISION_HISTORY_FILE
 
+
 def _append_decision_history(record: dict[str, Any], output_dir: Path | None = None) -> None:
     output_dir = output_dir or BURST_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
-    with _decision_history_path(output_dir).open("a", encoding="utf-8", newline="\n") as f:
-        f.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
-
-def load_decision_history(limit: int = 100, output_dir: Path | None = None) -> dict[str, Any]:
-    output_dir = output_dir or BURST_DIR
     path = _decision_history_path(output_dir)
-    if not path.exists():
-        return {"total": 0, "decisions": []}
+    with path.open("a", encoding="utf-8", newline="\n") as f:
+        f.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+    _JSONL_HISTORY_CACHE.pop(str(path.resolve()), None)
+
+
+def _load_jsonl_rows(path: Path) -> list[dict[str, Any]]:
+    key = str(path.resolve())
+    try:
+        stat = path.stat()
+    except OSError:
+        _JSONL_HISTORY_CACHE.pop(key, None)
+        return []
+    stamp = (stat.st_mtime_ns, stat.st_size)
+    cached = _JSONL_HISTORY_CACHE.get(key)
+    if cached is not None and cached[0] == stamp:
+        return _json_clone(cached[1])
     rows: list[dict[str, Any]] = []
     for line in path.read_text(encoding="utf-8-sig").splitlines():
         if not line.strip():
@@ -237,8 +310,21 @@ def load_decision_history(limit: int = 100, output_dir: Path | None = None) -> d
         except json.JSONDecodeError:
             rows.append({"record_type": "parse_error", "raw": line[:500]})
     rows.reverse()
+    if len(_JSONL_HISTORY_CACHE) >= _MAX_FILE_CACHE_ENTRIES and key not in _JSONL_HISTORY_CACHE:
+        _JSONL_HISTORY_CACHE.pop(next(iter(_JSONL_HISTORY_CACHE)), None)
+    _JSONL_HISTORY_CACHE[key] = (stamp, _json_clone(rows))
+    return rows
+
+
+def load_decision_history(limit: int = 100, output_dir: Path | None = None) -> dict[str, Any]:
+    output_dir = output_dir or BURST_DIR
+    path = _decision_history_path(output_dir)
+    if not path.exists():
+        return {"total": 0, "decisions": []}
+    rows = _load_jsonl_rows(path)
     limit = max(1, min(int(limit or 100), 500))
     return {"total": len(rows), "decisions": rows[:limit]}
+
 
 def latest_candidate_decisions(output_dir: Path | None = None) -> dict[str, dict[str, Any]]:
     decisions = load_decision_history(limit=500, output_dir=output_dir).get("decisions", [])
@@ -248,22 +334,16 @@ def latest_candidate_decisions(output_dir: Path | None = None) -> dict[str, dict
             latest.setdefault(str(cid), row)
     return latest
 
+
 def load_apply_history(limit: int = 50, output_dir: Path | None = None) -> dict[str, Any]:
     output_dir = output_dir or BURST_DIR
     path = _apply_history_path(output_dir)
     if not path.exists():
         return {"total": 0, "history": []}
-    rows: list[dict[str, Any]] = []
-    for line in path.read_text(encoding="utf-8-sig").splitlines():
-        if not line.strip():
-            continue
-        try:
-            rows.append(json.loads(line))
-        except json.JSONDecodeError:
-            rows.append({"record_type": "parse_error", "raw": line[:500]})
-    rows.reverse()
+    rows = _load_jsonl_rows(path)
     limit = max(1, min(int(limit or 50), 200))
     return {"total": len(rows), "history": rows[:limit]}
+
 
 def _candidate_after_value(record: dict[str, Any]) -> Any:
     field = record.get("field")
@@ -275,12 +355,14 @@ def _candidate_after_value(record: dict[str, Any]) -> Any:
         return parse_coordinates(record.get("suggested_value"))
     return None
 
+
 def _current_field_value(entity: dict[str, Any], field: str) -> Any:
     if field == "source":
         return entity.get("source")
     if field == "coordinates":
         return parse_coordinates(entity.get("coordinates")) or entity.get("coordinates")
     return entity.get(field)
+
 
 def _set_entity_field(entity: dict[str, Any], field: str, value: Any) -> None:
     if field == "source":
@@ -290,11 +372,13 @@ def _set_entity_field(entity: dict[str, Any], field: str, value: Any) -> None:
     else:
         entity[field] = value
 
+
 def _coordinate_key(value: Any) -> tuple[float, float] | None:
     coords = parse_coordinates(value)
     if not coords:
         return None
     return (round(coords[0], 7), round(coords[1], 7))
+
 
 def _coordinate_owner_map(by_id: dict[str, dict[str, Any]]) -> dict[tuple[float, float], str]:
     """First-writer-wins owner of each rounded coordinate key across all entities."""
@@ -304,6 +388,7 @@ def _coordinate_owner_map(by_id: dict[str, dict[str, Any]]) -> dict[tuple[float,
         if key:
             coordinate_owners.setdefault(key, entity_id)
     return coordinate_owners
+
 
 def _duplicate_coord_owner(
     key: tuple[float, float] | None,
@@ -315,6 +400,7 @@ def _duplicate_coord_owner(
     if owner and owner != str(entity.get("id")):
         return owner
     return None
+
 
 def _coordinate_dup_skip(
     record: dict[str, Any],
@@ -337,6 +423,7 @@ def _coordinate_dup_skip(
     if key:
         coordinate_owners[key] = str(entity.get("id"))
     return None
+
 
 def _process_candidate_change(
     record: dict[str, Any],
@@ -391,6 +478,7 @@ def _process_candidate_change(
     applied = {"candidate_id": record["candidate_id"], "entity_id": entity.get("id"), "field": field}
     return applied, change, None
 
+
 def is_evidence_auto_apply(record: dict[str, Any]) -> bool:
     if record.get("apply_policy") != "auto_apply":
         return False
@@ -400,6 +488,7 @@ def is_evidence_auto_apply(record: dict[str, Any]) -> bool:
     if field == "coordinates":
         return bool(record.get("geocode_verified") and parse_coordinates(record.get("suggested_value")))
     return False
+
 
 def _selected_auto_apply(queue: dict[str, Any], wanted: set[str]) -> list[dict[str, Any]]:
     """Evidence-backed auto-apply records, filtered by `wanted` candidate ids (empty = all)."""
@@ -411,6 +500,7 @@ def _selected_auto_apply(queue: dict[str, Any], wanted: set[str]) -> list[dict[s
         if is_evidence_auto_apply(record):
             selected.append({**record, "candidate_id": cid})
     return selected
+
 
 def _persist_applied_changes(
     *,
@@ -442,6 +532,7 @@ def _persist_applied_changes(
             except Exception as exc:
                 errors.append({"entity_id": eid, "error": str(exc)})
     return errors
+
 
 def apply_candidates(candidate_ids: list[str] | None = None, *, dry_run: bool = True) -> dict[str, Any]:
     queue = load_candidate_queue(refresh=True)
@@ -486,6 +577,7 @@ def apply_candidates(candidate_ids: list[str] | None = None, *, dry_run: bool = 
         "errors": errors,
     }
 
+
 def _all_candidate_rows(queue: dict[str, Any]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for bucket in ("auto_apply", "needs_review", "reject"):
@@ -496,6 +588,7 @@ def _all_candidate_rows(queue: dict[str, Any]) -> list[dict[str, Any]]:
             item.setdefault("kind", FIELD_KIND.get(str(item.get("field")), str(item.get("field") or "unknown")))
             rows.append(item)
     return rows
+
 
 def _apply_reviewed_records(
     selected: list[dict[str, Any]],
@@ -555,6 +648,7 @@ def _apply_reviewed_records(
         "changes": changes,
     }
 
+
 def _resolve_candidate_records(
     ids: list[str], queue: dict[str, Any]
 ) -> tuple[list[dict[str, Any]], list[str]]:
@@ -569,6 +663,7 @@ def _resolve_candidate_records(
         else:
             missing.append(cid)
     return selected, missing
+
 
 def decide_candidates(
     candidate_ids: list[str],
@@ -613,6 +708,28 @@ def decide_candidates(
         "apply_result": apply_result,
     }
 
+
+def _revert_batch_changes(changes: list[dict[str, Any]]) -> int:
+    reverted = 0
+    loaded_entities: dict[str, dict[str, Any] | None] = {}
+    dirty_entities: dict[str, dict[str, Any]] = {}
+    for change in changes:
+        eid = str(change.get("entity_id") or "")
+        if not eid:
+            continue
+        if eid not in loaded_entities:
+            loaded_entities[eid] = db.get_entity(eid)
+        entity = loaded_entities[eid]
+        if not entity:
+            continue
+        _set_entity_field(entity, str(change.get("field") or ""), change.get("before"))
+        dirty_entities[eid] = entity
+        reverted += 1
+    for entity in dirty_entities.values():
+        db.upsert_entity(entity)
+    return reverted
+
+
 def rollback_apply(batch_id: str, output_dir: Path | None = None) -> dict[str, Any]:
     output_dir = output_dir or BURST_DIR
     if not batch_id or not batch_id.strip():
@@ -623,15 +740,7 @@ def rollback_apply(batch_id: str, output_dir: Path | None = None) -> dict[str, A
         raise FileNotFoundError(f"apply batch '{batch_id}' not found")
     # GĐ3.8: rollback DB-native — đặt lại từng field về `before` đã lưu trong history.
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    reverted = 0
-    for change in target.get("changes") or []:
-        eid = str(change.get("entity_id") or "")
-        entity = db.get_entity(eid)
-        if not entity:
-            continue
-        _set_entity_field(entity, str(change.get("field") or ""), change.get("before"))
-        db.upsert_entity(entity)
-        reverted += 1
+    reverted = _revert_batch_changes(target.get("changes") or [])
 
     rolled_back_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     _append_apply_history({

@@ -674,8 +674,68 @@ def test_campaign_xi_multi_agent_architecture_optimizations():
     assert isinstance(index_policy._REASON_RANK_BY_KIND, dict)
 
 
+def test_campaign_omicron_multi_agent_architecture_optimizations():
+    import auto_learn
+    import control_plane.lifecycle as cp_lifecycle
+    import data_quality
+    import discover_province
+    import dynamic_agents
+    import itineraries.itinerary_multiday as itinerary_multiday
+    import llm_judge
+    import llmops.api as llmops_api
+    import location_resolver
+    import lunar_calendar
+    import ocop
+    import orchestrator
+    import personalization_events
+    import pinned_http
+    import self_optimizer
+    import structured_references
+    import user_preferences
+    import visits
 
+    # 1. Ban 1: Discovery, Location, OCOP, Visits, Lunar & Multiday
+    assert hasattr(discover_province, "_CURSOR_LOCK")
+    assert hasattr(discover_province._shared_client, "cache_info")
+    assert callable(discover_province._parse_stream_items)
+    assert isinstance(location_resolver._FLOAT_MARKERS, frozenset)
+    assert callable(location_resolver._pair_looks_like_coordinates)
+    assert callable(location_resolver._has_coordinate_float)
+    assert isinstance(ocop._RE_TIER_SAO, dict)
+    assert callable(ocop._tier_sao_re)
+    assert isinstance(visits._BG_TASKS, set)
+    assert callable(visits._check_visit_achievements_bg)
+    assert hasattr(lunar_calendar._new_moon_day, "cache_info")
+    assert hasattr(lunar_calendar._lunar_month_11, "cache_info")
+    assert hasattr(lunar_calendar._leap_month_offset, "cache_info")
+    assert callable(itinerary_multiday._pair_boundary_ids)
+    assert callable(itinerary_multiday._pair_move_proposals)
+    assert callable(itinerary_multiday._best_neighbor_step)
 
+    # 2. Ban 2: Orchestrator, Dynamic Agents, Self-Optimizer, Auto-Learn, LLM Judge & LLMOps API
+    assert hasattr(orchestrator, "_DIACRITIC_TRANS")
+    assert hasattr(orchestrator, "_COMBINING_MARKS_RE")
+    assert isinstance(orchestrator._SPECIALIST_DOMAIN_MAP, dict)
+    assert hasattr(dynamic_agents, "_JSON_CACHE_LOCK")
+    assert isinstance(dynamic_agents._JSON_CACHE, dict)
+    assert hasattr(self_optimizer, "_JSON_CACHE_LOCK")
+    assert callable(self_optimizer._stats_by_agent)
+    assert hasattr(auto_learn, "_KB_CACHE_LOCK")
+    assert isinstance(auto_learn._SORTED_PLACE_KEYWORDS, tuple)
+    assert hasattr(llm_judge, "_JSON_CACHE_LOCK")
+    assert hasattr(llm_judge, "_FENCE_START_RE")
+    assert callable(llm_judge._extract_json_dict)
+    assert hasattr(llmops_api, "_NINE_DIGIT_RE")
+    assert hasattr(llmops_api, "_HEX64_RE")
+
+    # 3. Ban 4: Pinned HTTP, User Preferences, Personalization Events, Data Quality, Structured Refs & Lifecycle
+    assert hasattr(pinned_http, "_IPV4_COMPATIBLE_NETWORK")
+    assert callable(pinned_http._PinnedNetworkBackend._dial_pinned_address)
+    assert callable(user_preferences._apply_region_precedence)
+    assert isinstance(personalization_events._ENTITY_TYPE_TO_INTERESTS, dict)
+    assert callable(data_quality._revert_batch_changes)
+    assert isinstance(structured_references._REGISTERED_DELETE_ACTION_MAP, dict)
+    assert callable(cp_lifecycle._erase_store_policy)
 
 
 

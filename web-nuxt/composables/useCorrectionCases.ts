@@ -29,6 +29,7 @@ import {
 } from '../types/cases'
 
 export const CASE_CSRF_COOKIE = 'vl360_case_csrf'
+const NEUTRALISED_STATUS_CODES = new Set([400, 401, 403, 404, 409, 410, 422])
 
 /** One message for every way a case credential can fail to open a case. */
 export const CASE_ACCESS_RECOVERY_MESSAGE =
@@ -79,7 +80,14 @@ export function readCaseCsrfToken(cookieSource?: string): string {
     : (typeof document === 'undefined' ? '' : document.cookie)
   for (const part of jar.split(';')) {
     const [name, ...rest] = part.trim().split('=')
-    if (name === CASE_CSRF_COOKIE) return decodeURIComponent(rest.join('='))
+    if (name === CASE_CSRF_COOKIE) {
+      const rawValue = rest.join('=')
+      try {
+        return decodeURIComponent(rawValue)
+      } catch {
+        return rawValue
+      }
+    }
   }
   return ''
 }
@@ -102,7 +110,7 @@ function neutralise(error: unknown): never {
     ?? (error as { status?: number })?.status ?? 0)
   // 401/403/404/410 all mean the same thing to the person holding a code that
   // does not work, and separating them would confirm which half was right.
-  if ([400, 401, 403, 404, 409, 410, 422].includes(status)) throw new CaseAccessError()
+  if (NEUTRALISED_STATUS_CODES.has(status)) throw new CaseAccessError()
   throw error
 }
 
@@ -144,6 +152,7 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
   const verifiedPhone = ref('')
   const verificationPhone = ref('')
   let verificationAttempt = 0
+  let statusGeneration = 0
   const verificationError = ref<VerificationError | null>(null)
 
   function forgetCapability() {
@@ -244,9 +253,12 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
   }
 
   async function loadStatus(): Promise<CaseStatus> {
+    const generation = ++statusGeneration
     try {
       const next = await fetcher<CaseStatus>('/api/cases/status', { credentials: 'include' })
-      status.value = next
+      if (generation === statusGeneration) {
+        status.value = next
+      }
       return next
     } catch (error) {
       return neutralise(error)
@@ -269,6 +281,7 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
     } catch (error) {
       neutralise(error)
     } finally {
+      statusGeneration += 1
       forgetCapability()
       status.value = null
     }
@@ -417,11 +430,10 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
 
   // Leaving the page takes the key with it.
   if (getCurrentScope()) {
-    onScopeDispose(forgetCapability)
     onScopeDispose(() => {
-      verificationReceipt.value = null
-      phoneVerified.value = false
-      verificationError.value = null
+      statusGeneration += 1
+      forgetCapability()
+      clearPhoneVerification()
     })
   }
 

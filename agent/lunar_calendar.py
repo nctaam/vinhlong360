@@ -37,6 +37,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from datetime import date
+from functools import lru_cache
 
 __all__ = [
     "TZ_VIETNAM",
@@ -113,6 +114,7 @@ TIET_KHI = (
 
 _SYNODIC = 29.530588853  # độ dài trung bình tuần trăng (ngày)
 _NM_EPOCH = 2415021.076998695  # JD của sóc k=0 (1900-01-01 quanh đó)
+_DR = math.pi / 180.0
 
 
 # ---------------------------------------------------------------------------
@@ -153,6 +155,7 @@ def jd_to_date(jd: int) -> tuple[int, int, int]:
 # ---------------------------------------------------------------------------
 # Thiên văn: sóc & kinh độ mặt trời
 # ---------------------------------------------------------------------------
+@lru_cache(maxsize=4096)
 def _new_moon(k: int) -> float:
     """JD (giờ UTC, số thực) của điểm sóc thứ k tính từ 1900-01-01.
 
@@ -161,7 +164,7 @@ def _new_moon(k: int) -> float:
     t = k / 1236.85
     t2 = t * t
     t3 = t2 * t
-    dr = math.pi / 180
+    dr = _DR
     jd1 = 2415020.75933 + 29.53058868 * k + 0.0001178 * t2 - 0.000000155 * t3
     jd1 += 0.00033 * math.sin((166.56 + 132.87 * t - 0.009173 * t2) * dr)
     m = 359.2242 + 29.10535608 * k - 0.0000333 * t2 - 0.00000347 * t3
@@ -185,7 +188,7 @@ def sun_longitude_degrees(jd: float) -> float:
     """Kinh độ hoàng đạo biểu kiến của mặt trời tại thời điểm JD (độ, [0, 360))."""
     t = (jd - 2451545.0) / 36525
     t2 = t * t
-    dr = math.pi / 180
+    dr = _DR
     m = 357.52910 + 35999.05030 * t - 0.0001559 * t2 - 0.00000048 * t * t2
     l0 = 280.46645 + 36000.76983 * t + 0.0003032 * t2
     dl = (1.914600 - 0.004817 * t - 0.000014 * t2) * math.sin(dr * m)
@@ -195,6 +198,7 @@ def sun_longitude_degrees(jd: float) -> float:
     return lon
 
 
+@lru_cache(maxsize=4096)
 def _new_moon_day(k: int, timezone: float) -> int:
     """JDN của NGÀY chứa điểm sóc thứ k, theo giờ địa phương ``timezone``.
 
@@ -213,6 +217,7 @@ def _sun_longitude_sector(jdn: int, timezone: float) -> int:
     return int(sun_longitude_degrees(jdn - 0.5 - timezone / 24.0) // 30.0)
 
 
+@lru_cache(maxsize=1024)
 def _lunar_month_11(yy: int, timezone: float) -> int:
     """JDN ngày mùng 1 tháng 11 âm của năm dương ``yy`` (tháng chứa Đông chí)."""
     off = jd_from_date(31, 12, yy) - 2415021
@@ -223,6 +228,7 @@ def _lunar_month_11(yy: int, timezone: float) -> int:
     return nm
 
 
+@lru_cache(maxsize=1024)
 def _leap_month_offset(a11: int, timezone: float) -> int:
     """Vị trí (offset từ tháng 11) của tháng nhuận trong năm âm bắt đầu tại a11."""
     k = math.floor((a11 - _NM_EPOCH) / _SYNODIC + 0.5)
@@ -240,7 +246,7 @@ def _leap_month_offset(a11: int, timezone: float) -> int:
 # ---------------------------------------------------------------------------
 # Kiểu dữ liệu
 # ---------------------------------------------------------------------------
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class LunarDate:
     """Một ngày âm lịch."""
 
@@ -445,6 +451,19 @@ def tiet_khi_name(dd: int, mm: int, yy: int, timezone: float = TZ_VIETNAM) -> st
     return TIET_KHI[tiet_khi_index(dd, mm, yy, timezone)]
 
 
+def _scan_tiet_khi_range(
+    lo: int, hi: int, term: int, timezone: float
+) -> date | None:
+    prev = _tiet_khi_index_jdn(lo - 1, timezone)
+    for jdn in range(lo, hi + 1):
+        idx = _tiet_khi_index_jdn(jdn, timezone)
+        if idx == term and prev != term:
+            d, m, y = jd_to_date(jdn)
+            return date(y, m, d)
+        prev = idx
+    return None
+
+
 def tiet_khi_start_date(
     term: int | str, solar_year: int, timezone: float = TZ_VIETNAM
 ) -> date:
@@ -462,14 +481,16 @@ def tiet_khi_start_date(
         raise ValueError(f"chỉ số tiết khí không hợp lệ: {term}")
     jd_start = jd_from_date(1, 1, solar_year)
     jd_end = jd_from_date(31, 12, solar_year)
-    # Mồi bằng ngày 31/12 năm trước, nếu không ngày 1/1 luôn bị coi là "mới bắt đầu".
-    prev = _tiet_khi_index_jdn(jd_start - 1, timezone)
-    for jdn in range(jd_start, jd_end + 1):
-        idx = _tiet_khi_index_jdn(jdn, timezone)
-        if idx == term and prev != term:
-            d, m, y = jd_to_date(jdn)
-            return date(y, m, d)
-        prev = idx
+    # Ước lượng vị trí tiết khí quanh ngày thứ ((term + 5) mod 24) × 15.22 + 5 của năm
+    est = jd_start + int(((term + 5) % 24) * 15.2184 + 4)
+    found = _scan_tiet_khi_range(
+        max(jd_start, est - 5), min(jd_end, est + 5), term, timezone
+    )
+    if found is not None:
+        return found
+    found = _scan_tiet_khi_range(jd_start, jd_end, term, timezone)
+    if found is not None:
+        return found
     raise ValueError(f"tiết khí {TIET_KHI[term]} không bắt đầu trong năm {solar_year}")
 
 

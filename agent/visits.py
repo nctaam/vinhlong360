@@ -3,6 +3,7 @@ visits.py — "Đã đi / Muốn đi": đánh dấu địa điểm theo người
 Postgres-only (UGC parity); 503 ở SQLite dev. status ∈ {want, visited}, 1 status/địa-điểm.
 """
 import asyncio
+import logging
 
 from typing import Optional
 
@@ -22,7 +23,20 @@ from ratelimit import check_rate
 
 from auth_middleware import require_pg as _require_pg
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/me/visits", tags=["visits"], dependencies=[Depends(_require_pg)])
+
+_BG_TASKS: set[asyncio.Task] = set()
+
+
+def _check_visit_achievements_bg(uid: str) -> None:
+    """Fire-and-forget achievement check when a user marks an entity as 'visited'."""
+    try:
+        from achievements import check_achievements
+        with db._conn() as conn:
+            check_achievements(conn, uid, notify=True)
+    except Exception as exc:
+        logger.debug("Visit achievement background check failed for %s: %s", uid, exc)
 
 
 class VisitBody(BaseModel):
@@ -91,28 +105,25 @@ async def set_visit(body: VisitBody, user=Depends(require_user), _csrf=Depends(r
     status = visited còn tạo thêm một task nền gọi check_achievements(notify=True),
     task này nuốt mọi exception và không ảnh hưởng response.
     """
-    check_rate(f"visit:{user['id']}", 60, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    uid = str(user["id"])
+    check_rate(f"visit:{uid}", 60, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     def _query():
         ph = db._ph
         with db._conn() as conn:
             db._execute(conn, f"""
                 INSERT INTO user_visits (user_id, entity_id, status) VALUES ({ph}::uuid, {ph}, {ph})
                 ON CONFLICT (user_id, entity_id) DO UPDATE SET status = EXCLUDED.status, created_at = NOW()
-            """, (str(user["id"]), body.entity_id, body.status))
+            """, (uid, body.entity_id, body.status))
     await asyncio.to_thread(_query)
 
     if body.status == "visited":
         # Fire-and-forget: chỉ tính thành tích khi thật sự "đã đi" (không
-        # phải "muốn đi"). Inline closure (không import social) để tránh
-        # phụ thuộc chéo module không cần thiết trong visits.py.
-        def _check_visit_achievements_bg(uid=str(user["id"])):
-            try:
-                from achievements import check_achievements
-                with db._conn() as conn:
-                    check_achievements(conn, uid, notify=True)
-            except Exception:
-                pass
-        asyncio.create_task(asyncio.to_thread(_check_visit_achievements_bg))
+        # phải "muốn đi"). Hold strong reference in _BG_TASKS to prevent GC.
+        coro = asyncio.to_thread(_check_visit_achievements_bg, uid)
+        task = asyncio.create_task(coro)
+        if isinstance(task, asyncio.Task):
+            _BG_TASKS.add(task)
+            task.add_done_callback(_BG_TASKS.discard)
 
     return {"status": body.status}
 
@@ -177,7 +188,7 @@ async def visit_stats(user=Depends(require_user)):
         breakdown = {}
         for r in by_type:
             rd = db._row_to_dict(r)
-            etype = rd.get("type", "unknown")
+            etype = rd.get("type") or "unknown"
             if etype not in breakdown:
                 breakdown[etype] = {"visited": 0, "want": 0}
             breakdown[etype][rd["status"]] = rd["cnt"]

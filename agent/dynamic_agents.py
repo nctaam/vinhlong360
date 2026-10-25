@@ -16,6 +16,7 @@ Persistence: atomic writes (ghi .tmp roi rename).
 
 from __future__ import annotations
 
+import copy
 import json
 import logging
 import os
@@ -45,6 +46,9 @@ DYNAMIC_AGENT_MAX = int(os.environ.get("DYNAMIC_AGENT_MAX", "10"))
 # Atomic I/O helpers (delegate to versioned_json_store — the audited writer)
 # ---------------------------------------------------------------------------
 
+_JSON_CACHE_LOCK = Lock()
+_JSON_CACHE: dict[str, tuple[int, int, object]] = {}
+
 
 def _atomic_write(path: Path, data: dict | list) -> None:
     """Persist JSON durably. Best-effort: logs and returns instead of raising.
@@ -64,17 +68,33 @@ def _atomic_write(path: Path, data: dict | list) -> None:
     """
     try:
         atomic_write_json(path, data)
+        try:
+            st = path.stat()
+            with _JSON_CACHE_LOCK:
+                _JSON_CACHE[str(path)] = (st.st_mtime_ns, st.st_size, copy.deepcopy(data))
+        except OSError:
+            with _JSON_CACHE_LOCK:
+                _JSON_CACHE.pop(str(path), None)
     except Exception as e:
         logger.error("Failed to write %s: %s", path, e)
 
 
 def _load_json(path: Path, default=None):
-    """Load JSON file, return *default* on any failure."""
+    """Load JSON file with (st_mtime_ns, st_size) caching, return *default* on any failure."""
     if default is None:
         default = {}
+    key = str(path)
     try:
         if path.exists():
-            return json.loads(path.read_text(encoding="utf-8"))
+            st = path.stat()
+            with _JSON_CACHE_LOCK:
+                cached = _JSON_CACHE.get(key)
+                if cached and cached[0] == st.st_mtime_ns and cached[1] == st.st_size:
+                    return copy.deepcopy(cached[2])
+            parsed = json.loads(path.read_text(encoding="utf-8"))
+            with _JSON_CACHE_LOCK:
+                _JSON_CACHE[key] = (st.st_mtime_ns, st.st_size, copy.deepcopy(parsed))
+            return parsed
     except Exception as e:
         logger.warning("Failed to load %s: %s", path, e)
     return default
@@ -136,6 +156,15 @@ _STOP_WORDS = frozenset({
     "de", "khi", "neu", "thi", "cung", "hon", "nhat",
 })
 
+_WORD_TOKEN_RE = re.compile(r"[a-zA-ZÀ-ỹ]+")
+
+
+def _tokenize_filtered(text: str) -> set[str]:
+    return {
+        tok for tok in _WORD_TOKEN_RE.findall(text.lower())
+        if tok not in _STOP_WORDS and len(tok) >= 2
+    }
+
 
 class PatternAnalyzer:
     """Analyze unhandled or low-scoring queries to suggest new agents."""
@@ -151,22 +180,14 @@ class PatternAnalyzer:
         """
         counter: dict[str, int] = {}
         for q in queries:
-            tokens = re.findall(r"[a-zA-ZÀ-ỹ]+", q.lower())
-            seen = set()
-            for tok in tokens:
-                if tok in _STOP_WORDS or len(tok) < 2:
-                    continue
-                if tok not in seen:
-                    counter[tok] = counter.get(tok, 0) + 1
-                    seen.add(tok)
+            for tok in _tokenize_filtered(q):
+                counter[tok] = counter.get(tok, 0) + 1
         return counter
 
     def _keyword_overlap(self, q1: str, q2: str) -> float:
         """Compute keyword overlap ratio between two queries."""
-        t1 = {t for t in re.findall(r"[a-zA-ZÀ-ỹ]+", q1.lower())
-               if t not in _STOP_WORDS and len(t) >= 2}
-        t2 = {t for t in re.findall(r"[a-zA-ZÀ-ỹ]+", q2.lower())
-               if t not in _STOP_WORDS and len(t) >= 2}
+        t1 = _tokenize_filtered(q1)
+        t2 = _tokenize_filtered(q2)
         if not t1 or not t2:
             return 0.0
         intersection = t1 & t2
@@ -186,17 +207,24 @@ class PatternAnalyzer:
         with self._lock:
             clusters: list[list[dict]] = []
             assigned: set[int] = set()
+            token_sets = [_tokenize_filtered(q.get("text", "")) for q in queries]
+            n = len(queries)
 
-            for i, qi in enumerate(queries):
+            for i in range(n):
                 if i in assigned:
                     continue
-                cluster = [qi]
+                cluster = [queries[i]]
                 assigned.add(i)
-                for j, qj in enumerate(queries):
+                ti = token_sets[i]
+                for j in range(i + 1, n):
                     if j in assigned:
                         continue
-                    if self._keyword_overlap(qi["text"], qj["text"]) >= threshold:
-                        cluster.append(qj)
+                    tj = token_sets[j]
+                    if not ti or not tj:
+                        continue
+                    overlap = len(ti & tj) / len(ti | tj)
+                    if overlap >= threshold:
+                        cluster.append(queries[j])
                         assigned.add(j)
                 clusters.append(cluster)
 
@@ -536,6 +564,9 @@ class AgentFactory:
 # DynamicRouter — route queries to matching dynamic agents
 # ---------------------------------------------------------------------------
 
+_NEVER_MATCH_RE = re.compile(r"(?!)")
+_MAX_PATTERN_CACHE = 512
+
 
 class DynamicRouter:
     """Route queries to dynamic agents by regex pattern matching.
@@ -551,19 +582,21 @@ class DynamicRouter:
         self._pattern_cache: dict[str, re.Pattern] = {}
 
     def _compile(self, pattern: str) -> re.Pattern:
-        """Compile and cache a regex pattern."""
-        cached = self._pattern_cache.get(pattern)
-        if cached is not None:
-            return cached
+        """Compile and cache a regex pattern safely under lock."""
+        with self._lock:
+            cached = self._pattern_cache.get(pattern)
+            if cached is not None:
+                return cached
         try:
             compiled = re.compile(pattern, re.IGNORECASE | re.UNICODE)
-            self._pattern_cache[compiled.pattern] = compiled
-            # Also cache under the original key
-            self._pattern_cache[pattern] = compiled
-            return compiled
         except re.error as e:
             logger.warning("Invalid regex pattern %r: %s", pattern, e)
-            return re.compile(r"(?!)")  # never matches
+            compiled = _NEVER_MATCH_RE
+        with self._lock:
+            if len(self._pattern_cache) >= _MAX_PATTERN_CACHE:
+                self._pattern_cache.clear()
+            self._pattern_cache[pattern] = compiled
+        return compiled
 
     def _match_patterns(self, query: str, patterns: list[str]) -> bool:
         """Return True if *query* matches any of the regex *patterns*."""
@@ -576,8 +609,7 @@ class DynamicRouter:
 
     def route(self, query: str) -> AgentSpec | None:
         """Check dynamic agents (by priority), return matching or None."""
-        with self._lock:
-            agents = self._factory.get_active_agents()
+        agents = self._factory.get_active_agents()
 
         for agent in agents:
             if self._match_patterns(query, agent.trigger_patterns):
@@ -595,6 +627,31 @@ class DynamicRouter:
 # ---------------------------------------------------------------------------
 
 _SEVEN_DAYS = 7 * 24 * 3600.0
+
+
+def _classify_agent_health(agent: AgentSpec, now: float) -> tuple[str, str]:
+    """Return (status, reason) for an active agent."""
+    perf = agent.performance
+    age = now - agent.created_at
+    queries_handled = perf["queries_handled"]
+    avg_score = perf["avg_score"]
+
+    if queries_handled < 20 and age > _SEVEN_DAYS:
+        return (
+            "deactivated",
+            f"Low usage ({queries_handled} queries) after {age / 86400:.0f} days",
+        )
+    if queries_handled >= 5 and avg_score < 3.0:
+        return (
+            "deactivated",
+            f"Low avg score ({avg_score:.1f}) over {queries_handled} queries",
+        )
+    if avg_score < 4.0 and queries_handled >= 3:
+        return (
+            "warning",
+            f"Below-average score ({avg_score:.1f}), monitoring",
+        )
+    return ("ok", "Healthy")
 
 
 class AgentEvolution:
@@ -618,56 +675,15 @@ class AgentEvolution:
             for agent in self._factory.get_all_agents():
                 if not agent.active:
                     continue
-
-                perf = agent.performance
-                age = now - agent.created_at
-
-                # Rule 1: <20 queries AND >7 days old -> deactivate
-                if perf["queries_handled"] < 20 and age > _SEVEN_DAYS:
+                status, reason = _classify_agent_health(agent, now)
+                if status == "deactivated":
                     self._factory.deactivate(agent.agent_id)
-                    results.append({
-                        "agent_id": agent.agent_id,
-                        "name": agent.name,
-                        "status": "deactivated",
-                        "reason": (
-                            f"Low usage ({perf['queries_handled']} queries) "
-                            f"after {age / 86400:.0f} days"
-                        ),
-                    })
-                    continue
-
-                # Rule 2: avg_score < 3.0 -> deactivate
-                if perf["queries_handled"] >= 5 and perf["avg_score"] < 3.0:
-                    self._factory.deactivate(agent.agent_id)
-                    results.append({
-                        "agent_id": agent.agent_id,
-                        "name": agent.name,
-                        "status": "deactivated",
-                        "reason": (
-                            f"Low avg score ({perf['avg_score']:.1f}) "
-                            f"over {perf['queries_handled']} queries"
-                        ),
-                    })
-                    continue
-
-                # Warning: low score but not enough data to deactivate
-                if perf["avg_score"] < 4.0 and perf["queries_handled"] >= 3:
-                    results.append({
-                        "agent_id": agent.agent_id,
-                        "name": agent.name,
-                        "status": "warning",
-                        "reason": (
-                            f"Below-average score ({perf['avg_score']:.1f}), "
-                            f"monitoring"
-                        ),
-                    })
-                else:
-                    results.append({
-                        "agent_id": agent.agent_id,
-                        "name": agent.name,
-                        "status": "ok",
-                        "reason": "Healthy",
-                    })
+                results.append({
+                    "agent_id": agent.agent_id,
+                    "name": agent.name,
+                    "status": status,
+                    "reason": reason,
+                })
 
         return results
 
@@ -685,17 +701,12 @@ class AgentEvolution:
         """Suggest merging agents with >70% trigger pattern overlap."""
         agents = self._factory.get_active_agents()
         suggestions: list[dict] = []
-        seen: set[tuple[str, str]] = set()
+        n = len(agents)
 
-        for i, a in enumerate(agents):
-            for j, b in enumerate(agents):
-                if i >= j:
-                    continue
-                pair = (a.agent_id, b.agent_id)
-                if pair in seen:
-                    continue
-                seen.add(pair)
-
+        for i in range(n):
+            a = agents[i]
+            for j in range(i + 1, n):
+                b = agents[j]
                 overlap = self._pattern_overlap(a, b)
                 if overlap > 0.7:
                     suggestions.append({
@@ -718,14 +729,15 @@ class AgentEvolution:
     ) -> None:
         """Update an agent's trigger patterns and system prompt."""
         with self._lock:
-            agent = self._factory.get_agent(agent_id)
-            if agent is None:
-                logger.warning("Agent %s not found for evolution", agent_id)
-                return
-            agent.trigger_patterns = new_patterns
-            agent.system_prompt_addon = new_prompt
-            self._factory._save()
-            logger.info("Evolved agent: %s (%s)", agent.name, agent_id)
+            with self._factory._lock:
+                agent = self._factory._agents.get(agent_id)
+                if agent is None:
+                    logger.warning("Agent %s not found for evolution", agent_id)
+                    return
+                agent.trigger_patterns = new_patterns
+                agent.system_prompt_addon = new_prompt
+                self._factory._save()
+                logger.info("Evolved agent: %s (%s)", agent.name, agent_id)
 
     def get_evolution_report(self) -> dict:
         """Return full agent lifecycle stats."""

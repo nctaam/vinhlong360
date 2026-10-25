@@ -86,6 +86,15 @@ _ENTITY_TYPE_INTEREST_KEYS = (
     ("craft", frozenset({"craft_village", "organization"})),
     ("stay", frozenset({"accommodation"})),
 )
+_ENTITY_TYPE_TO_INTERESTS: dict[str, tuple[str, ...]] = {
+    entity_type: tuple(
+        key
+        for key, entity_types in _ENTITY_TYPE_INTEREST_KEYS
+        if entity_type in entity_types
+    )[:MAX_INTEREST_KEYS]
+    for _, group in _ENTITY_TYPE_INTEREST_KEYS
+    for entity_type in group
+}
 _NORMALIZED_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,199}$")
 _LEGACY_EVENT_FIELDS = frozenset(
     {
@@ -109,6 +118,8 @@ LEGACY_EVENTS_PATH = Path(__file__).resolve().parent / "data" / "user_events.jso
 LEGACY_EVENTS_LOCK_PATH = LEGACY_EVENTS_PATH.with_name(
     ".user_events.personalization.publication.lock"
 )
+_LEGACY_ROWS_CACHE: dict[str, tuple[tuple[int, int], tuple[dict[str, Any], ...]]] = {}
+_MAX_LEGACY_CACHE_PATHS = 16
 
 
 class PersonalizationEventError(ValueError):
@@ -215,11 +226,9 @@ def _is_public_entity(entity: Mapping[str, Any]) -> bool:
 
 def _canonical_interest_keys(entity: Mapping[str, Any]) -> list[str]:
     canonical_type = _bounded_text(entity.get("type"), 64, lower=True)
-    return [
-        key
-        for key, entity_types in _ENTITY_TYPE_INTEREST_KEYS
-        if canonical_type in entity_types
-    ][:MAX_INTEREST_KEYS]
+    if canonical_type is None:
+        return []
+    return list(_ENTITY_TYPE_TO_INTERESTS.get(canonical_type, ()))
 
 
 def _canonical_entity_fields(
@@ -423,8 +432,16 @@ def _legacy_projection(row: Mapping[str, Any]) -> dict[str, Any] | None:
 
 
 def _read_legacy_rows(path: Path) -> list[dict[str, Any]]:
-    if not path.exists():
+    key = str(path.resolve())
+    try:
+        stat = path.stat()
+    except OSError:
+        _LEGACY_ROWS_CACHE.pop(key, None)
         return []
+    stamp = (stat.st_mtime_ns, stat.st_size)
+    cached = _LEGACY_ROWS_CACHE.get(key)
+    if cached is not None and cached[0] == stamp:
+        return [dict(row) for row in cached[1]]
     rows: list[dict[str, Any]] = []
     for line in path.read_text(encoding="utf-8").splitlines():
         if not line.strip():
@@ -435,7 +452,10 @@ def _read_legacy_rows(path: Path) -> list[dict[str, Any]]:
             continue
         if isinstance(value, dict):
             rows.append(value)
-    return rows
+    if len(_LEGACY_ROWS_CACHE) >= _MAX_LEGACY_CACHE_PATHS and key not in _LEGACY_ROWS_CACHE:
+        _LEGACY_ROWS_CACHE.pop(next(iter(_LEGACY_ROWS_CACHE)), None)
+    _LEGACY_ROWS_CACHE[key] = (stamp, tuple(rows))
+    return [dict(row) for row in rows]
 
 
 def read_legacy_events_if_allowed(
@@ -464,13 +484,13 @@ def read_legacy_events_if_allowed(
 def _legacy_row_matches(
     row: Mapping[str, Any], owner: str | None, boundary: datetime | None
 ) -> bool:
-    if _legacy_projection(row) is None:
-        return False
     try:
         row_owner = _owner_id(row.get("user_id"))
     except PersonalizationEventError:
         return False
     if owner is not None and row_owner != owner:
+        return False
+    if _legacy_projection(row) is None:
         return False
     if boundary is None:
         return owner is not None
@@ -535,6 +555,7 @@ def purge_legacy_events(
                 os.fsync(handle.fileno())
             os.replace(temp_path, path)
             temp_path = None
+            _LEGACY_ROWS_CACHE.pop(str(path.resolve()), None)
             fsync_directory(path.parent)
         finally:
             if temp_path is not None:
@@ -570,6 +591,28 @@ def purge_user_personalization(user_id: str, *, conn=None) -> None:
         _purge_user_personalization_in_connection(conn, owner)
 
 
+def _prepare_reset_snapshot(
+    current: Mapping[str, Any], reset_at: datetime
+) -> tuple[dict[str, Any], dict[str, Any], datetime]:
+    sanitized = (
+        quarantine_location_snapshot(current)
+        if invalid_region_reason(current) is not None
+        else dict(current)
+    )
+    previous_reset = sanitized.get("recommendation_reset_at")
+    effective_reset = reset_at
+    if previous_reset is not None:
+        effective_reset = max(reset_at, previous_reset.astimezone(timezone.utc))
+    merged = merge_preference_patch(
+        sanitized,
+        {"recommendation_reset_at": effective_reset},
+        sanitized["revision"],
+    )
+    if invalid_region_reason(merged) is not None:
+        raise ValueError("Invalid location preference state")
+    return sanitized, merged, effective_reset
+
+
 def record_recommendation_reset(user_id: str) -> PreferenceSnapshot:
     """Advance the single effective reset cutoff atomically."""
     owner = _owner_id(user_id) if db._use_pg else _user_id(user_id)
@@ -578,21 +621,7 @@ def record_recommendation_reset(user_id: str) -> PreferenceSnapshot:
         current = _load_persisted_preferences_in_connection(
             conn, owner, for_update=True, heal=False
         )
-        if invalid_region_reason(current) is not None:
-            current = quarantine_location_snapshot(current)
-
-        previous_reset = current.get("recommendation_reset_at")
-        if previous_reset is not None:
-            previous_reset = previous_reset.astimezone(timezone.utc)
-            reset_at = max(reset_at, previous_reset)
-        merged = merge_preference_patch(
-            current,
-            {"recommendation_reset_at": reset_at},
-            current["revision"],
-        )
-        if invalid_region_reason(merged) is not None:
-            raise ValueError("Invalid location preference state")
-
+        sanitized, merged, reset_at = _prepare_reset_snapshot(current, reset_at)
         row = _select_preferences(conn, owner, for_update=True)
         if row is None:
             values, value_placeholders = _write_values(merged)
@@ -610,25 +639,15 @@ def record_recommendation_reset(user_id: str) -> PreferenceSnapshot:
                 latest = _load_persisted_preferences_in_connection(
                     conn, owner, for_update=True, heal=False
                 )
-                if invalid_region_reason(latest) is not None:
-                    latest = quarantine_location_snapshot(latest)
-                latest_reset = latest.get("recommendation_reset_at")
-                if latest_reset is not None:
-                    latest_reset = latest_reset.astimezone(timezone.utc)
-                    reset_at = max(reset_at, latest_reset)
-                merged = merge_preference_patch(
-                    latest,
-                    {"recommendation_reset_at": reset_at},
-                    latest["revision"],
-                )
+                latest_sanitized, merged, _ = _prepare_reset_snapshot(latest, reset_at)
                 snapshot = _update_persisted_snapshot_in_connection(
-                    conn, owner, merged, latest["revision"]
+                    conn, owner, merged, latest_sanitized["revision"]
                 )
                 if snapshot is None:
                     raise RuntimeError("Recommendation reset revision conflict")
         else:
             snapshot = _update_persisted_snapshot_in_connection(
-                conn, owner, merged, current["revision"]
+                conn, owner, merged, sanitized["revision"]
             )
             if snapshot is None:
                 raise RuntimeError("Recommendation reset revision conflict")

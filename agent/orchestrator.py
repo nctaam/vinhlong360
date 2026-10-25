@@ -93,11 +93,14 @@ def _build_patterns() -> list[tuple[re.Pattern, QueryCategory]]:
 
 _ROUTE_PATTERNS = _build_patterns()
 
+_DIACRITIC_TRANS = str.maketrans({"đ": "d", "Đ": "D"})
+_COMBINING_MARKS_RE = re.compile(r"[\u0300-\u036f]")
+
 
 def _strip_diacritics(text: str) -> str:
     """Remove Vietnamese diacritics for fuzzy matching fallback."""
-    nfkd = unicodedata.normalize("NFKD", text.replace("đ", "d").replace("Đ", "D"))
-    return "".join(c for c in nfkd if not unicodedata.combining(c))
+    nfkd = unicodedata.normalize("NFKD", text.translate(_DIACRITIC_TRANS))
+    return _COMBINING_MARKS_RE.sub("", nfkd)
 
 
 # ASCII-friendly fallback patterns (no diacritics)
@@ -266,6 +269,22 @@ _CATEGORY_AGENTS: dict[QueryCategory, AgentSpec] = {
     QueryCategory.GENERAL: GENERAL_AGENT,
 }
 
+_SPECIALIST_DOMAIN_MAP: dict[str, str] = {
+    "SearchAgent": "tra cứu thông tin",
+    "RecommendAgent": "gợi ý và đề xuất",
+    "ItineraryAgent": "lập lịch trình du lịch",
+    "CompareAgent": "so sánh và phân tích",
+    "GeneralAgent": "hỗ trợ du lịch tổng hợp",
+}
+
+_SPECIALIST_FOCUS_MAP: dict[str, str] = {
+    "SearchAgent": "tìm kiếm chính xác và trích dẫn nguồn",
+    "RecommendAgent": "đề xuất phù hợp sở thích và mùa vụ",
+    "ItineraryAgent": "lịch trình chi tiết, thời tiết, logistics",
+    "CompareAgent": "so sánh khách quan, bảng biểu rõ ràng",
+    "GeneralAgent": "trả lời đa dạng mọi chủ đề du lịch",
+}
+
 
 # ---------------------------------------------------------------------------
 # Handoff log -- lightweight, thread-safe, bounded
@@ -308,8 +327,9 @@ class HandoffLog:
         )
         with self._lock:
             self._records.append(entry)
-            if len(self._records) > self._maxlen:
-                self._records = self._records[-self._maxlen:]
+            overflow = len(self._records) - self._maxlen
+            if overflow > 0:
+                del self._records[:overflow]
 
     def recent(self, n: int = 20) -> list[HandoffRecord]:
         with self._lock:
@@ -443,13 +463,19 @@ def _append_results_and_check_empty(
 def _truncate_messages_if_large(messages: list[dict]) -> None:
     """Message size guard — truncate oldest tool results when total payload exceeds the threshold."""
     total_bytes = sum(len(str(m.get("content", ""))) for m in messages if isinstance(m, dict))
-    if total_bytes > _MAX_MESSAGES_BYTES:
-        for m in messages:
-            if isinstance(m, dict) and m.get("role") == "tool":
-                content = m.get("content", "")
-                if len(content) > 500:
-                    m["content"] = content[:500] + "…[truncated]"
-        logger.debug("Truncated old tool results (%d bytes over limit)", total_bytes)
+    if total_bytes <= _MAX_MESSAGES_BYTES:
+        return
+    initial_bytes = total_bytes
+    for m in messages:
+        if total_bytes <= _MAX_MESSAGES_BYTES:
+            break
+        if isinstance(m, dict) and m.get("role") == "tool":
+            content = m.get("content", "")
+            if isinstance(content, str) and len(content) > 500:
+                saved = len(content) - 513
+                m["content"] = content[:500] + "…[truncated]"
+                total_bytes -= max(0, saved)
+    logger.debug("Truncated old tool results (%d bytes -> %d bytes)", initial_bytes, total_bytes)
 
 
 def _forced_synthesis(
@@ -568,17 +594,20 @@ class Orchestrator:
             from ``agent.tools.TOOLS`` at first use.
         """
         self._all_tools: list[dict[str, Any]] | None = tools_list
+        self._tools_lock = threading.Lock()
         self._router = QueryRouter()
 
     # -- lazy import of TOOLS to avoid circular imports at module load --------
     @property
     def all_tools(self) -> list[dict[str, Any]]:
         if self._all_tools is None:
-            try:
-                from tools import TOOLS  # noqa: WPS433
-            except ImportError:
-                from agent.tools import TOOLS  # noqa: WPS433
-            self._all_tools = TOOLS
+            with self._tools_lock:
+                if self._all_tools is None:
+                    try:
+                        from tools import TOOLS  # noqa: WPS433
+                    except ImportError:
+                        from agent.tools import TOOLS  # noqa: WPS433
+                    self._all_tools = TOOLS
         return self._all_tools
 
     # -- public API -----------------------------------------------------------
@@ -607,24 +636,8 @@ class Orchestrator:
         prompt, keeps the last 20 history messages, and appends the user
         query.
         """
-        # Handoff note in Vietnamese
-        _DOMAIN_MAP = {
-            "SearchAgent": "tra cứu thông tin",
-            "RecommendAgent": "gợi ý và đề xuất",
-            "ItineraryAgent": "lập lịch trình du lịch",
-            "CompareAgent": "so sánh và phân tích",
-            "GeneralAgent": "hỗ trợ du lịch tổng hợp",
-        }
-        _FOCUS_MAP = {
-            "SearchAgent": "tìm kiếm chính xác và trích dẫn nguồn",
-            "RecommendAgent": "đề xuất phù hợp sở thích và mùa vụ",
-            "ItineraryAgent": "lịch trình chi tiết, thời tiết, logistics",
-            "CompareAgent": "so sánh khách quan, bảng biểu rõ ràng",
-            "GeneralAgent": "trả lời đa dạng mọi chủ đề du lịch",
-        }
-
-        domain = _DOMAIN_MAP.get(agent_spec.name, "hỗ trợ du lịch")
-        focus = _FOCUS_MAP.get(agent_spec.name, "trả lời chính xác")
+        domain = _SPECIALIST_DOMAIN_MAP.get(agent_spec.name, "hỗ trợ du lịch")
+        focus = _SPECIALIST_FOCUS_MAP.get(agent_spec.name, "trả lời chính xác")
 
         handoff_note = (
             f"\n\n---\n"

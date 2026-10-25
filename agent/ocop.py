@@ -12,6 +12,7 @@ cùng đỏ nếu lệch.
 """
 from __future__ import annotations
 
+import math
 import re
 from typing import Any
 
@@ -21,12 +22,19 @@ _RE_OCOP_PROPOSAL = re.compile(
     re.IGNORECASE)
 _RE_OCOP_AWARDED = re.compile(
     r"đạt|được công nhận|đã công nhận|chứng nhận|cấp quốc gia", re.IGNORECASE)
+_RE_TIER_SAO = {
+    tier: re.compile(rf"{tier}\s*sao", re.IGNORECASE) for tier in range(1, 10)
+}
 _OCOP_CLAIM_WINDOW = 40
 _OCOP_NUMERIC_KEYS = ("ocop_star", "ocop_stars", "ocop_rating")
 
 # Chương trình OCOP chỉ công nhận 3, 4 và 5 sao. KHÔNG có "OCOP 1 sao" hay
 # "OCOP 2 sao" — chúng không tồn tại, nên một ô số mang 1 hoặc 2 không phải hạng.
 _OCOP_MIN_GRADE = 3
+
+
+def _tier_sao_re(tier: int) -> re.Pattern[str]:
+    return _RE_TIER_SAO.get(tier) or re.compile(rf"{tier}\s*sao", re.IGNORECASE)
 
 
 def _attrs(entity: dict[str, Any]) -> dict[str, Any]:
@@ -47,10 +55,14 @@ def _tu_khoa_so(attrs: dict[str, Any]) -> int:
         raw = attrs.get(key)
         if isinstance(raw, bool):
             continue
-        if isinstance(raw, (int, float)):
+        if isinstance(raw, int):
+            return raw
+        if isinstance(raw, float) and math.isfinite(raw):
             return int(raw)
-        if isinstance(raw, str) and raw.strip().isdigit() and 1 <= int(raw.strip()) <= 5:
-            return int(raw.strip())
+        if isinstance(raw, str):
+            s = raw.strip()
+            if s.isascii() and s.isdigit() and 1 <= int(s) <= 5:
+                return int(s)
     return 0
 
 
@@ -64,7 +76,9 @@ def _tu_o_ocop(attrs: dict[str, Any]) -> int:
     text = attrs.get("ocop")
     if isinstance(text, bool):
         return 0
-    if isinstance(text, (int, float)):
+    if isinstance(text, int):
+        return text
+    if isinstance(text, float) and math.isfinite(text):
         return int(text)
     if isinstance(text, str):
         m = _RE_OCOP_SELF_TIER.match(text)
@@ -85,7 +99,7 @@ def _van_xuoi_xac_nhan_hang(entity: dict[str, Any], tier: int) -> bool:
     chỗ không thể nói ngược nhau.
     """
     prose = f"{entity.get('summary') or ''} {entity.get('description') or ''}"
-    for m in re.finditer(rf"{tier}\s*sao", prose, re.IGNORECASE):
+    for m in _tier_sao_re(tier).finditer(prose):
         window = prose[max(0, m.start() - _OCOP_CLAIM_WINDOW):m.end() + _OCOP_CLAIM_WINDOW]
         if _RE_OCOP_AWARDED.search(window):
             return True
@@ -160,13 +174,20 @@ def _ocop_tier_is_provisional(entity: dict[str, Any], tier: int) -> bool:
     if not prose.strip():
         return False
     saw_proposal = saw_awarded = False
-    for m in re.finditer(rf"{tier}\s*sao", prose, re.IGNORECASE):
+    for m in _tier_sao_re(tier).finditer(prose):
         window = prose[max(0, m.start() - _OCOP_CLAIM_WINDOW):m.end() + _OCOP_CLAIM_WINDOW]
         if _RE_OCOP_PROPOSAL.search(window):
             saw_proposal = True
         if _RE_OCOP_AWARDED.search(window):
             saw_awarded = True
     return saw_proposal and not saw_awarded
+
+
+def _effective_tier(entity: dict[str, Any], attrs: dict[str, Any], bad_numeric: bool) -> int:
+    tier = _tu_o_ocop(attrs) if bad_numeric else _claimed_tier(attrs)
+    if tier > 0 and _ocop_tier_is_provisional(entity, tier):
+        return 0   # §1.7 — hạng mới ĐỀ NGHỊ không phải hạng đã đạt
+    return tier if 1 <= tier <= 5 else 0
 
 
 def ocop_display_label(entity: dict[str, Any]) -> str:
@@ -188,16 +209,12 @@ def ocop_display_label(entity: dict[str, Any]) -> str:
     một bộ chuỗi thật nên chúng sẽ cùng đỏ nếu lệch.
     """
     attrs = _attrs(entity)
-    if _o_so_khong_phai_tin_hieu_ocop(entity, attrs):
-        # Ô số là rác chép nhầm cột — bỏ nó, chỉ còn văn xuôi được nói.
-        tier = _tu_o_ocop(attrs)
-    else:
-        tier = _claimed_tier(attrs)
-    if tier > 0 and _ocop_tier_is_provisional(entity, tier):
-        tier = 0   # §1.7 — hạng mới ĐỀ NGHỊ không phải hạng đã đạt
-    if 1 <= tier <= 5:
+    bad_numeric = _o_so_khong_phai_tin_hieu_ocop(entity, attrs)
+    tier = _effective_tier(entity, attrs, bad_numeric)
+    if tier:
         return f"OCOP {tier} sao"
-    return "OCOP" if _co_dau_hieu_ocop(entity, attrs) else ""
+    has_numeric = any(attrs.get(k) not in (None, "") for k in _OCOP_NUMERIC_KEYS) and not bad_numeric
+    return "OCOP" if (has_numeric or bool(attrs.get("ocop") or attrs.get("ocop_certified"))) else ""
 
 
 def ocop_tier(entity: dict[str, Any]) -> int:
@@ -208,9 +225,8 @@ def ocop_tier(entity: dict[str, Any]) -> int:
     "VICOSAP: 4 SP OCOP 5 sao quốc gia..." cho ra 4, và một chuỗi có năm ban
     hành sẽ cho ra chữ số của năm.
     """
-    label = ocop_display_label(entity)
-    m = re.match(r"OCOP ([1-5]) sao$", label)
-    return int(m.group(1)) if m else 0
+    attrs = _attrs(entity)
+    return _effective_tier(entity, attrs, _o_so_khong_phai_tin_hieu_ocop(entity, attrs))
 
 
 def is_ocop_certified(entity: dict[str, Any]) -> bool:

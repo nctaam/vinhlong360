@@ -18,6 +18,7 @@ Thread-safe: moi class dung threading.Lock rieng.
 Persistence: atomic writes (ghi .tmp roi rename).
 """
 
+import copy
 import json
 import logging
 import statistics
@@ -43,6 +44,7 @@ PARAMS_FILE = DATA_DIR / "params.json"
 TOOL_SCORES_FILE = DATA_DIR / "tool_scores.json"
 
 MAX_RECORDS = 5000
+MAX_VARIANTS = 50
 
 # ── Query categories (mirroring reflexion._categorize_query) ─────────────────
 
@@ -51,6 +53,9 @@ QUERY_CATEGORIES = [
 ]
 
 # ── Atomic write helper (delegates to versioned_json_store) ──────────────────
+
+_JSON_CACHE_LOCK = Lock()
+_JSON_CACHE: dict[str, tuple[int, int, object]] = {}
 
 
 def _atomic_write(path: Path, data: dict) -> None:
@@ -71,17 +76,33 @@ def _atomic_write(path: Path, data: dict) -> None:
     """
     try:
         atomic_write_json(path, data)
+        try:
+            st = path.stat()
+            with _JSON_CACHE_LOCK:
+                _JSON_CACHE[str(path)] = (st.st_mtime_ns, st.st_size, copy.deepcopy(data))
+        except OSError:
+            with _JSON_CACHE_LOCK:
+                _JSON_CACHE.pop(str(path), None)
     except Exception as e:
         logger.error("Failed to write %s: %s", path, e)
 
 
 def _load_json(path: Path, default=None):
-    """Load JSON file, return *default* on any failure."""
+    """Load JSON file with (st_mtime_ns, st_size) caching, return *default* on any failure."""
     if default is None:
         default = {}
+    key = str(path)
     try:
         if path.exists():
-            return json.loads(path.read_text(encoding="utf-8"))
+            st = path.stat()
+            with _JSON_CACHE_LOCK:
+                cached = _JSON_CACHE.get(key)
+                if cached and cached[0] == st.st_mtime_ns and cached[1] == st.st_size:
+                    return copy.deepcopy(cached[2])
+            parsed = json.loads(path.read_text(encoding="utf-8"))
+            with _JSON_CACHE_LOCK:
+                _JSON_CACHE[key] = (st.st_mtime_ns, st.st_size, copy.deepcopy(parsed))
+            return parsed
     except Exception as e:
         logger.warning("Failed to load %s: %s", path, e)
     return default
@@ -135,19 +156,21 @@ def _stats_by_category(window: list[dict]) -> dict:
     return cat_stats
 
 
+_CATEGORY_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("itinerary", ("lịch trình", "đi đâu", "gợi ý", "plan", "itinerary")),
+    ("food", ("ăn gì", "món", "đặc sản", "ẩm thực", "food")),
+    ("history", ("lịch sử", "ai", "nhân vật", "người", "history")),
+    ("culture", ("chùa", "lễ hội", "văn hóa", "khmer", "culture")),
+    ("comparison", ("so sánh", "khác nhau", "hơn", "compare")),
+)
+
+
 def _categorize_query(query: str) -> str:
     """Classify a query into a category (same logic as reflexion module)."""
     q = query.lower()
-    if any(w in q for w in ["lịch trình", "đi đâu", "gợi ý", "plan", "itinerary"]):
-        return "itinerary"
-    if any(w in q for w in ["ăn gì", "món", "đặc sản", "ẩm thực", "food"]):
-        return "food"
-    if any(w in q for w in ["lịch sử", "ai", "nhân vật", "người", "history"]):
-        return "history"
-    if any(w in q for w in ["chùa", "lễ hội", "văn hóa", "khmer", "culture"]):
-        return "culture"
-    if any(w in q for w in ["so sánh", "khác nhau", "hơn", "compare"]):
-        return "comparison"
+    for cat, words in _CATEGORY_KEYWORDS:
+        if any(w in q for w in words):
+            return cat
     return "general"
 
 
@@ -237,7 +260,7 @@ class PerformanceCollector:
                 return False
             if not PERFORMANCE_FILE.exists():
                 return True
-            data = json.loads(PERFORMANCE_FILE.read_text(encoding="utf-8"))
+            data = _load_json(PERFORMANCE_FILE, default=None)
             if not isinstance(data, dict):
                 raise ValueError("Invalid optimizer store")
             return not any(
@@ -330,6 +353,17 @@ class PromptOptimizer:
         self._active_id: str = "default"
         self._load()
 
+    def _trim_variants(self):
+        if len(self._variants) > MAX_VARIANTS:
+            default_v = next(
+                (v for v in self._variants if v.get("id") == "default"),
+                self._default_variant(),
+            )
+            others = [v for v in self._variants if v.get("id") != "default"][-(MAX_VARIANTS - 1):]
+            self._variants = [default_v, *others]
+        elif not any(v.get("id") == "default" for v in self._variants):
+            self._variants.insert(0, self._default_variant())
+
     def _load(self):
         data = _load_json(VARIANTS_FILE, default={
             "variants": [self._default_variant()],
@@ -337,13 +371,12 @@ class PromptOptimizer:
         })
         self._variants = data.get("variants", [self._default_variant()])
         self._active_id = data.get("active_id", "default")
-        # Ensure default variant always exists
-        if not any(v["id"] == "default" for v in self._variants):
-            self._variants.insert(0, self._default_variant())
+        self._trim_variants()
 
     def _save(self):
+        self._trim_variants()
         _atomic_write(VARIANTS_FILE, {
-            "variants": self._variants[-50:],  # keep last 50 variants
+            "variants": self._variants,
             "active_id": self._active_id,
             "saved_at": time.time(),
         })
@@ -531,13 +564,13 @@ class ParameterTuner:
             "params": {},
             "queries_since_tune": 0,
         })
-        # Merge defaults with saved
-        self._params = dict(DEFAULT_PARAMS)
+        # Deep-copy inner dicts so updates do not mutate DEFAULT_PARAMS in-place
+        self._params = {cat: dict(p) for cat, p in DEFAULT_PARAMS.items()}
         for cat, saved in data.get("params", {}).items():
-            if cat in self._params:
+            if cat in self._params and isinstance(saved, dict):
                 self._params[cat].update(saved)
-            else:
-                self._params[cat] = saved
+            elif isinstance(saved, dict):
+                self._params[cat] = dict(saved)
         self._queries_since_tune = data.get("queries_since_tune", 0)
 
     def _save(self):
@@ -619,8 +652,10 @@ class ParameterTuner:
         """Increment and return True if tune threshold reached (100 queries)."""
         with self._lock:
             self._queries_since_tune += 1
-            should = self._queries_since_tune >= 100
-        return should
+            if self._queries_since_tune >= 100:
+                self._queries_since_tune = 0
+                return True
+            return False
 
     def get_all_params(self) -> dict[str, dict]:
         """Return all category params."""
@@ -664,6 +699,22 @@ class ToolWeightOptimizer:
 
     # ── Public API ───────────────────────────────────────────────────────
 
+    @staticmethod
+    def _aggregate_tool_records(records: list[dict]) -> tuple[dict[str, list[float]], dict[str, float]]:
+        tool_scores: dict[str, list[float]] = defaultdict(list)
+        tool_last_used: dict[str, float] = {}
+        for r in records:
+            ts = r.get("timestamp", 0)
+            score = r["quality_score"]
+            for raw_tool in r.get("tools_used", []):
+                tool = raw_tool.split("(", 1)[0].strip() if isinstance(raw_tool, str) else ""
+                if not tool:
+                    continue
+                tool_scores[tool].append(score)
+                if ts > tool_last_used.get(tool, 0):
+                    tool_last_used[tool] = ts
+        return tool_scores, tool_last_used
+
     def update_scores(self, records: list[dict]) -> None:
         """Recalculate tool effectiveness from recent records."""
         if not records:
@@ -675,17 +726,8 @@ class ToolWeightOptimizer:
             [r["quality_score"] for r in no_tool_records]
         ) if no_tool_records else 5.0
 
-        # Per-tool: avg score when tool was used
-        tool_scores: dict[str, list[float]] = defaultdict(list)
-        tool_last_used: dict[str, float] = {}
-
-        for r in records:
-            for tool in r.get("tools_used", []):
-                tool_scores[tool].append(r["quality_score"])
-                ts = r.get("timestamp", 0)
-                if ts > tool_last_used.get(tool, 0):
-                    tool_last_used[tool] = ts
-
+        tool_scores, tool_last_used = self._aggregate_tool_records(records)
+        existing_scores = self._tool_data.get("scores", {})
         scores = {}
         for tool in self.ALL_TOOLS:
             if tool in tool_scores:
@@ -700,17 +742,12 @@ class ToolWeightOptimizer:
                     "last_used": tool_last_used.get(tool, 0),
                 }
             else:
-                # Keep old data if available
-                old = self._tool_data.get("scores", {}).get(tool)
-                if old:
-                    scores[tool] = old
-                else:
-                    scores[tool] = {
-                        "avg_quality": 0,
-                        "usage_count": 0,
-                        "effectiveness": 0,
-                        "last_used": 0,
-                    }
+                scores[tool] = existing_scores.get(tool) or {
+                    "avg_quality": 0,
+                    "usage_count": 0,
+                    "effectiveness": 0,
+                    "last_used": 0,
+                }
 
         with self._lock:
             self._tool_data["scores"] = scores
@@ -850,6 +887,8 @@ def _run_optimization() -> None:
     stats = performance_collector.get_stats(window_hours=72)  # 3-day window
     if stats["total_records"] < 10:
         logger.info("Not enough data for optimization (%d records)", stats["total_records"])
+        with _optimization_lock:
+            _last_optimization_count = performance_collector.total_count
         return
 
     # 1. Propose new prompt variant
