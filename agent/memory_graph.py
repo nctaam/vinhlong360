@@ -496,10 +496,8 @@ class MemoryGraph:
         # Co-mention edges between all entity pairs
         for i, a in enumerate(entities_discussed):
             for b in entities_discussed[i + 1:]:
-                # Always store in alphabetical order for consistency
-                if a > b:
-                    a, b = b, a
-                self.add_edge(a, b, "co_mentioned")
+                src, dst = (b, a) if a > b else (a, b)
+                self.add_edge(src, dst, "co_mentioned")
 
     def record_preference(self, user_id: str, entity_id: str,
                           score: float = 1.0):
@@ -529,9 +527,23 @@ class MemoryGraph:
         """
         Full subgraph of everything a user has explored.
 
-        Returns {nodes, edges} of the user's neighborhood (2 hops).
+        Returns {nodes, edges} of the user's neighborhood (2 hops),
+        excluding other user nodes and their private edges.
         """
-        return self.get_subgraph(user_id, hops=2)
+        raw = self.get_subgraph(user_id, hops=2)
+        other_users = {
+            n["id"] for n in raw["nodes"]
+            if n.get("type") == "user" and n.get("id") != user_id
+        }
+        if not other_users:
+            return raw
+        return {
+            "nodes": [n for n in raw["nodes"] if n.get("id") not in other_users],
+            "edges": [
+                e for e in raw["edges"]
+                if e.get("source") not in other_users and e.get("target") not in other_users
+            ],
+        }
 
     def suggest_unexplored(self, user_id: str, limit: int = 5) -> list[dict]:
         """

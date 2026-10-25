@@ -214,6 +214,8 @@ async def require_csrf(request: Request) -> None:
     """
     if request.method in _SAFE_METHODS:
         return
+    if getattr(request.state, "_csrf_verified", False) or getattr(request.state, "admin_actor", None) == "admin-key":
+        return
 
     user = await _get_current_user_or_none(request)
     if not user:
@@ -346,10 +348,15 @@ def sanitize_html(value: str) -> str:
     """
     if not value:
         return ""
-    text = _SCRIPT_RE.sub('', value)
-    text = _EVENT_HANDLER_RE.sub('', text)
-    text = _JAVASCRIPT_URI_RE.sub('', text)
-    text = _TAG_RE.sub('', text)
+    text = value
+    for _ in range(3):
+        prev = text
+        text = _SCRIPT_RE.sub('', text)
+        text = _EVENT_HANDLER_RE.sub('', text)
+        text = _JAVASCRIPT_URI_RE.sub('', text)
+        text = _TAG_RE.sub('', text)
+        if text == prev:
+            break
     text = _html.escape(text)
     return text.strip()
 

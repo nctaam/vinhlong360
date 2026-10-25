@@ -192,20 +192,28 @@ const CLIENT_CACHE_TTL_MS = 10 * 60 * 1000
 const ASYNC_DATA_KEY = 'weather-vinh-long'
 
 let lastResolvedAt = 0
+let clockEpoch = 0
+const resolvedAtByPayload = new WeakMap<object, { at: number; epoch: number }>()
 
 /** Chỉ dùng trong test — xoá mốc cache giữa các case. */
 export function resetWeatherCacheClock() {
   lastResolvedAt = 0
+  clockEpoch += 1
 }
 
 export function useWeather() {
   const { captureClientError } = useClientError()
+  const nuxtApp = useNuxtApp()
 
   const { data, pending, error, refresh } = useAsyncData<WeatherReading>(
     ASYNC_DATA_KEY,
     async () => {
       const payload = await apiFetch<unknown>(`/weather?area=${WEATHER_MEASURE_POINT.area}`)
-      lastResolvedAt = Date.now()
+      const now = Date.now()
+      lastResolvedAt = now
+      if (nuxtApp?.payload && typeof nuxtApp.payload === 'object') {
+        resolvedAtByPayload.set(nuxtApp.payload, { at: now, epoch: clockEpoch })
+      }
       return classifyWeather(payload)
     },
     {
@@ -222,7 +230,11 @@ export function useWeather() {
       getCachedData(key, nuxtApp, ctx) {
         // Chỉ tái dùng khi vào lại trang; `refresh()` / watch luôn gọi thật.
         if (ctx?.cause && ctx.cause !== 'initial') return undefined
-        if (!lastResolvedAt || Date.now() - lastResolvedAt > CLIENT_CACHE_TTL_MS) return undefined
+        const scoped = nuxtApp?.payload && typeof nuxtApp.payload === 'object'
+          ? resolvedAtByPayload.get(nuxtApp.payload)
+          : undefined
+        const resolvedAt = (scoped && scoped.epoch === clockEpoch) ? scoped.at : lastResolvedAt
+        if (!resolvedAt || Date.now() - resolvedAt > CLIENT_CACHE_TTL_MS) return undefined
         const cached = nuxtApp?.payload?.data?.[key] ?? nuxtApp?.static?.data?.[key]
         return (cached as WeatherReading | undefined) ?? undefined
       },

@@ -327,7 +327,8 @@ let activeKeydownListener: ((e: KeyboardEvent) => void) | null = null
  * Master Cognitive Terroir Composable.
  */
 export function useCognitiveTerroir() {
-  const tide = ref<TideCalculationResult>(calculateAstronomicalTide())
+  const seedDate = new Date(Math.floor(Date.now() / 300_000) * 300_000)
+  const tide = ref<TideCalculationResult>(calculateAstronomicalTide(seedDate))
   const network = ref<NetworkCondition>(detectNetworkCondition())
   const battery = ref<BatteryCondition>({
     level: 1.0,

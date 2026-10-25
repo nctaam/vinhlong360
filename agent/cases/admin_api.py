@@ -775,24 +775,37 @@ class BuildChangeSetBody(BaseModel):
     evidence_refs: tuple[StrictStr, ...]
 
 
+def _resolve_change_set_evidence_refs(body: BuildChangeSetBody) -> tuple[str, ...]:
+    if body.evidence_refs:
+        return tuple(body.evidence_refs)
+    from .correction import load_evidence_records
+
+    if len(body.item_ids) == 1:
+        return tuple(
+            record.evidence_id
+            for record in load_evidence_records(body.case_id, body.item_ids[0])
+        )
+    wanted = set(body.item_ids)
+    return tuple(
+        record.evidence_id
+        for record in load_evidence_records(body.case_id)
+        if record.item_id in wanted
+    )
+
+
 @case_admin_router.post("/change-sets", dependencies=[_guard("changeset.build")])
 async def build_case_change_set(request: Request, body: BuildChangeSetBody):
-    from .correction import build_change_set, load_evidence_records
+    from .correction import build_change_set
 
     try:
-        # Lineage comes from storage, not from the caller's say-so. An empty
-        # list from the UI means "use what was recorded", and a build with no
-        # recorded evidence still fails exactly as the domain demands.
-        evidence_refs = tuple(body.evidence_refs) or tuple(
-            record.evidence_id
-            for item_id in body.item_ids
-            for record in load_evidence_records(body.case_id, item_id)
-        )
-        draft = await asyncio.to_thread(
-            build_change_set,
-            body.case_id, tuple(body.item_ids), _actor(request), body.expected_revision,
-            evidence_refs=evidence_refs, now=_now(),
-        )
+        def _build_sync():
+            evidence_refs = _resolve_change_set_evidence_refs(body)
+            return build_change_set(
+                body.case_id, tuple(body.item_ids), _actor(request), body.expected_revision,
+                evidence_refs=evidence_refs, now=_now(),
+            )
+
+        draft = await asyncio.to_thread(_build_sync)
     except Exception as error:  # noqa: BLE001
         raise _fail(error) from error
     return {"case_id": draft.case_id, "entity_id": draft.entity_id,

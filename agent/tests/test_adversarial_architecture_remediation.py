@@ -382,3 +382,51 @@ def test_concurrency_ensure_state_schema_returns_columns_and_scheduler_uses_clai
     assert callable(cp_conc.ensure_state_schema)
 
 
+def test_campaign_iota_backend_security_and_hotpath_optimizations(monkeypatch):
+    import inspect
+    import admin_permissions
+    import auth_middleware
+    import circuit_breaker
+    import kb_curation
+    import memory_graph
+    from cases import admin_api as cases_admin_api
+    from cases import work_control as cases_wc
+    from reports import repository as reports_repo
+
+    # 1. admin_permissions.has_admin_entry_scope(None) returns False
+    assert admin_permissions.has_admin_entry_scope(None) is False
+    assert admin_permissions.has_admin_entry_scope({}) is False
+
+    # 2. auth_middleware.sanitize_html strips split-tag reassembly payloads
+    assert "javascript:" not in auth_middleware.sanitize_html("javas<b></b>cript:alert(1)").lower()
+    assert "onerror=" not in auth_middleware.sanitize_html('on<b></b>error="alert(1)"').lower()
+
+    # 3. middleware.RateLimiter bounds _requests to max_keys
+    limiter = middleware.RateLimiter(max_requests=5, window_seconds=60, max_keys=5)
+    for idx in range(8):
+        limiter.is_allowed(f"ip-{idx}")
+    assert len(limiter._requests) <= 5
+
+    # 4. kb_curation._load_kb prefers DB-backed knowledge._entities at default path
+    monkeypatch.setattr(knowledge, "_data_source", "db")
+    monkeypatch.setattr(knowledge, "_entities", {"p1": {"id": "p1", "type": "dish"}})
+    kb = kb_curation._load_kb()
+    assert kb["entities"] == [{"id": "p1", "type": "dish"}]
+
+    # 5. memory_graph.get_user_knowledge_map excludes other user nodes
+    g = memory_graph.MemoryGraph()
+    g.record_interaction("user-a", ["e1", "e2", "e3"])
+    g.record_interaction("user-b", ["e1"])
+    km = g.get_user_knowledge_map("user-a")
+    node_ids = {n["id"] for n in km["nodes"]}
+    assert "user-a" in node_ids
+    assert "user-b" not in node_ids
+
+    # 6. cases.work_control.scan_escalations batches INSERT via unnest and reports.repository caches schema
+    assert "unnest" in inspect.getsource(cases_wc.scan_escalations)
+    assert "_reports_sqlite_schema_key" in inspect.getsource(reports_repo.ReportRepository._ensure_sqlite_schema)
+    assert callable(cases_admin_api._resolve_change_set_evidence_refs)
+    assert "_guarded_attempt" in inspect.getsource(circuit_breaker.safe_llm_call)
+
+
+

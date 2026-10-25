@@ -35,6 +35,9 @@ class ReportRepository:
     def _ensure_sqlite_schema(self) -> None:
         if getattr(self.db, "_use_pg", False):
             return
+        cache_key = (getattr(self.db, "db_path", None), getattr(self.db, "_initialized", False))
+        if cache_key[0] is not None and getattr(self.db, "_reports_sqlite_schema_key", None) == cache_key:
+            return
         with self.db._conn() as conn:
             conn.executescript(
                 """
@@ -68,6 +71,11 @@ class ReportRepository:
                     ON reports(target_type, target_id, status);
                 """
             )
+        if cache_key[0] is not None:
+            try:
+                setattr(self.db, "_reports_sqlite_schema_key", cache_key)
+            except Exception:
+                pass
 
     def _target_query(self, target_type: ReportTargetType, target_id: str) -> tuple[str, tuple[Any, ...]]:
         ph = self.db._ph
@@ -131,7 +139,6 @@ class ReportRepository:
         )
 
     def create(self, request: ReportCreate, *, actor: ReportActor, idempotency_key: str, correlation_id: str) -> ReportRecord:
-        self._ensure_sqlite_schema()
         now = datetime.now(timezone.utc)
         ph = self.db._ph
         report_id = str(uuid.uuid4())
@@ -187,7 +194,6 @@ class ReportRepository:
         return self._record(row) if row else None
 
     def list(self, *, limit: int = 100) -> list[ReportRecord]:
-        self._ensure_sqlite_schema()
         limit = max(1, min(int(limit), 500))
         with self.db._conn() as conn:
             rows = self.db._fetchall(
@@ -198,7 +204,6 @@ class ReportRepository:
         return [self._record(row) for row in rows]
 
     def transition(self, report_id: str, *, expected_revision: int, status: ReportStatus, actor: ReportActor, reason: str) -> ReportRecord:
-        self._ensure_sqlite_schema()
         ph = self.db._ph
         now = datetime.now(timezone.utc)
         resolved = status in {ReportStatus.RESOLVED, ReportStatus.DISMISSED}

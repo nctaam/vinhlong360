@@ -279,6 +279,7 @@ function nuxtPayloadRange(body: string): { start: number, end: number } | null {
 }
 
 function replaceLaunchPayload(body: string, decision: Readonly<LaunchPageDecision>): string {
+  if (!body.includes(LAUNCH_STATE_PAYLOAD_KEY)) return body
   const range = nuxtPayloadRange(body)
   if (!range) return body
   const payload = body.slice(range.start, range.end)
@@ -294,6 +295,22 @@ function replaceLaunchPayload(body: string, decision: Readonly<LaunchPageDecisio
   const root = payloadObject(values, 0)
   const state = root ? payloadObject(values, root.state) : null
   if (!state || !Object.hasOwn(state, LAUNCH_STATE_PAYLOAD_KEY)) return body
+
+  const currentPage = payloadObject(values, state[LAUNCH_STATE_PAYLOAD_KEY])
+  if (
+    currentPage
+    && Object.keys(currentPage).length === LAUNCH_PAGE_FIELDS.length
+    && LAUNCH_PAGE_FIELDS.every((field) => {
+      const refIdx = currentPage[field]
+      return typeof refIdx === 'number'
+        && Number.isInteger(refIdx)
+        && refIdx >= 0
+        && refIdx < values.length
+        && Object.is(values[refIdx], decision[field])
+    })
+  ) {
+    return body
+  }
 
   const page: Record<string, unknown> = {}
   for (const field of LAUNCH_PAGE_FIELDS) page[field] = payloadReference(values, decision[field])

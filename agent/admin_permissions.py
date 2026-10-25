@@ -74,6 +74,8 @@ def admin_scopes_for_user(user: dict | None) -> list[str]:
 
 def has_admin_entry_scope(user: dict | None) -> bool:
     """Return whether an actor may enter at least one AdminCP workstream."""
+    if not user:
+        return False
     scopes = set(admin_scopes_for_user(user))
     return "*" in scopes or bool(scopes & ADMIN_ENTRY_SCOPES)
 

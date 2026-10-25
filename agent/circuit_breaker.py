@@ -496,15 +496,24 @@ def safe_llm_call(
     def _do_call():
         return client.chat.completions.create(**kwargs)
 
+    def _guarded_attempt():
+        try:
+            return llm_breaker.call(_do_call)
+        except _LLM_RETRYABLE_EXCEPTIONS:
+            if llm_breaker.state == CircuitState.OPEN:
+                raise CircuitOpenError(
+                    llm_breaker.name,
+                    llm_breaker._recovery_remaining(),
+                )
+            raise
+
     try:
-        def _retryable():
-            return retry_call(
-                _do_call,
-                max_retries=3,
-                base_delay=1.0,
-                retryable_exceptions=_LLM_RETRYABLE_EXCEPTIONS,
-            )
-        response = llm_breaker.call(_retryable)
+        response = retry_call(
+            _guarded_attempt,
+            max_retries=3,
+            base_delay=1.0,
+            retryable_exceptions=_LLM_RETRYABLE_EXCEPTIONS,
+        )
         return {
             "success": True,
             "response": response,

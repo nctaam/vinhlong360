@@ -480,19 +480,19 @@ def scan_escalations(*, now: datetime, limit: int = 200) -> EscalationSummary:
         case_ids = [str(database._row_to_dict(row)["case_id"]) for row in rows]
         from . import metrics as _metrics
 
-        for expired_case_id in case_ids:
-            _metrics.observe("lease_expired", channel="web",
-                             case_id=expired_case_id, now=now)
-        for case_id in case_ids:
+        if case_ids:
             database._execute(
                 conn,
                 """
                 INSERT INTO case_work_items (case_id, kind, required_role, risk_class,
                                              status, ready_at, priority)
-                VALUES (%s, %s, 'case_supervisor', 'R2', 'ready', %s, 90)
+                SELECT unnest(%s::uuid[]), %s, 'case_supervisor', 'R2', 'ready', %s, 90
                 """,
-                (case_id, ESCALATION_KIND, now),
+                (case_ids, ESCALATION_KIND, now),
             )
-            created += 1
+            created = len(case_ids)
         conn.commit()
+    for expired_case_id in case_ids:
+        _metrics.observe("lease_expired", channel="web",
+                         case_id=expired_case_id, now=now)
     return EscalationSummary(scanned=len(case_ids), created=created, skipped=0)

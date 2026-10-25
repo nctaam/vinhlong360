@@ -252,11 +252,24 @@ logging.getLogger("uvicorn.access").addFilter(_SSEAccessLogFilter())
 class RateLimiter:
     """Sliding window rate limiter per key (IP/session)."""
 
-    def __init__(self, max_requests: int = 30, window_seconds: int = 60):
+    def __init__(self, max_requests: int = 30, window_seconds: int = 60, max_keys: int = 10_000):
         self.max_requests = max_requests
         self.window = window_seconds
+        self.max_keys = max_keys
         self._requests: dict[str, list[float]] = defaultdict(list)
         self._lock = Lock()
+
+    def _evict_if_needed_unlocked(self, cutoff: float) -> None:
+        if len(self._requests) < self.max_keys:
+            return
+        expired = [k for k, v in self._requests.items() if not v or all(t <= cutoff for t in v)]
+        for k in expired:
+            del self._requests[k]
+        if len(self._requests) >= self.max_keys:
+            evict_n = max(1, self.max_keys // 5)
+            oldest = sorted(self._requests.items(), key=lambda kv: kv[1][-1] if kv[1] else 0.0)[:evict_n]
+            for k, _ in oldest:
+                del self._requests[k]
 
     def is_allowed(self, key: str) -> tuple[bool, dict]:
         """
@@ -265,8 +278,9 @@ class RateLimiter:
         """
         now = time.time()
         with self._lock:
-            # Clean old entries
             cutoff = now - self.window
+            if key not in self._requests:
+                self._evict_if_needed_unlocked(cutoff)
             self._requests[key] = [t for t in self._requests[key] if t > cutoff]
 
             count = len(self._requests[key])

@@ -39,6 +39,13 @@ _PROVISIONAL_AUDIT_CONTEXT: dict[str, tuple[str, str]] = {}
 
 
 def _load_kb() -> dict:
+    if DATA_JSON == PROJECT_DIR / "web" / "data.json":
+        try:
+            import knowledge
+            if getattr(knowledge, "_data_source", None) == "db" and getattr(knowledge, "_entities", None):
+                return {"entities": list(knowledge._entities.values())}
+        except Exception:
+            pass
     return load_json(DATA_JSON)
 
 

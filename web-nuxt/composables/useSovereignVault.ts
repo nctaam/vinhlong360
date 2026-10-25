@@ -335,11 +335,17 @@ export function useSovereignVault() {
 
   function lockVault(): void {
     activeKey = null
+    currentSalt = null
     isUnlocked.value = false
+    isBusy.value = false
   }
 
   async function ensureActiveKey(): Promise<CryptoKey> {
     if (activeKey) return activeKey
+    const store = getLocalVaultData()
+    if (store.metadata.mode === 'passphrase-derived' || vaultMode.value === 'passphrase-derived') {
+      throw new SovereignVaultError('VAULT_LOCKED', 'Khu Bảo Tồn đang bị khóa. Cần mở khóa bằng mật khẩu trước khi thao tác.')
+    }
     await unlockVault()
     if (!activeKey) {
       throw new SovereignVaultError('VAULT_LOCKED', 'Khu Bảo Tồn đang bị khóa. Cần mở khóa trước khi thao tác.')
@@ -526,6 +532,7 @@ export function useSovereignVault() {
       activeKey = null
       currentSalt = null
       isUnlocked.value = false
+      vaultMode.value = 'device-bound'
 
       if (typeof localStorage !== 'undefined') {
         localStorage.removeItem(STORAGE_KEY)
