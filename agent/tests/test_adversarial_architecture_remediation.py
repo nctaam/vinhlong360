@@ -625,6 +625,56 @@ def test_campaign_nu_multi_agent_architecture_optimizations():
     assert hasattr(image_descriptor, "_PORT_DIGITS")
 
 
+def test_campaign_xi_multi_agent_architecture_optimizations():
+    import inspect
+    import geocode
+    import index_policy
+    import llm_config
+    import media_policy
+    import prompt_cache
+    import realtime
+    import search_contract
+    import tools
+    from cases import (
+        outbox as cases_outbox,
+        policy as cases_policy,
+        rate_limit as cases_rate_limit,
+        service as cases_service,
+    )
+    from control_plane import saga as cp_saga, snapshot as cp_snapshot
+    from entities import admin_api as entities_admin_api, api as entities_api
+    from itineraries import api as itineraries_api
+
+    # 1. Ban 1: Entities policy evidence cache & thread offload, Admin script-before-escape & batch non-place, Itineraries schedule thread offload, Geocode shallow clone, Realtime bounded cache & locks, SearchContract collector
+    assert callable(entities_api._get_cached_policy_evidence)
+    assert callable(entities_api._compute_popular_entities)
+    assert callable(entities_api._execute_entity_search)
+    assert entities_admin_api._sanitize("<script>alert(1)</script>Xin chào") == "Xin chào"
+    assert callable(itineraries_api._run_schedule_itinerary_sync)
+    assert callable(geocode._clone_cache_dict)
+    assert hasattr(realtime, "_weather_locks")
+    assert callable(search_contract._collect_source_values)
+
+    # 2. Ban 2: Tools O(1) lookup index, PromptCache LRU & O(1) FIFO eviction, LLMConfig lock-free resolve & bulk_upsert, ControlPlane Snapshot durable negative cache & Saga bounded receipts
+    assert isinstance(tools.TOOLS_BY_NAME, dict)
+    assert len(tools.get_tools_by_names(["directory_lookup"])) == 1
+    assert hasattr(prompt_cache._estimate_tokens_cached, "cache_info")
+    assert callable(llm_config._validate_llm_endpoint)
+    assert callable(cp_snapshot._query_durable_generation)
+    assert callable(cp_saga._cache_local_receipt)
+
+    # 3. Ban 4: Case Policy mtime LRU cache, Case RateLimit early return on cap, Outbox reference-before-contact & top-level metrics, Case Service cached digest key, MediaPolicy prefix guard, IndexPolicy O(1) reason rank map
+    assert hasattr(cases_policy._load_cached_policy, "cache_info")
+    assert "if len(hits) >= limit:\n            return False" in inspect.getsource(
+        cases_rate_limit.check_case_rate_limit
+    )
+    assert callable(cases_outbox._ambiguous_receipt)
+    assert "_rate_digest_key" in inspect.getsource(cases_service.CaseService._digest_key)
+    assert hasattr(media_policy, "_UNVERIFIED_AI_IMAGE_TYPES")
+    assert isinstance(index_policy._REASON_RANK_BY_KIND, dict)
+
+
+
 
 
 

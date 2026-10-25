@@ -65,6 +65,33 @@ AREA_COORDS = {
 
 _weather_cache: dict = {}
 _weather_lock = Lock()
+_weather_locks: dict[str, Lock] = {k: Lock() for k in AREA_COORDS}
+
+
+def _get_cached_weather(cache_key: str, area: str) -> dict | None:
+    with _weather_lock:
+        cached = _weather_cache.get(cache_key)
+        if cached and time.time() - cached["_ts"] < WEATHER_CACHE_TTL:
+            return cached if area == cache_key else {**cached, "area": area}
+    return None
+
+
+def _format_weather_payload(data: dict, cache_key: str, coords: dict) -> dict:
+    weather_list = data.get("weather") or ()
+    first_weather = weather_list[0] if weather_list else {}
+    return {
+        "area": cache_key,
+        "area_name": coords["name"],
+        "temp_c": round(data["main"]["temp"], 1),
+        "feels_like_c": round(data["main"]["feels_like"], 1),
+        "humidity": data["main"]["humidity"],
+        "description": first_weather.get("description", ""),
+        "icon": first_weather.get("icon", ""),
+        "wind_speed_ms": round(data.get("wind", {}).get("speed", 0), 1),
+        "rain_mm": data.get("rain", {}).get("1h", 0),
+        "suggestion": _weather_suggestion(data),
+        "_ts": time.time(),
+    }
 
 
 def get_weather(area: str = "vinh-long") -> dict | None:
@@ -76,66 +103,49 @@ def get_weather(area: str = "vinh-long") -> dict | None:
         wind_speed_ms, icon, rain_mm, suggestion
     }
     """
-    global _weather_cache
-
-    # Check cache
-    with _weather_lock:
-        cached = _weather_cache.get(area)
-        if cached and time.time() - cached["_ts"] < WEATHER_CACHE_TTL:
-            return cached
+    cache_key = area if area in AREA_COORDS else "vinh-long"
+    hit = _get_cached_weather(cache_key, area)
+    if hit is not None:
+        return hit
 
     if not WEATHER_API_KEY:
         return _fallback_weather(area)
 
-    coords = AREA_COORDS.get(area, AREA_COORDS["vinh-long"])
+    with _weather_locks.get(cache_key, _weather_lock):
+        hit = _get_cached_weather(cache_key, area)
+        if hit is not None:
+            return hit
 
-    try:
-        params = {
-            "lat": coords["lat"],
-            "lon": coords["lon"],
-            "appid": WEATHER_API_KEY,
-            "units": "metric",
-            "lang": "vi",
-        }
-        resp = _PINNED_HTTP.get(
-            f"{WEATHER_URL}?{urlencode(params)}",
-            user_agent=WEATHER_USER_AGENT,
-            policy=_WEATHER_EGRESS_POLICY,
-            audit_context="realtime_weather",
-        )
-
-        if resp.status_code != 200:
+        coords = AREA_COORDS[cache_key]
+        try:
+            params = {
+                "lat": coords["lat"],
+                "lon": coords["lon"],
+                "appid": WEATHER_API_KEY,
+                "units": "metric",
+                "lang": "vi",
+            }
+            resp = _PINNED_HTTP.get(
+                f"{WEATHER_URL}?{urlencode(params)}",
+                user_agent=WEATHER_USER_AGENT,
+                policy=_WEATHER_EGRESS_POLICY,
+                audit_context="realtime_weather",
+            )
+            if resp.status_code != 200:
+                return _fallback_weather(area)
+            result = _format_weather_payload(json.loads(resp.content), cache_key, coords)
+            with _weather_lock:
+                _weather_cache[cache_key] = result
+            return result if area == cache_key else {**result, "area": area}
+        except (BlockedAddressError, PeerMismatchError, RedirectPolicyError):
             return _fallback_weather(area)
-        data = json.loads(resp.content)
-
-        result = {
-            "area": area,
-            "area_name": coords["name"],
-            "temp_c": round(data["main"]["temp"], 1),
-            "feels_like_c": round(data["main"]["feels_like"], 1),
-            "humidity": data["main"]["humidity"],
-            "description": data["weather"][0]["description"] if data.get("weather") else "",
-            "icon": data["weather"][0]["icon"] if data.get("weather") else "",
-            "wind_speed_ms": round(data.get("wind", {}).get("speed", 0), 1),
-            "rain_mm": data.get("rain", {}).get("1h", 0),
-            "suggestion": _weather_suggestion(data),
-            "_ts": time.time(),
-        }
-
-        with _weather_lock:
-            _weather_cache[area] = result
-
-        return result
-
-    except (BlockedAddressError, PeerMismatchError, RedirectPolicyError):
-        return _fallback_weather(area)
-    except Exception as exc:
-        logger.warning(
-            "Weather API failed for area %s, using fallback (%s)",
-            area,
-            type(exc).__name__,
-        )
-        return _fallback_weather(area)
+        except Exception as exc:
+            logger.warning(
+                "Weather API failed for area %s, using fallback (%s)",
+                area,
+                type(exc).__name__,
+            )
+            return _fallback_weather(area)
 
 
 def get_all_weather() -> list[dict]:
@@ -150,15 +160,15 @@ def _weather_suggestion(data: dict) -> str:
     rain = data.get("rain", {}).get("1h", 0)
 
     if rain > 5 or (200 <= weather_id <= 531):
-        return "🌧 Trời mưa — nên tham quan trong nhà: bảo tàng, chùa, làm bánh dân gian, thưởng thức ẩm thực"
+        return "Trời mưa — nên tham quan trong nhà: bảo tàng, chùa, làm bánh dân gian, thưởng thức ẩm thực"
     if temp > 35:
-        return "🔥 Trời rất nóng — nên đi sáng sớm hoặc chiều mát, mang theo nước, chọn hoạt động có bóng mát"
+        return "Trời rất nóng — nên đi sáng sớm hoặc chiều mát, mang theo nước, chọn hoạt động có bóng mát"
     if temp > 30:
-        return "☀️ Trời nắng nóng — nên đội nón, uống nhiều nước, tham quan vườn trái cây có bóng mát"
+        return "Trời nắng nóng — nên đội nón, uống nhiều nước, tham quan vườn trái cây có bóng mát"
     if temp < 25:
-        return "🌤 Thời tiết mát mẻ — lý tưởng cho đạp xe, đi bộ, tham quan ngoài trời"
+        return "Thời tiết mát mẻ — lý tưởng cho đạp xe, đi bộ, tham quan ngoài trời"
 
-    return "🌤 Thời tiết tốt — phù hợp mọi hoạt động ngoài trời"
+    return "Thời tiết tốt — phù hợp mọi hoạt động ngoài trời"
 
 
 def _fallback_weather(area: str) -> dict:
@@ -178,8 +188,8 @@ def _fallback_weather(area: str) -> dict:
         "icon": "10d" if is_rainy else "01d",
         "wind_speed_ms": 3.0,
         "rain_mm": 5 if is_rainy else 0,
-        "suggestion": "🌧 Mùa mưa — nên mang áo mưa, chọn hoạt động trong nhà buổi chiều" if is_rainy
-                      else "☀️ Mùa khô — thời tiết đẹp, phù hợp tham quan ngoài trời",
+        "suggestion": "Mùa mưa — nên mang áo mưa, chọn hoạt động trong nhà buổi chiều" if is_rainy
+                      else "Mùa khô — thời tiết đẹp, phù hợp tham quan ngoài trời",
         "fallback": True,
         "_ts": time.time(),
     }

@@ -248,13 +248,18 @@ class CreateCorrectionResult:
 
 
 def _fold(value: str) -> str:
+    lowered = value.lower()
+    if lowered.isascii():
+        return lowered
     # NFD strips the tone marks but leaves U+0111 "đ" intact, so a marker such as
     # "đánh đập" would never match without folding that letter explicitly.
-    stripped = unicodedata.normalize("NFD", value.lower().replace("đ", "d"))
+    stripped = unicodedata.normalize("NFD", lowered.replace("đ", "d"))
     return "".join(character for character in stripped if not unicodedata.combining(character))
 
 
 def _looks_urgent(text: str) -> bool:
+    if not text:
+        return False
     lowered = text.lower()
     if any(marker in lowered for marker in _URGENT_EXACT):
         return True
@@ -280,6 +285,7 @@ class CaseService:
         self._policy = policy
         self._owner_ref = owner_ref
         self._database = database
+        self._rate_digest_key: str | None = None
 
     # ── Projections the transport layer needs without touching the database ──
 
@@ -412,22 +418,25 @@ class CaseService:
             raise _reject("duplicate_correction_field", "That field appears twice.")
         seen.add(key)
 
+    @staticmethod
+    def _validate_reported_value(value: object) -> None:
+        if type(value) is not str or not value.strip():
+            raise _reject("invalid_correction_value", "Both values are required.")
+        if len(value) > MAX_CORRECTION_VALUE:
+            raise _reject("correction_value_too_long", "That value is too long.")
+
     def _validate_item_values(self, item: CorrectionItemInput) -> None:
         if type(item.reported_value_known) is not bool:
             raise _reject("invalid_correction_value", "The current-value discriminator is invalid.")
         if item.reported_value_known:
-            values = (item.reported_value, item.proposed_value)
-        else:
-            if item.reported_value is not None:
-                raise _reject("invalid_correction_value", "Unknown current values must be null.")
-            values = (item.proposed_value,)
-        for value in values:
-            if type(value) is not str or not value.strip():
-                raise _reject("invalid_correction_value", "Both values are required.")
-            if len(value) > MAX_CORRECTION_VALUE:
-                raise _reject("correction_value_too_long", "That value is too long.")
-        if item.reported_value_known and item.reported_value.strip() == item.proposed_value.strip():
-            raise _reject("correction_value_unchanged", "The proposed value is identical.")
+            self._validate_reported_value(item.reported_value)
+            self._validate_reported_value(item.proposed_value)
+            if item.reported_value.strip() == item.proposed_value.strip():
+                raise _reject("correction_value_unchanged", "The proposed value is identical.")
+            return
+        if item.reported_value is not None:
+            raise _reject("invalid_correction_value", "Unknown current values must be null.")
+        self._validate_reported_value(item.proposed_value)
 
     def _route_safety(self, command: CreateCorrectionCommand) -> None:
         for item in command.items:
@@ -664,7 +673,9 @@ class CaseService:
 
     def _digest_key(self) -> str:
         """Bucket subjects are keyed, so the digest never reveals the raw address."""
-        return self._crypto.digest_capability("case-rate-subject")
+        if self._rate_digest_key is None:
+            self._rate_digest_key = self._crypto.digest_capability("case-rate-subject")
+        return self._rate_digest_key
 
     def _consume_verified_contact(
         self,
@@ -1081,7 +1092,7 @@ class CaseService:
             authenticated_user_ref=session_user_ref,
             handoff=handoff,
         )
-        if command.optional_phone and command.notification_consent and command.assisted is None and not command.contact_receipt:
+        if _requires_contact_receipt(command):
             raise _reject(
                 "phone_verification_required",
                 "Xác nhận số điện thoại trước khi gửi yêu cầu.",
@@ -1422,6 +1433,27 @@ def _clock_due(case: CaseSnapshot, kind: str) -> datetime | None:
     return None
 
 
+def _public_outcome_fields(
+    items: tuple[CorrectionItem, ...],
+) -> tuple[tuple[PublicItemDecision, ...], tuple[PublicItemPublication, ...]]:
+    decisions: list[PublicItemDecision] = []
+    publications: list[PublicItemPublication] = []
+    for item in items:
+        decisions.append(
+            PublicItemDecision(
+                item_id=item.item_id,
+                # The ruling, not the row id that recorded it: an internal
+                # reference tells the reporter nothing they can act on.
+                outcome=item.outcome_code,
+                disposition_family=disposition_for(item.outcome_code),
+            )
+        )
+        publications.append(
+            PublicItemPublication(item_id=item.item_id, state=item.publication_state)
+        )
+    return tuple(decisions), tuple(publications)
+
+
 def project_public_status(
     case: CaseSnapshot,
     items: tuple[CorrectionItem, ...],
@@ -1449,6 +1481,7 @@ def project_public_status(
     # Nothing in the system ever writes AT_RISK or BREACHED, so publishing the
     # stored value told every overdue reporter their case was on track.
     health = promise_health_at(case.promise_clocks, now, recorded=case.promise_health)
+    item_decisions, item_publication_states = _public_outcome_fields(items)
 
     return PublicCaseStatus(
         public_reference=public_reference,
@@ -1458,20 +1491,8 @@ def project_public_status(
         next_action=next_action,
         next_update_at=next_update_at,
         promise_health=health,
-        item_decisions=tuple(
-            PublicItemDecision(
-                item_id=item.item_id,
-                # The ruling, not the row id that recorded it: an internal
-                # reference tells the reporter nothing they can act on.
-                outcome=item.outcome_code,
-                disposition_family=disposition_for(item.outcome_code),
-            )
-            for item in items
-        ),
-        item_publication_states=tuple(
-            PublicItemPublication(item_id=item.item_id, state=item.publication_state)
-            for item in items
-        ),
+        item_decisions=item_decisions,
+        item_publication_states=item_publication_states,
         review_path=review_relation,
         # Con số người báo phải gửi lại ở `expectedRevision` khi xin xét lại.
         # Không phát ra đây thì chốt tương-tranh-lạc-quan của open_review thành

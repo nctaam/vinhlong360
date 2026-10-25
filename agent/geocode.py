@@ -1,5 +1,5 @@
 """
-vinhlong360 — Geocoder (OpenStreetMap / Nominatim), scoped to the province.
+vinhlong360 — Geocoder (OpenMap.vn), scoped to the province.
 
 Gives the self-learning pipeline precise map coordinates for auto-found places.
 CRITICAL DESIGN: coordinates come from a geocoding API, NEVER from the LLM —
@@ -8,13 +8,12 @@ LLMs hallucinate plausible-but-wrong lat/lon (a documented "misevolution" risk).
 Safety / politeness:
   - Restricted to the merged Vĩnh Long province bounding box (viewbox + bounded),
     and every result is re-validated to be inside the box.
-  - Rate-limited to ~1 req/sec with a proper User-Agent (Nominatim usage policy).
+  - Rate-limited to ~1 req/sec with a proper User-Agent (OpenMap.vn usage policy).
   - Results (hits AND misses) are cached to disk to avoid repeat lookups.
   - Fully offline-safe: any network/API error returns None (no coords, no crash).
 """
 
 import json
-import copy
 import logging
 from contextlib import contextmanager
 import os
@@ -24,6 +23,8 @@ from threading import Lock
 from urllib.parse import urlencode
 
 from pinned_http import EgressPolicy, PinnedHTTPClient
+from search_contract import normalize_search_text
+from versioned_json_store import atomic_write_json
 
 logger = logging.getLogger(__name__)
 
@@ -35,11 +36,11 @@ CACHE_FILE = DATA_DIR / "geocode_cache.json"
 # Bounding box of merged Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh).
 LAT_MIN, LAT_MAX = 9.40, 10.55
 LON_MIN, LON_MAX = 105.70, 106.85
-# Nominatim viewbox = left,top,right,bottom = lon_min,lat_max,lon_max,lat_min
+# OpenMap.vn bounds = left,top,right,bottom = lon_min,lat_max,lon_max,lat_min
 _VIEWBOX = f"{LON_MIN},{LAT_MAX},{LON_MAX},{LAT_MIN}"
 
-NOMINATIM = "https://nominatim.openstreetmap.org/search"
-NOMINATIM_ORIGIN = "https://nominatim.openstreetmap.org"
+NOMINATIM = "https://mapapis.openmap.vn/v1/geocode/forward"
+NOMINATIM_ORIGIN = "https://mapapis.openmap.vn"
 USER_AGENT = "vinhlong360-agent/1.0 (tourism knowledge-base geocoder)"
 MIN_INTERVAL = 1.1  # seconds between requests (politeness)
 
@@ -97,24 +98,32 @@ def _interprocess_file_lock(path: Path):
                 fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
 
+def _cache_mtime() -> int | None:
+    try:
+        return CACHE_FILE.stat().st_mtime_ns
+    except FileNotFoundError:
+        return None
+
+
+def _clone_cache_dict(source: dict) -> dict:
+    return {
+        k: (list(v) if isinstance(v, list) else v)
+        for k, v in source.items()
+    }
+
+
 def _load_cache() -> dict:
     global _cache, _cache_mtime_ns, _cache_snapshot
-    try:
-        current_mtime = CACHE_FILE.stat().st_mtime_ns
-    except FileNotFoundError:
-        current_mtime = None
+    current_mtime = _cache_mtime()
     if _cache is not None and current_mtime == _cache_mtime_ns:
         return _cache
     with _cache_lock:
-        try:
-            current_mtime = CACHE_FILE.stat().st_mtime_ns
-        except FileNotFoundError:
-            current_mtime = None
+        current_mtime = _cache_mtime()
         if _cache is not None and current_mtime == _cache_mtime_ns:
             return _cache
         if _cache is not None and current_mtime != _cache_mtime_ns:
             _cache_stats["cache_refreshes"] += 1
-        if CACHE_FILE.exists():
+        if current_mtime is not None:
             try:
                 _cache = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
             except Exception as exc:
@@ -123,7 +132,7 @@ def _load_cache() -> dict:
         else:
             _cache = {}
         _cache_mtime_ns = current_mtime
-        _cache_snapshot = copy.deepcopy(_cache)
+        _cache_snapshot = _clone_cache_dict(_cache)
         return _cache
 
 
@@ -174,9 +183,7 @@ def _merge_cache_updates(
 
 
 def _write_cache(cache: dict) -> int:
-    tmp = CACHE_FILE.with_suffix(".tmp")
-    tmp.write_text(json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")
-    tmp.replace(CACHE_FILE)
+    atomic_write_json(CACHE_FILE, cache, indent=2)
     return CACHE_FILE.stat().st_mtime_ns
 
 
@@ -191,14 +198,13 @@ def _save_cache():
             _cache_stats["lost_update_prevented"] += conflicts
             _cache.clear()
             _cache.update(merged)
-            _cache_snapshot = copy.deepcopy(merged)
+            _cache_snapshot = _clone_cache_dict(merged)
             _cache_mtime_ns = _write_cache(_cache)
     except Exception as exc:
         logger.warning("Failed to save geocode cache: %s", exc)
 
 
 def _norm(text: str) -> str:
-    from search_contract import normalize_search_text
     return normalize_search_text(text)
 
 
@@ -206,21 +212,35 @@ def in_box(lat: float, lon: float) -> bool:
     return LAT_MIN <= lat <= LAT_MAX and LON_MIN <= lon <= LON_MAX
 
 
+def _extract_coords(data: object) -> tuple[float, float] | None:
+    """Extract (lat, lon) from OpenMap.vn {'results': [...]} or list [{'lat', 'lon'}]."""
+    items = data.get("results") if isinstance(data, dict) else data
+    first = items[0] if (isinstance(items, list) and items) else None
+    if not isinstance(first, dict):
+        return None
+    loc = ((first.get("geometry") or {}).get("location")) or first
+    lat, lon = loc.get("lat"), loc.get("lng", loc.get("lon"))
+    if lat is None or lon is None:
+        return None
+    return float(lat), float(lon)
+
+
 def _query_nominatim(query: str) -> list | None:
-    """One rate-limited Nominatim call. Returns [lat, lon] in-box, or None."""
+    """One rate-limited OpenMap.vn geocode call. Returns [lat, lon] in-box, or None."""
     with _lock:
         wait = MIN_INTERVAL - (time.time() - _last_request[0])
         if wait > 0:
             time.sleep(wait)
         _last_request[0] = time.time()
     try:
-        params = urlencode({
-            "format": "jsonv2",
-            "q": query,
-            "limit": 1,
-            "viewbox": _VIEWBOX,
-            "bounded": 1,
-        })
+        query_params = {
+            "address": query,
+            "bounds": _VIEWBOX,
+        }
+        api_key = os.environ.get("NDA_MAP_KEY", "").strip()
+        if api_key:
+            query_params["apikey"] = api_key
+        params = urlencode(query_params)
         resp = _PINNED_HTTP.get(
             f"{NOMINATIM}?{params}",
             user_agent=USER_AGENT,
@@ -229,14 +249,11 @@ def _query_nominatim(query: str) -> list | None:
         )
         if resp.status_code != 200:
             return None
-        data = json.loads(resp.content)
-        if not isinstance(data, list) or not data or not isinstance(data[0], dict):
-            return None
-        lat, lon = float(data[0]["lat"]), float(data[0]["lon"])
-        if in_box(lat, lon):
-            return [round(lat, 7), round(lon, 7)]
+        pair = _extract_coords(json.loads(resp.content))
+        if pair and in_box(pair[0], pair[1]):
+            return [round(pair[0], 7), round(pair[1], 7)]
     except Exception as exc:
-        logger.debug("Nominatim query failed for %r: %s", query, exc)
+        logger.debug("OpenMap.vn geocode query failed for %r: %s", query, exc)
     return None
 
 

@@ -99,10 +99,13 @@ def _require_ai_only_entity_images(images: list[str] | None) -> None:
         _reject_non_ai_media()
 
 
+_SCRIPT_TAG_RE = _re.compile(r"<script[^>]*>.*?</script>", flags=_re.IGNORECASE | _re.DOTALL)
+
+
 def _sanitize(text: str) -> str:
     """Remove dangerous HTML/JS from user input."""
+    text = _SCRIPT_TAG_RE.sub("", text)
     text = _html.escape(text)
-    text = _re.sub(r'<script[^>]*>.*?</script>', '', text, flags=_re.IGNORECASE | _re.DOTALL)
     return text.strip()
 
 
@@ -270,12 +273,14 @@ def _list_entities_fetch(type, area, q, orphans_only, kind_types, limit, offset)
             all_matches = [e for e in all_matches if e.get("type") in _kt]
     elif kind_types:
         merged: list[dict] = []
-        for t in kind_types:
-            if t == "place":
-                # list_entities mặc định không trả place — lấy trực tiếp (giống nhánh include_places).
-                merged.extend(_list_entities_fetch_place_rows())
-            else:
-                merged.extend(db.list_entities(entity_type=t, area=area, limit=2000, offset=0) or [])
+        non_place_types = [t for t in kind_types if t != "place"]
+        if "place" in kind_types:
+            # list_entities mặc định không trả place — lấy trực tiếp (giống nhánh include_places).
+            merged.extend(_list_entities_fetch_place_rows())
+        if non_place_types:
+            merged.extend(
+                db.list_entities(entity_types=non_place_types, area=area, limit=2000, offset=0) or []
+            )
         merged.sort(key=lambda e: (e.get("name") or ""))
         all_matches = merged
     else:
@@ -434,21 +439,26 @@ def _completeness_universal_fields(ents, fields, missing_map) -> set[str]:
 
 
 def _completeness_registry_fields(ents, kind_types, seen, fields, missing_map) -> None:
+    ents_by_type: dict[str, list[dict]] = {}
+    for e in ents:
+        ents_by_type.setdefault(e["type"], []).append(e)
     for t in kind_types:
         schema = _ENTITY_SCHEMAS.get(t) or {}
-        t_ents = [e for e in ents if e["type"] == t]
+        t_ents = ents_by_type.get(t)
         if not t_ents:
             continue
         for f in schema.get("fields", []):
             key = f["key"]
             if key in seen:
                 continue
-            filled = sum(1 for e in t_ents if _completeness_has(e, key))
+            filled = 0
+            for e in t_ents:
+                if _completeness_has(e, key):
+                    filled += 1
+                else:
+                    missing_map[e["id"]].append(key)
             fields.append({"key": key, "label": f["label"], "scope": schema.get("label", t),
                            "filled": filled, "pct": round(100 * filled / len(t_ents), 1)})
-            for e in t_ents:
-                if not _completeness_has(e, key):
-                    missing_map[e["id"]].append(key)
 
 
 @router.get("/entities/places",

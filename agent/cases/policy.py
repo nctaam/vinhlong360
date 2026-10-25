@@ -1,10 +1,15 @@
 import json
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+_DEFAULT_POLICY_PATH = Path(__file__).resolve().parents[2] / 'config' / 'case-service-policy.json'
 _KEYS = frozenset({'revision', 'owner_ref_env', 'receipt_target_seconds', 'triage_target_seconds', 'update_target_seconds', 'resolution_target_seconds_by_risk', 'lease_duration_seconds', 'risk_registry', 'maker_checker_rules', 'retention', 'notification_channel', 'assisted_coverage', 'public_resolution_sla_enabled'})
 _RISK_KEYS = frozenset({'R0', 'R1', 'R2', 'R3'})
+_HIGH_RISK_CLASSES = frozenset({'R2', 'R3'})
+_INDEPENDENT_REVIEW_KEYS = frozenset({'independent_review'})
+_RETENTION_KEYS = frozenset({'case_days', 'receipt_days'})
 _COVERAGE_KEYS = frozenset({'timezone', 'weekdays', 'hours', 'duty_roster', 'fallback_copy'})
 
 @dataclass(frozen=True)
@@ -19,7 +24,7 @@ def _risk_mapping(value: Any, label: str) -> dict[str, Any]:
     return value
 
 def _high_risk_rules(value: Any) -> dict[str, bool]:
-    if not isinstance(value, dict) or set(value) != {'R2', 'R3'}: raise ValueError('maker-checker rules must contain exactly R2 and R3')
+    if not isinstance(value, dict) or set(value) != _HIGH_RISK_CLASSES: raise ValueError('maker-checker rules must contain exactly R2 and R3')
     if any(type(rule) is not bool for rule in value.values()): raise ValueError('maker-checker rules must be boolean')
     return value
 
@@ -40,24 +45,30 @@ def _validate_clock_targets(data: dict[str, Any]) -> None:
 
 def _validate_risk_governance(data: dict[str, Any]) -> None:
     registry = _risk_mapping(data['risk_registry'], 'risk registry')
-    if any(not isinstance(config, dict) or set(config) != {'independent_review'} or type(config['independent_review']) is not bool for config in registry.values()): raise ValueError('risk registry independence must be boolean')
+    if any(not isinstance(config, dict) or set(config) != _INDEPENDENT_REVIEW_KEYS or type(config['independent_review']) is not bool for config in registry.values()): raise ValueError('risk registry independence must be boolean')
     rules = _high_risk_rules(data['maker_checker_rules'])
-    if any(registry[risk].get('independent_review') is not True or rules[risk] is not True for risk in ('R2', 'R3')): raise ValueError('R2/R3 require independent review')
+    if any(registry[risk].get('independent_review') is not True or rules[risk] is not True for risk in _HIGH_RISK_CLASSES): raise ValueError('R2/R3 require independent review')
 
 def _validate_operations(data: dict[str, Any]) -> None:
     retention = data['retention']
-    if not isinstance(retention, dict) or set(retention) != {'case_days', 'receipt_days'}: raise ValueError('retention keys are invalid')
+    if not isinstance(retention, dict) or set(retention) != _RETENTION_KEYS: raise ValueError('retention keys are invalid')
     for value in retention.values(): _positive(value, 'retention')
     if not isinstance(data['notification_channel'], str) or data['notification_channel'] != 'outbox': raise ValueError('notification channel is invalid')
     _validate_coverage(data['assisted_coverage'])
     if data['public_resolution_sla_enabled'] is not False: raise ValueError('public resolution SLA is disabled')
 
-def load_case_policy(path: Path | None = None) -> CasePolicy:
-    path = path or Path(__file__).resolve().parents[2] / 'config' / 'case-service-policy.json'
-    data = json.loads(path.read_text(encoding='utf-8'))
+@lru_cache(maxsize=8)
+def _load_cached_policy(target: Path, mtime_ns: int, size: int) -> CasePolicy:
+    del mtime_ns, size
+    data = json.loads(target.read_text(encoding='utf-8'))
     if not isinstance(data, dict) or set(data) != _KEYS: raise ValueError('policy requires exact top-level keys')
     if data['revision'] != 'correction-pilot-v1' or data['owner_ref_env'] != 'CASE_SERVICE_OWNER_REF': raise ValueError('invalid policy authority')
     _validate_clock_targets(data)
     _validate_risk_governance(data)
     _validate_operations(data)
     return CasePolicy(**data)
+
+def load_case_policy(path: Path | None = None) -> CasePolicy:
+    target = (path or _DEFAULT_POLICY_PATH).resolve()
+    stat = target.stat()
+    return _load_cached_policy(target, stat.st_mtime_ns, stat.st_size)

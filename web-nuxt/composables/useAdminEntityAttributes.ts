@@ -1,21 +1,38 @@
 import { ref } from 'vue'
 
-export const AMENITY_OPTIONS: Record<string, { icon: string; label: string }> = {
-  wifi: { icon: '📶', label: 'Wi-Fi' },
-  wheelchair: { icon: '♿', label: 'Xe lăn' },
-  cash_only: { icon: '💵', label: 'Chỉ tiền mặt' },
-  pet_friendly: { icon: '🐕', label: 'Thú cưng OK' },
-  air_conditioned: { icon: '❄️', label: 'Máy lạnh' },
-  kid_friendly: { icon: '👶', label: 'Trẻ em OK' },
-  free_entry: { icon: '🆓', label: 'Miễn phí' },
-  guided_tour: { icon: '🎙️', label: 'Có hướng dẫn' },
-  restroom: { icon: '🚻', label: 'Nhà vệ sinh' },
-  photography: { icon: '📸', label: 'Chụp ảnh OK' },
+export const AMENITY_OPTIONS: Readonly<Record<string, Readonly<{ icon: string; label: string }>>> = Object.freeze({
+  wifi: Object.freeze({ icon: 'wind', label: 'Wi-Fi' }),
+  wheelchair: Object.freeze({ icon: 'compass', label: 'Xe lăn' }),
+  cash_only: Object.freeze({ icon: 'tag', label: 'Chỉ tiền mặt' }),
+  pet_friendly: Object.freeze({ icon: 'heart', label: 'Thú cưng OK' }),
+  air_conditioned: Object.freeze({ icon: 'wind', label: 'Máy lạnh' }),
+  kid_friendly: Object.freeze({ icon: 'users', label: 'Trẻ em OK' }),
+  free_entry: Object.freeze({ icon: 'tag', label: 'Miễn phí' }),
+  guided_tour: Object.freeze({ icon: 'microphone', label: 'Có hướng dẫn' }),
+  restroom: Object.freeze({ icon: 'building', label: 'Nhà vệ sinh' }),
+  photography: Object.freeze({ icon: 'camera', label: 'Chụp ảnh OK' }),
+})
+
+export const MONTH_LABELS: readonly string[] = Object.freeze(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'])
+
+export const KBYG_KEYS: readonly string[] = Object.freeze(['kbyg_tips', 'golden_hours', 'peak_days', 'crowd_level', 'amenity_badges', 'checklist'])
+const KBYG_KEY_SET: ReadonlySet<string> = new Set(KBYG_KEYS)
+
+function splitNonEmptyLines(raw: string): string[] {
+  const lines: string[] = []
+  for (const part of raw.split('\n')) {
+    const trimmed = part.trim()
+    if (trimmed) lines.push(trimmed)
+  }
+  return lines
 }
 
-export const MONTH_LABELS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
-
-export const KBYG_KEYS = ['kbyg_tips', 'golden_hours', 'peak_days', 'crowd_level', 'amenity_badges', 'checklist']
+function buildManagedKeySet(currentSchemaKeys: string[]): ReadonlySet<string> {
+  if (!currentSchemaKeys.length) return KBYG_KEY_SET
+  const managed = new Set(KBYG_KEY_SET)
+  for (const key of currentSchemaKeys) managed.add(key)
+  return managed
+}
 
 export function useAdminEntityAttributes() {
   // KBYG State
@@ -44,18 +61,20 @@ export function useAdminEntityAttributes() {
 
   function mergeKbygIntoAttrs(attrs: Record<string, unknown>): Record<string, unknown> {
     const result = { ...attrs }
-    const tips = kbygTips.value.split('\n').map(s => s.trim()).filter(Boolean)
+    const tips = splitNonEmptyLines(kbygTips.value)
     if (tips.length) result.kbyg_tips = tips
     else delete result.kbyg_tips
-    if (kbygGoldenHours.value.trim()) result.golden_hours = kbygGoldenHours.value.trim()
+    const goldenHours = kbygGoldenHours.value.trim()
+    if (goldenHours) result.golden_hours = goldenHours
     else delete result.golden_hours
-    if (kbygPeakDays.value.trim()) result.peak_days = kbygPeakDays.value.trim()
+    const peakDays = kbygPeakDays.value.trim()
+    if (peakDays) result.peak_days = peakDays
     else delete result.peak_days
     if (kbygCrowdLevel.value) result.crowd_level = kbygCrowdLevel.value
     else delete result.crowd_level
     if (kbygAmenities.value.length) result.amenity_badges = [...kbygAmenities.value]
     else delete result.amenity_badges
-    const checklist = kbygChecklist.value.split('\n').map(s => s.trim()).filter(Boolean)
+    const checklist = splitNonEmptyLines(kbygChecklist.value)
     if (checklist.length) result.checklist = checklist
     else delete result.checklist
     return result
@@ -98,12 +117,16 @@ export function useAdminEntityAttributes() {
   function initAdvanced(attrs?: Record<string, unknown>, currentSchemaKeys: string[] = []) {
     advancedError.value = ''
     const a = attrs || {}
-    const managed = new Set([...currentSchemaKeys, ...KBYG_KEYS])
+    const managed = buildManagedKeySet(currentSchemaKeys)
     const tail: Record<string, unknown> = {}
+    let hasTail = false
     for (const [k, v] of Object.entries(a)) {
-      if (!managed.has(k)) tail[k] = v
+      if (!managed.has(k)) {
+        tail[k] = v
+        hasTail = true
+      }
     }
-    advancedJson.value = Object.keys(tail).length ? JSON.stringify(tail, null, 2) : ''
+    advancedJson.value = hasTail ? JSON.stringify(tail, null, 2) : ''
   }
 
   function parseAdvancedJson(): { ok: true; data: Record<string, unknown> } | { ok: false; error: string } {
@@ -133,7 +156,7 @@ export function useAdminEntityAttributes() {
   }): Record<string, unknown> {
     const { existingAttrs = {}, currentSchemaKeys, typedAttrs, advancedObj } = options
     const targetAttrs: Record<string, unknown> = { ...existingAttrs }
-    const managed = new Set([...currentSchemaKeys, ...KBYG_KEYS])
+    const managed = buildManagedKeySet(currentSchemaKeys)
 
     for (const k of Object.keys(targetAttrs)) {
       if (!managed.has(k)) delete targetAttrs[k]

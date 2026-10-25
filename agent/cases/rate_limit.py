@@ -32,12 +32,16 @@ def rate_subject_digest(subject: str, *, master_key: str | bytes) -> str:
     return hmac.new(key, subject.strip().encode("utf-8"), hashlib.sha256).hexdigest()
 
 
+def _is_positive_int(value: object) -> bool:
+    return type(value) is int and value >= 1
+
+
 def _validate(bucket: object, subject_digest: object, limit: object, window: object, now: object) -> None:
     if type(bucket) is not str or not bucket:
         raise ValueError("invalid_rate_bucket")
     if type(subject_digest) is not str or not subject_digest:
         raise ValueError("invalid_rate_subject")
-    if type(limit) is not int or limit < 1 or type(window) is not int or window < 1:
+    if not _is_positive_int(limit) or not _is_positive_int(window):
         raise ValueError("invalid_rate_window")
     if type(now) is not datetime or now.tzinfo is None:
         raise ValueError("invalid_rate_clock")
@@ -75,10 +79,10 @@ def check_case_rate_limit(
             conn, "SELECT hits FROM shared_rate_limits WHERE key=%s FOR UPDATE", (key,)
         )
         recorded = row["hits"] if row is not None and row["hits"] is not None else []
-        hits = [float(value) for value in recorded if float(value) > cutoff]
-        allowed = len(hits) < limit
-        if allowed:
-            hits.append(stamp)
+        hits = [ts for value in recorded if (ts := float(value)) > cutoff]
+        if len(hits) >= limit:
+            return False
+        hits.append(stamp)
         database._execute(
             conn,
             """
@@ -92,4 +96,4 @@ def check_case_rate_limit(
             (key, hits, expires_at, now),
         )
         conn.commit()
-    return allowed
+    return True

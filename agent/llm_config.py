@@ -30,8 +30,8 @@ _ENV_DEFAULTS = {
 
 def _load_from_db() -> dict | None:
     try:
-        from site_settings import get_all_public
-        settings = get_all_public()
+        from site_settings import get_llm_settings
+        settings = get_llm_settings()
         base_url = settings.get("llm.base_url")
         api_key = settings.get("llm.api_key")
         if base_url and api_key:
@@ -59,8 +59,8 @@ def _resolve_config() -> tuple[dict, str]:
 
 def get_client() -> OpenAI:
     global _client, _config, _config_source
+    cfg, source = _resolve_config()
     with _lock:
-        cfg, source = _resolve_config()
         if _client is None or cfg != _config:
             _client = _build_client(cfg)
             _config = cfg
@@ -92,8 +92,7 @@ def get_status() -> dict:
     }
 
 
-def update_config(base_url: str, api_key: str, model: str, model_mini: str) -> dict:
-    """Validate new config with a test call, then save to site_settings."""
+def _validate_llm_endpoint(base_url: str, api_key: str, model: str) -> None:
     test_client = OpenAI(api_key=api_key, base_url=base_url)
     try:
         resp = test_client.chat.completions.create(
@@ -105,15 +104,26 @@ def update_config(base_url: str, api_key: str, model: str, model_mini: str) -> d
         if not resp.choices:
             raise ValueError("LLM returned empty response")
     except Exception as e:
-        raise ValueError(f"LLM test call failed: {e}")
+        raise ValueError(f"LLM test call failed: {e}") from e
+    finally:
+        close_fn = getattr(test_client, "close", None)
+        if callable(close_fn):
+            close_fn()
 
-    from site_settings import upsert, _ensure_table
+
+def update_config(base_url: str, api_key: str, model: str, model_mini: str) -> dict:
+    """Validate new config with a test call, then save to site_settings."""
+    _validate_llm_endpoint(base_url, api_key, model)
+
+    from site_settings import bulk_upsert, _ensure_table
     _ensure_table()
     _seed_llm_keys()
-    upsert("llm.base_url", base_url)
-    upsert("llm.api_key", api_key)
-    upsert("llm.model", model)
-    upsert("llm.model_mini", model_mini)
+    bulk_upsert({
+        "llm.base_url": base_url,
+        "llm.api_key": api_key,
+        "llm.model": model,
+        "llm.model_mini": model_mini,
+    })
 
     global _client, _config, _config_source
     with _lock:
@@ -130,9 +140,10 @@ def reset_to_env() -> dict:
         from database import db
         if db._use_pg:
             ph = db._ph
+            keys = ("llm.base_url", "llm.api_key", "llm.model", "llm.model_mini")
+            placeholders = ", ".join(ph for _ in keys)
             with db._conn() as conn:
-                for key in ("llm.base_url", "llm.api_key", "llm.model", "llm.model_mini"):
-                    db._execute(conn, f"DELETE FROM site_settings WHERE key = {ph}", (key,))
+                db._execute(conn, f"DELETE FROM site_settings WHERE key IN ({placeholders})", keys)
             from site_settings import _invalidate
             _invalidate()
     except Exception:

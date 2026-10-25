@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from collections.abc import Mapping
-import re
+from functools import lru_cache
 import unicodedata
 from typing import Any
 
@@ -30,12 +30,19 @@ def coerce_query_int(value: Any, default: int) -> int:
         return default
 
 
-def normalize_search_text(value: str | Any) -> str:
-    """Return one accent-insensitive, case-folded, whitespace-stable string."""
-    text = unicodedata.normalize("NFKD", str(value or "")).casefold()
+@lru_cache(maxsize=8192)
+def _normalize_str(raw: str) -> str:
+    text = unicodedata.normalize("NFKD", raw).casefold()
     text = "".join(char for char in text if not unicodedata.combining(char))
     text = text.replace("đ", "d")
-    return re.sub(r"\s+", " ", text).strip()
+    return " ".join(text.split())
+
+
+def normalize_search_text(value: str | Any) -> str:
+    """Return one accent-insensitive, case-folded, whitespace-stable string."""
+    if not value:
+        return ""
+    return _normalize_str(value if isinstance(value, str) else str(value))
 
 
 @dataclass(frozen=True)
@@ -57,23 +64,29 @@ class SearchPage:
     ranking_version: str = RANKING_VERSION
 
 
+_SOURCE_TEXT_KEYS = ("title", "name", "url")
+
+
+def _collect_source_values(value: Any, values: list[str]) -> None:
+    if isinstance(value, Mapping):
+        for key in _SOURCE_TEXT_KEYS:
+            val = value.get(key)
+            if val:
+                values.append(str(val))
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            _collect_source_values(item, values)
+    elif value:
+        values.append(str(value))
+
+
 def _source_text(entity: Mapping[str, Any]) -> str:
     source = entity.get("source")
+    if not source:
+        return ""
     values: list[str] = []
-
-    def collect(value: Any) -> None:
-        if isinstance(value, Mapping):
-            for key in ("title", "name", "url"):
-                if value.get(key):
-                    values.append(str(value[key]))
-        elif isinstance(value, (list, tuple)):
-            for item in value:
-                collect(item)
-        elif value:
-            values.append(str(value))
-
-    collect(source)
-    return normalize_search_text(" ".join(values))
+    _collect_source_values(source, values)
+    return normalize_search_text(" ".join(values)) if values else ""
 
 
 def _contains_all_terms(text: str, terms: tuple[str, ...]) -> bool:
@@ -84,15 +97,7 @@ def _matches_text(query: str, text: str, terms: tuple[str, ...]) -> bool:
     return query in text or _contains_all_terms(text, terms)
 
 
-def _rank(entity: Mapping[str, Any], query: str) -> tuple[float, str] | None:
-    qn = normalize_search_text(query)
-    if not qn:
-        return float(entity.get("confidence") or 0), "catalog"
-    terms = tuple(part for part in qn.split(" ") if part)
-    name = normalize_search_text(entity.get("name", ""))
-    summary = normalize_search_text(entity.get("summary", ""))
-    source = _source_text(entity)
-
+def _rank_name(name: str, qn: str, terms: tuple[str, ...]) -> tuple[float, str] | None:
     if name == qn:
         return 1000.0, "exact_name"
     if name.startswith(qn):
@@ -101,9 +106,26 @@ def _rank(entity: Mapping[str, Any], query: str) -> tuple[float, str] | None:
         return 800.0, "name_contains"
     if _contains_all_terms(name, terms):
         return 750.0, "name_terms"
-    if _matches_text(qn, summary, terms):
+    return None
+
+
+def _rank(
+    entity: Mapping[str, Any],
+    query: str,
+    *,
+    _qn: str | None = None,
+    _terms: tuple[str, ...] | None = None,
+) -> tuple[float, str] | None:
+    qn = _qn if _qn is not None else normalize_search_text(query)
+    if not qn:
+        return float(entity.get("confidence") or 0), "catalog"
+    terms = _terms if _terms is not None else tuple(part for part in qn.split(" ") if part)
+    name_hit = _rank_name(normalize_search_text(entity.get("name", "")), qn, terms)
+    if name_hit is not None:
+        return name_hit
+    if _matches_text(qn, normalize_search_text(entity.get("summary", "")), terms):
         return 500.0, "summary"
-    if _matches_text(qn, source, terms):
+    if _matches_text(qn, _source_text(entity), terms):
         return 300.0, "source"
     return None
 
@@ -168,9 +190,11 @@ def _catalog_rows(database: Any, query: str | None, db_kwargs: dict[str, Any], *
 
 
 def _rank_catalog_rows(rows: list[dict[str, Any]], query: str) -> list[dict[str, Any]]:
+    qn = normalize_search_text(query)
+    terms = tuple(part for part in qn.split(" ") if part) if qn else ()
     ranked: list[tuple[float, str, int, dict[str, Any]]] = []
     for index, row in enumerate(rows):
-        score = _rank(row, query)
+        score = _rank(row, query, _qn=qn, _terms=terms)
         if score is None:
             continue
         numeric, reason = score

@@ -45,6 +45,10 @@ _REASON_ORDERS = {
     "ward": WARD_REASON_ORDER,
     "itinerary": ITINERARY_REASON_ORDER,
 }
+_REASON_RANK_BY_KIND = {
+    kind: {reason: index for index, reason in enumerate(order)}
+    for kind, order in _REASON_ORDERS.items()
+}
 
 _ENTITY_FIELDS = (
     "type",
@@ -88,22 +92,26 @@ def _validate_decision_fields(decision: IndexPolicyDecision) -> None:
 
 
 def _validate_decision_reasons(decision: IndexPolicyDecision) -> None:
-    if len(set(decision.reasons)) != len(decision.reasons):
-        raise ValueError("decision reasons must be unique")
-    reason_order = _REASON_ORDERS[decision.kind]
-    try:
-        positions = tuple(reason_order.index(reason) for reason in decision.reasons)
-    except ValueError as exc:
-        raise ValueError("decision contains an unknown reason") from exc
-    if positions != tuple(sorted(positions)):
-        raise ValueError("decision reasons are not in canonical order")
+    reasons = decision.reasons
+    if reasons:
+        if len(set(reasons)) != len(reasons):
+            raise ValueError("decision reasons must be unique")
+        reason_ranks = _REASON_RANK_BY_KIND[decision.kind]
+        last_rank = -1
+        for reason in reasons:
+            rank = reason_ranks.get(reason)
+            if rank is None:
+                raise ValueError("decision contains an unknown reason")
+            if rank < last_rank:
+                raise ValueError("decision reasons are not in canonical order")
+            last_rank = rank
     if decision.kind == "itinerary" and (
-        decision.indexable or len(decision.reasons) != 1
+        decision.indexable or len(reasons) != 1
     ):
         raise ValueError(
             "itinerary decision requires exactly one fixed noindex reason"
         )
-    if decision.indexable is bool(decision.reasons):
+    if decision.indexable is bool(reasons):
         raise ValueError("indexable does not match decision reasons")
 
 

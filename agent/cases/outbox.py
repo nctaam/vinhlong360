@@ -15,6 +15,8 @@ import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
+from . import metrics as _metrics
+
 MAX_ATTEMPTS = 5
 # Long enough to outlast a slow provider round trip, short enough that a
 # dead worker's items come due again the same hour.
@@ -84,9 +86,21 @@ def notification_message(*, public_reference: str, topic: str) -> str:
 
 
 def _observe_provider_failure(case_id: str, now) -> None:
-    from . import metrics as _metrics
-
     _metrics.observe("provider_failure", channel="sms", case_id=case_id, now=now)
+
+
+def _observe_updated_latency(case_id: str, now) -> None:
+    _metrics.observe("updated", channel="sms", case_id=case_id, now=now)
+
+
+def _ambiguous_receipt(operation_id: str, provider_reference: str | None, now: datetime) -> dict:
+    return {
+        "operation_id": operation_id,
+        "provider": type(_PROVIDER).__name__,
+        "state": "ambiguous",
+        "provider_reference": provider_reference,
+        "observed_at": now.isoformat(),
+    }
 
 
 def delivery_key(outbox_id: str) -> str:
@@ -210,9 +224,12 @@ def _deliver_one(database, conn, item, *, now: datetime) -> str:
 
     # Authority is re-read here, not trusted from enqueue time: consent
     # withdrawn after the row was queued means the message is never sent.
-    contact = _contact_for(case_id, now=now)
     reference = _public_reference(database, conn, case_id)
-    if not contact or not reference:
+    if not reference:
+        settle("failed", error_code=_SUPPRESSED, available_at=now)
+        return "suppressed"
+    contact = _contact_for(case_id, now=now)
+    if not contact:
         settle("failed", error_code=_SUPPRESSED, available_at=now)
         return "suppressed"
 
@@ -225,25 +242,17 @@ def _deliver_one(database, conn, item, *, now: datetime) -> str:
         settle("failed", error_code="unknown_outbox_topic", available_at=now)
         return "dead"
 
-    result = _PROVIDER.send(contact, message, delivery_key=delivery_key(outbox_id))
+    key = delivery_key(outbox_id)
+    result = _PROVIDER.send(contact, message, delivery_key=key)
     provider_state = getattr(result, "state", None)
     provider_reference = getattr(result, "provider_reference", None)
     if provider_state == "ambiguous" or result.error_code == "provider_ambiguous":
-        receipt = {
-            "operation_id": delivery_key(outbox_id),
-            "provider": type(_PROVIDER).__name__,
-            "state": "ambiguous",
-            "provider_reference": provider_reference,
-            "observed_at": now.isoformat(),
-        }
         settle("ambiguous", error_code="provider_ambiguous", available_at=now,
                provider_state="ambiguous", provider_reference=provider_reference,
-               provider_receipt=receipt)
+               provider_receipt=_ambiguous_receipt(key, provider_reference, now))
         return "ambiguous"
     if result.delivered:
-        from . import metrics as _metrics
-
-        _metrics.observe("updated", channel="sms", case_id=case_id, now=now)
+        _observe_updated_latency(case_id, now)
         settle("sent", error_code=None, available_at=now,
                provider_state=provider_state or "accepted",
                provider_reference=provider_reference)

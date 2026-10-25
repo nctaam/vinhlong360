@@ -131,9 +131,10 @@ class ItineraryScheduleStopIn(BaseModel):
     def validate_requested_time(cls, value: str | None) -> str | None:
         if value is None:
             return None
-        if parse_time_range(value) is None:
+        cleaned = value.strip()
+        if parse_time_range(cleaned) is None:
             raise ValueError("Khung giờ yêu cầu không hợp lệ")
-        return value.strip()
+        return cleaned
 
 
 class ItineraryScheduleIn(BaseModel):
@@ -324,22 +325,26 @@ async def _optimize_itinerary_order_only(
     return _serialize_order_result(result, extra_warnings)
 
 
-async def _schedule_itinerary(payload: ItineraryOptimizeIn) -> dict | JSONResponse:
+def _run_schedule_itinerary_sync(payload: ItineraryOptimizeIn) -> dict:
     schedule = payload.schedule
     if schedule is None:
         raise ValueError("Thiếu cấu hình lịch trình")
-    try:
-        stops = _build_schedule_stops(payload)
-    except NoFeasibleScheduleError as exc:
-        return _err(409, str(exc))
+    stops = _build_schedule_stops(payload)
     options = ScheduleOptions(
         day_start_minute=schedule.day_start_minute,
         day_end_minute=schedule.day_end_minute,
         blocked_edges=frozenset(payload.blocked_edges),
     )
+    matrix = _build_schedule_matrix(schedule, stops)
+    result = schedule_stop_order(stops, matrix, options)
+    return _serialize_schedule_result(result, _path_distance_km(payload.stops))
+
+
+async def _schedule_itinerary(payload: ItineraryOptimizeIn) -> dict | JSONResponse:
+    if payload.schedule is None:
+        raise ValueError("Thiếu cấu hình lịch trình")
     try:
-        matrix = _build_schedule_matrix(schedule, stops)
-        result = await asyncio.to_thread(schedule_stop_order, stops, matrix, options)
+        return await asyncio.to_thread(_run_schedule_itinerary_sync, payload)
     except NoFeasibleScheduleError as exc:
         return _err(409, str(exc))
     except Exception:
@@ -348,7 +353,6 @@ async def _schedule_itinerary(payload: ItineraryOptimizeIn) -> dict | JSONRespon
             payload,
             ("schedule-fallback-order-only",),
         )
-    return _serialize_schedule_result(result, _path_distance_km(payload.stops))
 
 
 @router.post(
@@ -384,14 +388,16 @@ async def list_itineraries(
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     def _query():
         itineraries = db.list_itineraries(area=area, limit=limit, offset=offset)
-        stop_ids = [
-            stop_id
-            for itinerary in itineraries
-            for stop_id in (
-                _itinerary_stop_entity_id(stop) for stop in itinerary.get("stops", [])
+        stop_ids = list(
+            dict.fromkeys(
+                stop_id
+                for itinerary in itineraries
+                for stop_id in (
+                    _itinerary_stop_entity_id(stop) for stop in itinerary.get("stops", [])
+                )
+                if stop_id
             )
-            if stop_id
-        ]
+        )
         public_entities = _get_public_entities_batch(stop_ids) if stop_ids else {}
         for itinerary in itineraries:
             itinerary["stops"] = _public_itinerary_stops(

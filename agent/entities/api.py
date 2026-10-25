@@ -116,8 +116,23 @@ def _public_index_policy_child_count(ward_id: object) -> int:
     return public_ward_child_counts(db.entities_by_place(ward_id)).get(ward_id, 0)
 
 
+_POLICY_EVIDENCE_CACHE: tuple[int, object] | None = None
+
+
+def _get_cached_policy_evidence():
+    global _POLICY_EVIDENCE_CACHE
+    fn = current_policy_evidence
+    fn_id = id(fn)
+    cached = _POLICY_EVIDENCE_CACHE
+    if cached is not None and cached[0] == fn_id:
+        return cached[1]
+    ev = fn()
+    _POLICY_EVIDENCE_CACHE = (fn_id, ev)
+    return ev
+
+
 def _entity_detail_index_policy(entity: dict) -> IndexPolicyDecision:
-    evidence = current_policy_evidence()
+    evidence = _get_cached_policy_evidence()
     if type(entity.get("type")) is str and entity["type"] == "place":
         return decide_ward(
             entity,
@@ -624,15 +639,11 @@ async def get_entity_stats(entity_id: str, response: Response):
         if not e:
             return None
         with db._conn() as conn:
-            review_row = db._fetchone(conn, f"""
-                SELECT COUNT(*) as review_count,
-                       COALESCE(AVG(rating), 0) as avg_rating
+            posts_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as post_count,
+                       COALESCE(SUM(CASE WHEN post_type = 'review' AND rating IS NOT NULL THEN 1 ELSE 0 END), 0) as review_count,
+                       COALESCE(AVG(CASE WHEN post_type = 'review' AND rating IS NOT NULL THEN rating END), 0) as avg_rating
                 FROM posts
-                WHERE entity_id = {ph} AND post_type = 'review'
-                  AND moderation_status = 'approved' AND deleted_at IS NULL AND rating IS NOT NULL
-            """, (entity_id,))
-            post_row = db._fetchone(conn, f"""
-                SELECT COUNT(*) as post_count FROM posts
                 WHERE entity_id = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL
             """, (entity_id,))
             bookmark_row = db._fetchone(conn, f"""
@@ -643,15 +654,14 @@ async def get_entity_stats(entity_id: str, response: Response):
                 SELECT COUNT(*) as follower_count FROM follows
                 WHERE target_id = {ph} AND target_type = 'entity'
             """, (entity_id,))
-        rd = db._row_to_dict(review_row) if review_row else {}
-        pd = db._row_to_dict(post_row) if post_row else {}
+        pd = db._row_to_dict(posts_row) if posts_row else {}
         bd = db._row_to_dict(bookmark_row) if bookmark_row else {}
         fd = db._row_to_dict(follow_row) if follow_row else {}
         return {
             "entity_id": entity_id,
-            "review_count": rd.get("review_count", 0),
-            "avg_rating": round(float(rd.get("avg_rating", 0)), 1),
-            "post_count": pd.get("post_count", 0),
+            "review_count": int(pd.get("review_count", 0) or 0),
+            "avg_rating": round(float(pd.get("avg_rating", 0) or 0), 1),
+            "post_count": int(pd.get("post_count", 0) or 0),
             "bookmark_count": bd.get("bookmark_count", 0),
             "follower_count": fd.get("follower_count", 0),
         }
@@ -683,28 +693,24 @@ async def get_entity_rating_breakdown(entity_id: str, response: Response):
                   AND moderation_status = 'approved' AND deleted_at IS NULL AND rating IS NOT NULL
                 GROUP BY rating ORDER BY rating DESC
             """, (entity_id,))
-            total_row = db._fetchone(conn, f"""
-                SELECT COUNT(*) as total, COALESCE(AVG(rating), 0) as avg
-                FROM posts
-                WHERE entity_id = {ph} AND post_type = 'review'
-                  AND moderation_status = 'approved' AND deleted_at IS NULL AND rating IS NOT NULL
-            """, (entity_id,))
         breakdown = {str(i): 0 for i in range(1, 6)}
+        total = 0
+        weighted_sum = 0.0
         for r in rows:
             rd = db._row_to_dict(r)
             rating = rd.get("rating")
-            count = rd.get("count", 0)
+            count = int(rd.get("count", 0) or 0)
             if rating is not None:
                 star = str(int(rating))
                 if star in breakdown:
                     breakdown[star] = count
-        td = db._row_to_dict(total_row) if total_row else {}
-        total = td.get("total", 0)
+                total += count
+                weighted_sum += float(rating) * count
         return {
             "entity_id": entity_id,
             "breakdown": breakdown,
             "total_reviews": total,
-            "avg_rating": round(float(td.get("avg", 0)), 1),
+            "avg_rating": round(weighted_sum / total, 1) if total > 0 else 0.0,
             "percentages": {k: round(v / total * 100, 1) if total > 0 else 0 for k, v in breakdown.items()},
         }
 
@@ -1002,7 +1008,7 @@ async def get_entity_gallery(entity_id: str, response: Response):
     return {"images": images}
 
 
-_REVIEW_STATS_CACHE: dict[str, tuple[float, dict]] = {}
+_REVIEW_STATS_CACHE: OrderedDict[str, tuple[float, dict]] = OrderedDict()
 
 
 _REVIEW_STATS_TTL = 300
@@ -1042,6 +1048,51 @@ def _int0(v) -> int:
     return int(v or 0)
 
 
+def _compute_review_stats_sync(entity_id: str) -> dict:
+    ph = db._ph
+    with db._conn() as conn:
+        dist_rows = db._fetchall(conn, f"""
+            SELECT rating, COUNT(*) as cnt
+            FROM posts
+            WHERE entity_id = {ph} AND post_type = 'review'
+                AND moderation_status = 'approved' AND deleted_at IS NULL AND rating IS NOT NULL
+            GROUP BY rating
+        """, (entity_id,))
+        content_rows = db._fetchall(conn, f"""
+            SELECT content FROM posts
+            WHERE entity_id = {ph} AND post_type = 'review'
+                AND moderation_status = 'approved' AND deleted_at IS NULL AND content IS NOT NULL
+                AND content != ''
+            ORDER BY created_at DESC LIMIT 200
+        """, (entity_id,))
+    distribution = {}
+    total = 0
+    weighted_sum = 0
+    for row in dist_rows:
+        r = db._row_to_dict(row)
+        rating = _int0(r.get("rating"))
+        cnt = _int0(r.get("cnt"))
+        distribution[str(rating)] = cnt
+        total += cnt
+        weighted_sum += rating * cnt
+
+    avg = round(weighted_sum / total, 1) if total > 0 else 0
+    texts = [db._row_to_dict(r)["content"] for r in content_rows]
+    mentions = _extract_mentions(texts)
+    return {"avg": avg, "count": total, "distribution": distribution, "mentions": mentions}
+
+
+def _store_review_stats_cache(entity_id: str, now: float, result: dict) -> None:
+    _REVIEW_STATS_CACHE[entity_id] = (now, result)
+    if hasattr(_REVIEW_STATS_CACHE, "move_to_end"):
+        _REVIEW_STATS_CACHE.move_to_end(entity_id)
+        while len(_REVIEW_STATS_CACHE) > 500:
+            _REVIEW_STATS_CACHE.popitem(last=False)
+    elif len(_REVIEW_STATS_CACHE) > 500:
+        oldest = min(_REVIEW_STATS_CACHE, key=lambda k: _REVIEW_STATS_CACHE[k][0])
+        _REVIEW_STATS_CACHE.pop(oldest, None)
+
+
 @router.get("/entities/{entity_id}/review-stats",
             summary="Get entity review stats",
             description="Returns review statistics for an entity: average rating, distribution by star, and frequently mentioned keywords extracted from review text.")
@@ -1062,60 +1113,21 @@ async def get_review_stats(entity_id: str, response: Response):
     now = _time.time()
     cached = _REVIEW_STATS_CACHE.get(entity_id)
     if cached and now - cached[0] < _REVIEW_STATS_TTL:
+        if hasattr(_REVIEW_STATS_CACHE, "move_to_end"):
+            _REVIEW_STATS_CACHE.move_to_end(entity_id)
         return cached[1]
 
     _empty = {"avg": 0, "count": 0, "distribution": {}, "mentions": []}
-
     if not db._use_pg:
         return _empty
 
-    ph = db._ph
-
-    def _query():
-        with db._conn() as conn:
-            dist_rows = db._fetchall(conn, f"""
-                SELECT rating, COUNT(*) as cnt
-                FROM posts
-                WHERE entity_id = {ph} AND post_type = 'review'
-                    AND moderation_status = 'approved' AND deleted_at IS NULL AND rating IS NOT NULL
-                GROUP BY rating
-            """, (entity_id,))
-            content_rows = db._fetchall(conn, f"""
-                SELECT content FROM posts
-                WHERE entity_id = {ph} AND post_type = 'review'
-                    AND moderation_status = 'approved' AND deleted_at IS NULL AND content IS NOT NULL
-                    AND content != ''
-                ORDER BY created_at DESC LIMIT 200
-            """, (entity_id,))
-        return dist_rows, content_rows
-
     try:
-        dist_rows, content_rows = await asyncio.to_thread(_query)
+        result = await asyncio.to_thread(_compute_review_stats_sync, entity_id)
     except Exception:
         logger.exception("review-stats query failed for %s", entity_id)
         return _empty
 
-    distribution = {}
-    total = 0
-    weighted_sum = 0
-    for row in dist_rows:
-        r = db._row_to_dict(row)
-        rating = _int0(r.get("rating"))
-        cnt = _int0(r.get("cnt"))
-        distribution[str(rating)] = cnt
-        total += cnt
-        weighted_sum += rating * cnt
-
-    avg = round(weighted_sum / total, 1) if total > 0 else 0
-
-    texts = [db._row_to_dict(r)["content"] for r in content_rows]
-    mentions = _extract_mentions(texts)
-
-    result = {"avg": avg, "count": total, "distribution": distribution, "mentions": mentions}
-    _REVIEW_STATS_CACHE[entity_id] = (now, result)
-    if len(_REVIEW_STATS_CACHE) > 500:
-        oldest = min(_REVIEW_STATS_CACHE, key=lambda k: _REVIEW_STATS_CACHE[k][0])
-        _REVIEW_STATS_CACHE.pop(oldest, None)
+    _store_review_stats_cache(entity_id, now, result)
     return result
 
 
@@ -1578,22 +1590,26 @@ def _filter_popular_entities(all_entities: list[dict], entity_type: str | None, 
     if entity_type:
         all_entities = [e for e in all_entities if e.get("type") == entity_type]
     if area:
-        all_entities = [e for e in all_entities
-                       if area.lower() in (e.get("place", "") or "").lower()
-                       or area.lower() in (e.get("area", "") or "").lower()]
+        area_lower = area.lower()
+        all_entities = [
+            e for e in all_entities
+            if area_lower in (e.get("place", "") or "").lower()
+            or area_lower in (e.get("area", "") or "").lower()
+        ]
     return all_entities
 
 
-def _score_popular_entity(e: dict) -> float:
+def _score_popular_entity(e: dict, eq: object = None) -> float:
     rc = e.get("rating_count", 0) or 0
     avg = e.get("rating_avg", 0) or 0
     has_img = 1 if _public_entity_has_media(e) else 0
-    eq = entity_quality(e)
+    if eq is None:
+        eq = entity_quality(e)
     eq_score = eq.get("score", 0) if isinstance(eq, dict) else eq
     return rc * 2 + avg * 3 + has_img * 5 + eq_score * 0.1
 
 
-def _shape_popular_entity(e: dict) -> dict:
+def _shape_popular_entity(e: dict, eq: object = None) -> dict:
     projected = _project_public_entity_media(e, limit=2)
     return {
         "id": projected["id"], "name": projected.get("name", ""),
@@ -1603,8 +1619,20 @@ def _shape_popular_entity(e: dict) -> dict:
         "image_descriptors": projected["image_descriptors"],
         "rating_count": e.get("rating_count", 0) or 0,
         "rating_avg": round(float(e.get("rating_avg", 0) or 0), 1),
-        "quality_score": entity_quality(e),
+        "quality_score": eq if eq is not None else entity_quality(e),
     }
+
+
+def _compute_popular_entities(entity_type: str | None, area: str | None, limit: int) -> list[dict]:
+    all_entities = db.list_entities(limit=_FULL_SCAN_LIMIT, public_only=True)
+    _warn_if_scan_truncated(all_entities, _FULL_SCAN_LIMIT, "bảng phổ biến")
+    all_entities = _filter_popular_entities(all_entities, entity_type, area)
+    scored: list[tuple[float, dict, object]] = []
+    for e in all_entities:
+        eq = entity_quality(e)
+        scored.append((_score_popular_entity(e, eq), e, eq))
+    scored.sort(key=lambda x: -x[0])
+    return [_shape_popular_entity(e, eq) for _, e, eq in scored[:limit]]
 
 
 @router.get("/entities/popular", response_model=PopularResponse,
@@ -1622,17 +1650,47 @@ async def popular_entities(
     check_rate(f"popular:{get_client_ip(request)}", 20, 60,
                "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
 
-    def _query():
-        all_entities = db.list_entities(limit=_FULL_SCAN_LIMIT, public_only=True)
-        _warn_if_scan_truncated(all_entities, _FULL_SCAN_LIMIT, "bảng phổ biến")
-        all_entities = _filter_popular_entities(all_entities, entity_type, area)
-        scored = [(_score_popular_entity(e), e) for e in all_entities]
-        scored.sort(key=lambda x: -x[0])
-        return [_shape_popular_entity(e) for _, e in scored[:limit]]
-
-    results = await asyncio.to_thread(_query)
+    results = await asyncio.to_thread(_compute_popular_entities, entity_type, area, limit)
     response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
     return {"entities": results, "entity_type": entity_type, "area": area}
+
+
+def _execute_entity_search(
+    q: str,
+    entity_type: str | None,
+    area: str | None,
+    has_image: bool | None,
+    sort: str,
+    page: int,
+    limit: int,
+) -> dict:
+    offset = (page - 1) * limit
+    all_entities, catalog_truncated = rank_public_entity_catalog(
+        q or "",
+        filters=SearchFilters(entity_type=entity_type, area=area, public_only=True),
+    )
+    if has_image is True:
+        all_entities = [e for e in all_entities if _public_entity_has_media(e)]
+    elif has_image is False:
+        all_entities = [e for e in all_entities if not _public_entity_has_media(e)]
+    if sort == "name":
+        all_entities.sort(key=lambda e: str(e.get("name", "")).casefold())
+    elif sort == "newest":
+        all_entities.sort(key=lambda e: str(e.get("updatedAt", "")), reverse=True)
+    total = len(all_entities)
+    page_items = all_entities[offset:offset + limit]
+    _enrich_place(page_items)
+    page_items = [_project_public_entity_media(entity) for entity in page_items]
+    return {
+        "entities": page_items, "total": total,
+        "page": page, "has_more": offset + limit < total,
+        "offset": offset, "limit": limit, "truncated": catalog_truncated,
+        "ranking_version": "search-v1",
+        "filters": {
+            "entity_type": entity_type, "area": area,
+            "has_image": has_image, "sort": sort,
+        },
+    }
 
 
 @router.get("/entities/search",
@@ -1655,37 +1713,18 @@ async def entity_search(
                "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
     page = coerce_query_int(page, 1)
     limit = coerce_query_int(limit, 20)
-    offset = (page - 1) * limit
-    # Fetch the complete filtered catalog before applying image/sort/page
-    # predicates; the old fixed 500-row pool made later pages unreachable.
-    all_entities, catalog_truncated = await asyncio.to_thread(
-        rank_public_entity_catalog,
-        q or "",
-        filters=SearchFilters(entity_type=entity_type, area=area, public_only=True),
+    payload = await asyncio.to_thread(
+        _execute_entity_search,
+        q,
+        entity_type,
+        area,
+        has_image,
+        sort,
+        page,
+        limit,
     )
-    if has_image is True:
-        all_entities = [e for e in all_entities if _public_entity_has_media(e)]
-    elif has_image is False:
-        all_entities = [e for e in all_entities if not _public_entity_has_media(e)]
-    if sort == "name":
-        all_entities.sort(key=lambda e: str(e.get("name", "")).casefold())
-    elif sort == "newest":
-        all_entities.sort(key=lambda e: str(e.get("updatedAt", "")), reverse=True)
-    total = len(all_entities)
-    page_items = all_entities[offset:offset + limit]
-    _enrich_place(page_items)
-    page_items = [_project_public_entity_media(entity) for entity in page_items]
     response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=60"
-    return {
-        "entities": page_items, "total": total,
-        "page": page, "has_more": offset + limit < total,
-        "offset": offset, "limit": limit, "truncated": catalog_truncated,
-        "ranking_version": "search-v1",
-        "filters": {
-            "entity_type": entity_type, "area": area,
-            "has_image": has_image, "sort": sort,
-        },
-    }
+    return payload
 
 
 # ── Mặt tri thức TOP-LEVEL (server.py về nhà 2026-08-29, lát 9) ──────────────

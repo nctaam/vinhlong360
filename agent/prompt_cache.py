@@ -19,6 +19,7 @@ import hashlib
 import logging
 import re
 import time
+from functools import lru_cache
 from threading import Lock
 
 from control_plane.clock import Clock, system_clock
@@ -43,18 +44,26 @@ def _vietnamese_ratio(text: str) -> float:
     """Estimate ratio of Vietnamese characters in text (0.0 - 1.0)."""
     if not text:
         return 0.0
-    viet_chars = len(_VIETNAMESE_RANGE.findall(text))
-    total = len(text)
+    sample = text[:512]
+    total = len(sample)
     if total == 0:
         return 0.0
+    viet_chars = sum(1 for _ in _VIETNAMESE_RANGE.finditer(sample))
     # Vietnamese text typically has ~15-25% diacritical characters.
     # If we detect >5% diacritics, treat the whole text as Vietnamese.
     ratio = viet_chars / total
     if ratio > 0.05:
         return 1.0
-    elif ratio > 0.02:
+    if ratio > 0.02:
         return 0.5
     return 0.0
+
+
+@lru_cache(maxsize=2048)
+def _estimate_tokens_cached(text: str) -> int:
+    viet_ratio = _vietnamese_ratio(text)
+    chars_per_token = 2.0 * viet_ratio + 4.0 * (1.0 - viet_ratio)
+    return max(1, int(len(text) / chars_per_token))
 
 
 def estimate_tokens(text: str) -> int:
@@ -73,6 +82,8 @@ def estimate_tokens(text: str) -> int:
     """
     if not text:
         return 0
+    if len(text) <= 4096:
+        return _estimate_tokens_cached(text)
     viet_ratio = _vietnamese_ratio(text)
     chars_per_token = 2.0 * viet_ratio + 4.0 * (1.0 - viet_ratio)
     return max(1, int(len(text) / chars_per_token))
@@ -186,14 +197,15 @@ def compress_history(messages: list[dict], max_tokens: int = 4000) -> list[dict]
 class _CacheEntry:
     """Internal cache entry with TTL."""
 
-    __slots__ = ("content", "tokens", "hash_key", "created_at", "ttl")
+    __slots__ = ("content", "tokens", "hash_key", "created_at", "ttl", "source_key")
 
-    def __init__(self, content: str, tokens: int, hash_key: str, ttl: int):
+    def __init__(self, content: str, tokens: int, hash_key: str, ttl: int, source_key: object = None):
         self.content = content
         self.tokens = tokens
         self.hash_key = hash_key
         self.created_at = time.time()
         self.ttl = ttl
+        self.source_key = source_key
 
     def is_expired(self) -> bool:
         return (time.time() - self.created_at) >= self.ttl
@@ -262,18 +274,31 @@ class PromptCache:
         Returns:
             Tuple of (entry, was_cache_hit).
         """
-        content = self._build_static_content(system_prompt)
+        now = self._clock.now_vietnam()
+        date_stamp = (now.year, now.month, now.day)
+        cached = self._static_cache
+        if (
+            cached is not None
+            and cached.source_key == (system_prompt, date_stamp)
+            and not cached.is_expired()
+        ):
+            return cached, True
+
+        content = (
+            system_prompt
+            + f"\nHôm nay: {now.strftime('%d/%m/%Y')}. Tháng hiện tại: {now.month}."
+        )
         hash_key = hashlib.md5(content.encode("utf-8")).hexdigest()
 
         if (
-            self._static_cache is not None
-            and self._static_cache.hash_key == hash_key
-            and not self._static_cache.is_expired()
+            cached is not None
+            and cached.hash_key == hash_key
+            and not cached.is_expired()
         ):
-            return self._static_cache, True
+            return cached, True
 
         tokens = estimate_tokens(content)
-        entry = _CacheEntry(content, tokens, hash_key, self.STATIC_TTL)
+        entry = _CacheEntry(content, tokens, hash_key, self.STATIC_TTL, source_key=(system_prompt, date_stamp))
         self._static_cache = entry
         return entry, False
 
@@ -304,7 +329,7 @@ class PromptCache:
         for k in expired_keys:
             del self._proactive_cache[k]
         while len(self._proactive_cache) >= 200:
-            oldest_key = min(self._proactive_cache, key=lambda k: self._proactive_cache[k].created_at)
+            oldest_key = next(iter(self._proactive_cache))
             del self._proactive_cache[oldest_key]
 
         self._proactive_cache[hash_key] = entry
@@ -356,60 +381,46 @@ class PromptCache:
               - messages: List[dict] ready for LLM API call
               - cache_info: Dict with token usage stats
         """
+        del session_id, user_id
         with self._lock:
             self._total_requests += 1
 
             # ── Cached layers ──
             static_entry, static_hit = self._get_static(system_prompt)
-            proactive_entry, proactive_hit = self._get_proactive(proactive_context)
-
-            # Cache hit = at least the static layer was served from cache
+            proactive_entry, _ = self._get_proactive(proactive_context)
             cache_hit = static_hit
-
             cached_tokens = static_entry.tokens + proactive_entry.tokens
 
             # ── Dynamic parts (always recomputed) ──
-            dynamic_parts = []
-            if rag_context:
-                dynamic_parts.append(rag_context)
-            if realtime_context:
-                dynamic_parts.append(realtime_context)
-            if memory_context:
-                dynamic_parts.append(memory_context)
-            if reflexion_context:
-                dynamic_parts.append(reflexion_context)
-
-            dynamic_content = "\n".join(dynamic_parts)
+            dynamic_content = "\n".join(filter(None, (
+                rag_context, realtime_context, memory_context, reflexion_context,
+            )))
             dynamic_tokens = estimate_tokens(dynamic_content)
 
             # ── Assemble system prompt ──
-            system_parts = [static_entry.content]
-            if proactive_entry.content:
-                system_parts.append(proactive_entry.content)
-            if dynamic_content:
-                system_parts.append(dynamic_content)
-
-            system_text = "\n".join(system_parts)
+            system_text = "\n".join(filter(None, (
+                static_entry.content, proactive_entry.content, dynamic_content,
+            )))
             messages = [{"role": "system", "content": system_text}]
 
             # ── Compress and add history ──
+            non_system_history: list[dict] = []
             if history:
                 compressed = compress_history(history, max_tokens=max_history_tokens)
-                # Only add non-system messages (system is already included above)
-                for m in compressed:
-                    if m.get("role") != "system":
-                        messages.append(m)
+                non_system_history = [m for m in compressed if m.get("role") != "system"]
+                messages.extend(non_system_history)
 
             # ── Add current user message ──
-            messages.append({"role": "user", "content": message})
+            user_msg = {"role": "user", "content": message}
+            messages.append(user_msg)
 
-            # ── Token accounting ──
-            total_tokens = estimate_messages_tokens(messages)
+            # ── Token accounting (reuse already-computed system tokens) ──
+            system_msg_tokens = 4 + cached_tokens + dynamic_tokens
+            total_tokens = system_msg_tokens + estimate_messages_tokens([*non_system_history, user_msg])
 
             # Update stats
             if cache_hit:
                 self._cache_hits += 1
-                # Tokens saved = cached tokens that didn't need recomputation
                 self._tokens_saved += cached_tokens
             self._total_cached_tokens += cached_tokens
             self._total_dynamic_tokens += dynamic_tokens

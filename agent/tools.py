@@ -7,7 +7,7 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "search",
-            "description": "Tìm kiếm trải nghiệm, đặc sản, điểm tham quan, làng nghề, ẩm thực, lưu trú ở Vĩnh Long (bao gồm cả Bến Tre và Trà Vinh). Có thể lọc theo loại, khu vực, tháng, từ khóa, OCOP.",
+            "description": "Tìm kiếm trải nghiệm, đặc sản, điểm tham quan, làng nghề, ẩm thực, lưu trú trong tỉnh Vĩnh Long hiện hành. Tên Bến Tre/Trà Vinh chỉ được hiểu như địa danh lịch sử trong nội dung.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -22,8 +22,8 @@ TOOLS = [
                     },
                     "area": {
                         "type": "string",
-                        "enum": ["vinh-long", "ben-tre", "tra-vinh"],
-                        "description": "Khu vực: vinh-long, ben-tre, tra-vinh"
+                        "enum": ["vinh-long"],
+                        "description": "Phạm vi tỉnh hiện hành: vinh-long"
                     },
                     "month": {
                         "type": "integer",
@@ -87,7 +87,7 @@ TOOLS = [
                 "properties": {
                     "area": {
                         "type": "string",
-                        "enum": ["vinh-long", "ben-tre", "tra-vinh"],
+                        "enum": ["vinh-long"],
                         "description": "Lọc theo khu vực (tùy chọn)"
                     }
                 }
@@ -121,7 +121,7 @@ TOOLS = [
                 "properties": {
                     "area": {
                         "type": "string",
-                        "enum": ["vinh-long", "ben-tre", "tra-vinh"],
+                        "enum": ["vinh-long"],
                         "description": "Khu vực"
                     }
                 },
@@ -144,13 +144,13 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "compare_areas",
-            "description": "So sánh 2 khu vực (VL, BT, TV) theo nhiều tiêu chí: số lượng điểm tham quan, đặc sản, ẩm thực, làng nghề. Dùng khi người dùng hỏi 'Bến Tre hay Trà Vinh thú vị hơn?', 'So sánh 3 khu vực'.",
+            "description": "So sánh hai vùng provenance lịch sử trong dữ liệu Vĩnh Long (chỉ dùng khi cần phân tích tư liệu cũ; không phải bộ chọn tỉnh hiện hành).",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "area_1": {
                         "type": "string",
-                        "enum": ["vinh-long", "ben-tre", "tra-vinh"],
+                        "enum": ["vinh-long"],
                         "description": "Khu vực 1"
                     },
                     "area_2": {
@@ -228,8 +228,8 @@ TOOLS = [
                 "properties": {
                     "area": {
                         "type": "string",
-                        "enum": ["vinh-long", "ben-tre", "tra-vinh"],
-                        "description": "Khu vực (bỏ trống = toàn tỉnh Vĩnh Long mới)"
+                        "enum": ["vinh-long"],
+                        "description": "Phạm vi tỉnh hiện hành (bỏ trống = toàn tỉnh Vĩnh Long)"
                     },
                     "min_stars": {
                         "type": "integer",
@@ -253,13 +253,13 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "accommodation_search",
-            "description": "Tìm chỗ lưu trú: homestay, nhà vườn, resort, khách sạn ở Vĩnh Long/Bến Tre/Trà Vinh. Dùng khi hỏi 'ở đâu', 'homestay', 'chỗ ngủ', 'nhà vườn', 'resort'. Trả về tên, giá, địa chỉ, điện thoại, tiện nghi.",
+            "description": "Tìm chỗ lưu trú trong tỉnh Vĩnh Long hiện hành: homestay, nhà vườn, resort, khách sạn. Dùng khi hỏi 'ở đâu', 'homestay', 'chỗ ngủ', 'nhà vườn', 'resort'. Trả về tên, giá, địa chỉ, điện thoại, tiện nghi.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "area": {
                         "type": "string",
-                        "enum": ["vinh-long", "ben-tre", "tra-vinh"],
+                        "enum": ["vinh-long"],
                         "description": "Khu vực muốn ở"
                     },
                     "type": {
@@ -304,9 +304,9 @@ TOOLS = [
                         "type": "array",
                         "items": {
                             "type": "string",
-                            "enum": ["vinh-long", "ben-tre", "tra-vinh"]
+                            "enum": ["vinh-long"]
                         },
-                        "description": "Khu vực muốn đi (mặc định cả 3)"
+                        "description": "Phạm vi muốn đi (mặc định toàn tỉnh Vĩnh Long)"
                     },
                     "month": {
                         "type": "integer",
@@ -332,7 +332,7 @@ TOOLS = [
                 "properties": {
                     "area": {
                         "type": "string",
-                        "enum": ["vinh-long", "ben-tre", "tra-vinh"],
+                        "enum": ["vinh-long"],
                         "description": "Khu vực cần xem thời tiết"
                     }
                 }
@@ -400,14 +400,24 @@ TOOLS = [
     },
 ]
 
-SYSTEM_PROMPT = """Bạn là hướng dẫn viên du lịch AI của vinhlong360.vn — chuyên gia số 1 về tỉnh Vĩnh Long (mới).
+TOOLS_BY_NAME: dict[str, dict] = {
+    tool["function"]["name"]: tool for tool in TOOLS
+}
+TOOL_NAMES: tuple[str, ...] = tuple(TOOLS_BY_NAME.keys())
+
+
+def get_tools_by_names(names: list[str] | tuple[str, ...] | set[str]) -> list[dict]:
+    """Return subset of tool definitions preserving requested order in O(K) time."""
+    return [TOOLS_BY_NAME[name] for name in names if name in TOOLS_BY_NAME]
+
+
+SYSTEM_PROMPT = """Bạn là biên tập viên sổ tay thực địa của vinhlong360.vn — am hiểu sâu về tỉnh Vĩnh Long hiện hành (124 xã/phường).
 
 ## Bối cảnh địa lý
-Vĩnh Long mới = Vĩnh Long (cũ) + Bến Tre + Trà Vinh, hợp nhất theo NQ 202/2025/QH15, mô hình 2 cấp (tỉnh → ~130 xã/phường, bỏ cấp huyện) từ 01/07/2025.
-- Khi người dùng nói "Vĩnh Long": có thể là cả tỉnh mới hoặc vùng VL cũ → hỏi rõ hoặc search rộng cả 3 khu vực.
-- "Bến Tre", "Trà Vinh": vẫn dùng như địa danh lịch sử để phân biệt.
-- **Châu Thành** có ở cả Bến Tre (area=ben-tre) và Trà Vinh (area=tra-vinh) → khi nhắc "Châu Thành" cần hỏi hoặc search cả 2.
-- Tên huyện cũ (Mang Thít, Tam Bình, Mỏ Cày, Cầu Kè...): search bằng tên xã/phường tương ứng sau sáp nhập.
+Phạm vi hiện hành chỉ có tỉnh Vĩnh Long, vận hành theo mô hình 2 cấp (tỉnh → 124 xã/phường, bỏ cấp huyện) từ 01/07/2025.
+- Khi người dùng nói "Vĩnh Long": mặc định là toàn tỉnh hiện hành và toàn bộ 124 xã/phường.
+- "Bến Tre", "Trà Vinh" chỉ là địa danh lịch sử/provenance trong dữ liệu và nội dung; không phải lựa chọn tỉnh hiện hành.
+- Các tên huyện/tỉnh cũ (Mang Thít, Tam Bình, Mỏ Cày, Cầu Kè...): dùng để tìm nội dung lịch sử, sau đó quy về xã/phường tương ứng trong Vĩnh Long hiện hành.
 
 ## Nhiệm vụ
 - Giúp du khách và người dùng khám phá MỌI khía cạnh: du lịch, ẩm thực, lịch sử, văn hóa, nhân vật, thiên nhiên, kinh tế.
@@ -419,10 +429,9 @@ Vĩnh Long mới = Vĩnh Long (cũ) + Bến Tre + Trà Vinh, hợp nhất theo N
 - Cuối mỗi câu trả lời, dùng `suggest_followups` gợi ý 3 câu hỏi tiếp theo.
 
 ## Di chuyển (kiến thức nền — dùng khi không có dữ liệu trong KB)
-- **Từ TP.HCM đến VL cũ**: xe khách ~2.5h, xe máy qua phà Mỹ Thuận hoặc cầu Mỹ Thuận (~130km).
-- **Từ TP.HCM đến Bến Tre**: xe khách ~2h, qua cầu Rạch Miễu (~85km từ Mỹ Tho).
-- **Từ TP.HCM đến Trà Vinh**: xe khách ~3h (~200km), qua QL53 hoặc QL54.
-- **Phà Đình Khao** (VL-Bến Tre): xe máy ~5.000đ, ô tô ~30.000đ, 24/7.
+- **Từ TP.HCM đến Vĩnh Long**: xe khách ~2.5h, xe máy qua phà Mỹ Thuận hoặc cầu Mỹ Thuận (~130km).
+- Các tuyến/địa danh Bến Tre cũ và Trà Vinh cũ nếu xuất hiện trong nội dung phải được gọi rõ là địa danh lịch sử thuộc tỉnh Vĩnh Long hiện hành.
+- **Phà Đình Khao**: xe máy ~5.000đ, ô tô ~30.000đ, 24/7.
 - **Cù lao An Bình**: phà từ bến phà An Bình (TP Vĩnh Long), xe máy ~5.000đ, 5 phút.
 - **Cồn Phụng**: thuyền từ bến Bến Tre, ~30.000–50.000đ/người.
 - **Chợ Nổi Trà Ôn**: đi thuyền thuê từ bến Trà Ôn, ~100.000–200.000đ/thuyền.
@@ -432,7 +441,7 @@ Nếu KB có `booking_note` hay `address` → dùng thông tin đó, bổ sung t
 ## Quy tắc tra cứu
 - Đánh giá/review: dùng `community_reviews` để trích dẫn đánh giá thật.
 - Xu hướng: dùng `trending_posts` để biết cộng đồng đang quan tâm gì.
-- Trích dẫn review: ghi rõ tên và số sao, vd: "Theo đánh giá của Anh Minh (⭐⭐⭐⭐⭐): ..."
+- Trích dẫn review: ghi rõ tên và số sao, vd: "Theo đánh giá của Anh Minh (5/5 sao): ..."
 - So sánh khu vực: dùng `compare_areas`.
 - Lịch trình tùy chỉnh: dùng `generate_itinerary` (ngày, sở thích, khu vực, tháng, ngân sách).
 - Lịch trình có sẵn: dùng `list_itineraries` + `itinerary_detail`.
@@ -457,7 +466,7 @@ Khi kết quả tool trả về các field sau, BẮT BUỘC nêu ngay trong câ
 - `admission_fee`: **Giá vé / phí: ...**
 - `best_time`: **Thời điểm lý tưởng: ...**
 - `address`: **Địa chỉ: ...**
-- `ocop`: gắn nhãn **🏆 OCOP [số sao]** bên cạnh tên sản phẩm
+- `ocop`: gắn nhãn **OCOP [số sao]** bên cạnh tên sản phẩm
 - `key_facts`: hiển thị dưới dạng gạch đầu dòng ngắn
 
 Nếu tool không trả về các field này → không suy đoán, ghi "(chưa có thông tin giờ/phí — nên liên hệ trực tiếp trước khi đến)".
@@ -468,5 +477,7 @@ Mỗi điểm PHẢI có: tên → giờ tham quan → giá vé (nếu có) → 
 
 ## Phong cách
 Như người bạn địa phương am hiểu sâu, nhiệt tình — không phải chatbot doanh nghiệp.
+Không sử dụng biểu tượng emoji trong câu trả lời; trình bày mạch lạc bằng chữ và danh sách markdown.
 Trả lời có cấu trúc, gạch đầu dòng khi liệt kê > 2 mục.
 Lịch trình: trình bày theo timeline (giờ → điểm đến → ghi chú), dễ theo dõi."""
+

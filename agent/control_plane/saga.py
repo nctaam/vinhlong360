@@ -66,6 +66,8 @@ class SagaReceipt:
 _SAGA_RECEIPTS: dict[str, SagaReceipt] = {}
 _SAGA_RECEIPT_HASHES: dict[str, str] = {}
 _SAGA_LOCK = threading.RLock()
+_MAX_CACHED_RECEIPTS = 2048
+_IDEMPOTENCY_SCHEMA_READY: tuple[int, str] | None = None
 _ENTITY_APPROVAL_LOCKS: dict[str, threading.Lock] = {}
 _ENTITY_APPROVAL_LOCKS_GUARD = threading.Lock()
 
@@ -76,14 +78,19 @@ def _entity_approval_lock(entity_id: str) -> threading.Lock:
 
 
 def _ensure_idempotency_schema() -> None:
+    global _IDEMPOTENCY_SCHEMA_READY
     db.initialize()
     if db._use_pg:
+        return
+    identity = (id(db), str(getattr(db, "_db_path", "")))
+    if _IDEMPOTENCY_SCHEMA_READY == identity:
         return
     with db._conn() as conn:
         conn.execute("""CREATE TABLE IF NOT EXISTS request_idempotency_keys (
             key TEXT PRIMARY KEY, first_seen_at TEXT NOT NULL,
             expires_at TEXT NOT NULL, meta TEXT NOT NULL DEFAULT '{}'
         )""")
+    _IDEMPOTENCY_SCHEMA_READY = identity
 
 
 def _receipt_data(receipt: SagaReceipt) -> dict[str, Any]:
@@ -143,11 +150,19 @@ def peek_approval_receipt(key: str, suggestion_id: str, actor_id: str) -> SagaRe
     return _receipt_from_data(meta.get("receipt")) or SagaReceipt("in_progress", normalized_key, error="idempotency_in_progress")
 
 
-def _store_receipt(key: str, receipt: SagaReceipt, claim: ClaimResult | None = None) -> SagaReceipt:
+def _cache_local_receipt(key: str, receipt: SagaReceipt, request_hash: str | None = None) -> None:
     with _SAGA_LOCK:
+        if key not in _SAGA_RECEIPTS and len(_SAGA_RECEIPTS) >= _MAX_CACHED_RECEIPTS:
+            oldest = next(iter(_SAGA_RECEIPTS))
+            _SAGA_RECEIPTS.pop(oldest, None)
+            _SAGA_RECEIPT_HASHES.pop(oldest, None)
         _SAGA_RECEIPTS[key] = receipt
-        if claim is not None and claim.request_hash:
-            _SAGA_RECEIPT_HASHES[key] = claim.request_hash
+        if request_hash:
+            _SAGA_RECEIPT_HASHES[key] = request_hash
+
+
+def _store_receipt(key: str, receipt: SagaReceipt, claim: ClaimResult | None = None) -> SagaReceipt:
+    _cache_local_receipt(key, receipt, claim.request_hash if claim is not None else None)
     if claim is not None and claim.claimed:
         try:
             with db._conn() as conn:
@@ -169,8 +184,7 @@ def _store_receipt(key: str, receipt: SagaReceipt, claim: ClaimResult | None = N
                     db._execute(conn, f"UPDATE request_idempotency_keys SET meta={ph}{cast} WHERE key={ph}", (meta, claim.key))
             except Exception:
                 logger.error("saga receipt fallback persistence failed for %s", key, exc_info=True)
-            with _SAGA_LOCK:
-                _SAGA_RECEIPTS[key] = receipt
+            _cache_local_receipt(key, receipt)
     return receipt
 
 
@@ -286,19 +300,22 @@ def _suggestion_receipt(suggestion_id: str, actor_id: str, key: str, status: str
                        post_commit_effects=post_commit_effects)
 
 
+def _mapping_uploaded_values(uploaded: Mapping[Any, Any]) -> list[Any]:
+    values: list[Any] = []
+    for value in uploaded.values():
+        if isinstance(value, Mapping):
+            values.extend(
+                nested for field in ("url", "key", "path") if (nested := value.get(field))
+            )
+        else:
+            values.append(value)
+    return values
+
+
 def _uploaded_values(uploaded: Any) -> list[Any]:
     """Extract candidate object keys without trusting a provider response shape."""
     if isinstance(uploaded, Mapping):
-        values: list[Any] = []
-        for value in uploaded.values():
-            if isinstance(value, Mapping):
-                for field in ("url", "key", "path"):
-                    nested = value.get(field)
-                    if nested:
-                        values.append(nested)
-            else:
-                values.append(value)
-        return values
+        return _mapping_uploaded_values(uploaded)
     if isinstance(uploaded, (list, tuple, set, frozenset)):
         return list(uploaded)
     if isinstance(uploaded, str):

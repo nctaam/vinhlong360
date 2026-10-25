@@ -6,9 +6,9 @@ from collections.abc import Mapping
 import re
 
 try:
-    from .media_provenance import DOCUMENTARY_IMAGE_TYPES
+    from .media_provenance import DOCUMENTARY_IMAGE_TYPES, sourced_photo_evidence
 except ImportError:
-    from media_provenance import DOCUMENTARY_IMAGE_TYPES
+    from media_provenance import DOCUMENTARY_IMAGE_TYPES, sourced_photo_evidence
 
 
 ENTITY_AI_SOURCE = ("ai-generated", "entity-editorial", "entity-ai")
@@ -27,18 +27,15 @@ ENTITY_RIGHTS_CLEARED_SOURCES = frozenset(
 RENDERABLE_ENTITY_SOURCES = frozenset(
     {ENTITY_AI_SOURCE, ENTITY_PLACEHOLDER_SOURCE} | ENTITY_RIGHTS_CLEARED_SOURCES
 )
+_UNVERIFIED_AI_IMAGE_TYPES = frozenset({"ai-generated", "generated-placeholder"})
 
 def is_stored_image_class_valid(attributes: object) -> bool:
     if not isinstance(attributes, Mapping):
         return False
     image_type = attributes.get("image_type")
-    if image_type in {"ai-generated", "generated-placeholder"}:
+    if image_type in _UNVERIFIED_AI_IMAGE_TYPES:
         return attributes.get("is_verified_photo") is False
     if image_type in DOCUMENTARY_IMAGE_TYPES:
-        try:
-            from .media_provenance import sourced_photo_evidence
-        except ImportError:
-            from media_provenance import sourced_photo_evidence
         return sourced_photo_evidence(attributes) is not None
     return True
 
@@ -54,7 +51,12 @@ _CANONICAL_LEGACY_ENTITY_IMAGE = re.compile(
 
 def is_canonical_legacy_entity_image(value: object) -> bool:
     """Return whether a legacy string is a canonical AI entity image path."""
-    return type(value) is str and bool(_CANONICAL_LEGACY_ENTITY_IMAGE.fullmatch(value))
+    return (
+        type(value) is str
+        and value.startswith("/img/entities/")
+        and value.endswith(".webp")
+        and bool(_CANONICAL_LEGACY_ENTITY_IMAGE.fullmatch(value))
+    )
 
 
 def descriptor_source(value: object) -> tuple[object, object, object] | None:

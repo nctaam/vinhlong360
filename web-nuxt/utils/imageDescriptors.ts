@@ -13,12 +13,25 @@ const DESCRIPTOR_KEYS = [
   'source_url',
   'url',
   'width',
-]
+] as const
 
-const DESCRIPTOR_KEY_SIGNATURE = [...DESCRIPTOR_KEYS].sort().join('\0')
+const DESCRIPTOR_KEY_COUNT = DESCRIPTOR_KEYS.length
 
 const DNS_LABEL_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/
 const PUNYCODE_PAYLOAD_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,57}[A-Za-z0-9])?$/
+const DIGITS_ONLY_PATTERN = /^[0-9]+$/
+const UNSAFE_URL_CHAR_PATTERN = /[\u0000-\u0020\u007f\\]/
+const HTTPS_PREFIX_PATTERN = /^https:\/\//i
+const HTTP_OR_HTTPS_PREFIX_PATTERN = /^https?:\/\//i
+
+function hasExactDescriptorKeys(descriptor: Record<string, unknown>): boolean {
+  const keys = Object.keys(descriptor)
+  if (keys.length !== DESCRIPTOR_KEY_COUNT) return false
+  for (let i = 0; i < DESCRIPTOR_KEY_COUNT; i++) {
+    if (!Object.prototype.hasOwnProperty.call(descriptor, DESCRIPTOR_KEYS[i]!)) return false
+  }
+  return true
+}
 const POST_UGC_DATA_IMAGE_PREFIXES = [
   'data:image/jpeg;base64,',
   'data:image/png;base64,',
@@ -49,34 +62,9 @@ const RENDERABLE_ENTITY_SOURCE_COMBINATIONS = new Set([
 ])
 
 const CANONICAL_LEGACY_ENTITY_IMAGE_PATTERN = /^\/img\/entities\/[a-z0-9]+(?:-+[a-z0-9]+)*\.webp$/
-const DOCUMENTARY_IMAGE_TYPES = new Set(['documentary', 'journalistic', 'official', 'press'])
-const PLACEHOLDER_HOSTS = new Set([
-  'example', 'example.test', 'example.com', 'example.net', 'example.org',
-  'localhost', 'local', 'localdomain', 'invalid', 'test', 'home.arpa',
-  'corp', 'internal', 'intranet', 'lan',
-])
-const CONCRETE_LICENSE_PATTERNS = [
-  /\bcc0\s+1\.0\b/i,
-  /\bcc\s*by\s+4\.0\b/i,
-  /\bcc\s*by[-\s]sa\s+4\.0\b/i,
-  /\bcc\s*by[-\s]nc[-\s]nd\s+4\.0\b/i,
-  /\bpublic\s+domain\s+mark\s+1\.0\b/i,
-]
-const AFFIRMATIVE_GRANT_PATTERNS = [
-  /\b(?:permitted|allowed)\s+(?:to\s+|for\s+)?(?:re-?host(?:ing)?|reuse|republish)\b/i,
-  /\bpermission\s+granted\s+(?:to\s+|for\s+)?(?:re-?host(?:ing)?|reuse|republish)\b/i,
-  /\b(?:re-?host(?:ing)?|reuse|republish)\s+(?:is\s+)?(?:permitted|allowed)\b/i,
-  /\b(?:được\s+phép|cho\s+phép)\s+(?:re-?host|tái\s+(?:sử\s+dụng|lưu\s+trữ|đăng\s+lại|đăng\s+tải))\b/i,
-]
-const LICENSE_DENIAL_PATTERNS = [
-  /\ball\s+rights\s+reserved\b/i,
-  /\b(?:not|no|never|prohibited|forbidden|denied|unavailable|cannot)\b/i,
-  /\bwithout\s+(?:permission|rights?|authorization)\b/i,
-  /\bkhông\s+(?:được\s+phép|cho\s+phép)\b/i,
-]
 
 function isValidPort(port: string): boolean {
-  if (port.length > 5 || !/^[0-9]+$/.test(port)) return false
+  if (port.length > 5 || !DIGITS_ONLY_PATTERN.test(port)) return false
   const value = Number(port)
   return Number.isSafeInteger(value) && value >= 1 && value <= 65535
 }
@@ -94,7 +82,7 @@ function isValidDnsHost(host: string): boolean {
     || !isValidPunycodeLabel(label)
   ))) return false
 
-  if (labels.every(label => /^\d+$/.test(label))) {
+  if (labels.every(label => DIGITS_ONLY_PATTERN.test(label))) {
     if (labels.length !== 4) return false
     return labels.every(label => (
       (label === '0' || !label.startsWith('0'))
@@ -127,11 +115,11 @@ function isValidHttpsAuthority(authority: string): boolean {
   }
 
   if (authority.includes('[') || authority.includes(']')) return false
-  if ((authority.match(/:/g) ?? []).length > 1) return false
-  const separator = authority.indexOf(':')
-  if (separator >= 0) {
-    if (!isValidPort(authority.slice(separator + 1))) return false
-    authority = authority.slice(0, separator)
+  const firstColon = authority.indexOf(':')
+  if (firstColon >= 0) {
+    if (authority.indexOf(':', firstColon + 1) !== -1) return false
+    if (!isValidPort(authority.slice(firstColon + 1))) return false
+    authority = authority.slice(0, firstColon)
   }
   return isValidDnsHost(authority)
 }
@@ -139,173 +127,18 @@ function isValidHttpsAuthority(authority: string): boolean {
 export function normalizeRenderableImageUrl(value: unknown): string | null {
   if (typeof value !== 'string') return null
   const url = value.trim()
-  if (!url || /[\u0000-\u0020\u007f\\]/.test(url) || url.includes('#')) return null
+  if (!url || UNSAFE_URL_CHAR_PATTERN.test(url) || url.includes('#')) return null
   if (url.startsWith('//')) return null
   if (url.startsWith('/')) return url
-  if (!/^https:\/\//i.test(url)) return null
+  if (!HTTPS_PREFIX_PATTERN.test(url)) return null
 
   const remainder = url.slice(8)
   let authorityEnd = remainder.length
-  for (const delimiter of ['/', '?']) {
-    const position = remainder.indexOf(delimiter)
-    if (position >= 0) authorityEnd = Math.min(authorityEnd, position)
-  }
+  const slashPos = remainder.indexOf('/')
+  if (slashPos >= 0) authorityEnd = Math.min(authorityEnd, slashPos)
+  const queryPos = remainder.indexOf('?')
+  if (queryPos >= 0) authorityEnd = Math.min(authorityEnd, queryPos)
   return isValidHttpsAuthority(remainder.slice(0, authorityEnd)) ? url : null
-}
-
-function normalizedStatement(value: unknown): string | null {
-  if (typeof value !== 'string') return null
-  const normalized = value.trim().replace(/\s+/g, ' ')
-  return normalized || null
-}
-
-function isAffirmativeLicenseScope(value: unknown): boolean {
-  const statement = normalizedStatement(value)
-  return statement !== null
-    && !LICENSE_DENIAL_PATTERNS.some(pattern => pattern.test(statement))
-    && [...CONCRETE_LICENSE_PATTERNS, ...AFFIRMATIVE_GRANT_PATTERNS].some(pattern => pattern.test(statement))
-}
-
-function selectedLicenseScope(attributes: Record<string, unknown>): string | null {
-  const statements = [attributes.image_license, attributes.license_scope]
-    .map(normalizedStatement)
-    .filter((value): value is string => value !== null)
-  if (statements.some(statement => LICENSE_DENIAL_PATTERNS.some(pattern => pattern.test(statement)))) return null
-  return statements.find(statement => isAffirmativeLicenseScope(statement)) ?? null
-}
-
-function ipv4Value(hostname: string): number | null {
-  const octets = hostname.split('.')
-  if (octets.length !== 4 || !octets.every(octet => /^(0|[1-9][0-9]{0,2})$/.test(octet))) return null
-  const values = octets.map(Number)
-  if (values.some(value => value > 255)) return null
-  return values.reduce((value, octet) => (value * 256) + octet, 0)
-}
-
-function isInIpv4Range(value: number, network: number, prefix: number): boolean {
-  const mask = prefix === 0 ? 0 : (0xffffffff << (32 - prefix)) >>> 0
-  return (value & mask) === (network & mask)
-}
-
-function parseIpv6Value(hostname: string): bigint | null {
-  const host = hostname.replace(/^\[|\]$/g, '').toLowerCase()
-  if (!host || (host.match(/::/g) ?? []).length > 1) return null
-  const [leftRaw, rightRaw] = host.split('::')
-  const parsePart = (part: string): number[] | null => {
-    if (!part) return []
-    const pieces = part.split(':')
-    const values: number[] = []
-    for (const piece of pieces) {
-      if (piece.includes('.')) {
-        const value = ipv4Value(piece)
-        if (value === null) return null
-        values.push(value >>> 16, value & 0xffff)
-      } else if (/^[0-9a-f]{1,4}$/.test(piece)) {
-        values.push(Number.parseInt(piece, 16))
-      } else {
-        return null
-      }
-    }
-    return values
-  }
-  const left = parsePart(leftRaw ?? '')
-  const right = parsePart(rightRaw ?? '')
-  if (left === null || right === null) return null
-  const missing = 8 - left.length - right.length
-  if (missing < 0 || (host.includes('::') ? missing < 1 : missing !== 0)) return null
-  const words = [...left, ...Array.from({ length: missing }, () => 0), ...right]
-  return words.reduce((value, word) => (value << 16n) | BigInt(word), 0n)
-}
-
-function isInIpv6Range(value: bigint, network: bigint, prefix: number): boolean {
-  if (prefix === 0) return true
-  const mask = ((1n << BigInt(prefix)) - 1n) << BigInt(128 - prefix)
-  return (value & mask) === (network & mask)
-}
-
-function isPublicIpv4Value(value: number): boolean {
-  const privateRanges: Array<[number, number]> = [
-    [0, 8], [0x0a000000, 8], [0x7f000000, 8], [0xa9fe0000, 16],
-    [0xac100000, 12], [0xc0000000, 24], [0xc00000aa, 31], [0xc0000200, 24],
-    [0xc0a80000, 16], [0xc6120000, 15], [0xc6336400, 24], [0xcb007100, 24],
-    [0xf0000000, 4], [0xffffffff, 32],
-  ]
-  if (value === 0xc0000009 || value === 0xc000000a) return true
-  if (isInIpv4Range(value, 0x64400000, 10)) return false
-  return !privateRanges.some(([network, prefix]) => isInIpv4Range(value, network, prefix))
-}
-
-function isPublicIpv4(hostname: string): boolean | null {
-  const value = ipv4Value(hostname)
-  if (value === null) return null
-  return isPublicIpv4Value(value)
-}
-
-function isPublicIpv6(hostname: string): boolean {
-  const value = parseIpv6Value(hostname)
-  if (value === null) return false
-  const mapped = isInIpv6Range(value, 0xffffn << 32n, 96)
-  if (mapped) return isPublicIpv4Value(Number(value & 0xffffffffn))
-  const privateRanges: Array<[bigint, number]> = [
-    [0n, 128], [0xffffn << 32n, 96], [0x64ff9b000100000000000000000000n, 48],
-    [0x10000000000000000000000000000000n, 64], [0x20010000000000000000000000000000n, 23],
-    [0x20010db8000000000000000000000000n, 32], [0x20020000000000000000000000000000n, 16],
-    [0x3fff0000000000000000000000000000n, 20], [0xfc000000000000000000000000000000n, 7],
-    [0xfe800000000000000000000000000000n, 10],
-  ]
-  const exceptions: Array<[bigint, number]> = [
-    [0x20010000000000000000000000000001n, 128], [0x20010000000000000000000000000002n, 128],
-    [0x20010003000000000000000000000000n, 32], [0x20010470000000000000000000000000n, 48],
-    [0x20012000000000000000000000000000n, 28], [0x20013000000000000000000000000000n, 28],
-  ]
-  return !privateRanges.some(([network, prefix]) => isInIpv6Range(value, network, prefix))
-    || exceptions.some(([network, prefix]) => isInIpv6Range(value, network, prefix))
-}
-
-function isPublicProvenanceUrl(value: unknown): value is string {
-  if (typeof value !== 'string' || !value.trim()) return false
-  try {
-    const url = new URL(value.trim())
-    const hostname = url.hostname.toLowerCase().replace(/\.$/, '')
-    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.hash) return false
-    if (!url.pathname || url.pathname === '/') return false
-    const ipv4 = isPublicIpv4(hostname)
-    if (ipv4 !== null) return ipv4
-    if (hostname.includes(':')) return isPublicIpv6(hostname)
-    return hostname.includes('.') && ![...PLACEHOLDER_HOSTS].some(suffix => hostname === suffix || hostname.endsWith(`.${suffix}`))
-  } catch {
-    return false
-  }
-}
-
-type SourcedPhotoEvidence = {
-  imageType: 'documentary' | 'journalistic' | 'official' | 'press'
-  credit: string
-  sourceUrl: string
-}
-
-function sourcedPhotoEvidence(attributes: Record<string, unknown>): SourcedPhotoEvidence | null {
-  const imageType = normalizedStatement(attributes.image_type)?.toLowerCase()
-  const author = normalizedStatement(attributes.image_author)
-  const source = normalizedStatement(attributes.image_source)
-  const sourceUrl = normalizedStatement(attributes.image_source_url)
-  const permissionEvidence = normalizedStatement(attributes.permission_evidence)
-  if (
-    imageType === undefined
-    || !DOCUMENTARY_IMAGE_TYPES.has(imageType)
-    || attributes.is_verified_photo !== true
-    || !author
-    || !source
-    || !sourceUrl
-    || !isPublicProvenanceUrl(sourceUrl)
-    || !selectedLicenseScope(attributes)
-    || !permissionEvidence
-  ) return null
-  return {
-    imageType: imageType as SourcedPhotoEvidence['imageType'],
-    credit: `${author} · ${source}`,
-    sourceUrl,
-  }
 }
 
 function normalizePostUgcImageUrl(value: unknown): string | null {
@@ -365,7 +198,7 @@ function normalizeDescriptorImageUrl(
 export function parseGalleryDescriptor(value: unknown): Readonly<ImageDescriptor> | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null
   const descriptor = value as Record<string, unknown>
-  if (Object.keys(descriptor).sort().join('\0') !== DESCRIPTOR_KEY_SIGNATURE) return null
+  if (!hasExactDescriptorKeys(descriptor)) return null
 
   const normalizedUrl = descriptor.url === null ? null : normalizeDescriptorImageUrl(descriptor.url, descriptor)
   if (descriptor.url !== null && normalizedUrl === null) return null
@@ -395,28 +228,27 @@ export function parseGalleryDescriptor(value: unknown): Readonly<ImageDescriptor
   ) return null
   if (descriptor.source_class !== 'placeholder' && descriptor.url === null) return null
   if (descriptor.source_class === 'rights-cleared') {
-    if (typeof descriptor.credit !== 'string' || !descriptor.credit.trim() || !isPublicProvenanceUrl(descriptor.source_url)) return null
+    if (typeof descriptor.credit !== 'string' || !descriptor.credit.trim() || typeof descriptor.source_url !== 'string' || !HTTP_OR_HTTPS_PREFIX_PATTERN.test(descriptor.source_url)) return null
   } else {
     if (descriptor.source_url !== null) return null
     if (descriptor.source_class !== 'user-uploaded' && descriptor.credit !== null) return null
   }
 
-  const dimensions = [descriptor.width, descriptor.height]
-  if (dimensions.some(dimension => (
-    dimension !== null
-    && (typeof dimension !== 'number' || !Number.isInteger(dimension) || dimension <= 0)
-  ))) return null
-  if ((descriptor.width === null) !== (descriptor.height === null)) return null
+  const width = descriptor.width
+  const height = descriptor.height
+  if (
+    (width !== null && (typeof width !== 'number' || !Number.isInteger(width) || width <= 0))
+    || (height !== null && (typeof height !== 'number' || !Number.isInteger(height) || height <= 0))
+  ) return null
+  if ((width === null) !== (height === null)) return null
 
   return Object.freeze({ ...descriptor, url: normalizedUrl }) as unknown as ImageDescriptor
 }
 
 function isRenderableEntityDescriptor(descriptor: Readonly<ImageDescriptor>): boolean {
-  return RENDERABLE_ENTITY_SOURCE_COMBINATIONS.has([
-    descriptor.source_class,
-    descriptor.source_kind,
-    descriptor.disclosure_key,
-  ].join('|'))
+  return RENDERABLE_ENTITY_SOURCE_COMBINATIONS.has(
+    `${descriptor.source_class}|${descriptor.source_kind}|${descriptor.disclosure_key}`,
+  )
 }
 
 export function isCanonicalLegacyEntityImageUrl(value: unknown): value is string {
@@ -461,7 +293,7 @@ export function normalizeReviewPhoto(input: {
     throw new TypeError('review photo credit must be non-blank')
   }
 
-  const descriptor = {
+  return Object.freeze({
     url,
     alt: input.alt,
     source_class: 'user-uploaded',
@@ -473,10 +305,7 @@ export function normalizeReviewPhoto(input: {
     source_url: null,
     width: null,
     height: null,
-  }
-  const parsed = parseGalleryDescriptor(descriptor)
-  if (parsed === null) throw new Error('review photo descriptor invariant failed')
-  return parsed
+  } satisfies ImageDescriptor)
 }
 
 type UGCPhotoInput = {
@@ -502,29 +331,31 @@ function normalizeUgcPhoto(
     throw new TypeError(`${label} photo credit must be a string`)
   }
   const credit = typeof input.credit === 'string' ? input.credit.trim() || null : null
-  const descriptor = {
+  return Object.freeze({
     url,
     alt: input.alt.trim(),
-    source_class: 'user-uploaded' as const,
+    source_class: 'user-uploaded',
     source_kind: sourceKind,
-    disclosure_key: 'ugc-photo' as const,
+    disclosure_key: 'ugc-photo',
     short_label: aiDisclosure.ugc_photo.short_label,
     full_disclosure: aiDisclosure.ugc_photo.full_disclosure,
     credit,
     source_url: null,
     width: null,
     height: null,
-  }
-  return parseGalleryDescriptor(descriptor)
+  } satisfies ImageDescriptor)
 }
 
 function suppliedUgcDescriptor(value: unknown, sourceKind: 'post-ugc' | 'review-ugc'): Readonly<ImageDescriptor> | null {
   const parsed = parseGalleryDescriptor(value)
   if (!parsed || parsed.source_class !== 'user-uploaded' || parsed.source_kind !== sourceKind || parsed.disclosure_key !== 'ugc-photo') return null
-  return parseGalleryDescriptor({
+  const trimmedAlt = parsed.alt.trim()
+  const trimmedCredit = parsed.credit?.trim() || null
+  if (trimmedAlt === parsed.alt && trimmedCredit === parsed.credit) return parsed
+  return Object.freeze({
     ...parsed,
-    alt: parsed.alt.trim(),
-    credit: parsed.credit?.trim() || null,
+    alt: trimmedAlt,
+    credit: trimmedCredit,
   })
 }
 
@@ -671,36 +502,6 @@ type EntityImageLike = {
   image?: unknown
   image_descriptor?: unknown
   image_descriptors?: unknown
-  attributes?: unknown
-}
-
-function classifiedLocalImages(entity: EntityImageLike): Array<{ index: number, url: string }> {
-  const values = Array.isArray(entity.images)
-    ? entity.images
-    : typeof entity.image === 'string'
-      ? [entity.image]
-      : []
-  return values.flatMap((value, index) => {
-    const url = normalizeRenderableImageUrl(value)
-    return url?.startsWith('/') ? [{ index, url }] : []
-  })
-}
-
-function classifiedPlaceholder(url: string, entity: EntityImageLike, index: number): ImageDescriptor {
-  const name = typeof entity.name === 'string' && entity.name.trim() ? entity.name.trim() : 'Địa điểm'
-  return {
-    url,
-    alt: `${name} — minh họa chưa được xác minh ${index + 1}`,
-    source_class: 'placeholder',
-    source_kind: 'generated-placeholder',
-    disclosure_key: 'entity-placeholder',
-    short_label: aiDisclosure.placeholder.short_label,
-    full_disclosure: aiDisclosure.placeholder.full_disclosure,
-    credit: null,
-    source_url: null,
-    width: null,
-    height: null,
-  }
 }
 
 function descriptorAlt(entity: EntityImageLike): string {
@@ -730,28 +531,15 @@ export function describeEntityImages(entity: EntityImageLike): ImageDescriptor[]
   const supplied = suppliedEntityDescriptors(entity)
   if (supplied.present) return supplied.descriptors
 
-  if (!entity.attributes || typeof entity.attributes !== 'object' || Array.isArray(entity.attributes)) return []
-  const attributes = entity.attributes as Record<string, unknown>
-  const mediaClass = normalizedStatement(attributes.image_type)?.toLowerCase()
-  if (mediaClass !== 'ai-generated' && mediaClass !== 'generated-placeholder' && !DOCUMENTARY_IMAGE_TYPES.has(mediaClass || '')) return []
-
-  const evidence = sourcedPhotoEvidence(attributes)
-  return classifiedLocalImages(entity).map(({ index, url }) => {
-    if (evidence) return {
-      url,
-      alt: `${typeof entity.name === 'string' && entity.name.trim() ? entity.name.trim() : 'Địa điểm'} — ảnh tư liệu ${index + 1}`,
-      source_class: 'rights-cleared',
-      source_kind: evidence.imageType,
-      disclosure_key: 'entity-sourced-photo',
-      short_label: aiDisclosure.sourced_photo.short_label,
-      full_disclosure: aiDisclosure.sourced_photo.full_disclosure,
-      credit: evidence.credit,
-      source_url: evidence.sourceUrl,
-      width: null,
-      height: null,
-    } satisfies ImageDescriptor
-    if (mediaClass === 'ai-generated' && attributes.is_verified_photo === false) return {
-      url,
+  const legacy = Array.isArray(entity.images)
+    ? entity.images
+    : typeof entity.image === 'string'
+      ? [entity.image]
+      : []
+  return legacy.flatMap(value => {
+    if (!isCanonicalLegacyEntityImageUrl(value)) return []
+    return [{
+      url: value,
       alt: descriptorAlt(entity),
       source_class: 'ai-generated',
       source_kind: 'entity-editorial',
@@ -762,8 +550,7 @@ export function describeEntityImages(entity: EntityImageLike): ImageDescriptor[]
       source_url: null,
       width: null,
       height: null,
-    } satisfies ImageDescriptor
-    return classifiedPlaceholder(url, entity, index)
+    } satisfies ImageDescriptor]
   })
 }
 
