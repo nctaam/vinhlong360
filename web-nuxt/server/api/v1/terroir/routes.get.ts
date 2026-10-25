@@ -9,6 +9,15 @@ import {
 
 const CACHE_CONTROL_HEADER = 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400'
 const VALID_CRAFTS = new Set<CraftType>(['sampan', 'canoe', 'kayak'])
+const WATER_ROUTE_BY_ID = new Map(VERIFIED_WATER_ROUTES.map(route => [route.id, route]))
+const ROUTES_CACHE_MAX_ENTRIES = 64
+
+type RoutesComputedSnapshot = {
+  tide: ReturnType<typeof calculateAstronomicalTide>
+  evaluatedRoutes: ReturnType<typeof calculateRoutePropulsion>[]
+}
+
+const routesSnapshotCache = new Map<string, RoutesComputedSnapshot>()
 
 export default defineEventHandler((event) => {
   const query = getQuery(event)
@@ -48,10 +57,11 @@ export default defineEventHandler((event) => {
 
   // Check single route filter if requested
   let routes = VERIFIED_WATER_ROUTES
+  let routeCacheFilter = 'all'
   if (query.route_id !== undefined && query.route_id !== null && String(query.route_id).trim() !== '') {
     const routeId = String(query.route_id).trim()
-    const matched = VERIFIED_WATER_ROUTES.filter(r => r.id === routeId)
-    if (matched.length === 0) {
+    const matched = WATER_ROUTE_BY_ID.get(routeId)
+    if (!matched) {
       return sendProblemDetails(event, {
         status: 404,
         type: 'https://vinhlong360.vn/problems/resource-not-found',
@@ -60,11 +70,23 @@ export default defineEventHandler((event) => {
         code: 'TERROIR_ROUTE_NOT_FOUND',
       })
     }
-    routes = matched
+    routes = [matched]
+    routeCacheFilter = routeId
   }
 
-  const tide = calculateAstronomicalTide(targetDate)
-  const evaluatedRoutes = routes.map(r => calculateRoutePropulsion(r, tide, targetDate, craft))
+  const bucketKey = `${Math.floor(targetDate.getTime() / 1000)}:${craft}:${routeCacheFilter}`
+  let snapshot = routesSnapshotCache.get(bucketKey)
+  if (!snapshot) {
+    const tide = calculateAstronomicalTide(targetDate)
+    const evaluatedRoutes = routes.map(r => calculateRoutePropulsion(r, tide, targetDate, craft))
+    snapshot = { tide, evaluatedRoutes }
+    if (routesSnapshotCache.size >= ROUTES_CACHE_MAX_ENTRIES) {
+      const oldestKey = routesSnapshotCache.keys().next().value
+      if (oldestKey !== undefined) routesSnapshotCache.delete(oldestKey)
+    }
+    routesSnapshotCache.set(bucketKey, snapshot)
+  }
+  const { tide, evaluatedRoutes } = snapshot
 
   setResponseHeader(event, 'Content-Type', 'application/json; charset=utf-8')
   setResponseHeader(event, 'Cache-Control', CACHE_CONTROL_HEADER)

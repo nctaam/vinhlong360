@@ -7,7 +7,9 @@ Entities được hỏi nhiều → xếp hạng cao hơn.
 
 import json
 import logging
+import math
 import time
+from functools import lru_cache
 from ocop import is_ocop_certified
 from pathlib import Path
 from threading import Lock
@@ -29,9 +31,12 @@ def _load_popularity():
         if ANALYTICS_FILE.exists():
             data = json.loads(ANALYTICS_FILE.read_text(encoding="utf-8"))
             _popularity = data.get("entity_hits", {})
-            _last_load = time.time()
+        else:
+            _popularity = {}
     except Exception as exc:
         logger.warning("Failed to load popularity data: %s", exc)
+    finally:
+        _last_load = time.time()
 
 
 def get_popularity(entity_id: str) -> int:
@@ -42,17 +47,21 @@ def get_popularity(entity_id: str) -> int:
         return _popularity.get(entity_id, 0)
 
 
+@lru_cache(maxsize=512)
+def _calc_log_boost(hits: int, max_boost: float) -> float:
+    return min(math.log2(hits + 1), max_boost)
+
+
 def popularity_score(entity_id: str, max_boost: float = 3.0) -> float:
     """
     Tính popularity bonus (0 → max_boost).
     Dùng logarithmic scale để tránh entities quá popular chi phối.
     """
-    import math
     hits = get_popularity(entity_id)
     if hits <= 0:
         return 0
     # log2(hits + 1) capped at max_boost
-    return min(math.log2(hits + 1), max_boost)
+    return _calc_log_boost(hits, max_boost)
 
 
 def _season_bonus(entity: dict, month: int) -> float:

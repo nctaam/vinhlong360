@@ -30,6 +30,11 @@ function pruneExpired(now: number) {
   for (const [key, at] of lastSentAt) {
     if (now - at >= DEDUPE_MS) lastSentAt.delete(key)
   }
+  while (lastSentAt.size >= MAX_TRACKED_KEYS) {
+    const oldestKey = lastSentAt.keys().next().value
+    if (oldestKey === undefined) break
+    lastSentAt.delete(oldestKey)
+  }
 }
 
 /**
@@ -50,6 +55,7 @@ export function trackContactView(entityId: unknown, action: ContactAction): bool
     const last = lastSentAt.get(key)
     if (last !== undefined && now - last < DEDUPE_MS) return false
 
+    lastSentAt.delete(key)
     if (lastSentAt.size >= MAX_TRACKED_KEYS) pruneExpired(now)
     lastSentAt.set(key, now)
 

@@ -157,7 +157,9 @@ def _verify_export_cursor(token: str | None, subject_id: str) -> str | None:
     try:
         padded = body + "=" * (-len(body) % 4)
         payload = json.loads(base64.urlsafe_b64decode(padded.encode()).decode())
-        if payload.get("subject") != hashlib.sha256(str(subject_id).encode()).hexdigest():
+        expected_subject = hashlib.sha256(str(subject_id).encode()).hexdigest()
+        actual_subject = str(payload.get("subject") or "")
+        if not hmac.compare_digest(actual_subject, expected_subject):
             return None
         return str(payload["cursor"])
     except Exception:
@@ -932,7 +934,7 @@ async def verify_otp(body: OTPVerify, request: Request, response: Response):
         await asyncio.to_thread(_log_consent, str(user["id"]), CONSENT_VERSION, ip)
 
     trusted_device_id = None
-    if _2fa_is_enabled(str(user["id"])):
+    if await asyncio.to_thread(_2fa_is_enabled, str(user["id"])):
         trusted_device_id = await asyncio.to_thread(
             _has_valid_trusted_device, str(user["id"]), request
         )
@@ -1048,7 +1050,7 @@ async def login_password(body: PasswordLogin, request: Request, response: Respon
     _login_phone_fails.pop(phone, None)
 
     trusted_device_id = None
-    if _2fa_is_enabled(str(user["id"])):
+    if await asyncio.to_thread(_2fa_is_enabled, str(user["id"])):
         trusted_device_id = await asyncio.to_thread(
             _has_valid_trusted_device, str(user["id"]), request
         )
@@ -2033,11 +2035,11 @@ async def twofa_setup(request: Request, _csrf=Depends(_require_csrf_lazy)):
     uid = str(user["id"])
     from ratelimit import check_rate
     check_rate(f"2fa-setup:{uid}", 5, 600, "Thao tác quá nhanh. Vui lòng thử lại sau.")
-    if _2fa_is_enabled(uid):
+    if await asyncio.to_thread(_2fa_is_enabled, uid):
         raise HTTPException(400, "2FA đã được bật")
     secret = generate_secret()
     account = user.get("phone") or user.get("username") or uid
-    enc = encrypt_secret(secret)
+    enc = await asyncio.to_thread(encrypt_secret, secret)
 
     def _store():
         ph = db._ph
@@ -2050,7 +2052,8 @@ async def twofa_setup(request: Request, _csrf=Depends(_require_csrf_lazy)):
     await asyncio.to_thread(_store)
 
     uri = provisioning_uri(secret, str(account))
-    return {"secret": secret, "otpauth_uri": uri, "qr": qr_data_uri(uri)}
+    qr_uri = await asyncio.to_thread(qr_data_uri, uri)
+    return {"secret": secret, "otpauth_uri": uri, "qr": qr_uri}
 
 
 class _TwoFACode(BaseModel):
@@ -2070,10 +2073,13 @@ async def twofa_verify_setup(body: _TwoFACode, request: Request, _csrf=Depends(_
     uid = str(user["id"])
     from ratelimit import check_rate
     check_rate(f"2fa-verify-setup:{uid}", 5, 600, "Thao tác quá nhanh. Vui lòng thử lại sau.")
-    row = _get_2fa_row(uid)
+    row = await asyncio.to_thread(_get_2fa_row, uid)
     if not row:
         raise HTTPException(400, "Chưa bắt đầu thiết lập 2FA")
-    if not verify_totp(decrypt_secret(row["secret_enc"]), body.code):
+    valid_totp = await asyncio.to_thread(
+        lambda: verify_totp(decrypt_secret(row["secret_enc"]), body.code)
+    )
+    if not valid_totp:
         raise HTTPException(400, "Mã không đúng. Vui lòng thử lại")
     codes = generate_recovery_codes(8)
 
@@ -2099,7 +2105,7 @@ async def twofa_disable(body: _TwoFACode, request: Request, _csrf=Depends(_requi
     uid = str(user["id"])
     from ratelimit import check_rate
     check_rate(f"2fa-disable:{uid}", 5, 600, "Thao tác quá nhanh. Vui lòng thử lại sau.")
-    row = _get_2fa_row(uid)
+    row = await asyncio.to_thread(_get_2fa_row, uid)
     if not row or not row.get("enabled"):
         raise HTTPException(400, "2FA chưa được bật")
 

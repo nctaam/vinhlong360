@@ -1169,7 +1169,7 @@ def _health_features() -> dict:
 
 async def _health_detail() -> dict:
     """Full health payload — internal use by admin-gated endpoints."""
-    overall, db_ok, llm_status = _health_core()
+    overall, db_ok, llm_status = await asyncio.to_thread(_health_core)
     try:
         import psutil
         memory_mb = round(psutil.Process().memory_info().rss / 1024 / 1024, 1)

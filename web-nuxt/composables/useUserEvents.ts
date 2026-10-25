@@ -26,6 +26,26 @@ interface TrackOptions {
 }
 
 const DEFAULT_DEDUPE_MS = 45_000
+const MAX_TRACKED_EVENTS = 128
+
+function pruneDedupeRecord(record: Record<string, number>, now: number, maxAgeMs: number) {
+  const keys = Object.keys(record)
+  if (keys.length < MAX_TRACKED_EVENTS) return
+  for (const k of keys) {
+    if (now - (record[k] ?? 0) >= maxAgeMs) {
+      delete record[k]
+    }
+  }
+  const remaining = Object.entries(record)
+  if (remaining.length >= MAX_TRACKED_EVENTS) {
+    remaining.sort((a, b) => a[1] - b[1])
+    const toRemove = remaining.length - MAX_TRACKED_EVENTS + 1
+    for (let i = 0; i < toRemove; i++) {
+      const entry = remaining[i]
+      if (entry) delete record[entry[0]]
+    }
+  }
+}
 
 function eventKey(eventType: UserEventType, payload: UserEventPayload) {
   return [
@@ -73,6 +93,7 @@ export function useUserEvents() {
     const key = eventKey(eventType, payload)
     const dedupeMs = options.dedupeMs ?? DEFAULT_DEDUPE_MS
     if (lastSent.value[key] && now - lastSent.value[key]! < dedupeMs) return
+    pruneDedupeRecord(lastSent.value, now, Math.max(dedupeMs, 60_000))
     lastSent.value[key] = now
     void send(eventType, payload).catch(() => {
       // Analytics must never interrupt the user flow.

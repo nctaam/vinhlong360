@@ -1347,14 +1347,16 @@ def _payload_contact_values(value: dict) -> set[str]:
     return contacts
 
 
+_PUBLIC_CONTACT_INDEX_CACHE: tuple[
+    tuple[int, int] | None,
+    dict[str, dict],
+    dict[str, list[dict]],
+    dict[int, frozenset[str]],
+] = (None, {}, {}, {})
+
+
 def _eligible_public_entities() -> dict[str, dict]:
-    return {
-        entity_id: entity
-        for entity_id, entity in (getattr(knowledge, "_entities", None) or {}).items()
-        if isinstance(entity_id, str)
-        and isinstance(entity, dict)
-        and is_publicly_eligible(entity)
-    }
+    return _public_contact_index()[0]
 
 
 def _public_entities_by_name(entities: dict[str, dict]) -> dict[str, list[dict]]:
@@ -1364,6 +1366,39 @@ def _public_entities_by_name(entities: dict[str, dict]) -> dict[str, list[dict]]
         if isinstance(name, str) and name:
             entities_by_name.setdefault(name, []).append(entity)
     return entities_by_name
+
+
+def _public_contact_index() -> tuple[
+    dict[str, dict], dict[str, list[dict]], dict[int, frozenset[str]]
+]:
+    global _PUBLIC_CONTACT_INDEX_CACHE
+    raw = getattr(knowledge, "_entities", None) or {}
+    cache_key = (id(raw), len(raw)) if len(raw) >= 32 else None
+    cached_key, cached_entities, cached_by_name, cached_contacts = (
+        _PUBLIC_CONTACT_INDEX_CACHE
+    )
+    if cache_key is not None and cached_key == cache_key:
+        return cached_entities, cached_by_name, cached_contacts
+    eligible = {
+        entity_id: entity
+        for entity_id, entity in raw.items()
+        if isinstance(entity_id, str)
+        and isinstance(entity, dict)
+        and is_publicly_eligible(entity)
+    }
+    by_name = _public_entities_by_name(eligible)
+    frozen_contacts = {
+        id(entity): frozenset(_entity_contact_values(entity))
+        for entity in eligible.values()
+    }
+    if cache_key is not None:
+        _PUBLIC_CONTACT_INDEX_CACHE = (
+            cache_key,
+            eligible,
+            by_name,
+            frozen_contacts,
+        )
+    return eligible, by_name, frozen_contacts
 
 
 def _selected_public_entity(
@@ -1385,26 +1420,37 @@ def _collect_verified_public_contacts(
     entities: dict[str, dict],
     entities_by_name: dict[str, list[dict]],
     contacts: set[str],
+    entity_contacts_by_id: dict[int, frozenset[str]] | None = None,
 ) -> None:
     if isinstance(item, dict):
         entity = _selected_public_entity(item, entities, entities_by_name)
         if entity is not None:
-            contacts.update(
-                _payload_contact_values(item) & _entity_contact_values(entity)
+            known_contacts = (
+                entity_contacts_by_id.get(id(entity))
+                if entity_contacts_by_id is not None
+                else None
             )
+            if known_contacts is None:
+                known_contacts = _entity_contact_values(entity)
+            contacts.update(_payload_contact_values(item) & known_contacts)
         for child in item.values():
-            _collect_verified_public_contacts(child, entities, entities_by_name, contacts)
+            _collect_verified_public_contacts(
+                child, entities, entities_by_name, contacts, entity_contacts_by_id
+            )
     elif isinstance(item, (list, tuple)):
         for child in item:
-            _collect_verified_public_contacts(child, entities, entities_by_name, contacts)
+            _collect_verified_public_contacts(
+                child, entities, entities_by_name, contacts, entity_contacts_by_id
+            )
 
 
 def _verified_public_contacts_from_payload(value) -> set[str]:
     """Return exact published contact fields present in this tool payload."""
-    entities = _eligible_public_entities()
-    entities_by_name = _public_entities_by_name(entities)
+    entities, entities_by_name, entity_contacts_by_id = _public_contact_index()
     contacts: set[str] = set()
-    _collect_verified_public_contacts(value, entities, entities_by_name, contacts)
+    _collect_verified_public_contacts(
+        value, entities, entities_by_name, contacts, entity_contacts_by_id
+    )
     return contacts
 
 

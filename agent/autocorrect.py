@@ -14,6 +14,7 @@ Tính năng:
 
 import logging
 import unicodedata
+from functools import lru_cache
 from threading import Lock
 
 logger = logging.getLogger(__name__)
@@ -38,6 +39,7 @@ def _build_diacritics_map():
 _build_diacritics_map()
 
 
+@lru_cache(maxsize=4096)
 def normalize_vietnamese(text: str) -> str:
     """
     Remove Vietnamese diacritics for comparison.
@@ -73,43 +75,45 @@ def normalize_vietnamese(text: str) -> str:
 #  LEVENSHTEIN DISTANCE (pure Python)
 # ══════════════════════════════════════════════════
 
-def _levenshtein(s1: str, s2: str) -> int:
+def _levenshtein(s1: str, s2: str, max_distance: int | None = None) -> int:
     """
     Compute the Levenshtein edit distance between two strings.
 
     Pure Python implementation using a single-row dynamic programming
-    approach for O(min(m,n)) memory.
+    approach for O(min(m,n)) memory, with optional early termination
+    when the row minimum exceeds ``max_distance``.
 
     Args:
         s1: First string.
         s2: Second string.
+        max_distance: Optional maximum threshold for early abort.
 
     Returns:
-        Integer edit distance.
+        Integer edit distance (or ``max_distance + 1`` when early-aborted).
     """
     if s1 == s2:
         return 0
+    if len(s1) > len(s2):
+        s1, s2 = s2, s1
     len1, len2 = len(s1), len(s2)
+    if max_distance is not None and (len2 - len1) > max_distance:
+        return max_distance + 1
     if len1 == 0:
         return len2
-    if len2 == 0:
-        return len1
-
-    # Ensure s1 is the shorter string for memory efficiency
-    if len1 > len2:
-        s1, s2 = s2, s1
-        len1, len2 = len2, len1
 
     prev_row = list(range(len1 + 1))
     for j in range(1, len2 + 1):
         curr_row = [j] + [0] * len1
+        s2_char = s2[j - 1]
         for i in range(1, len1 + 1):
-            cost = 0 if s1[i - 1] == s2[j - 1] else 1
+            cost = int(s1[i - 1] != s2_char)
             curr_row[i] = min(
                 curr_row[i - 1] + 1,       # insertion
                 prev_row[i] + 1,            # deletion
                 prev_row[i - 1] + cost,     # substitution
             )
+        if max_distance is not None and min(curr_row) > max_distance:
+            return max_distance + 1
         prev_row = curr_row
 
     return prev_row[len1]
@@ -346,6 +350,7 @@ _TOURISM_CORRECTIONS: dict[str, str] = {
 
 # Sorted by phrase length descending so longest match wins
 _SORTED_KEYS: list[tuple[str, str]] = []
+_SORTED_NORM_KEYS: list[tuple[str, str, str]] = []
 
 # Normalized key → correction (for fast exact lookup)
 _NORM_LOOKUP: dict[str, str] = {}
@@ -356,7 +361,7 @@ _initialized = False
 
 def _init_lookups():
     """Pre-compute lookup tables from the correction dictionary."""
-    global _SORTED_KEYS, _NORM_LOOKUP, _initialized
+    global _SORTED_KEYS, _SORTED_NORM_KEYS, _NORM_LOOKUP, _initialized
     with _init_lock:
         if _initialized:
             return
@@ -366,11 +371,13 @@ def _init_lookups():
             key=lambda kv: len(kv[0]),
             reverse=True,
         )
+        _SORTED_NORM_KEYS = [
+            (key, normalize_vietnamese(key), val) for key, val in _SORTED_KEYS
+        ]
         # Build normalized lookup: normalize both key and value's
         # normalized form so we can match input that already has diacritics
         _NORM_LOOKUP = {}
-        for key, val in _TOURISM_CORRECTIONS.items():
-            norm_key = normalize_vietnamese(key)
+        for key, norm_key, val in _SORTED_NORM_KEYS:
             _NORM_LOOKUP[norm_key] = val
             # Also store the key as-is (it should already be normalized,
             # but be safe)
@@ -389,7 +396,30 @@ _init_lookups()
 
 _entity_names: list[str] = []
 _entity_names_normalized: list[tuple[str, str]] = []  # (normalized, original)
+_entity_by_len: dict[int, list[tuple[str, str]]] = {}
+_entity_exact_map: dict[str, str] = {}
+_entity_norm_list_id: int | None = None
+_entity_norm_list_len: int = 0
 _entity_lock = Lock()
+
+
+def _ensure_entity_buckets() -> None:
+    """Ensure length-bucketed and exact-match indexes are synced with _entity_names_normalized."""
+    global _entity_by_len, _entity_exact_map, _entity_norm_list_id, _entity_norm_list_len
+    if (
+        _entity_norm_list_id == id(_entity_names_normalized)
+        and _entity_norm_list_len == len(_entity_names_normalized)
+    ):
+        return
+    by_len: dict[int, list[tuple[str, str]]] = {}
+    exact_map: dict[str, str] = {}
+    for norm_name, orig_name in _entity_names_normalized:
+        by_len.setdefault(len(norm_name), []).append((norm_name, orig_name))
+        exact_map.setdefault(norm_name, orig_name)
+    _entity_by_len = by_len
+    _entity_exact_map = exact_map
+    _entity_norm_list_id = id(_entity_names_normalized)
+    _entity_norm_list_len = len(_entity_names_normalized)
 
 
 def load_entity_names(entities: dict):
@@ -418,6 +448,7 @@ def load_entity_names(entities: dict):
         _entity_names_normalized = [
             (normalize_vietnamese(n), n) for n in names
         ]
+        _ensure_entity_buckets()
 
 
 def _fuzzy_match_entity(word: str, max_distance: int = 2) -> str | None:
@@ -438,20 +469,23 @@ def _fuzzy_match_entity(word: str, max_distance: int = 2) -> str | None:
     if not _entity_names_normalized or not word:
         return None
 
+    _ensure_entity_buckets()
+    exact = _entity_exact_map.get(word)
+    if exact is not None:
+        return exact
+
     best_name = None
     best_dist = max_distance + 1
 
     word_len = len(word)
-    for norm_name, orig_name in _entity_names_normalized:
-        # Skip if length difference already exceeds max_distance
-        if abs(len(norm_name) - word_len) > max_distance:
-            continue
-        dist = _levenshtein(word, norm_name)
-        if dist < best_dist:
-            best_dist = dist
-            best_name = orig_name
-            if dist == 0:
-                break
+    for target_len in range(max(1, word_len - max_distance), word_len + max_distance + 1):
+        for norm_name, orig_name in _entity_by_len.get(target_len, ()):
+            dist = _levenshtein(word, norm_name, max_distance=best_dist - 1)
+            if dist < best_dist:
+                best_dist = dist
+                best_name = orig_name
+                if dist == 0:
+                    return best_name
 
     return best_name if best_dist <= max_distance else None
 
@@ -477,6 +511,7 @@ def _fuzzy_match_words(text: str, max_distance: int = 2) -> str | None:
     if not words:
         return None
 
+    _ensure_entity_buckets()
     best_match = None
     best_dist = max_distance + 1
 
@@ -485,17 +520,22 @@ def _fuzzy_match_words(text: str, max_distance: int = 2) -> str | None:
     for window_size in range(max_window, 0, -1):
         for start in range(len(words) - window_size + 1):
             window_text = " ".join(words[start:start + window_size])
+            exact = _entity_exact_map.get(window_text)
+            if exact is not None:
+                return exact
             window_len = len(window_text)
-
-            for norm_name, orig_name in _entity_names_normalized:
-                if abs(len(norm_name) - window_len) > max_distance:
-                    continue
-                dist = _levenshtein(window_text, norm_name)
-                if dist < best_dist:
-                    best_dist = dist
-                    best_match = orig_name
-                    if dist == 0:
-                        return best_match
+            for target_len in range(
+                max(1, window_len - max_distance), window_len + max_distance + 1
+            ):
+                for norm_name, orig_name in _entity_by_len.get(target_len, ()):
+                    dist = _levenshtein(
+                        window_text, norm_name, max_distance=best_dist - 1
+                    )
+                    if dist < best_dist:
+                        best_dist = dist
+                        best_match = orig_name
+                        if dist == 0:
+                            return best_match
 
     return best_match if best_dist <= max_distance else None
 
@@ -626,8 +666,7 @@ def _apply_dictionary_corrections(text: str) -> tuple[str, list[dict]]:
     # to prevent overlapping replacements.
     corrected_positions: set[int] = set()
 
-    for key, replacement in _SORTED_KEYS:
-        norm_key = normalize_vietnamese(key)
+    for _key, norm_key, replacement in _SORTED_NORM_KEYS:
         if norm_key not in text_norm:
             continue
 
@@ -646,7 +685,7 @@ def _apply_dictionary_corrections(text: str) -> tuple[str, list[dict]]:
                 continue
 
             # Skip if any position in this range was already corrected
-            if corrected_positions & set(range(idx, end_idx)):
+            if any(pos in corrected_positions for pos in range(idx, end_idx)):
                 search_start = idx + 1
                 continue
 

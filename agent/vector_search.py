@@ -21,7 +21,8 @@ import re
 import sys
 import time
 import unicodedata
-from collections import Counter
+from collections import Counter, defaultdict
+from functools import lru_cache
 from pathlib import Path
 from threading import Lock
 
@@ -58,6 +59,7 @@ STOP_WORDS = {
 #  VIETNAMESE TEXT PROCESSING
 # ══════════════════════════════════════════════════
 
+@lru_cache(maxsize=8192)
 def _strip_vietnamese_diacritics(text: str) -> str:
     """Fold Vietnamese diacritics (including đ/Đ) to ASCII base characters."""
     nfkd = unicodedata.normalize("NFKD", text.replace("đ", "d").replace("Đ", "D"))
@@ -65,21 +67,28 @@ def _strip_vietnamese_diacritics(text: str) -> str:
 
 
 _STOP_WORDS_FOLDED = {_strip_vietnamese_diacritics(w) for w in STOP_WORDS}
+_NON_VN_WORD_RE = re.compile(
+    r"[^\w\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]"
+)
+_WHITESPACE_RE = re.compile(r"\s+")
 
 
 def normalize_vietnamese(text: str) -> str:
     """Normalize Vietnamese text for tokenization."""
     text = text.lower().strip()
     # Remove special chars but keep Vietnamese diacritics
-    text = re.sub(r'[^\w\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]', ' ', text)
-    text = re.sub(r'\s+', ' ', text)
+    text = _NON_VN_WORD_RE.sub(" ", text)
+    text = _WHITESPACE_RE.sub(" ", text)
     return text
 
 _normalize_vietnamese = normalize_vietnamese
 
 
-def _append_folded_tokens(tokens: list[str], words: list[str]) -> None:
-    folded_words = [_strip_vietnamese_diacritics(w) for w in words]
+def _append_folded_tokens(
+    tokens: list[str], words: list[str], folded_words: list[str] | None = None
+) -> None:
+    if folded_words is None:
+        folded_words = [_strip_vietnamese_diacritics(w) for w in words]
     if folded_words == words:
         return
     for fw, orig in zip(folded_words, words):
@@ -97,10 +106,16 @@ def tokenize(text: str) -> list[str]:
     Bigrams help capture compound words (e.g., 'cù lao', 'bún nước').
     """
     text = normalize_vietnamese(text)
-    words = [
-        w for w in text.split()
-        if w not in STOP_WORDS and _strip_vietnamese_diacritics(w) not in _STOP_WORDS_FOLDED and len(w) > 1
-    ]
+    words: list[str] = []
+    folded_words: list[str] = []
+    for w in text.split():
+        if len(w) <= 1 or w in STOP_WORDS:
+            continue
+        fw = _strip_vietnamese_diacritics(w)
+        if fw in _STOP_WORDS_FOLDED:
+            continue
+        words.append(w)
+        folded_words.append(fw)
 
     # Unigrams
     tokens = list(words)
@@ -109,7 +124,7 @@ def tokenize(text: str) -> list[str]:
     for i in range(len(words) - 1):
         tokens.append(f"{words[i]}_{words[i+1]}")
 
-    _append_folded_tokens(tokens, words)
+    _append_folded_tokens(tokens, words, folded_words)
     return tokens
 
 _tokenize = tokenize
@@ -214,8 +229,20 @@ class TFIDFStore:
         # mảng dày vocab_size (~31k) chiều toàn 0 → embeddings.json & RAM giảm mạnh.
         self._idf: dict[str, float] = {}              # token → IDF score
         self._vectors: dict[str, dict[str, float]] = {}  # entity_id → {token: weight} (L2-normalized)
+        self._postings: dict[str, list[tuple[str, float]]] = {}  # token → [(entity_id, weight)]
+        self._postings_vec_id: int | None = None
+        self._postings_vec_len: int = 0
         self._texts: dict[str, str] = {}              # entity_id → source text
         self._doc_count: int = 0
+
+    def _rebuild_postings(self) -> None:
+        postings: dict[str, list[tuple[str, float]]] = defaultdict(list)
+        for eid, vec in self._vectors.items():
+            for token, weight in vec.items():
+                postings[token].append((eid, weight))
+        self._postings = dict(postings)
+        self._postings_vec_id = id(self._vectors)
+        self._postings_vec_len = len(self._vectors)
 
     def _load(self):
         """Load cached embeddings from disk."""
@@ -229,6 +256,7 @@ class TFIDFStore:
                     self._vectors = raw.get("vectors", {})
                     self._texts = raw.get("texts", {})
                     self._doc_count = raw.get("doc_count", 0)
+                    self._rebuild_postings()
                 # Định dạng cũ (dense "tfidf") → KHÔNG nạp (tránh phình RAM 208MB);
                 # để build_index() dựng lại dạng sparse ở lần build kế tiếp.
         except Exception:
@@ -288,6 +316,7 @@ class TFIDFStore:
             # Step 3: Compute SPARSE TF-IDF vectors ({token: weight}, chỉ token khác 0)
             self._texts = docs
             self._vectors = _build_sparse_vectors(doc_tokens, self._idf)
+            self._rebuild_postings()
 
             self._save()
             return {
@@ -334,27 +363,32 @@ class TFIDFStore:
         """
         with self._lock:
             self._load()
+            if not self._vectors:
+                return []
+            if (
+                self._postings_vec_id != id(self._vectors)
+                or self._postings_vec_len != len(self._vectors)
+            ):
+                self._rebuild_postings()
+            query_vec = self._embed_query(query)
+            if query_vec is None:
+                return []
+            postings = self._postings
 
-        if not self._vectors:
-            return []
+            # Sparse cosine via inverted postings index:
+            # chỉ duyệt các entity thực sự chứa ít nhất 1 token của query.
+            acc: dict[str, float] = defaultdict(float)
+            for token, qw in query_vec.items():
+                posting_list = postings.get(token)
+                if posting_list:
+                    for eid, w in posting_list:
+                        acc[eid] += qw * w
 
-        query_vec = self._embed_query(query)
-        if query_vec is None:
-            return []
-
-        # Sparse cosine: cả hai vector đã L2-normalize → cosine = dot.
-        # Lặp theo token query (ít) và tra trong vector entity (dict) → O(docs × |query|).
-        q_items = list(query_vec.items())
-        scores = []
-        for eid, vec in self._vectors.items():
-            sim = 0.0
-            for token, qw in q_items:
-                w = vec.get(token)
-                if w is not None:
-                    sim += qw * w
-            if sim > 0.01:  # Skip near-zero
-                scores.append({"entity_id": eid, "score": round(sim, 4)})
-
+        scores = [
+            {"entity_id": eid, "score": round(sim, 4)}
+            for eid, sim in acc.items()
+            if sim > 0.01
+        ]
         scores.sort(key=lambda x: x["score"], reverse=True)
         return scores[:top_k]
 

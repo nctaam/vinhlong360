@@ -745,8 +745,30 @@ def _load_knowledge_entities() -> dict:
         return {}
 
 
-def _apply_preferences_to_profile(profile: "UserProfile", preferences: list[dict]):
+_EXTRACTOR_ENTITY_INDEX_CACHE: tuple[
+    tuple[int, int] | None, tuple[tuple[str, str, str], ...]
+] = (None, ())
+
+
+def _extractor_entity_index(entities: dict) -> tuple[tuple[str, str, str], ...]:
+    global _EXTRACTOR_ENTITY_INDEX_CACHE
+    cache_key = (id(entities), len(entities)) if len(entities) >= 32 else None
+    cached_key, cached_items = _EXTRACTOR_ENTITY_INDEX_CACHE
+    if cache_key is not None and cached_key == cache_key:
+        return cached_items
+    items = tuple(
+        (eid, entity.get("name", "").lower(), eid.lower())
+        for eid, entity in entities.items()
+        if isinstance(entity, dict) and entity.get("name")
+    )
+    if cache_key is not None:
+        _EXTRACTOR_ENTITY_INDEX_CACHE = (cache_key, items)
+    return items
+
+
+def _apply_preferences_to_profile(profile: "UserProfile", preferences: list[dict]) -> bool:
     """Preference-persistence block extracted from MemoryExtractor.on_conversation_turn."""
+    changed = False
     for pref in preferences:
         ptype = pref["type"]
         value = pref["value"]
@@ -755,22 +777,30 @@ def _apply_preferences_to_profile(profile: "UserProfile", preferences: list[dict
             fact_str = f"Ẩm thực: {value}"
             if fact_str not in profile.semantic_facts:
                 profile.semantic_facts.append(fact_str)
+                changed = True
 
         elif ptype == "area":
             normalized = value.lower().replace(" ", "-")
             if normalized not in profile.preferred_areas:
                 profile.preferred_areas.append(normalized)
+                changed = True
 
         elif ptype == "activity":
             fact_str = f"Hoạt động: {value}"
             if fact_str not in profile.semantic_facts:
                 profile.semantic_facts.append(fact_str)
+                changed = True
 
         elif ptype == "budget":
-            profile.budget_preference = value
+            if profile.budget_preference != value:
+                profile.budget_preference = value
+                changed = True
 
         elif ptype == "travel_style":
-            profile.group_type = value
+            if profile.group_type != value:
+                profile.group_type = value
+                changed = True
+    return changed
 
 
 def _track_discussed_entities(
@@ -778,29 +808,40 @@ def _track_discussed_entities(
     entities_discussed: list[str],
     mentioned_entities: list[str],
     knowledge_entities: dict,
-):
+) -> bool:
     """Entity-tracking block extracted from MemoryExtractor.on_conversation_turn."""
     all_entities = list(set(entities_discussed + mentioned_entities))
+    if not all_entities:
+        return False
+    visited_ids = {v["id"] for v in profile.visited_entities if isinstance(v, dict) and "id" in v}
+    changed = False
     for eid in all_entities:
-        entity_name = knowledge_entities.get(eid, {}).get("name", eid)
-        if not any(v["id"] == eid for v in profile.visited_entities):
+        if eid not in visited_ids:
+            entity_name = knowledge_entities.get(eid, {}).get("name", eid)
             profile.visited_entities.append({
                 "id": eid,
                 "name": entity_name,
                 "ts": datetime.now(timezone.utc).isoformat(),
             })
+            visited_ids.add(eid)
+            changed = True
+    return changed
 
 
-def _store_facts_to_profile(profile: "UserProfile", facts: list[dict]):
+def _store_facts_to_profile(profile: "UserProfile", facts: list[dict]) -> bool:
     """Fact-persistence + trim block extracted from MemoryExtractor.on_conversation_turn."""
+    changed = False
     for fact in facts:
         fact_str = f"{fact['subject']} [{fact['relation']}] {fact['object']}"
         if fact_str not in profile.semantic_facts:
             profile.semantic_facts.append(fact_str)
+            changed = True
 
     # Trim semantic_facts to keep only latest 50
     if len(profile.semantic_facts) > 50:
         profile.semantic_facts = profile.semantic_facts[-50:]
+        changed = True
+    return changed
 
 
 class MemoryExtractor:
@@ -915,16 +956,9 @@ class MemoryExtractor:
         combined_lower = f"{message} {reply}".lower()
         found: list[str] = []
 
-        for eid, entity in entities.items():
-            name = entity.get("name", "")
-            if not name:
-                continue
-            # Match by entity name (case-insensitive)
-            if name.lower() in combined_lower:
-                found.append(eid)
-                continue
-            # Match by entity ID mentioned literally
-            if eid.lower() in combined_lower:
+        for eid, name_lower, eid_lower in _extractor_entity_index(entities):
+            # Match by entity name (case-insensitive) or literal entity ID
+            if name_lower in combined_lower or eid_lower in combined_lower:
                 found.append(eid)
 
         return found
@@ -1001,20 +1035,22 @@ class MemoryExtractor:
         if user_id:
             owner_write_gate.assert_writable(user_id)
             with cold_memory._lock:
+                is_new_profile = user_id not in cold_memory._profiles
                 profile = cold_memory.get_profile(user_id)
 
                 # Update preferences
-                _apply_preferences_to_profile(profile, preferences)
+                pref_changed = _apply_preferences_to_profile(profile, preferences)
 
                 # Track discussed entities
-                _track_discussed_entities(
+                ent_changed = _track_discussed_entities(
                     profile, entities_discussed, mentioned_entities, knowledge_entities
                 )
 
                 # Store extracted facts as semantic facts
-                _store_facts_to_profile(profile, facts)
+                fact_changed = _store_facts_to_profile(profile, facts)
 
-                cold_memory._save_all()
+                if is_new_profile or pref_changed or ent_changed or fact_changed:
+                    cold_memory._save_all()
 
         return {
             "preferences": preferences,

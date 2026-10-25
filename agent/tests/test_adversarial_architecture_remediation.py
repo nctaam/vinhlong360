@@ -491,5 +491,62 @@ def test_campaign_kappa_multi_agent_architecture_optimizations(tmp_path):
     assert callable(siteops_admin_api._load_export_snapshot)
 
 
+def test_campaign_lambda_multi_agent_architecture_optimizations(tmp_path):
+    import inspect
+    import agentic_rag
+    import autocorrect
+    import autonomous_budget
+    import memory
+    import public_api
+    import server
+    import smart_rank
+    import vector_search
+    import versioned_json_store
+    from chat import api as chat_api
+    from identity import api as identity_api
+
+    # 1. vector_search builds inverted postings index and searches via postings
+    store = vector_search.TFIDFStore()
+    store._loaded = True
+    store._idf = {"chua": 1.5, "tien": 1.5, "chau": 1.5}
+    store._vectors = {
+        "e1": {"chua": 0.577, "tien": 0.577, "chau": 0.577},
+        "e2": {"khac": 1.0},
+    }
+    res = store.search("chua tien chau", top_k=5)
+    assert res and res[0]["entity_id"] == "e1"
+    assert "chua" in store._postings
+
+    # 2. autocorrect thresholded Levenshtein & length-bucketed entity index
+    assert autocorrect._levenshtein("vinh long", "ca mau xa xoi", max_distance=1) > 1
+    autocorrect.load_entity_names({"e1": {"name": "Chùa Tiên Châu", "type": "attraction"}})
+    assert autocorrect._fuzzy_match_entity("chua tien chau") == "Chùa Tiên Châu"
+
+    # 3. smart_rank updates _last_load even when file is missing and caches log boost
+    assert smart_rank._calc_log_boost(7, 3.0) == 3.0
+
+    # 4. chat_api & agentic_rag & memory caches and dirty-checking
+    assert callable(chat_api._public_contact_index)
+    assert callable(agentic_rag._normalized_entity_index)
+    assert callable(memory._extractor_entity_index)
+    assert "is_new_profile or pref_changed or ent_changed or fact_changed" in inspect.getsource(
+        memory.MemoryExtractor.on_conversation_turn
+    )
+
+    # 5. identity_api, public_api, autonomous_budget, server, versioned_json_store
+    assert "compare_digest(actual_subject, expected_subject)" in inspect.getsource(
+        identity_api._verify_export_cursor
+    )
+    assert callable(public_api._warm_map_pin_places)
+    assert "os.O_RDWR | os.O_CREAT" in inspect.getsource(
+        autonomous_budget._interprocess_file_lock
+    )
+    assert "asyncio.to_thread(_health_core)" in inspect.getsource(server._health_detail)
+    test_json = tmp_path / "v.json"
+    test_json.write_text('{"ok": true}', encoding="utf-8")
+    assert versioned_json_store.load_json(test_json) == {"ok": True}
+
+
+
 
 

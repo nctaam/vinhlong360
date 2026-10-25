@@ -554,9 +554,14 @@ def _detect_concepts_by_keyword(q_lower: str, q_norm: str) -> list[dict]:
     return detected_concepts
 
 
-def _add_named_entity_concepts(query: str, detected_concepts: list[dict]) -> None:
+def _add_named_entity_concepts(
+    query: str,
+    detected_concepts: list[dict],
+    named_entities: list[str] | None = None,
+) -> None:
     """Bổ sung concept từ entity gọi thẳng tên trong query (nếu chưa có)."""
-    named_entities = _detect_entities(query)
+    if named_entities is None:
+        named_entities = _detect_entities(query)
     for neid in named_entities:
         ent = knowledge.get_entity(neid)
         if ent:
@@ -633,7 +638,11 @@ def _build_cross_domain_context(detected_concepts: list[dict], connections: list
     return "\n".join(ctx_parts)
 
 
-def cross_domain_query(query: str, max_hops: int = 3) -> dict:
+def cross_domain_query(
+    query: str,
+    max_hops: int = 3,
+    named_entities: list[str] | None = None,
+) -> dict:
     """
     Cross-domain reasoning: parse query để tìm nhiều concepts,
     tìm entities khớp mỗi concept, rồi dùng graph traversal
@@ -657,7 +666,7 @@ def cross_domain_query(query: str, max_hops: int = 3) -> dict:
     detected_concepts = _detect_concepts_by_keyword(q_lower, q_norm)
 
     # Also detect specific entities mentioned by name in the query
-    _add_named_entity_concepts(query, detected_concepts)
+    _add_named_entity_concepts(query, detected_concepts, named_entities=named_entities)
 
     # ── Find connecting paths between concepts ──
     connections = _find_concept_connections(detected_concepts, max_hops)
@@ -700,7 +709,11 @@ def build_rag_context(query: str, session_context: str = "") -> str:
 
     # 3. Cross-domain reasoning for complex / multi-hop queries
     if classification["complexity"] in ("complex", "moderate"):
-        cdq = cross_domain_query(query, max_hops=3)
+        cdq = cross_domain_query(
+            query,
+            max_hops=3,
+            named_entities=classification["entities_detected"],
+        )
         if cdq["context"]:
             parts.append(cdq["context"])
         # Enrich with cross-domain paths for connections found
@@ -721,10 +734,33 @@ def build_rag_context(query: str, session_context: str = "") -> str:
 #  HELPERS
 # ══════════════════════════════════════════════════
 
+_DIACRITICS_RE = re.compile(r"[\u0300-\u036f]")
+_NORM_ENTITY_INDEX_CACHE: tuple[
+    tuple[int, int] | None, tuple[tuple[str, str, str], ...]
+] = (None, ())
+
+
 def _normalize(text: str) -> str:
     s = unicodedata.normalize("NFD", text.lower())
-    s = re.sub(r"[̀-ͯ]", "", s)
+    s = _DIACRITICS_RE.sub("", s)
     return s.replace("đ", "d")
+
+
+def _normalized_entity_index() -> tuple[tuple[str, str, str], ...]:
+    global _NORM_ENTITY_INDEX_CACHE
+    raw = getattr(knowledge, "_entities", None) or {}
+    cache_key = (id(raw), len(raw)) if len(raw) >= 32 else None
+    cached_key, cached_items = _NORM_ENTITY_INDEX_CACHE
+    if cache_key is not None and cached_key == cache_key:
+        return cached_items
+    items = tuple(
+        (eid, e["name"].lower(), _normalize(e["name"]))
+        for eid, e in raw.items()
+        if isinstance(e, dict) and e.get("type") != "place" and e.get("name")
+    )
+    if cache_key is not None:
+        _NORM_ENTITY_INDEX_CACHE = (cache_key, items)
+    return items
 
 
 def _detect_entities(query: str) -> list[str]:
@@ -735,12 +771,7 @@ def _detect_entities(query: str) -> list[str]:
     q_lower = query.lower()
     q_norm = _normalize(query)
 
-    for eid, e in knowledge._entities.items():
-        if e["type"] == "place":
-            continue
-        name_lower = e["name"].lower()
-        name_norm = _normalize(e["name"])
-
+    for eid, name_lower, name_norm in _normalized_entity_index():
         # Exact or near-exact match
         if name_lower in q_lower or name_norm in q_norm:
             detected.append(eid)
@@ -751,17 +782,18 @@ def _detect_entities(query: str) -> list[str]:
 
 
 def _detect_areas(query: str) -> list[str]:
-    """Phát hiện areas trong query (có dấu + không dấu)."""
+    """Map current and legacy province names to the single current scope."""
     q = query.lower()
     q_norm = _normalize(q)
-    areas = []
-    if "vĩnh long" in q or "vinh long" in q_norm:
-        areas.append("vinh-long")
-    if "bến tre" in q or "ben tre" in q_norm:
-        areas.append("ben-tre")
-    if "trà vinh" in q or "tra vinh" in q_norm:
-        areas.append("tra-vinh")
-    return areas
+    province_mentions = (
+        "vĩnh long" in q
+        or "vinh long" in q_norm
+        or "bến tre" in q
+        or "ben tre" in q_norm
+        or "trà vinh" in q
+        or "tra vinh" in q_norm
+    )
+    return ["vinh-long"] if province_mentions else []
 
 
 # Intent rules: (intent, có-dấu keywords, không-dấu keywords).

@@ -2378,7 +2378,7 @@ async def _build_homepage_payload(month: int) -> dict:
     # Area counts for region tiles
     area_counts = _compute_homepage_area_counts(public)
 
-    seasonal_tagline = _resolve_seasonal_tagline(month)
+    seasonal_tagline = await asyncio.to_thread(_resolve_seasonal_tagline, month)
 
     # Top dishes by rating (social proof for "Tinh hoa" section)
     top_dishes = _select_top_dishes(public)
@@ -2386,7 +2386,7 @@ async def _build_homepage_payload(month: int) -> dict:
     _finalize_homepage_sections([seasonal, experiences, products, top_dishes], upcoming_events)
 
     # Trending: entities with highest chat/search hit counts
-    trending = _build_homepage_trending(public)
+    trending = await asyncio.to_thread(_build_homepage_trending, public)
 
     # Tin chính đặc sản: loại trùng seasonal[] và upcoming_events[] để mục này
     # không nói lại thứ vừa hiện ngay trên nó.
@@ -2483,8 +2483,27 @@ _TYPE_META.update({
     "itinerary": {"emoji": "\U0001f5fa\ufe0f", "color": "#4A6FA5"},
 })
 
-_map_pins_cache: dict = {"data": None, "filters": None, "ts": 0.0}
+_map_pins_cache: dict = {"data": None, "filters": None, "ts": 0.0, "entries": {}}
 _MAP_PINS_TTL = 120
+_MAP_PINS_MAX_ENTRIES = 16
+
+
+def _warm_map_pin_places(entities: list[dict]) -> None:
+    """Batch-warm `_place_cache` for uncached placeIds before building map pins."""
+    with _place_cache_lock:
+        uncached = [
+            pid
+            for pid in {e.get("placeId") for e in entities if e.get("placeId")}
+            if pid and pid not in _place_cache
+        ]
+    if not uncached:
+        return
+    batch = db.get_entities_batch(uncached)
+    with _place_cache_lock:
+        for pid, place in batch.items():
+            _place_cache[pid] = {"name": place["name"], "area": place.get("area")}
+            if len(_place_cache) > _PLACE_CACHE_MAX:
+                _place_cache.popitem(last=False)
 
 
 def _build_map_pin(e: dict) -> dict | None:
@@ -2521,6 +2540,31 @@ def _build_map_pin(e: dict) -> dict | None:
     return pin
 
 
+def _get_cached_map_pins(cache_key: str, now: float) -> list[dict] | None:
+    if (_map_pins_cache["data"] is not None
+            and _map_pins_cache["filters"] == cache_key
+            and now - _map_pins_cache["ts"] < _MAP_PINS_TTL):
+        return _map_pins_cache["data"]
+    entries = _map_pins_cache.get("entries")
+    if isinstance(entries, dict) and _map_pins_cache.get("data") is not None:
+        cached_entry = entries.get(cache_key)
+        if cached_entry and now - cached_entry[1] < _MAP_PINS_TTL:
+            return cached_entry[0]
+    return None
+
+
+def _store_cached_map_pins(cache_key: str, result: list[dict], now: float) -> None:
+    entries = _map_pins_cache.get("entries")
+    if not isinstance(entries, dict):
+        entries = {}
+        _map_pins_cache["entries"] = entries
+    elif len(entries) >= _MAP_PINS_MAX_ENTRIES and cache_key not in entries:
+        oldest_key = min(entries, key=lambda k: entries[k][1])
+        entries.pop(oldest_key, None)
+    entries[cache_key] = (result, now)
+    _map_pins_cache.update(data=result, filters=cache_key, ts=now)
+
+
 @router.get("/map-pins", response_model=list[MapPin],
             summary="Get map pins",
             description="Returns lightweight map pin data for all entities with coordinates. Includes emoji, color, rating, and place name. Filterable by type and area.")
@@ -2532,16 +2576,14 @@ async def get_map_pins(
     """Trả pin bản đồ (lat/lng, emoji, màu theo type, rating, place) của entity công khai có toạ độ.
 
     Lọc theo type (nhiều giá trị phân tách dấu phẩy) và area; quét tối đa 5000 entity và
-    bỏ qua entity thiếu toạ độ hợp lệ. Kết quả giữ trong cache tiến trình 120 giây cho
-    đúng MỘT tổ hợp filter gần nhất.
+    bỏ qua entity thiếu toạ độ hợp lệ. Kết quả giữ trong cache tiến trình 120 giây.
     """
     response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
     cache_key = f"{type}:{area}"
     _now = _time.time()
-    if (_map_pins_cache["data"] is not None
-            and _map_pins_cache["filters"] == cache_key
-            and _now - _map_pins_cache["ts"] < _MAP_PINS_TTL):
-        return _map_pins_cache["data"]
+    cached = _get_cached_map_pins(cache_key, _now)
+    if cached is not None:
+        return cached
 
     type_filters: list[str] | None = None
     if type:
@@ -2551,6 +2593,7 @@ async def get_map_pins(
         all_ents = db.list_entities(limit=_FULL_SCAN_LIMIT, offset=0, area=area,
                                     public_only=True, entity_types=type_filters)
         _warn_if_scan_truncated(all_ents, _FULL_SCAN_LIMIT, "ghim bản đồ")
+        _warm_map_pin_places(all_ents)
         pins = []
         for e in all_ents:
             pin = _build_map_pin(e)
@@ -2559,7 +2602,7 @@ async def get_map_pins(
         return pins
 
     result = await asyncio.to_thread(_query)
-    _map_pins_cache.update(data=result, filters=cache_key, ts=_now)
+    _store_cached_map_pins(cache_key, result, _now)
     return result
 
 
@@ -2616,7 +2659,7 @@ async def list_events(
         public_only=True)
     _warn_if_scan_truncated(all_ents, _EVENT_SCAN_LIMIT, "lịch sự kiện")
     events = list(all_ents)
-    _enrich_place(events)
+    await asyncio.to_thread(_enrich_place, events)
 
     if area:
         events = [e for e in events
@@ -3212,6 +3255,13 @@ _fix_route_order()
 
 # Homepage-cache la trang thai cua FILE NAY; viec xoa no khi place-cache doi
 import entity_read as _entity_read
+
+
+def _invalidate_public_api_caches() -> None:
+    _homepage_cache.update(month=None, data=None, ts=0.0)
+    _map_pins_cache.update(data=None, filters=None, ts=0.0, entries={})
+
+
 _entity_read._place_invalidation_listeners.append(
-    lambda: _homepage_cache.update(month=None, data=None, ts=0.0)  # Perf-P0
+    _invalidate_public_api_caches  # Perf-P0
 )

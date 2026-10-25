@@ -176,8 +176,7 @@ def _read_versioned(path: Path) -> tuple[dict, str]:
 
 
 def load_json(path: Path) -> dict:
-    data, _ = _read_versioned(path)
-    return data
+    return json.loads(path.read_bytes().decode("utf-8"))
 
 
 def load_json_versioned(path: Path) -> tuple[dict, str]:
@@ -205,6 +204,7 @@ def _atomic_write_impl(
     data: dict,
     *,
     strict_directory_fsync: bool,
+    indent: int | None = 2,
 ) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -221,7 +221,7 @@ def _atomic_write_impl(
     temp_path = Path(temp_name)
     try:
         with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as temp_file:
-            json.dump(data, temp_file, ensure_ascii=False, indent=2)
+            json.dump(data, temp_file, ensure_ascii=False, indent=indent)
             temp_file.flush()
             if target_mode is not None:
                 os.chmod(temp_path, target_mode)
@@ -238,9 +238,9 @@ def _atomic_write_impl(
         temp_path.unlink(missing_ok=True)
 
 
-def atomic_write_json(path: Path, data: dict) -> None:
+def atomic_write_json(path: Path, data: dict, *, indent: int | None = 2) -> None:
     """Replace JSON and require parent-directory durability on POSIX."""
-    _atomic_write_impl(path, data, strict_directory_fsync=True)
+    _atomic_write_impl(path, data, strict_directory_fsync=True, indent=indent)
 
 
 def _atomic_write(path: Path, data: dict) -> None:

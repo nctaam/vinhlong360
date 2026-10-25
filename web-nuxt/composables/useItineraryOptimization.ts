@@ -283,7 +283,7 @@ export interface SuspendedRouteScheduler {
 }
 
 type RouteTableCacheEntry = {
-  expiresAt: number | null
+  expiresAt: number
   promise: Promise<RouteTableResult | null>
 }
 
@@ -410,11 +410,8 @@ function isSupportedRequestedTime(value: string): boolean {
 }
 
 function hasSupportedOpeningHours(value: string): boolean {
-  OPENING_HOURS_PATTERN.lastIndex = 0
-  let match = OPENING_HOURS_PATTERN.exec(value)
-  while (match) {
+  for (const match of value.matchAll(OPENING_HOURS_PATTERN)) {
     if (validTimeRangeMatch(match)) return true
-    match = OPENING_HOURS_PATTERN.exec(value)
   }
   return false
 }
@@ -1010,7 +1007,7 @@ export function getCachedRouteTable(
 ): Promise<RouteTableResult | null> {
   const now = Date.now()
   for (const [cachedKey, entry] of routeTableCache) {
-    if (entry.expiresAt !== null && entry.expiresAt <= now) {
+    if (entry.expiresAt <= now) {
       routeTableCache.delete(cachedKey)
     }
   }
@@ -1026,7 +1023,7 @@ export function getCachedRouteTable(
   }
 
   const entry: RouteTableCacheEntry = {
-    expiresAt: null,
+    expiresAt: now + ROUTE_TABLE_CACHE_TTL_MS,
     promise: request,
   }
   entry.promise = Promise.resolve(request).then(
