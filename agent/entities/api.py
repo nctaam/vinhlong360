@@ -1237,6 +1237,38 @@ async def get_nearby_entities(
     return {"entity_id": entity_id, "nearby": result, "radius_km": radius_km}
 
 
+def _format_best_answer_row(a: dict) -> dict:
+    return {
+        "id": a["id"],
+        "content": a["content"],
+        "created_at": a["created_at"],
+        "user": {
+            "id": a["user_id"],
+            "display_name": a.get("display_name"),
+            "avatar_url": a.get("avatar_url"),
+            "username": a.get("username"),
+        },
+    }
+
+
+def _fetch_best_answers_by_id(conn, row_dicts: list[dict], ph: str) -> dict:
+    answer_ids = [d["best_answer_id"] for d in row_dicts if d.get("best_answer_id")]
+    if not answer_ids:
+        return {}
+    in_ph = ", ".join([ph] * len(answer_ids))
+    ans_rows = db._fetchall(conn, f"""
+        SELECT c.id, c.content, c.created_at, c.user_id,
+               u2.display_name, u2.avatar_url, u2.username
+        FROM comments c
+        JOIN users u2 ON u2.id = c.user_id
+        WHERE c.id IN ({in_ph})
+    """, tuple(answer_ids))
+    return {
+        db._row_to_dict(ans)["id"]: _format_best_answer_row(db._row_to_dict(ans))
+        for ans in (ans_rows or [])
+    }
+
+
 @router.get("/entities/{entity_id}/qa",
             dependencies=[Depends(require_pg)],
             summary="Get entity Q&A",
@@ -1280,10 +1312,13 @@ async def get_entity_qa(
                   AND moderation_status = 'approved' AND deleted_at IS NULL
             """, (entity_id,))
 
+            row_dicts = [db._row_to_dict(r) for r in rows]
+            # Batch-resolve best_answer from comments in one query (eliminates N+1)
+            answers_by_id = _fetch_best_answers_by_id(conn, row_dicts, ph)
             questions = []
-            for r in rows:
-                d = db._row_to_dict(r)
-                q = {
+            for d in row_dicts:
+                ans_id = d.get("best_answer_id")
+                questions.append({
                     "id": d["id"],
                     "content": d["content"],
                     "created_at": d["created_at"],
@@ -1295,31 +1330,9 @@ async def get_entity_qa(
                     },
                     "comment_count": d.get("comment_count", 0),
                     "like_count": d.get("like_count", 0),
-                    "best_answer_id": d.get("best_answer_id"),
-                    "best_answer": None,
-                }
-                if d.get("best_answer_id"):
-                    answer = db._fetchone(conn, f"""
-                        SELECT c.id, c.content, c.created_at, c.user_id,
-                               u2.display_name, u2.avatar_url, u2.username
-                        FROM comments c
-                        JOIN users u2 ON u2.id = c.user_id
-                        WHERE c.id = {ph}
-                    """, (d["best_answer_id"],))
-                    if answer:
-                        a = db._row_to_dict(answer)
-                        q["best_answer"] = {
-                            "id": a["id"],
-                            "content": a["content"],
-                            "created_at": a["created_at"],
-                            "user": {
-                                "id": a["user_id"],
-                                "display_name": a.get("display_name"),
-                                "avatar_url": a.get("avatar_url"),
-                                "username": a.get("username"),
-                            },
-                        }
-                questions.append(q)
+                    "best_answer_id": ans_id,
+                    "best_answer": answers_by_id.get(ans_id) if ans_id else None,
+                })
             return questions, db._row_to_dict(total_row) if total_row else {}
 
     questions, total_d = await asyncio.to_thread(_qa_query)

@@ -269,7 +269,19 @@ def _tool_description(name: str, args: dict) -> str:
     return f"Đang xử lý {name}..."
 
 
+def _is_llm_circuit_open() -> bool:
+    if not HAS_CIRCUIT_BREAKER:
+        return False
+    try:
+        from circuit_breaker import CircuitState, llm_breaker
+        return llm_breaker.state == CircuitState.OPEN
+    except Exception:
+        return False
+
+
 def generate_followups(context: str, usage_accumulator=None) -> list[str]:
+    if _is_llm_circuit_open():
+        return []
     try:
         model = get_model_mini()
         messages = [{"role": "user", "content": f"""Dựa vào ngữ cảnh sau, gợi ý 3 câu hỏi tiếp theo ngắn gọn (< 40 ký tự) mà du khách có thể muốn hỏi.
@@ -1492,6 +1504,8 @@ def _safe_tool_result(result, verified_public_contacts: set[str]) -> str:
     else:
         serialized = str(safe_value)
     verified_public_contacts.update(new_contacts)
+    if len(serialized) > 131_072:
+        serialized = serialized[:131_072] + "...[truncated]"
     return serialized
 
 

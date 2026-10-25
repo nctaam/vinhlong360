@@ -29,11 +29,14 @@ export function useAuthModal() {
   return {
     open,
     openAuth: (cb?: () => void) => {
-      _callback.value = cb || null
+      _callback.value = import.meta.client ? (cb || null) : null
       rememberReturnPath(route.fullPath)
       open.value = true
     },
-    closeAuth: () => { open.value = false },
+    closeAuth: () => {
+      _callback.value = null
+      open.value = false
+    },
     rememberReturnPath,
     consumeReturnPath,
     onLoginSuccess: () => {

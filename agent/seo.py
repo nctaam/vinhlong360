@@ -208,6 +208,26 @@ _db_snapshot_lock = threading.Lock()
 _DB_SNAPSHOT_TTL = 300.0
 
 
+def _snapshot_from_knowledge_memory(db_obj: Any) -> dict[str, Any] | None:
+    """Reuse in-memory DB-backed knowledge state when database.db is not monkeypatched."""
+    try:
+        from database import Database
+        import knowledge
+        if (
+            isinstance(db_obj, Database)
+            and getattr(knowledge, "_data_source", None) == "db"
+            and getattr(knowledge, "_entities", None)
+        ):
+            return {
+                "entities": list(knowledge._entities.values()),
+                "relationships": list(getattr(knowledge, "_relationships", None) or []),
+                "itineraries": list((getattr(knowledge, "_itineraries", None) or {}).values()),
+            }
+    except Exception:
+        pass
+    return None
+
+
 def _load_db_data() -> dict[str, Any] | None:
     """Load SEO data from the DB in the same rough shape as web/data.json."""
     global _db_snapshot, _db_snapshot_ts
@@ -215,14 +235,16 @@ def _load_db_data() -> dict[str, Any] | None:
         return _db_snapshot
     try:
         from database import db
-        entities = db.all_entities()
-        if not entities:
-            return None
-        snapshot = {
-            "entities": entities,
-            "relationships": db.all_relationships(),
-            "itineraries": db.all_itineraries(),
-        }
+        snapshot = _snapshot_from_knowledge_memory(db)
+        if snapshot is None:
+            entities = db.all_entities()
+            if not entities:
+                return None
+            snapshot = {
+                "entities": entities,
+                "relationships": db.all_relationships(),
+                "itineraries": db.all_itineraries(),
+            }
         with _db_snapshot_lock:
             _db_snapshot = snapshot
             _db_snapshot_ts = time.time()

@@ -83,5 +83,11 @@ it('rejects protocol-relative and absolute auth return targets', async () => {
   modal.rememberReturnPath('https://evil.example/steal')
   expect(modal.consumeReturnPath()).toBe('')
 
+  let fired = 0
+  modal.openAuth(() => { fired += 1 })
+  modal.closeAuth()
+  modal.onLoginSuccess()
+  expect(fired).toBe(0)
+
   wrapper.unmount()
 })

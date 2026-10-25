@@ -29,6 +29,7 @@ import twofactor  # noqa: E402
 import vector_search  # noqa: E402
 from cases import admin_api, correction, public_api, publication, store  # noqa: E402
 from chat import api as chat_api  # noqa: E402
+from entities import api as entities_api  # noqa: E402
 from entity_write import EntitySnapshot, _hydrate_loaded_attributes, _prepare_stored_patch  # noqa: E402
 from siteops import admin_api as siteops_admin_api  # noqa: E402
 
@@ -228,6 +229,67 @@ async def test_server_limit_request_size_rejects_negative_content_length():
 
     resp = await server.limit_request_size(req, _call_next)
     assert resp.status_code == 400
+
+
+def test_entities_fetch_best_answers_by_id_batches_in_single_query(monkeypatch):
+    calls = []
+
+    class _FakeDB:
+        def _fetchall(self, _conn, sql, params):
+            calls.append((sql, params))
+            return [
+                {
+                    "id": "c-1",
+                    "content": "Trả lời 1",
+                    "created_at": "2026-01-01",
+                    "user_id": "u-1",
+                    "display_name": "An",
+                    "avatar_url": None,
+                    "username": "an",
+                },
+                {
+                    "id": "c-2",
+                    "content": "Trả lời 2",
+                    "created_at": "2026-01-02",
+                    "user_id": "u-2",
+                    "display_name": "Bình",
+                    "avatar_url": None,
+                    "username": "binh",
+                },
+            ]
+
+        def _row_to_dict(self, r):
+            return dict(r)
+
+    monkeypatch.setattr(entities_api, "db", _FakeDB())
+    rows = [{"best_answer_id": "c-1"}, {"best_answer_id": None}, {"best_answer_id": "c-2"}]
+    result = entities_api._fetch_best_answers_by_id(None, rows, "%s")
+    assert len(calls) == 1
+    assert calls[0][1] == ("c-1", "c-2")
+    assert result["c-1"]["content"] == "Trả lời 1"
+    assert result["c-2"]["user"]["display_name"] == "Bình"
+
+
+def test_seo_snapshot_from_knowledge_memory_reuses_db_entities(monkeypatch):
+    monkeypatch.setattr(knowledge, "_data_source", "db")
+    monkeypatch.setattr(knowledge, "_entities", {"e1": {"id": "e1", "type": "dish"}})
+    monkeypatch.setattr(knowledge, "_relationships", [{"from": "e1", "to": "e2"}])
+    monkeypatch.setattr(knowledge, "_itineraries", {"i1": {"id": "i1"}})
+    snap = seo._snapshot_from_knowledge_memory(database.db)
+    assert snap is not None
+    assert snap["entities"] == [{"id": "e1", "type": "dish"}]
+    assert snap["relationships"] == [{"from": "e1", "to": "e2"}]
+    assert snap["itineraries"] == [{"id": "i1"}]
+
+
+def test_chat_generate_followups_short_circuits_when_breaker_open_and_truncates_huge_tool_output(monkeypatch):
+    monkeypatch.setattr(chat_api, "_is_llm_circuit_open", lambda: True)
+    assert chat_api.generate_followups("Ngữ cảnh") == []
+    huge = "Vĩnh Long cù lao An Bình " * 6000
+    safe = chat_api._safe_tool_result(huge, set())
+    assert len(safe) < 132_000
+    assert safe.endswith("...[truncated]")
+
 
 
 
