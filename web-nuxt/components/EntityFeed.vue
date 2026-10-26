@@ -59,7 +59,7 @@ onMounted(async () => {
 <style scoped>
 .entity-feed { margin-top: var(--space-6); }
 .ef-head { margin: 0 0 var(--space-2); }
-.ef-title { font-family: var(--font-editorial); font-size: var(--text-lg); font-weight: 600; margin: 0; }
+.ef-title { font-family: var(--font-editorial); font-size: var(--text-lg); font-weight: 600; line-height: var(--leading-snug); text-wrap: balance; overflow-wrap: break-word; margin: 0; }
 
 /* Tri-province sediment rule — same card-scale hairline idiom as
    NearbyEntities.vue's .nb-rule / PostCard.vue's .thread-rule — separates
@@ -68,27 +68,9 @@ onMounted(async () => {
   display: block;
   width: 48px;
   height: 2px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   margin: 0 0 var(--space-3);
   background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
-}
-.dark .ef-rule {
-  background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
-}
-
-/* Emoji-in-chip idiom (replicated locally; see PostCard.vue for the
-   shared source pattern) — houses the rating stars and any bare emoji
-   so they never float directly beside serif/body text. */
-.emoji-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.4em;
-  padding: 0 .3em;
-  border-radius: var(--radius-control);
-  background: var(--bg-alt);
-  font-size: .85em;
-  line-height: 1.4;
 }
 .ef-rating { letter-spacing: -2px; }
 .ef-likes { font-variant-numeric: tabular-nums; }
@@ -107,14 +89,11 @@ onMounted(async () => {
   background: var(--color-brand); color: var(--text-on-dark, var(--white)); font-weight: var(--weight-semibold); font-size: var(--text-sm);
 }
 .ef-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .2rem; }
-.ef-author { font-weight: var(--weight-semibold); font-size: var(--text-sm); }
-.ef-text { margin: 0; font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); line-height: var(--leading-relaxed); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ef-author { font-weight: var(--weight-semibold); font-size: var(--text-sm); line-height: 1.35; overflow-wrap: break-word; }
+.ef-text { margin: 0; font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); line-height: var(--leading-relaxed); overflow-wrap: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ef-meta { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-xs); color: var(--muted); flex-wrap: wrap; }
-.ef-more { display: block; text-align: center; padding: var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--color-action); text-decoration: none; border: .5px solid var(--line); border-radius: var(--radius-sheet); margin-top: var(--space-2); transition: background .2s; }
+.ef-more { display: block; text-align: center; padding: var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--color-action); text-decoration: none; border: .5px solid var(--line); border-radius: var(--radius-sheet); margin-top: var(--space-2); transition: background-color .2s ease; }
 .ef-more:hover { background: rgba(var(--color-action-rgb), .06); }
-
-.dark .ef-link { background: var(--bg-alt); }
-.dark .ef-more:hover { background: rgba(var(--white-rgb),.04); }
 
 .ef-skeleton { display: flex; flex-direction: column; gap: var(--space-2); }
 .ef-sk-item { display: flex; gap: var(--space-3); padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); }

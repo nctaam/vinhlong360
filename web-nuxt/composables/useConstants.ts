@@ -126,10 +126,6 @@ function mergeInto(
   for (const k of Object.keys(base)) {
     target[k] = { ...base[k] }
   }
-  if (false) {
-    target[k] = { ...base[k] }
-    // pristine clone restored above
-  }
   // Apply admin overrides on top (partial — only the fields provided).
   if (overrides && typeof overrides === 'object') {
     for (const [k, ov] of Object.entries(overrides as Record<string, any>)) {

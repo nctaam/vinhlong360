@@ -11,14 +11,14 @@
         <div class="onboarding-sheet" role="dialog" aria-modal="true" aria-label="Chào mừng đến vinhlong360" ref="sheetEl">
           <button type="button" class="sheet-close" aria-label="Đóng" @click="dismiss"><IconLine name="x" /></button>
           <div class="sheet-header">
-            <span class="sheet-emoji-chip" aria-hidden="true"><span class="sheet-emoji">{{ ob.emoji }}</span></span>
+            <span class="sheet-emoji-chip" aria-hidden="true"><IconLine :name="resolveOnboardingIcon(ob.emoji, 'leaf')" class="sheet-emoji" /></span>
             <h2 class="sheet-title">{{ ob.title }}</h2>
             <span class="sheet-rule" aria-hidden="true"></span>
             <p>{{ ob.intro }}</p>
           </div>
           <div class="sheet-features">
             <div class="sheet-feature" v-for="(f, i) in ob.features" :key="i">
-              <span class="sf-icon" aria-hidden="true">{{ f.icon }}</span>
+              <span class="sf-icon" aria-hidden="true"><IconLine :name="resolveOnboardingIcon(f.icon, 'sparkle')" /></span>
               <div>
                 <strong>{{ f.title }}</strong>
                 <p>{{ f.desc }}</p>
@@ -38,7 +38,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import PersonalizeSetupSheet from './PersonalizeSetupSheet.vue'
-import { mergeOnboarding } from '~/utils/onboardingContent'
+import { mergeOnboarding, resolveOnboardingIcon } from '~/utils/onboardingContent'
 const { enabled: ff } = useFeature()
 const { get: ss } = useSiteSettings()
 const { isLoggedIn, user } = useAuth()
@@ -118,35 +118,38 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
-  margin: 0 auto var(--space-3);
-  border-radius: var(--radius-full);
+  width: 48px;
+  height: 48px;
+  margin: 0 auto var(--space-2h);
+  border-radius: var(--radius-pill, 999px);
   background: var(--bg-warm);
 }
 .sheet-emoji {
-  font-size: 1.8rem;
+  font-size: 1.45rem;
   display: block;
   margin-bottom: 0;
   line-height: 1;
 }
-.dark .sheet-emoji-chip { background: rgba(var(--white-rgb), 0.06); }
 
 /* Warm serif welcome title */
 .sheet-title {
   font-family: var(--font-editorial);
   font-weight: 600;
   letter-spacing: -.005em;
+  font-size: 1.25rem;
+  line-height: var(--leading-snug);
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  margin-bottom: var(--space-1h);
 }
 
 /* Tri-province hairline under the title — the card-scale sediment tick, quiet */
 .sheet-rule {
   display: block;
-  width: 30px;
+  width: 24px;
   height: 2px;
   border-radius: 2px;
-  margin: 0 auto var(--space-3);
+  margin: 0 auto var(--space-2);
   background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
 }
-.dark .sheet-rule { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 </style>

@@ -40,7 +40,6 @@
 .dark .nf-search input { background: rgba(var(--white-rgb), .05); border-color: rgba(var(--white-rgb), .1); color: var(--ink); }
 .dark .nf-search input:focus-visible { border-color: var(--color-action); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .15); }
 .dark .nf-search input::placeholder { color: var(--color-text-muted); }
-.dark .nf-btn-outline { border-color: var(--color-action); color: var(--color-action); }
 
 /* ── Map (ban-do) ── */
 .dark #mapContainer { border-color: rgba(var(--white-rgb), .08); box-shadow: var(--shadow-md); }
@@ -49,16 +48,13 @@
 .dark .maplibregl-popup-content { filter: invert(1) hue-rotate(180deg); }
 
 /* ── Ward hub (xa-phuong/[id]) — Wave 10 Open Architectural Nocturne Parity ── */
-.dark .wp-card { border-color: var(--line); box-shadow: none; background: transparent; }
 .dark .wp-contact-item { border-color: rgba(var(--white-rgb), .06); }
-.dark .wp-contact-main { background: transparent; }
 .dark .wp-fac { border-color: rgba(var(--white-rgb), .06); }
 .dark .wp-fac:hover { background: transparent; border-color: var(--color-brand); }
 .dark .wp-map-container { border-color: rgba(var(--white-rgb), .08); }
 
 /* ── Itinerary detail (lich-trinh/[id]) ── */
 .dark .step-card { border-color: rgba(var(--white-rgb), .08); box-shadow: none; }
-.dark .step-card:hover { border-color: var(--color-brand); box-shadow: none; }
 .dark .route-leg-line { background: rgba(var(--white-rgb), .1); }
 .dark .route-map { border-color: rgba(var(--white-rgb), .08); box-shadow: var(--shadow-md); }
 
@@ -69,33 +65,21 @@
 
 /* ── Create itinerary (tao-lich-trinh) ── */
 .dark .picker-item:hover { background: rgba(var(--white-rgb), .05); }
-.dark .stop-card:hover { border-color: var(--color-brand); box-shadow: none; }
 
 /* ── Routes (tuyen-duong) ── */
 .dark .route-card { border-color: rgba(var(--white-rgb), .08); box-shadow: none; }
-.dark .route-card:hover { border-block-start-color: var(--color-brand); box-shadow: none; }
-.dark .route-tips { background: transparent; }
 
 /* ── Search (tim-kiem) ── */
 .dark .quick-pick { border-color: rgba(var(--white-rgb), .08); }
-.dark .quick-pick:hover { border-color: var(--color-action); }
 
 /* ── Seasonal (theo-mua) ── */
 .dark .season-badge { background: rgba(var(--black-rgb), .7); }
 
-/* ── Community (cong-dong) ── */
-.dark .sidebar-card:hover { box-shadow: none; }
-.dark .report-entity-card { background: transparent; border-color: var(--color-material-amber); }
-
 /* ── Directory (danh-ba) ── */
 .dark .fac { border-color: rgba(var(--white-rgb), .08); box-shadow: none; }
-.dark .fac:hover { border-color: var(--color-brand); box-shadow: none; }
 
 /* ── Contact (lien-he) ── */
 .dark .contact-card { border-color: rgba(var(--white-rgb), .08); box-shadow: none; background: transparent; }
-.dark .contact-card:hover { border-block-start-color: var(--color-brand); box-shadow: none; }
-.dark .card-claim { background: transparent; border-block-start-color: var(--color-action); }
-.dark .card-note { color: var(--color-text-muted); }
 
 /* ── Profile (nguoi-dung/[id]) ── */
 .dark .profile-cover { border-color: rgba(var(--white-rgb), .06); }
@@ -116,19 +100,11 @@
 .dark .status-resolved { background: color-mix(in srgb, var(--color-success) 18%, transparent); color: var(--color-success); }
 .dark .status-dismissed { background: rgba(var(--white-rgb), .06); color: rgba(var(--white-rgb), .4); }
 
-/* Section headings */
-.dark .home .section-head h2 { color: var(--ink); }
-
 /* Event cards */
 /* Cùng vết M3 residue với .spotlight ở dưới: gỡ nền để .event-mini không thành
    hòn đảo xám tím duy nhất sau khi .spotlight trở về --card. */
 .dark .event-mini { border-color: rgba(var(--white-rgb), .14); }
-.dark .event-mini:hover { border-color: var(--color-action); }
-.dark .event-mini h3 { color: var(--ink); }
 .dark .ec-countdown { color: var(--accent-text); background: rgba(var(--accent-rgb), .12); }
-
-/* Section subtitle */
-.dark .section-head p { color: var(--muted); }
 
 /* ── Admin: data quality ── */
 .dark .dq-diff-item { background: rgba(var(--white-rgb), .04); }
@@ -147,17 +123,9 @@
 .dark .notif-retry { background: var(--bg-alt); border-color: var(--line); }
 .dark .notif-retry:hover { border-color: rgba(var(--white-rgb), .2); }
 
-/* ── ReviewCard ── */
-.dark .review-featured { background: transparent; }
-
 /* ── CommandPalette ── */
-.dark .cmd-palette { background: var(--card); }
 .dark .cmd-item.active { background: rgba(var(--blue-rgb),.15); }
 .dark .cmd-footer kbd { background: rgba(var(--white-rgb), .12); color: rgba(var(--white-rgb), .7); }
-
-/* ── Sự kiện ── */
-.dark .ical-btn { background: transparent; border-color: var(--line); color: var(--ink); }
-.dark .ical-btn:hover { background: transparent; border-color: var(--color-action); color: var(--color-action); }
 
 /* Explicit and system contrast preferences stay on semantic Nocturne tokens. */
 html[data-high-contrast="true"].dark {

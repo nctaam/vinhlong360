@@ -594,7 +594,9 @@
   font-family: var(--font-sans);
   font-size: 0.82rem;
   font-weight: 700;
+  line-height: var(--leading-snug);
   color: var(--color-text);
+  overflow-wrap: break-word;
 }
 
 .display-settings-subtitle {
@@ -1039,6 +1041,8 @@
   border-bottom: 1px solid var(--color-border);
   color: var(--color-text);
   font: 600 .82rem/1.4 var(--font-sans);
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .public-shell-catalog-heading {
@@ -1102,6 +1106,9 @@ html[data-density="compact"] .public-bottom-nav-item {
   font-family: var(--font-sans);
   font-size: var(--text-sm);
   font-weight: 600;
+  line-height: var(--leading-snug);
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .public-shell .footer-brand p {
@@ -1775,15 +1782,6 @@ html[data-reduced-motion="true"] .public-shell-catalog-button .line-icon {
 .dark .admin-shell .admin-sidebar {
   background: var(--color-admin-chrome-dark);
   border-right-color: var(--color-admin-active-border);
-}
-
-.dark .admin-shell .admin-main {
-  background: var(--color-canvas);
-}
-
-.dark .admin-shell .admin-topbar {
-  border-bottom-color: var(--color-border);
-  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
 }
 
 @media (max-width: 900px) {

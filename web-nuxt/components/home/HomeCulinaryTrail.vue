@@ -323,55 +323,17 @@ function onImgFallback(e: Event) {
   gap: var(--space-3);
 }
 
-/* Sculptural Fraunces Italic Display Numeral (Replaces SaaS Pill) */
 .home-culinary-card__rank {
-  display: inline-flex;
-  align-items: baseline;
-  justify-content: center;
-  padding: 0;
-  background: transparent;
-  color: var(--surface-white);
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
   font-family: var(--font-editorial-display);
   font-style: italic;
-  font-size: clamp(1.75rem, 2.4vw, 2.2rem);
+  font-size: clamp(1.35rem, 2vw, 1.85rem);
   font-weight: var(--weight-semibold);
-  line-height: 1;
-  text-shadow: 0 2px 12px rgba(var(--black-rgb), 0.65);
-}
-
-.home-culinary-card__terroir {
-  padding: 3px 8px;
-  background: rgba(var(--black-rgb), 0.86);
   color: var(--alluvial-gold);
-  border: 1px solid var(--border-liquid-glass);
-  border-radius: var(--radius-pill, 9999px);
-  box-shadow: var(--shadow-card-ambient);
-  font-size: var(--text-2xs);
-  font-weight: var(--weight-bold);
+  line-height: 1.2;
 }
 
-.home-culinary-card__badge {
-  padding: 3px 10px;
-  background: rgba(var(--black-rgb), 0.86);
-  color: var(--surface-white);
-  border: 1px solid var(--border-liquid-glass);
-  border-radius: var(--radius-pill, 9999px);
-  box-shadow: var(--shadow-card-ambient);
-  font-size: var(--text-2xs);
-  font-weight: var(--weight-semibold);
-}
-
-.home-culinary-card__trust {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1h);
-  margin-bottom: var(--space-1);
-}
-
+.home-culinary-card__terroir,
+.home-culinary-card__badge,
 .home-culinary-card__price-badge {
   display: inline-flex;
   align-items: center;
@@ -381,9 +343,18 @@ function onImgFallback(e: Event) {
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
-  font-variant-numeric: tabular-nums;
   font-size: var(--text-2xs);
   font-weight: var(--weight-bold);
+  line-height: 1.35;
+}
+
+.home-culinary-card__badge {
+  color: var(--surface-white);
+  font-weight: var(--weight-semibold);
+}
+
+.home-culinary-card__price-badge {
+  font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
 }
 
@@ -411,10 +382,11 @@ function onImgFallback(e: Event) {
 
 .home-culinary-card__title {
   margin: 0;
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: var(--text-base);
   line-height: 1.35;
-  text-wrap: pretty;
+  text-wrap: balance;
+  overflow-wrap: break-word;
   min-width: 0;
 }
 
@@ -504,10 +476,6 @@ function onImgFallback(e: Event) {
 }
 
 .home-culinary-card__coords {
-  display: none !important;
-}
-
-.home-culinary-card__coords-sep {
   display: none !important;
 }
 </style>

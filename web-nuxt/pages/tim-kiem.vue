@@ -287,7 +287,6 @@ import { describeEntityPlaceholder } from '~/utils/imageDescriptors'
 import { normalizeCoords } from '~/composables/useCoords'
 import { viewportTileBounds } from '~/utils/publicStateUrl'
 import { resolveFreshnessStatus } from '~/utils/regionalColor'
-import { escapeHtml } from '~/utils/safe'
 useReveal()
 const { f: pc } = usePageContent('tim_kiem')
 const { recentItems } = useRecentlyViewed()
@@ -407,9 +406,6 @@ const quickPicks = [
   { to: '/le-hoi', label: 'Lễ hội', cat: 'event' },
   { to: '/lich-trinh', label: 'Lịch trình', cat: 'itinerary' },
 ]
-function firstQueryValue(value: unknown) {
-  return Array.isArray(value) ? String(value[0] || '') : String(value || '')
-}
 const q = computed(() => searchView.state.value.query)
 const searchInput = ref(q.value)
 const mapNetworkState = ref<'ready' | 'offline'>('ready')
@@ -651,7 +647,6 @@ useHead({
 }
 .result-strap-query { color: var(--ink); font-weight: var(--weight-semibold); font-style: normal; }
 .dark .result-strap { color: var(--ink-tertiary); }
-.dark .result-strap-query { color: var(--ink); }
 
 /* Search input error feedback */
 .search-row.error input { border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--color-error-rgb), .12); }
@@ -659,7 +654,7 @@ useHead({
 /* Unified search: người dùng + bài viết — secondary strip, smaller than the primary entity grid */
 .search-section-secondary { padding-top: var(--space-6); padding-bottom: var(--space-3); }
 .search-section-secondary .section-head { margin-bottom: var(--space-4); }
-.search-section-secondary .section-head h2 { font-size: var(--text-lg); }
+.search-section-secondary .section-head h2 { font-size: var(--text-lg); line-height: var(--leading-snug); text-wrap: balance; overflow-wrap: break-word; }
 .search-section-secondary .people-list { margin-bottom: var(--space-3); }
 .people-list { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .person-chip { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-full); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-out-expo); }
@@ -697,11 +692,7 @@ useHead({
 /* Cross-link band ("Khám phá thêm"): reuses the .quick-pick-icon/.quick-pick-glyph pairing
    above instead of catalog.css's bare .cross-icon emoji (anti-slop tell — designed chip,
    not a loose glyph next to serif). .cross-card itself stays untouched (shared catalog.css). */
-.cross-glyph-icon { flex-shrink: 0; }
-.cross-card:hover .cross-glyph-icon { transform: scale(1.1); }
-@media (prefers-reduced-motion: reduce) {
-  .cross-card:hover .cross-glyph-icon { transform: none; }
-}
+
 
 /* Autocomplete suggestions */
 .search-input-wrap { position: relative; flex: 1; min-width: 0; }
@@ -792,7 +783,7 @@ useHead({
   padding-bottom: var(--space-2);
   border-bottom: .5px solid var(--line);
 }
-.search-hero h1 { max-width: 18ch; }
+.search-hero h1 { max-width: 18ch; line-height: var(--leading-snug); text-wrap: balance; overflow-wrap: break-word; }
 
 /* Ticker — murmur distinct from the authoritative serif h1: sans, italic-ish via
    letter-spacing/opacity, small, muted. Cross-fades every 4s (JS index-cycle), freezes
@@ -881,8 +872,8 @@ useHead({
   70% { box-shadow: 0 0 0 6px transparent; }
   100% { box-shadow: 0 0 0 0 transparent; }
 }
-.dark .trending-chip { background: var(--bg-alt); border-color: var(--line); }
-.dark .trending-chip:hover { border-color: var(--color-action); background: var(--color-action-surface); }
+.dark .trending-chip { background: var(--bg-alt); }
+.dark .trending-chip:hover { background: var(--color-action-surface); }
 
 /* Curated recovery chips in zero-result state */
 .zero-result-curated-wrap {
@@ -909,7 +900,6 @@ useHead({
 }
 .dark .zero-result-curated-wrap {
   background: var(--bg-alt);
-  border-color: var(--line);
 }
 
 /* Grid results stagger */
@@ -917,8 +907,8 @@ useHead({
 @keyframes fadeInGrid { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 /* Dark mode */
-.dark .quick-pick { background: var(--bg-alt); border-color: var(--line); }
-.dark .quick-pick:hover { border-color: var(--color-action); box-shadow: var(--shadow-md); background: var(--color-action-surface); }
+.dark .quick-pick { background: var(--bg-alt); }
+.dark .quick-pick:hover { background: var(--color-action-surface); }
 
 /* Recently viewed */
 /* Row C filmstrip — narrower flex-basis than the shared .scroll-row default (260px is
@@ -948,8 +938,8 @@ useHead({
 .recent-placeholder-glyph :deep(svg) { width: 100%; height: 100%; }
 .recent-name { font-size: var(--text-xs); font-weight: var(--weight-semibold); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
 .recent-type { font-size: var(--text-xs, 12px); color: var(--muted); }
-.dark .recent-card { background: var(--bg-alt); border-color: var(--line); }
-.dark .recent-card:hover { border-color: var(--color-action); background: var(--color-action-surface); }
+.dark .recent-card { background: var(--bg-alt); }
+.dark .recent-card:hover { background: var(--color-action-surface); }
 
 .search-quick-culture { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-3); }
 .sqc-label { font-size: var(--text-xs); color: var(--muted); font-weight: var(--weight-medium); }

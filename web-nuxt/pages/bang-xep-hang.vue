@@ -236,13 +236,12 @@ useHead(() => ({
 }
 .bxh-search:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .bxh-self { padding: var(--space-2) var(--space-3); background: color-mix(in srgb, var(--color-brand) 8%, transparent); border-radius: var(--radius-control); margin-bottom: var(--space-2); font-size: var(--text-sm); }
-.bxh-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.bxh-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; border-block-start: 1px solid var(--line); }
 .bxh-list li.is-self .bxh-row { outline: 2px solid var(--color-focus); outline-offset: -1px; }
-.bxh-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); min-height: 56px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1); }
-.bxh-row:hover { border-color: var(--color-action); transform: translateY(-1px); }
+.bxh-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-2); min-height: 56px; background: transparent; border-block-end: 1px solid var(--line); text-decoration: none; color: var(--ink); transition: background-color .2s var(--ease-out), border-color .2s var(--ease-out); }
+.bxh-row:hover { background: color-mix(in srgb, var(--bg-warm) 55%, transparent); border-block-end-color: var(--color-brand); }
 .bxh-row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.bxh-row:active { transform: scale(.98); transition-duration: .08s; }
-.bxh-rank { flex-shrink: 0; width: 28px; text-align: center; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--muted); }
+.bxh-rank { flex-shrink: 0; width: 28px; text-align: center; font-family: var(--font-editorial); font-style: italic; font-size: var(--text-lg); font-weight: var(--weight-semibold); color: var(--muted); }
 /* Hạng 1–3 là huy hiệu tròn tô đầy, chữ đọc bằng --medal-ink.
    Sắc huy chương đặt lên NỀN chứ không lên CHỮ: đặt lên chữ thì vàng
    chỉ đạt 2,31:1 trên nền thẻ sáng, mà không có sắc vàng nào vừa đủ tương
@@ -258,25 +257,24 @@ useHead(() => ({
 .bxh-avatar { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--color-brand); color: var(--color-on-action, var(--white)); font-weight: var(--weight-semibold); flex-shrink: 0; }
 .bxh-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .1rem; }
 .bxh-name { font-family: var(--font-editorial); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bxh-meta { display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-xs); color: var(--muted); }
-.bxh-level { color: var(--ink-700); display: inline-flex; align-items: center; gap: 4px; }
-.bxh-points { flex-shrink: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--color-brand); display: flex; flex-direction: column; align-items: center; line-height: 1; font-variant-numeric: tabular-nums; }
+.bxh-meta { display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-xs); color: var(--muted); min-width: 0; }
+.bxh-level { color: var(--ink-700); display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.bxh-sub { white-space: nowrap; }
+.bxh-points { flex-shrink: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--color-brand); display: flex; flex-direction: column; align-items: center; line-height: 1.24; font-variant-numeric: tabular-nums; }
 .bxh-points small { font-size: var(--text-xs); font-weight: var(--weight-normal); color: var(--muted); }
 @media (max-width: 480px) {
   .bxh-row { padding: var(--space-3) var(--space-2); gap: var(--space-2); }
   .bxh-name { font-size: var(--text-sm); }
 }
 
-/* ── 4 Honor Tiers Strip ── */
+/* ── 4 Honor Tiers Strip (Open Architectural Charter Ledger) ── */
 .honor-tiers-strip {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-2);
-  margin-block: var(--space-4) var(--space-4);
-  padding: var(--space-3);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sheet);
+  margin-block: var(--space-4);
+  padding-block: var(--space-3);
+  border-block: 1px solid var(--line);
+  counter-reset: honor-tier;
 }
 @media (min-width: 640px) {
   .honor-tiers-strip {
@@ -284,14 +282,25 @@ useHead(() => ({
   }
 }
 .honor-tier-item {
+  counter-increment: honor-tier;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 2px;
-  padding: var(--space-2);
-  border-radius: var(--radius-control);
-  background: var(--card);
-  border: 1px solid var(--line);
+  padding: var(--space-2) var(--space-3);
+  border-inline-start: 1px solid var(--line);
+}
+.honor-tier-item:first-child {
+  border-inline-start: 0;
+  padding-inline-start: 0;
+}
+.honor-tier-item::before {
+  content: "BẬC " counter(honor-tier, decimal-leading-zero);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: var(--text-2xs);
+  letter-spacing: 0.08em;
+  color: var(--color-brand);
 }
 .tier-badge {
   display: inline-flex;
@@ -304,10 +313,6 @@ useHead(() => ({
 .tier-range {
   font-size: var(--text-2xs);
   color: var(--muted);
-}
-.tier-4 {
-  border-color: var(--alluvial-gold);
-  background: linear-gradient(180deg, rgba(var(--color-brand-rgb), 0.08), var(--card));
 }
 .tier-4 .tier-badge {
   color: var(--color-brand);
@@ -322,7 +327,7 @@ useHead(() => ({
   text-transform: uppercase; letter-spacing: var(--tracking-caps);
   color: var(--muted); margin: 0 0 var(--space-2);
 }
-.bxh-h1 { font-family: var(--font-editorial); font-weight: 600; }
+.bxh-h1 { font-family: var(--font-editorial); font-weight: 600; line-height: var(--leading-snug); text-wrap: balance; overflow-wrap: break-word; }
 
 /* ── Bục vinh danh (podium strip) — top 3, biên tập chứ không phải leaderboard
    game hoá. Ba thẻ ngang trên desktop, xếp so le trên mobile (huy chương giữa
@@ -332,12 +337,13 @@ useHead(() => ({
 .podium-link {
   display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-1);
   padding: var(--space-5) var(--space-3) var(--space-4); border-radius: var(--radius-sheet);
-  background: var(--card); border: .5px solid var(--line); text-decoration: none; color: var(--ink);
+  background: var(--card); border: 1px solid var(--border-liquid-glass, var(--line)); text-decoration: none; color: var(--ink);
+  box-shadow: var(--shadow-card-ambient, var(--shadow-xs));
   transition: border-color .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .25s var(--ease-out);
 }
-.podium-link:hover { border-color: var(--color-action); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+.podium-link:hover { border-color: color-mix(in srgb, var(--alluvial-gold) 45%, var(--border-liquid-glass)); transform: translateY(-4px); box-shadow: var(--shadow-card-hover, var(--shadow-sm)); }
 .podium-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.podium-link:active { transform: scale(.98); transition-duration: .08s; }
+.podium-link:active { transform: translateY(1px) scale(.98); transition-duration: .08s; }
 /* Huy chương giữa (rank #1) nhô cao hơn — viền vàng Phù Sa Cổ Chiên sắc nét */
 .podium-1 { order: 2; }
 .podium-2 { order: 1; }
@@ -349,7 +355,7 @@ useHead(() => ({
   background: linear-gradient(180deg, color-mix(in srgb, var(--alluvial-gold) 12%, var(--card)) 0%, var(--card) 60%);
 }
 .podium-rank {
-  font-family: var(--font-editorial); font-size: var(--text-2xl); font-weight: 600; line-height: 1;
+  font-family: var(--font-editorial); font-size: var(--text-2xl); font-weight: 600; line-height: 1.2;
   font-variant-numeric: tabular-nums; color: var(--muted);
 }
 .podium-1 .podium-rank, .podium-2 .podium-rank, .podium-3 .podium-rank {
@@ -368,9 +374,9 @@ useHead(() => ({
 }
 .podium-avatar { width: 56px; height: 56px; font-size: var(--text-lg); }
 .podium-1 .podium-avatar { width: 68px; height: 68px; font-size: var(--text-xl); }
-.podium-name { font-family: var(--font-editorial); font-size: var(--text-base); font-weight: 600; overflow-wrap: anywhere; }
+.podium-name { font-family: var(--font-editorial); font-size: var(--text-base); font-weight: 600; line-height: var(--leading-snug); overflow-wrap: anywhere; }
 .podium-level { font-size: var(--text-xs); color: var(--ink-700); display: inline-flex; align-items: center; gap: 4px; }
-.podium-points { font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--color-brand); line-height: 1; font-variant-numeric: tabular-nums; margin-top: var(--space-1); }
+.podium-points { font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--color-brand); line-height: 1.24; font-variant-numeric: tabular-nums; margin-top: var(--space-1); }
 .podium-points small { font-size: var(--text-2xs); font-weight: var(--weight-normal); color: var(--muted); margin-left: 2px; }
 /* Trích dẫn tự động — .pull-quote-lite: serif, italic, cỡ nhỏ hơn bản gốc */
 .podium-quote {

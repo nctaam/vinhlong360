@@ -89,26 +89,21 @@ const dateline = computed(() => {
 .saved-entity-img-generated .cover-grain {
   position: absolute; inset: 0; background-image: var(--grain); background-size: 120px 120px; opacity: .06;
 }
-.dark .saved-entity-img-generated .cover-grain { opacity: .09; }
 .saved-entity-info { flex: 1; min-width: 0; }
 .saved-dateline {
   display: block; margin-bottom: 1px;
   font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
-  letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+  line-height: 1.35; letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
 }
 .saved-entity-name {
   display: block; font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em;
-  font-size: .95rem; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: .95rem; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .saved-card-rule {
   display: block; width: 22px; height: 2px; border-radius: 2px; margin: 3px 0 3px;
   background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
 }
-.dark .saved-card-rule { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
-.saved-entity-place { display: block; font-size: .78rem; color: var(--ink-700); }
-
-/* Dark */
-.dark .saved-entity { background: var(--bg-alt); }
+.saved-entity-place { display: block; font-size: .78rem; line-height: 1.35; color: var(--ink-700); }
 
 /* Mobile */
 @media (max-width: 600px) {

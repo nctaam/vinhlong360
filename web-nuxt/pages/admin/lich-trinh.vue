@@ -146,7 +146,7 @@
 
 <script setup lang="ts">
 import type { Itinerary } from '~/types'
-import { AREA_META } from '~/composables/useConstants'
+import { AREA_META, CURRENT_AREA_META } from '~/composables/useConstants'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Lịch trình — Admin' })
 
@@ -171,7 +171,7 @@ const EMPTY_ITINERARY_FORM: ItineraryForm = { id: '', name: '', area: '', areas:
 
 const itineraries = ref<Itinerary[]>([])
 const searchText = ref('')
-const itineraryAreaOptions = computed(() => Object.entries(AREA_META).map(([key, meta]) => ({ key, label: `${meta.emoji} ${meta.name}` })))
+const itineraryAreaOptions = computed(() => Object.entries(CURRENT_AREA_META).map(([key, meta]) => ({ key, label: meta.name })))
 const coverageAreaOptions = computed(() => itineraryAreaOptions.value.filter(area => area.key !== 'lien-vung'))
 const filteredItineraries = computed(() => {
   const q = searchText.value.toLowerCase().trim()
@@ -484,8 +484,8 @@ onUnmounted(() => { if (entitySearchTimer) clearTimeout(entitySearchTimer) })
 }
 tr:hover .lt-stops-badge { transform: scale(1.1); }
 
-.lt-empty { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
-.lt-empty-icon { font-size: 2rem; opacity: .3; }
+
+
 
 @media (prefers-reduced-motion: reduce) {
   .lt-area-badge:hover, tr:hover .lt-stops-badge { transform: none; }
@@ -644,11 +644,11 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 .dark .lt-stop-ok { border-left-color: rgba(var(--color-success-rgb),.6); }
 .dark .lt-stop-warn { border-left-color: rgba(var(--warning-rgb),.65); }
 .dark .lt-stops-empty { border-color: rgba(var(--white-rgb),.14); }
-.dark .lt-stop-status-ok { background: rgba(var(--color-success-rgb),.2); color: var(--success); }
-.dark .lt-stop-status-warn { background: rgba(var(--warning-rgb),.22); color: var(--warning); }
+.dark .lt-stop-status-ok { background: rgba(var(--color-success-rgb),.2); }
+.dark .lt-stop-status-warn { background: rgba(var(--warning-rgb),.22); }
 .dark .lt-duration { color: rgba(var(--white-rgb),.55); }
 .dark .lt-duration-icon { opacity: .8; }
-.dark .lt-dirty-badge { color: var(--color-action); background: rgba(var(--color-action-rgb),.18); border-color: rgba(var(--color-action-rgb),.3); }
+.dark .lt-dirty-badge { background: rgba(var(--color-action-rgb),.18); border-color: rgba(var(--color-action-rgb),.3); }
 
 /* ── Skeleton loading ── */
 .lt-skeleton { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4) 0; }

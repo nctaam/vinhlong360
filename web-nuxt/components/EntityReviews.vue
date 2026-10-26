@@ -55,7 +55,6 @@
         </div>
         <label class="rf-image-add" :class="{ disabled: uploadingImage || formImages.length >= 4 }">
           <input
-            ref="fileInput"
             type="file"
             accept="image/*"
             class="rf-image-input"
@@ -150,7 +149,6 @@ const formImageRows = computed(() => describeReviewPreviewRows({
 }))
 const uploadingImage = ref(false)
 const uploadError = ref('')
-const fileInput = ref<HTMLInputElement | null>(null)
 
 const deletingId = ref<string | number | null>(null)
 const helpfulPending = reactive(new Set<string>())
@@ -351,7 +349,6 @@ onMounted(() => fetchReviews())
   border-radius: var(--radius-control); background: var(--bg-warm, var(--bg-alt));
   font-size: .85em; vertical-align: -0.25em;
 }
-.dark .rf-photo-icon { background: rgba(var(--white-rgb), .06); }
 .rf-images { display: flex; flex-direction: column; gap: var(--space-2); margin-block: var(--space-2); }
 .rf-image-grid { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .rf-image-preview { position: relative; display: flex; flex-direction: column; gap: var(--space-1); width: 120px; margin: 0; }
@@ -413,7 +410,7 @@ onMounted(() => fetchReviews())
 <style>
 .reviews-section { margin-top: var(--space-8); }
 .reviews-header { display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
-.reviews-header h2 { font-family: var(--font-editorial); font-size: var(--text-xl); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); margin: 0; }
+.reviews-header h2 { font-family: var(--font-editorial); font-size: var(--text-xl); font-weight: var(--weight-semibold); line-height: var(--leading-snug); text-wrap: balance; overflow-wrap: break-word; letter-spacing: var(--tracking-tight); margin: 0; }
 .reviews-summary { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
 .review-count { color: var(--muted); }
 
@@ -426,14 +423,13 @@ onMounted(() => fetchReviews())
   padding: var(--space-5) 0;
   margin-bottom: var(--space-5);
   box-shadow: none;
+  transition: border-color .35s var(--ease-out);
 }
 .rf-rating { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
 .rf-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); }
 .review-form .btn { margin-top: var(--space-2); }
 .review-login-hint { font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-4); }
 .review-login-hint a { color: var(--color-action); font-weight: var(--weight-semibold); }
-
-.review-form { transition: border-color .35s var(--ease-out); }
 .review-form:focus-within { border-color: var(--color-action); box-shadow: none; }
 .review-form .btn:active { transform: scale(.95); transition-duration: .08s; }
 
@@ -443,11 +439,10 @@ onMounted(() => fetchReviews())
 .review-item:last-child { border-bottom: none; }
 .ri-head { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-2); }
 .ri-author { display: flex; align-items: center; gap: var(--space-2); text-decoration: none; color: inherit; min-height: 44px; }
-.ri-author strong { font-size: var(--text-sm); font-weight: var(--weight-semibold); font-family: var(--font-editorial); }
+.ri-author strong { font-size: var(--text-sm); font-weight: var(--weight-semibold); font-family: var(--font-editorial); line-height: 1.35; overflow-wrap: break-word; }
 .ri-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-.ri-avatar-placeholder { width: 32px; height: 32px; border-radius: 50%; background: var(--color-brand); color: var(--text-on-dark, var(--white)); display: flex; align-items: center; justify-content: center; font-weight: var(--weight-bold); font-size: var(--text-sm); }
 .ri-date { font-size: var(--text-xs); color: var(--muted); margin-inline-start: auto; }
-.ri-content { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); }
+.ri-content { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); overflow-wrap: break-word; }
 .ri-images { display: flex; gap: var(--space-2); margin-top: var(--space-2); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain; }
 .ri-images::-webkit-scrollbar { display: none; }
 .ri-images img { width: 120px; height: 90px; object-fit: cover; border-radius: var(--radius-control); flex-shrink: 0; cursor: pointer; scroll-snap-align: start; transition: transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out); }
@@ -461,11 +456,4 @@ onMounted(() => fetchReviews())
   .reviews-header { flex-direction: column; gap: var(--space-1); }
   .ri-date { margin-inline-start: 0; }
 }
-.dark .review-form {
-  background: transparent;
-  border-color: var(--line);
-}
-.dark .review-form:focus-within { border-color: var(--color-action); box-shadow: none; }
-.dark .review-item:hover { background: transparent; border-bottom-color: var(--color-action); }
-.dark .ri-avatar-placeholder { background: rgba(var(--color-action-rgb), .3); }
 </style>

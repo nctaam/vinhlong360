@@ -246,7 +246,7 @@ const isVerifiedAuthor = computed(() => {
 })
 
 if (import.meta.client) {
-  const onClick = (e: Event) => { showMenu.value = false; repostMenu.value = false }
+  const onClick = () => { showMenu.value = false; repostMenu.value = false }
   watch(() => showMenu.value || repostMenu.value, (open) => {
     if (open) document.addEventListener('click', onClick, true)
     else document.removeEventListener('click', onClick, true)
@@ -274,7 +274,9 @@ const { timeAgo } = useTimeAgo()
 .thread-author {
   font-family: var(--font-editorial);
   font-weight: 600;
+  line-height: 1.35;
   letter-spacing: -.005em;
+  overflow-wrap: break-word;
 }
 
 /* Dateline — small-caps-ish quiet timestamp, museum-label register */
@@ -304,6 +306,7 @@ const { timeAgo } = useTimeAgo()
   padding: var(--space-1) 0 0;
   font-size: var(--text-2xs);
   font-weight: 700;
+  line-height: 1.35;
   letter-spacing: .08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -347,18 +350,13 @@ const { timeAgo } = useTimeAgo()
   align-items: center;
   font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
+  line-height: 1.35;
   color: var(--color-source-verified);
   background: var(--color-source-verified-surface);
   border: 1px solid color-mix(in srgb, var(--color-source-verified) 30%, transparent);
   border-radius: var(--radius-pill, 999px);
   padding: 1px var(--space-15, 6px);
   white-space: nowrap;
-}
-
-.dark .thread-author-tag {
-  color: var(--night-leaf);
-  background: color-mix(in srgb, var(--night-leaf) 16%, var(--card));
-  border-color: color-mix(in srgb, var(--night-leaf) 35%, transparent);
 }
 
 .avatar.is-verified-avatar {

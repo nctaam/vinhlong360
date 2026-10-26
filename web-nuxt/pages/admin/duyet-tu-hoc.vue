@@ -372,7 +372,7 @@ onMounted(loadProvisional)
   display: flex; align-items: flex-start; justify-content: space-between;
   gap: var(--space-3); padding-bottom: var(--space-3); border-bottom: .5px solid var(--line);
 }
-.dth-review-head h3 { margin: 0 0 3px; font-size: 1rem; color: var(--ink); }
+.dth-review-head h3 { margin: 0 0 3px; font-size: 1rem; line-height: var(--leading-snug); color: var(--ink); text-wrap: balance; overflow-wrap: break-word; }
 .dth-review-head code { font-size: .72rem; color: var(--muted); overflow-wrap: anywhere; }
 .dth-review-badges { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
 .dth-summary { margin: 0; color: var(--ink); font-size: .86rem; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -383,7 +383,7 @@ onMounted(loadProvisional)
 .dth-image-list pre {
   margin: 0; padding: var(--space-3); border-radius: 10px;
   background: rgba(var(--gray-rgb),.06); color: var(--ink);
-  font: .75rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-family: var(--font-mono); font-size: .75rem; line-height: 1.55;
   white-space: pre-wrap; overflow-wrap: anywhere;
 }
 .dth-field-grid,
@@ -468,7 +468,6 @@ onMounted(loadProvisional)
 .dark .dth-tool-card:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(var(--black-rgb),.4); }
 .dark .dth-conf-high { background: rgba(var(--color-action-rgb),.18); color: rgb(var(--success-rgb)); }
 .dark .dth-conf-low { background: rgba(var(--warning-rgb),.14); color: var(--color-warning); }
-.dark .dth-tool-label { color: var(--ink); }
 .dark .dth-count-warn { background: rgba(var(--warning-rgb),.12); color: var(--color-warning); }
 .dark .dth-type-badge { background: rgba(var(--white-rgb),.06); }
 

@@ -105,12 +105,6 @@ export function itineraryUrl(id: string) {
   return canonicalUrl(`/lich-trinh/${encodeURIComponent(id)}`)
 }
 
-interface ListableItem {
-  id?: string
-  name?: string
-  title?: string
-}
-
 export interface FaqItem {
   q: string
   a: string
@@ -250,6 +244,10 @@ export function buildUnifiedSchemaGraph(nodes: Array<Record<string, any> | null 
 import { normalizeCoords } from './useCoords'
 import { ocopBadgeLabel } from '../utils/ocop'
 
+const FREE_FEE_RE = /miễn phí|free|không mất phí|0\s*đ/i
+const PRICE_NON_DIGIT_RE = /[^\d]/g
+const PRICE_RANGE_SCHEMA_TYPES = new Set(['LocalBusiness', 'LodgingBusiness', 'FoodEstablishment'])
+
 export const TYPE_TO_SCHEMA: Record<string, string> = {
   product: 'Product',
   accommodation: 'LodgingBusiness',
@@ -344,12 +342,12 @@ export function buildEntityDetailSchemaGraph(options: EntityDetailSchemaOptions)
 
   // isAccessibleForFree
   const fee = e.attributes?.fee || e.attributes?.price_range || ''
-  const isFree = /miễn phí|free|không mất phí|0\s*đ/i.test(fee)
+  const isFree = FREE_FEE_RE.test(fee)
     || (e.attributes?.amenities && Array.isArray(e.attributes.amenities) && e.attributes.amenities.includes('free_entry'))
   if (isFree) ld.isAccessibleForFree = true
 
   // LocalBusiness/LodgingBusiness/FoodEstablishment enrichment
-  if (['LocalBusiness', 'LodgingBusiness', 'FoodEstablishment'].includes(ldType)) {
+  if (PRICE_RANGE_SCHEMA_TYPES.has(ldType)) {
     if (e.attributes?.price_range) ld.priceRange = e.attributes.price_range
   }
   if (ldType === 'LodgingBusiness') {
@@ -381,7 +379,7 @@ export function buildEntityDetailSchemaGraph(options: EntityDetailSchemaOptions)
     if (e.attributes?.price) {
       ld.offers = {
         '@type': 'Offer',
-        price: String(e.attributes.price).replace(/[^\d]/g, '') || '0',
+        price: String(e.attributes.price).replace(PRICE_NON_DIGIT_RE, '') || '0',
         priceCurrency: 'VND',
         availability: 'https://schema.org/InStock',
         url: entityUrl,
@@ -1074,10 +1072,6 @@ export function buildAboutPageSchemaGraph(options: AboutPageSchemaOptions = {}):
     buildOrganizationSchema(),
     webpageNode,
   ]
-
-  if (options.canonicalUrl && options.updatedDate) {
-    // optional extension hook
-  }
 
   return buildUnifiedSchemaGraph(nodes)
 }

@@ -897,3 +897,78 @@ def test_campaign_sigma_multi_agent_architecture_optimizations():
     assert "import json" not in inspect.getsource(seed_site_settings)
 
 
+def test_campaign_tau_multi_agent_architecture_optimizations() -> None:
+    """Campaign Tau (Section 22): Verify Global CSS, VN Typography, Pages, Components & Backend optimizations."""
+    import inspect
+    from pathlib import Path
+
+    import entities.api
+    import knowledge
+    import notifications
+    import public_api
+    import seo
+    import server
+
+    repo_root = Path(__file__).resolve().parents[2]
+
+    # 1. Ban 1: Global Stylesheets & Vietnamese Typography
+    base_css = (repo_root / "web-nuxt" / "assets" / "css" / "base.css").read_text(encoding="utf-8")
+    assert "word-break: break-word;" not in base_css
+    assert ".dark .chat-bubble.bot" not in base_css
+
+    cards_css = (repo_root / "web-nuxt" / "assets" / "css" / "cards.css").read_text(encoding="utf-8")
+    assert "word-break: break-word;" not in cards_css
+    assert "var(--font-editorial, serif)" not in cards_css
+
+    catalog_css = (repo_root / "web-nuxt" / "assets" / "css" / "catalog.css").read_text(encoding="utf-8")
+    assert "word-break: break-word;" not in catalog_css
+    assert "--font-editorial-display" not in catalog_css
+
+    detail_css = (repo_root / "web-nuxt" / "assets" / "css" / "detail.css").read_text(encoding="utf-8")
+    assert "word-break: break-word;" not in detail_css
+    assert ".dark .trust-card" not in detail_css
+
+    home_nocturne_css = (repo_root / "web-nuxt" / "assets" / "css" / "home-nocturne.css").read_text(encoding="utf-8")
+    assert "--font-editorial-display" not in home_nocturne_css
+    assert "var(--font-editorial, 'Lora', serif)" not in home_nocturne_css
+
+    dark_overrides_css = (repo_root / "web-nuxt" / "assets" / "css" / "dark-overrides.css").read_text(encoding="utf-8")
+    assert "Ward hub (xa-phuong/[id]) — Wave 10 Open Architectural Nocturne Parity" in dark_overrides_css
+    assert ".dark .about-mission-card" not in dark_overrides_css
+
+    # 2. Ban 2 & Ban 3: Pages & Shared Components Decluttering & Vietnamese Font Tokens
+    admin_index = (repo_root / "web-nuxt" / "pages" / "admin" / "index.vue").read_text(encoding="utf-8")
+    assert "function timeAgo(" not in admin_index
+    assert "useTimeAgo()" in admin_index
+
+    tim_kiem = (repo_root / "web-nuxt" / "pages" / "tim-kiem.vue").read_text(encoding="utf-8")
+    assert "function firstQueryValue(" not in tim_kiem
+    assert ".cross-glyph-icon" not in tim_kiem
+
+    culinary_trail = (repo_root / "web-nuxt" / "components" / "home" / "HomeCulinaryTrail.vue").read_text(encoding="utf-8")
+    assert ".home-culinary-card__trust" not in culinary_trail
+    assert ".home-culinary-card__coords-sep" not in culinary_trail
+
+    travel_planner = (repo_root / "web-nuxt" / "components" / "home" / "HomeTravelPlanner.vue").read_text(encoding="utf-8")
+    assert "--font-editorial-display" not in travel_planner
+    assert ".home-planner-card__trust" not in travel_planner
+
+    # 3. Ban 4: Backend Python & Frontend Composables/Utils Deduplication
+    assert hasattr(seo, "_collection_item_sort_key")
+    assert hasattr(knowledge, "_REL_FWD") and hasattr(knowledge, "_REL_BWD")
+    assert hasattr(entities.api, "_REVIEW_SORT")
+    assert hasattr(server, "_CLIENT_HTML_TAG_RE")
+    assert hasattr(public_api, "_HOMEPAGE_AREA_CARD_TYPES")
+    assert "from datetime import datetime" not in inspect.getsource(notifications._parse_notif_ts)
+
+    use_constants_ts = (repo_root / "web-nuxt" / "composables" / "useConstants.ts").read_text(encoding="utf-8")
+    assert "if (false)" not in use_constants_ts
+
+    md_lite_ts = (repo_root / "web-nuxt" / "utils" / "mdLite.ts").read_text(encoding="utf-8")
+    assert "const MD_LINK_RE =" in md_lite_ts
+
+    detail_exp_ts = (repo_root / "web-nuxt" / "utils" / "detailExperience.ts").read_text(encoding="utf-8")
+    assert "const VALID_PHONE_RE =" in detail_exp_ts
+
+
+

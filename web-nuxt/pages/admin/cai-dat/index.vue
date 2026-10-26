@@ -10,14 +10,14 @@
     <!-- Quick links: tác vụ hay dùng -->
     <div class="cs-quick-links settings-nav-rail" aria-label="Lối tắt tác vụ thường dùng">
       <NuxtLink v-for="q in quickLinks" :key="q.slug" :to="`/admin/cai-dat/${q.slug}`" class="cs-chip">
-        <span aria-hidden="true">{{ q.icon }}</span> {{ q.label }}
+        <span aria-hidden="true"><IconLine :name="q.icon" /></span> {{ q.label }}
       </NuxtLink>
     </div>
 
     <!-- Tìm nhanh danh mục -->
     <div class="cs-search-row">
       <div class="cs-search-wrap">
-        <span class="cs-search-icon" aria-hidden="true">🔍</span>
+        <span class="cs-search-icon" aria-hidden="true"><IconLine name="search" /></span>
         <input
           ref="searchEl"
           v-model="query"
@@ -34,7 +34,7 @@
 
     <!-- Trạng thái rỗng khi tìm không thấy -->
     <div v-if="query && flatMatches.length === 0" class="admin-empty-state">
-      <span class="admin-empty-state-icon" aria-hidden="true">🔍</span>
+      <span class="admin-empty-state-icon" aria-hidden="true"><IconLine name="search" /></span>
       <span class="admin-empty-state-text">Không tìm thấy danh mục nào khớp “{{ query }}”.</span>
       <span class="admin-empty-state-hint">Thử từ khoá khác hoặc xoá ô tìm kiếm.</span>
     </div>
@@ -48,7 +48,7 @@
         class="cs-card"
         :style="{ '--stagger': `${i * 40}ms` }"
       >
-        <span class="cs-icon" aria-hidden="true">{{ cat.icon }}</span>
+        <span class="cs-icon" aria-hidden="true"><IconLine :name="cat.icon" /></span>
         <div>
           <h3>{{ cat.title }}</h3>
           <p>{{ cat.desc }}</p>
@@ -61,7 +61,7 @@
     <template v-else>
       <section v-for="grp in groups" :key="grp.key" class="cs-group" :aria-label="grp.title">
         <h2 class="cs-group-title">
-          <span class="cs-group-icon" aria-hidden="true">{{ grp.icon }}</span>
+          <span class="cs-group-icon" aria-hidden="true"><IconLine :name="grp.icon" /></span>
           {{ grp.title }}
           <span class="cs-group-count">{{ grp.items.length }}</span>
         </h2>
@@ -73,7 +73,7 @@
             class="cs-card"
             :style="{ '--stagger': `${i * 40}ms` }"
           >
-            <span class="cs-icon" aria-hidden="true">{{ cat.icon }}</span>
+            <span class="cs-icon" aria-hidden="true"><IconLine :name="cat.icon" /></span>
             <div>
               <h3>{{ cat.title }}</h3>
               <p>{{ cat.desc }}</p>
@@ -93,29 +93,29 @@ useHead({ title: 'Cài đặt — Admin' })
 interface Category { slug: string; icon: string; title: string; desc: string; group: string }
 
 const categories: Category[] = [
-  { slug: 'thuong-hieu', icon: '🎨', title: 'Thương hiệu', desc: 'Tên trang, slogan, ảnh OG', group: 'brand' },
-  { slug: 'seo', icon: '🔍', title: 'SEO', desc: 'Tiêu đề, mô tả, theme color', group: 'brand' },
-  { slug: 'giao-dien', icon: '🎭', title: 'Giao diện', desc: 'Màu sắc tùy chỉnh', group: 'brand' },
-  { slug: 'dieu-huong', icon: '🧭', title: 'Điều hướng', desc: 'Menu chính (thêm/xoá/sắp xếp)', group: 'structure' },
-  { slug: 'footer', icon: '📋', title: 'Footer', desc: 'Cột footer, copyright, disclaimer', group: 'structure' },
-  { slug: 'danh-muc', icon: '🏷️', title: 'Danh mục', desc: 'Emoji & nhãn loại, khu vực', group: 'structure' },
-  { slug: 'trang-chu', icon: '🏠', title: 'Trang chủ', desc: 'Hero, pills, quick links, CTA', group: 'content' },
-  { slug: 'trang', icon: '📄', title: 'Nội dung trang', desc: 'Hero & SEO từng trang', group: 'content' },
-  { slug: 'thong-bao', icon: '📢', title: 'Thông báo', desc: 'Banner trên đầu trang', group: 'content' },
-  { slug: 'chao-mung', icon: '👋', title: 'Bảng chào mừng', desc: 'Onboarding khách lần đầu', group: 'content' },
-  { slug: 'tinh-nang', icon: '🎚️', title: 'Tính năng', desc: 'Bật/tắt khối nội dung', group: 'features' },
-  { slug: 'tuyen-duong', icon: '🛣️', title: 'Tuyến đường', desc: 'Dữ liệu tuyến gợi ý', group: 'features' },
-  { slug: 'chat-ai', icon: '💬', title: 'Chat & AI', desc: 'Tiêu đề, gợi ý, minh bạch AI', group: 'features' },
-  { slug: 'lien-he', icon: '📬', title: 'Liên hệ', desc: 'Email, Zalo', group: 'legal' },
-  { slug: 'phap-ly', icon: '⚖️', title: 'Trang pháp lý', desc: 'Chính sách bảo mật, điều khoản', group: 'legal' },
+  { slug: 'thuong-hieu', icon: 'wand', title: 'Thương hiệu', desc: 'Tên trang, slogan, ảnh OG', group: 'brand' },
+  { slug: 'seo', icon: 'search', title: 'SEO', desc: 'Tiêu đề, mô tả, theme color', group: 'brand' },
+  { slug: 'giao-dien', icon: 'sliders', title: 'Giao diện', desc: 'Màu sắc tùy chỉnh', group: 'brand' },
+  { slug: 'dieu-huong', icon: 'compass', title: 'Điều hướng', desc: 'Menu chính (thêm/xoá/sắp xếp)', group: 'structure' },
+  { slug: 'footer', icon: 'clipboard-list', title: 'Footer', desc: 'Cột footer, copyright, disclaimer', group: 'structure' },
+  { slug: 'danh-muc', icon: 'tag', title: 'Danh mục', desc: 'Biểu tượng & nhãn loại, khu vực', group: 'structure' },
+  { slug: 'trang-chu', icon: 'home', title: 'Trang chủ', desc: 'Hero, pills, quick links, CTA', group: 'content' },
+  { slug: 'trang', icon: 'file-text', title: 'Nội dung trang', desc: 'Hero & SEO từng trang', group: 'content' },
+  { slug: 'thong-bao', icon: 'megaphone', title: 'Thông báo', desc: 'Banner trên đầu trang', group: 'content' },
+  { slug: 'chao-mung', icon: 'heart', title: 'Bảng chào mừng', desc: 'Onboarding khách lần đầu', group: 'content' },
+  { slug: 'tinh-nang', icon: 'sliders', title: 'Tính năng', desc: 'Bật/tắt khối nội dung', group: 'features' },
+  { slug: 'tuyen-duong', icon: 'route', title: 'Tuyến đường', desc: 'Dữ liệu tuyến gợi ý', group: 'features' },
+  { slug: 'chat-ai', icon: 'message', title: 'Chat & AI', desc: 'Tiêu đề, gợi ý, minh bạch AI', group: 'features' },
+  { slug: 'lien-he', icon: 'send', title: 'Liên hệ', desc: 'Email, Zalo', group: 'legal' },
+  { slug: 'phap-ly', icon: 'shield', title: 'Trang pháp lý', desc: 'Chính sách bảo mật, điều khoản', group: 'legal' },
 ]
 
 const GROUP_META: { key: string; icon: string; title: string }[] = [
-  { key: 'brand', icon: '🎨', title: 'Thương hiệu & Nhận diện' },
-  { key: 'structure', icon: '🗂️', title: 'Cấu trúc & Điều hướng' },
-  { key: 'content', icon: '📝', title: 'Nội dung' },
-  { key: 'features', icon: '🎚️', title: 'Tính năng' },
-  { key: 'legal', icon: '⚖️', title: 'Liên hệ & Pháp lý' },
+  { key: 'brand', icon: 'wand', title: 'Thương hiệu & Nhận diện' },
+  { key: 'structure', icon: 'archive', title: 'Cấu trúc & Điều hướng' },
+  { key: 'content', icon: 'pencil', title: 'Nội dung' },
+  { key: 'features', icon: 'sliders', title: 'Tính năng' },
+  { key: 'legal', icon: 'shield', title: 'Liên hệ & Pháp lý' },
 ]
 
 const groups = computed(() =>
@@ -126,9 +126,9 @@ const groups = computed(() =>
 
 // Lối tắt: 3 tác vụ hay dùng nhất
 const quickLinks = [
-  { slug: 'trang-chu', icon: '🏠', label: 'Sửa Hero trang chủ' },
-  { slug: 'seo', icon: '🔍', label: 'Mặc định SEO' },
-  { slug: 'dieu-huong', icon: '🧭', label: 'Menu điều hướng' },
+  { slug: 'trang-chu', icon: 'home', label: 'Sửa Hero trang chủ' },
+  { slug: 'seo', icon: 'search', label: 'Mặc định SEO' },
+  { slug: 'dieu-huong', icon: 'compass', label: 'Menu điều hướng' },
 ]
 
 // Tìm kiếm phía client (khớp tiêu đề + mô tả)
@@ -174,7 +174,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   min-height: 44px; padding: 6px 14px; border-radius: 999px;
   background: var(--bg-alt, rgba(var(--black-rgb),.03)); border: .5px solid var(--line);
   color: inherit; text-decoration: none;
-  font-size: .8rem; font-weight: 500; line-height: 1;
+  font-size: .8rem; font-weight: 500; line-height: var(--leading-snug);
   transition: transform .2s var(--ease-soft), border-color .2s, background .2s, box-shadow .2s;
 }
 .cs-chip:hover { border-color: var(--color-action); color: var(--color-action); transform: translateY(-1px); }
@@ -209,7 +209,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .cs-group { margin-bottom: var(--space-7); }
 .cs-group-title {
   display: flex; align-items: center; gap: var(--space-2);
-  font-size: .82rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  font-size: .82rem; font-weight: 700; line-height: var(--leading-snug); letter-spacing: .04em; text-transform: uppercase; text-wrap: balance; overflow-wrap: break-word;
   color: var(--muted); margin: 0 0 var(--space-3);
 }
 .cs-group-icon { font-size: 1rem; }
@@ -245,7 +245,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 }
 .cs-icon { font-size: 1.8rem; flex-shrink: 0; width: 40px; text-align: center; }
 .cs-card div { flex: 1; min-width: 0; }
-.cs-card h3 { margin: 0; font-size: .95rem; font-weight: 600; }
+.cs-card h3 { margin: 0; font-size: .95rem; font-weight: 600; line-height: var(--leading-snug); text-wrap: balance; overflow-wrap: break-word; }
 .cs-card p { margin: var(--space-1) 0 0; font-size: .78rem; color: var(--muted); line-height: 1.4; }
 .cs-arrow {
   font-size: 1.4rem; font-weight: 300; color: var(--muted); flex-shrink: 0;

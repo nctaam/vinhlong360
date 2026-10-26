@@ -618,7 +618,7 @@ onMounted(() => fetchUsers())
 .dark .usr-active { background: rgba(var(--color-success-rgb),.12); }
 .dark .usr-banned { background: rgba(var(--danger-rgb),.12); }
 .dark .usr-rolecount { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
-.dark .usr-rolecount-n { background: rgba(var(--white-rgb),.12); color: var(--ink); }
+.dark .usr-rolecount-n { background: rgba(var(--white-rgb),.12); }
 .dark .usr-rolecount.active { background: rgba(var(--color-action-rgb),.18); }
 .dark .usr-skeleton-line { background: linear-gradient(90deg, rgba(var(--white-rgb),.06) 25%, rgba(var(--white-rgb),.12) 50%, rgba(var(--white-rgb),.06) 75%); background-size: 200% 100%; }
 .dark .usr-confirm-actions button { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
@@ -631,7 +631,7 @@ onMounted(() => fetchUsers())
 .ud-head { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4); border-bottom: .5px solid var(--line); }
 .ud-head-user { display: flex; align-items: center; gap: var(--space-3); }
 .ud-avatar { width: 44px; height: 44px; font-size: 1rem; }
-.ud-name { font-size: var(--text-base); font-weight: var(--weight-bold); margin: 0; }
+.ud-name { font-size: var(--text-base); font-weight: var(--weight-bold); line-height: var(--leading-snug); margin: 0; text-wrap: balance; overflow-wrap: break-word; }
 .ud-phone { font-size: var(--text-xs); color: var(--muted); }
 .ud-close { border: none; background: none; font-size: 1.25rem; line-height: 1; cursor: pointer; color: var(--muted); padding: var(--space-2); min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .ud-body { flex: 1; overflow-y: auto; padding: var(--space-4); }
@@ -642,9 +642,9 @@ onMounted(() => fetchUsers())
 .ud-bio p { margin: 0; font-size: var(--text-sm); color: var(--ink); }
 .ud-stats-row { display: flex; gap: var(--space-4); margin-top: var(--space-2); }
 .ud-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: var(--space-2) var(--space-3); background: var(--bg-alt); border-radius: var(--radius-surface); flex: 1; }
-.ud-stat strong { font-size: var(--text-lg); font-weight: var(--weight-bold); }
+.ud-stat strong { font-size: var(--text-lg); font-weight: var(--weight-bold); line-height: 1.24; font-variant-numeric: tabular-nums; }
 .ud-stat span { font-size: var(--text-xs); color: var(--muted); }
-.ud-section h3 { font-size: var(--text-sm); font-weight: var(--weight-semibold); margin: 0 0 var(--space-3); color: var(--ink); }
+.ud-section h3 { font-size: var(--text-sm); font-weight: var(--weight-semibold); line-height: var(--leading-snug); margin: 0 0 var(--space-3); color: var(--ink); text-wrap: balance; overflow-wrap: break-word; }
 .ud-loading { text-align: center; padding: var(--space-4); }
 .ud-empty { font-size: var(--text-sm); color: var(--muted); text-align: center; padding: var(--space-4); }
 .ud-post-list { display: flex; flex-direction: column; gap: var(--space-2); }
@@ -655,7 +655,7 @@ onMounted(() => fetchUsers())
 .ud-post-time { font-size: var(--text-xs); color: var(--muted); }
 .usr-admin-role { color: var(--color-brand); font-weight: 600; }
 
-.dark .ud-drawer { background: var(--card); box-shadow: -4px 0 32px rgba(var(--black-rgb),.5); }
+.dark .ud-drawer { box-shadow: -4px 0 32px rgba(var(--black-rgb),.5); }
 .dark .ud-stat { background: rgba(var(--white-rgb),.04); }
 
 @media (max-width: 480px) { .ud-drawer { max-width: 100%; } }

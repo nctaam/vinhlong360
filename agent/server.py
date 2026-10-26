@@ -907,11 +907,14 @@ _PII_PATTERNS = [
 ]
 
 
+_CLIENT_HTML_TAG_RE = re.compile(r"<[^>]+>")
+
+
 def _sanitize_client_text(text: str, max_len: int) -> str:
     """Che PII (email/phone/IP/token) + strip HTML, cắt theo max_len. B6/privacy."""
     if not text or not isinstance(text, str):
         return ""
-    out = re.sub(r"<[^>]+>", "", text)
+    out = _CLIENT_HTML_TAG_RE.sub("", text)
     out = out.replace("\r\n", " ").replace("\r", " ").replace("\n", " ")
     for pat, repl in _PII_PATTERNS:
         out = pat.sub(repl, out)

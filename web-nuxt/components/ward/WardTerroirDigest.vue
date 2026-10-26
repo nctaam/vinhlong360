@@ -477,6 +477,7 @@ const transitGuide = computed<TransitGuide>(() => {
   padding: var(--space-1) var(--space-3);
   font-size: 0.8125rem;
   font-weight: 600;
+  line-height: 1.35;
   color: var(--color-action);
   background: var(--color-action-surface);
   border-radius: var(--radius-pill, 999px);
@@ -489,7 +490,9 @@ const transitGuide = computed<TransitGuide>(() => {
   font-weight: 600;
   letter-spacing: var(--tracking-tight);
   color: var(--color-text);
-  line-height: 1.25;
+  line-height: 1.3;
+  text-wrap: balance;
+  overflow-wrap: break-word;
   margin-block-end: var(--space-1);
 }
 
@@ -497,6 +500,8 @@ const transitGuide = computed<TransitGuide>(() => {
   font-size: 0.9375rem;
   color: var(--color-text-muted);
   line-height: 1.5;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
   margin: 0;
 }
 
@@ -580,6 +585,8 @@ const transitGuide = computed<TransitGuide>(() => {
   font-weight: 600;
   color: var(--color-text);
   line-height: 1.3;
+  text-wrap: balance;
+  overflow-wrap: break-word;
   margin: 0;
 }
 
@@ -611,6 +618,8 @@ const transitGuide = computed<TransitGuide>(() => {
   font-family: var(--font-editorial);
   font-size: 0.9375rem;
   font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: break-word;
   color: var(--color-text);
 }
 
@@ -619,6 +628,7 @@ const transitGuide = computed<TransitGuide>(() => {
   align-items: center;
   font-size: 0.6875rem;
   font-weight: 600;
+  line-height: 1.35;
   padding: 0.125rem var(--space-2);
   border-radius: var(--radius-pill, 999px);
   background: var(--color-action-surface);
@@ -630,6 +640,8 @@ const transitGuide = computed<TransitGuide>(() => {
   font-size: 0.8125rem;
   color: var(--color-text-muted);
   line-height: 1.45;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
   margin: 0;
 }
 
@@ -719,6 +731,7 @@ const transitGuide = computed<TransitGuide>(() => {
   border-radius: var(--radius-pill, 999px);
   font-size: 0.6875rem;
   font-weight: 600;
+  line-height: 1.35;
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
   background: color-mix(in srgb, var(--color-material-clay) 12%, transparent);
@@ -739,6 +752,7 @@ const transitGuide = computed<TransitGuide>(() => {
   gap: 0.25rem;
   font-size: 0.6875rem;
   font-weight: 500;
+  line-height: 1.35;
   color: var(--color-material-amber);
   background: color-mix(in srgb, var(--color-material-amber) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-material-amber) 25%, transparent);
@@ -793,12 +807,8 @@ const transitGuide = computed<TransitGuide>(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .ward-terroir-digest,
-  .ward-terroir-digest__card,
   .ward-terroir-digest__call-btn {
     transition: none;
-  }
-  .ward-terroir-digest__card:hover {
-    transform: none;
   }
 }
 </style>

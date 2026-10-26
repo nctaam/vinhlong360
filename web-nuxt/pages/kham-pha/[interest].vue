@@ -50,35 +50,20 @@
     <h2 class="sr-only">Duyệt tất cả {{ interestMeta.label.toLowerCase() }}</h2>
     <!-- declutter-3 T12: 2 hàng filter gộp 1 panel — bỏ 2 control-label rời, divider mảnh
          ngăn 2 nhóm; ref areaFilter/typeFilter + hành vi giữ nguyên -->
-    <div class="controls">
-      <div class="chip-row wrap-mobile" role="group" aria-label="Lọc theo khu vực">
-        <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
+    <div v-if="typeBreakdown.length > 1" class="controls">
+      <!-- Signature: filter narrow within an interest by type -->
+      <div class="chip-row wrap-mobile int-filmstrip" role="group" aria-label="Lọc theo loại hình">
+        <button type="button" :class="['chip', { active: typeFilter === 'all' }]" :aria-pressed="typeFilter === 'all'" @click="typeFilter = 'all'">Tất cả</button>
         <button type="button"
-          v-for="(meta, key) in AREA_META"
-          :key="key"
-          :class="['chip', { active: areaFilter === key }]"
-          :aria-pressed="areaFilter === key"
-          @click="areaFilter = key as string"
-        ><IconLine :name="meta.icon" /> {{ meta.name }}</button>
+          v-for="t in typeBreakdown"
+          :key="t.type"
+          :class="['chip', 'int-filmstrip-chip', { active: typeFilter === t.type, 'int-chip-deep': t.count === maxTypeCount }]"
+          :aria-pressed="typeFilter === t.type"
+          @click="typeFilter = t.type"
+        ><IconLine :name="t.icon" /> {{ t.label }} ({{ t.count }})</button>
       </div>
 
-      <!-- SIGNATURE 3: second filter row — narrow within an interest by type.
-           Live counts carry visual weight (font-size scale) so the row itself
-           communicates "this is where the depth is" — filmstrip underline draws
-           in on hover/focus, evoking flipping through indexed photo negatives. -->
-      <template v-if="typeBreakdown.length > 1">
-        <div class="controls-divider" aria-hidden="true"></div>
-        <div class="chip-row wrap-mobile int-filmstrip" role="group" aria-label="Lọc theo loại">
-          <button type="button" :class="['chip', { active: typeFilter === 'all' }]" :aria-pressed="typeFilter === 'all'" @click="typeFilter = 'all'">Tất cả</button>
-          <button type="button"
-            v-for="t in typeBreakdown"
-            :key="t.type"
-            :class="['chip', 'int-filmstrip-chip', { active: typeFilter === t.type, 'int-chip-deep': t.count === maxTypeCount }]"
-            :aria-pressed="typeFilter === t.type"
-            @click="typeFilter = t.type"
-          ><IconLine :name="t.icon" /> {{ t.label }} ({{ t.count }})</button>
-        </div>
-      </template>
+
 
       <!-- Active filter ledger: shows applied area and type filters with 1-tap dismiss -->
       <div v-if="activeFilterCount > 0" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
@@ -109,7 +94,7 @@
         <div v-if="i > 0 && i % 9 === 0" class="int-grid-divider reveal" role="presentation" aria-hidden="true">
           <span class="int-grid-divider-label">{{ dividerFact(i) }}</span>
         </div>
-        <EntityCard :entity="e" />
+        <EntityCard :entity="e" color-recipe="tri-region-v1" />
       </template>
     </div>
     <EmptyState
@@ -157,7 +142,7 @@
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
-import { AREA_META, INTEREST_META, TYPE_META } from '~/composables/useConstants'
+import { AREA_META, CURRENT_AREA_META, INTEREST_META, TYPE_META } from '~/composables/useConstants'
 import { generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 
 useReveal()
@@ -252,7 +237,7 @@ const activeFilterCount = computed(() => (areaFilter.value !== 'all' ? 1 : 0) + 
 
 const activeAreaLabel = computed(() => {
   if (areaFilter.value === 'all') return ''
-  return AREA_META[areaFilter.value]?.name || areaFilter.value
+  return CURRENT_AREA_META[areaFilter.value]?.name || AREA_META[areaFilter.value]?.name || areaFilter.value
 })
 
 const activeTypeLabel = computed(() => {
@@ -283,7 +268,6 @@ const typeBreakdown = computed(() => {
     .map(t => ({
       type: t,
       count: counts.get(t) || 0,
-      emoji: TYPE_META[t]?.emoji || '•',
       icon: TYPE_META[t]?.icon || 'pin',
       label: TYPE_META[t]?.label || t,
     }))
@@ -299,7 +283,7 @@ const filtered = computed(() => {
     list = list.filter((e: Entity) => e.type === typeFilter.value)
   }
   if (areaFilter.value !== 'all') {
-    list = list.filter((e: Entity) => getEntityArea(e) === areaFilter.value)
+    list = list.filter((e: Entity) => entityMatchesAreaScope(e, areaFilter.value))
   }
   return list
 })
@@ -307,10 +291,10 @@ const filtered = computed(() => {
 // Curiosity empty-state — names the active narrowing instead of a bare "no match."
 const emptyMessage = computed(() => {
   const typeName = typeFilter.value !== 'all' ? (TYPE_META[typeFilter.value]?.label || '') : ''
-  const areaName = areaFilter.value !== 'all' ? (AREA_META[areaFilter.value]?.name || '') : ''
-  if (typeName && areaName) return `Chưa có “${typeName.toLowerCase()}” ở ${areaName} trong chuyên mục ${interestMeta.value.label.toLowerCase()} — thử vùng khác?`
-  if (typeName) return `Chưa có “${typeName.toLowerCase()}” trong chuyên mục ${interestMeta.value.label.toLowerCase()}.`
-  if (areaName) return `Chuyên mục ${interestMeta.value.label.toLowerCase()} chưa có mục nào ở ${areaName}.`
+  const areaName = areaFilter.value !== 'all' ? (CURRENT_AREA_META[areaFilter.value]?.name || AREA_META[areaFilter.value]?.name || '') : ''
+  if (typeName && areaName) return `Chưa có “${typeName.toLowerCase()}” tại ${areaName} trong chuyên mục ${interestMeta.value.label.toLowerCase()} — thử chọn toàn tỉnh?`
+  if (typeName) return `Chưa có “${typeName.toLowerCase()}” trong chuyên mục ${interestMeta.value.label.toLowerCase()} của tỉnh Vĩnh Long.`
+  if (areaName) return `Chuyên mục ${interestMeta.value.label.toLowerCase()} đang tiếp tục được cập nhật trên địa bàn ${areaName}.`
   return 'Không tìm thấy kết quả phù hợp.'
 })
 
@@ -391,11 +375,11 @@ const aeoContent = computed<AeoDigestPayload>(() => {
         },
         {
           heading: 'Lẩu mắm cá linh bông điên điển',
-          text: 'Món ngon mùa nước nổi từ tháng 8 đến tháng 10 âm lịch, đậm đà vị cá đồng hòa quyện hương điên điển tươi ngọt.',
+          text: 'Món ngon mùa nước nổi từ tháng 8 đến tháng 10 âm lịch, vị béo ngọt của cá đồng hòa quyện hương điên điển tươi non.',
         },
         {
           heading: 'Chuối nếp nướng & Bánh tét 3 màu',
-          text: 'Thức quà quê nướng than hồng thơm phức béo ngậy nước cốt dừa, đậm đà phong vị góc phố miệt vườn.',
+          text: 'Thức quà quê nướng than hồng thơm ngậy nước cốt dừa, phong vị quen thuộc nơi góc phố miệt vườn.',
         },
       ],
       ctaTo: '/ocop',
@@ -416,7 +400,7 @@ const aeoContent = computed<AeoDigestPayload>(() => {
         },
         {
           heading: 'Làng nghề Tàu hũ ky Mỹ Hòa',
-          text: 'Di sản văn hóa phi vật thể quốc gia đỏ lửa ngày đêm với lớp váng đậu nành nguyên chất giòn bùi nức tiếng.',
+          text: 'Di sản văn hóa phi vật thể quốc gia đỏ lửa ngày đêm với lớp váng đậu nành nguyên chất béo bùi vang danh phương Nam.',
         },
         {
           heading: 'Bánh tráng Cù lao Mây & Chiếu Tân Duyệt',
@@ -486,7 +470,7 @@ const aeoContent = computed<AeoDigestPayload>(() => {
     entries: [
       {
         heading: 'Bưởi Năm Roi & Sầu riêng Ri6',
-        text: 'Trái cây bảo hộ chỉ dẫn địa lý PGI tép vàng óng và sầu riêng múi cơm khô béo ngậy nức tiếng gần xa.',
+        text: 'Trái cây bảo hộ chỉ dẫn địa lý PGI tép vàng óng và sầu riêng múi cơm khô vàng thơm béo ngậy miệt Cửu Long.',
       },
       {
         heading: 'Khoai lang tím Nhật & Cam sành Tam Bình',
@@ -607,8 +591,6 @@ useHead(() => ({
   max-width: none !important;
 }
 
-/* declutter-3 T12: divider mảnh ngăn 2 nhóm chip trong 1 panel .controls */
-.controls-divider { border-top: .5px solid var(--line); margin-block: var(--space-2); }
 
 /* ============================================================
    SIGNATURE 3 — interest nav + premium segmented controls.
@@ -662,17 +644,8 @@ useHead(() => ({
 .int-grid-divider::before, .int-grid-divider::after { content: ''; flex: 1; height: .5px; background: var(--line); }
 .int-grid-divider-label {
   font-family: var(--font-editorial); font-style: italic; font-size: var(--text-sm);
-  color: var(--muted); white-space: nowrap; padding: 0 var(--space-2);
-}
-
-/* SIGNATURE 4 — cross-links identity ribbon subtitle */
-.int-cross-sub {
-  margin: 0 0 var(--space-3);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-caps);
-  color: var(--muted);
+  color: var(--muted); padding: 0 var(--space-2);
+  overflow-wrap: break-word; text-wrap: pretty;
 }
 
 /* Dark mode */
@@ -681,8 +654,8 @@ useHead(() => ({
     radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--color-brand-rgb)), .16), transparent 62%),
     linear-gradient(135deg, rgba(var(--int-rgb, var(--color-brand-rgb)), .1) 0%, rgba(var(--color-action-rgb), .05) 100%);
 }
-.dark .int-byline { color: var(--ink-tertiary) !important; border-top-color: var(--line); }
-.dark .interest-nav .chip { background: var(--bg-alt); border-color: var(--line); }
+.dark .int-byline { color: var(--ink-tertiary) !important; }
+.dark .interest-nav .chip { background: var(--bg-alt); }
 .dark .interest-nav .chip:hover { border-color: rgba(var(--white-rgb),.15); }
 .dark .interest-nav .chip.active { background: rgba(var(--color-action-rgb), .12); border-color: var(--color-action); }
 .dark .result-meta { color: var(--ink-tertiary); }

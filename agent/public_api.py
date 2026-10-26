@@ -1946,13 +1946,17 @@ def _select_homepage_itineraries(all_itineraries: list[dict], public: list[dict]
     return itineraries
 
 
+_HOMEPAGE_AREA_CARD_TYPES = frozenset({
+    "product", "dish", "drink", "experience", "attraction", "nature",
+    "craft_village", "history", "accommodation", "event",
+})
+
+
 def _compute_homepage_area_counts(public: list[dict]) -> dict[str, int]:
-    card_types = {"product", "dish", "drink", "experience", "attraction", "nature",
-                  "craft_village", "history", "accommodation", "event"}
     area_counts: dict[str, int] = {}
     for e in public:
         a = e.get("place_area") or e.get("area")
-        if e["type"] in card_types and a:
+        if e["type"] in _HOMEPAGE_AREA_CARD_TYPES and a:
             area_counts[a] = area_counts.get(a, 0) + 1
     return area_counts
 
@@ -2966,9 +2970,6 @@ def _append_review_gallery_images(images: list[dict], review_rows: list[dict], e
 
 
 # ── Entity Q&A (U-09: questions with best answer resolution) ─────────
-
-from fastapi import Depends
-
 
 
 # ── Contact view tracking (CTA analytics) ───────────────────────────

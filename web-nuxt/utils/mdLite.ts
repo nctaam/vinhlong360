@@ -11,6 +11,15 @@
 //   [text](/path or https://) → <a> (other URL schemes render as plain text)
 //   blank line                → new paragraph; single newline → <br>
 
+const INTERNAL_HREF_RE = /^\/[^\s"'<>]*$/
+const EXTERNAL_HREF_RE = /^https?:\/\/[^\s"'<>]+$/
+const HTTP_SCHEME_RE = /^https?:/
+const MD_LINK_RE = /\[([^\]]+)\]\(([^)\s]+)\)/g
+const MD_BOLD_RE = /\*\*([^*]+)\*\*/g
+const BLANK_LINE_SPLIT_RE = /\n\s*\n/
+const LIST_ITEM_PREFIX_RE = /^\s*-\s+/
+const NEWLINE_RE = /\n/g
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, '&amp;')
@@ -21,40 +30,40 @@ function escapeHtml(s: string): string {
 
 // url is already HTML-escaped. Allow only internal ("/...") or http(s) links.
 function safeHref(url: string): string | null {
-  if (/^\/[^\s"'<>]*$/.test(url)) return url
-  if (/^https?:\/\/[^\s"'<>]+$/.test(url)) return url
+  if (INTERNAL_HREF_RE.test(url)) return url
+  if (EXTERNAL_HREF_RE.test(url)) return url
   return null
 }
 
 function inline(escaped: string): string {
   let out = escaped
   // [text](url) — both captured from already-escaped text
-  out = out.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, text, url) => {
+  out = out.replace(MD_LINK_RE, (m, text, url) => {
     const href = safeHref(url)
     if (!href) return m
-    const ext = /^https?:/.test(href)
+    const ext = HTTP_SCHEME_RE.test(href)
     const attrs = ext ? ' target="_blank" rel="noopener nofollow"' : ''
     return `<a href="${href}"${attrs}>${text}</a>`
   })
   // **bold**
-  out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  out = out.replace(MD_BOLD_RE, '<strong>$1</strong>')
   return out
 }
 
 export function mdLite(src: unknown): string {
   if (!src || typeof src !== 'string') return ''
   const escaped = escapeHtml(src)
-  const blocks = escaped.split(/\n\s*\n/)
+  const blocks = escaped.split(BLANK_LINE_SPLIT_RE)
   const html: string[] = []
   for (const block of blocks) {
     if (!block.trim()) continue
     const lines = block.split('\n')
-    const isList = lines.length > 0 && lines.every(l => /^\s*-\s+/.test(l))
+    const isList = lines.length > 0 && lines.every(l => LIST_ITEM_PREFIX_RE.test(l))
     if (isList) {
-      const items = lines.map(l => `<li>${inline(l.replace(/^\s*-\s+/, ''))}</li>`).join('')
+      const items = lines.map(l => `<li>${inline(l.replace(LIST_ITEM_PREFIX_RE, ''))}</li>`).join('')
       html.push(`<ul>${items}</ul>`)
     } else {
-      html.push(`<p>${inline(block.replace(/\n/g, '<br>'))}</p>`)
+      html.push(`<p>${inline(block.replace(NEWLINE_RE, '<br>'))}</p>`)
     }
   }
   return html.join('')

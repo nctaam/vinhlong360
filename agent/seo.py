@@ -1372,6 +1372,14 @@ def _is_listing_visible(entity: dict[str, Any]) -> bool:
     return True
 
 
+def _collection_item_sort_key(e: dict[str, Any]) -> tuple[float, str]:
+    try:
+        conf = float(e.get("confidence") or 0.5)
+    except (TypeError, ValueError):
+        conf = 0.5
+    return (-conf, str(e.get("name") or ""))
+
+
 def _collection_items(data: dict[str, Any], types: Any, require_attr: Any) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
     for e in data.get("entities", []):
@@ -1384,14 +1392,7 @@ def _collection_items(data: dict[str, Any], types: Any, require_attr: Any) -> li
             if not attrs.get(require_attr):
                 continue
         items.append(e)
-
-    def _sort_key(e: dict[str, Any]) -> tuple[float, str]:
-        try:
-            conf = float(e.get("confidence") or 0.5)
-        except (TypeError, ValueError):
-            conf = 0.5
-        return (-conf, str(e.get("name") or ""))
-    items.sort(key=_sort_key)
+    items.sort(key=_collection_item_sort_key)
     return items[:100]
 
 

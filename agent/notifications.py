@@ -13,6 +13,7 @@ Endpoints:
 """
 
 import asyncio
+from datetime import datetime
 import hashlib
 import json
 import logging
@@ -919,7 +920,6 @@ async def list_muted_users(page: int = Query(1, ge=1, le=100), limit: int = Quer
 # ── Helpers ──
 
 def _parse_notif_ts(val) -> object:
-    from datetime import datetime
     if val is None:
         return None
     try:

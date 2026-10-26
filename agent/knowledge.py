@@ -562,22 +562,36 @@ def seasonal_now(month: int) -> list[dict]:
     return results[:10]
 
 
+_REL_FWD = {
+    "hosts": "Tổ chức",
+    "offered_by": "Đặt qua",
+    "made_by": "Sản xuất bởi",
+    "produced_in": "Sản xuất tại",
+    "supplies_to": "Cung ứng cho",
+    "near": "Gần",
+}
+_REL_BWD = {
+    "hosts": "Diễn ra tại",
+    "offered_by": "Cung cấp",
+    "made_by": "Sản phẩm",
+    "produced_in": "Đặc sản",
+    "supplies_to": "Nguồn cung",
+    "near": "Gần",
+}
+
+
 def related(entity_id: str) -> list[dict]:
     """Các thực thể liên quan qua relationships."""
     _ensure()
-    REL_FWD = {"hosts": "Tổ chức", "offered_by": "Đặt qua", "made_by": "Sản xuất bởi",
-               "produced_in": "Sản xuất tại", "supplies_to": "Cung ứng cho", "near": "Gần"}
-    REL_BWD = {"hosts": "Diễn ra tại", "offered_by": "Cung cấp", "made_by": "Sản phẩm",
-               "produced_in": "Đặc sản", "supplies_to": "Nguồn cung", "near": "Gần"}
     out = []
     for r in (_get_adjacency().get(entity_id) or []):  # GĐ11.2: chỉ duyệt cạnh kề entity này
         if r["from"] == entity_id and r["to"] in _entities:
             other = _entities[r["to"]]
-            out.append({"label": REL_FWD.get(r["type"], r["type"]),
+            out.append({"label": _REL_FWD.get(r["type"], r["type"]),
                         "entity": other["name"], "id": other["id"]})
         elif r["to"] == entity_id and r["from"] in _entities:
             other = _entities[r["from"]]
-            out.append({"label": REL_BWD.get(r["type"], r["type"]),
+            out.append({"label": _REL_BWD.get(r["type"], r["type"]),
                         "entity": other["name"], "id": other["id"]})
     return out
 

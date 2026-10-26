@@ -218,6 +218,9 @@ const hasContent = computed(() =>
   display: flex; align-items: center; gap: var(--space-2);
   font-family: var(--font-editorial);
   font-size: var(--text-lg); font-weight: 600;
+  line-height: var(--leading-snug);
+  text-wrap: balance;
+  overflow-wrap: break-word;
   margin: 0;
   color: var(--ink);
 }
@@ -243,7 +246,7 @@ const hasContent = computed(() =>
 .kbyg-badge {
   display: inline-flex; align-items: center; gap: var(--space-1);
   padding: 5px 12px; border-radius: var(--radius-control);
-  font-size: .8rem; font-weight: 500;
+  font-size: .8rem; font-weight: 500; line-height: 1.35;
   background: var(--bg-alt);
   border: 1px solid var(--line);
   color: var(--ink);
@@ -305,6 +308,9 @@ const hasContent = computed(() =>
 .kbyg-checklist-title {
   display: flex; align-items: center; gap: var(--space-2);
   font-size: .9rem; font-weight: 600;
+  line-height: var(--leading-snug);
+  text-wrap: balance;
+  overflow-wrap: break-word;
   margin: 0 0 var(--space-2);
   color: var(--ink);
 }
@@ -314,17 +320,9 @@ const hasContent = computed(() =>
 }
 .kbyg-check-item {
   display: inline-flex; align-items: center; gap: 5px;
-  font-size: .84rem; color: var(--muted);
+  font-size: .84rem; line-height: 1.4; color: var(--muted);
 }
 .kbyg-check-box { font-size: .7rem; opacity: .5; }
-
-/* Dark mode */
-.dark .kbyg { border-color: var(--line); }
-.dark .kbyg::before { opacity: .08; }
-.dark .kbyg-badge { border-color: var(--line); }
-.dark .kbyg-badge:hover { border-color: var(--color-material-amber); }
-.dark .kbyg-golden-item { background: transparent; }
-.dark .kbyg-tip { background: transparent; }
 
 @media (max-width: 540px) {
   .kbyg { padding: var(--space-4) 0; }

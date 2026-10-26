@@ -526,7 +526,7 @@ onMounted(() => fetchAll())
 
 /* ── Expandable reason ── */
 .rpt-reason-cell { max-width: 360px; }
-.rpt-reason-full { white-space: normal; word-break: break-word; line-height: 1.45; }
+.rpt-reason-full { white-space: normal; overflow-wrap: break-word; line-height: 1.45; }
 .rpt-reason-toggle {
   margin-top: var(--space-1); padding: 0; border: none; background: none;
   color: var(--color-action); font-size: .72rem; font-weight: 600; cursor: pointer;
@@ -568,7 +568,6 @@ onMounted(() => fetchAll())
 .dark .rpt-open-badge { background: rgba(var(--warning-rgb),.12); color: var(--color-warning); }
 .dark .rpt-chip { background: rgba(var(--white-rgb),.04); }
 .dark .rpt-chip-count { background: rgba(var(--white-rgb),.1); }
-.dark .rpt-chip.active .rpt-chip-count { background: rgba(var(--white-rgb),.25); }
 .dark .rpt-bulkbar { background: rgba(var(--blue-rgb),.16); border-color: rgba(var(--blue-rgb),.55); }
 .dark .rpt-bulk-count { color: rgb(var(--blue-rgb)); }
 .dark .rpt-bulk-hint { color: rgba(var(--white-rgb),.55); }

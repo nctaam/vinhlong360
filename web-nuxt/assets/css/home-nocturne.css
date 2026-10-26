@@ -131,10 +131,11 @@
   max-width: 13ch;
   margin-block: var(--space-3) var(--space-4);
   color: var(--color-text);
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: clamp(var(--text-4xl), 7vw, var(--text-5xl));
-  line-height: 1.2;
+  line-height: 1.22;
   letter-spacing: -.02em;
+  text-wrap: balance;
   overflow-wrap: break-word;
   text-shadow: none;
 }
@@ -734,19 +735,21 @@
 
 [data-home-pilot="nocturne-b1"] .home-season-row__body::before {
   content: '0' counter(season-signal);
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-style: italic;
   font-size: 0.92rem;
   font-weight: var(--weight-semibold);
   color: var(--color-action);
-  line-height: 1;
+  line-height: 1.2;
 }
 
 [data-home-pilot="nocturne-b1"] .home-season-row__body strong {
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: clamp(1.04rem, 1.3vw, 1.18rem);
   font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
   letter-spacing: -0.01em;
+  overflow-wrap: break-word;
 }
 
 [data-home-pilot="nocturne-b1"] .home-season-row__action {
@@ -776,11 +779,13 @@
 }
 
 [data-home-pilot="nocturne-b1"] .event-mini h3 {
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: clamp(1.06rem, 1.35vw, 1.22rem);
   font-weight: var(--weight-semibold);
   letter-spacing: -0.01em;
   line-height: 1.32;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 /* .cm-card và .journey-action nhập đàn: nocturne làm phẳng trang chủ nhưng bỏ sót
@@ -876,10 +881,13 @@
 [data-home-pilot="nocturne-b1"] :is(.home-decision-ledger__intro h2, .home-category-index__header h2, #home-continuation-title) {
   font-family: var(--font-editorial);
   font-weight: 600;
+  line-height: var(--leading-snug);
   letter-spacing: -.01em;
   position: relative;
   padding-left: var(--space-4);
   margin-block: var(--space-2) 0;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 [data-home-pilot="nocturne-b1"] :is(.home-decision-ledger__intro h2, .home-category-index__header h2, #home-continuation-title)::before {
@@ -1400,7 +1408,9 @@
   /* 2xl chứ không 3xl/4xl: tin chính đặc sản đang giữ con số cỡ lớn. Hai
      khối cùng cỡ chữ lớn là hai trọng âm cạnh nhau, cùng yếu đi. */
   font-size: var(--text-2xl);
-  line-height: var(--leading-tight);
+  line-height: var(--leading-snug);
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 [data-home-pilot="nocturne-b1"] .home-ocop__tiers {
@@ -1605,8 +1615,9 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .home .section-head h2 {
   font-family: var(--font-editorial);
   font-size: var(--text-2xl); font-weight: 600;
-  letter-spacing: -.01em; line-height: var(--leading-tight);
+  letter-spacing: -.01em; line-height: var(--leading-snug);
   position: relative; padding-left: var(--space-4);
+  text-wrap: balance; overflow-wrap: break-word;
 }
 .home .section-head h2::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
@@ -1954,12 +1965,14 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 
 [data-home-pilot="nocturne-b1"] .home-native-stories__header h2 {
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: clamp(var(--text-2xl), 4.5vw, var(--text-4xl));
   font-weight: var(--weight-bold);
   color: var(--color-text);
-  line-height: var(--leading-tight);
+  line-height: 1.22;
   letter-spacing: -.015em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 [data-home-pilot="nocturne-b1"] .home-native-stories__lead {
@@ -2004,7 +2017,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 
 [data-home-pilot="nocturne-b1"] .home-story-card__quote-text {
-  font-family: var(--font-editorial, 'Lora', serif);
+  font-family: var(--font-editorial);
   font-size: clamp(var(--text-xs), 1.2vw, var(--text-sm));
   line-height: var(--leading-relaxed);
   color: var(--surface-white);
@@ -2089,12 +2102,14 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 
 [data-home-pilot="nocturne-b1"] .home-story-card__content h3 {
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: clamp(var(--text-xl), 3vw, var(--text-2xl));
   font-weight: var(--weight-bold);
   color: var(--surface-white);
-  line-height: var(--leading-tight);
+  line-height: var(--leading-snug);
   margin-block-end: var(--space-2);
+  text-wrap: balance;
+  overflow-wrap: break-word;
   text-shadow: 0 2px 8px rgba(var(--black-rgb), 0.5);
   transition: color 0.25s ease;
 }
@@ -2153,11 +2168,14 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 
 [data-home-pilot="nocturne-b1"] .home-story-callout h4 {
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: var(--text-lg);
   font-weight: var(--weight-bold);
+  line-height: var(--leading-snug);
   color: var(--color-text);
   margin-block-end: var(--space-2);
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 [data-home-pilot="nocturne-b1"] .home-story-callout p {

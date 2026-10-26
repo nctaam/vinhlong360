@@ -81,12 +81,24 @@ function validCoordinates(value: unknown): [number, number] | null {
   return validCoordinates([source.lat, source.lng])
 }
 
+const VALID_PHONE_RE = /^\+?[\d\s().-]+$/
+const NON_DIGIT_RE = /\D/g
+const PHONE_PUNCT_RE = /[\s().-]+/g
+const BLANK_LINE_SPLIT_RE = /\n\s*\n/
+const WHITESPACE_RE = /\s+/g
+const H2_HEADING_RE = /^##\s+(.+)$/
+const H3_HEADING_RE = /^###\s+(.+)$/
+
+function normalizeSectionProse(s: unknown): string {
+  return String(s ?? '').replace(WHITESPACE_RE, ' ').trim().toLowerCase()
+}
+
 function validPhone(value: unknown): string {
   if (typeof value !== 'string') return ''
   const normalized = value.trim()
-  if (!normalized || !/^\+?[\d\s().-]+$/.test(normalized)) return ''
-  const digits = normalized.replace(/\D/g, '')
-  return digits.length >= 4 && digits.length <= 15 ? normalized.replace(/[\s().-]+/g, '') : ''
+  if (!normalized || !VALID_PHONE_RE.test(normalized)) return ''
+  const digits = normalized.replace(NON_DIGIT_RE, '')
+  return digits.length >= 4 && digits.length <= 15 ? normalized.replace(PHONE_PUNCT_RE, '') : ''
 }
 
 export function resolveDetailAction(entity: DetailActionEntity, context: DetailActionContext): DetailAction {
@@ -121,17 +133,16 @@ export interface DescSection {
 
 export function parseDescriptionSections(description?: string | null, summary?: string | null): DescSection[] {
   if (!description || typeof description !== 'string') return []
-  let blocks = description.split(/\n\s*\n/).map(b => b.trim()).filter(b => b.length > 0)
-  const norm = (s: unknown) => String(s ?? '').replace(/\s+/g, ' ').trim().toLowerCase()
-  if (summary && blocks.length && norm(blocks[0]) === norm(summary)) {
+  let blocks = description.split(BLANK_LINE_SPLIT_RE).map(b => b.trim()).filter(b => b.length > 0)
+  if (summary && blocks.length && normalizeSectionProse(blocks[0]) === normalizeSectionProse(summary)) {
     blocks = blocks.slice(1)
   }
   if (!blocks.length) return []
   const sections: DescSection[] = []
   let current: DescSection = { level: 0, heading: '', paragraphs: [] }
   for (const block of blocks) {
-    const h2 = block.match(/^##\s+(.+)$/)
-    const h3 = block.match(/^###\s+(.+)$/)
+    const h2 = block.match(H2_HEADING_RE)
+    const h3 = block.match(H3_HEADING_RE)
     if (h3) {
       if (current.paragraphs.length || current.heading) sections.push(current)
       current = { level: 3, heading: h3[1] ?? '', paragraphs: [] }
@@ -145,4 +156,3 @@ export function parseDescriptionSections(description?: string | null, summary?: 
   if (current.paragraphs.length || current.heading) sections.push(current)
   return sections
 }
-

@@ -737,6 +737,14 @@ def _shape_review_row(rd: dict) -> dict:
     }
 
 
+_REVIEW_SORT = {
+    "newest": "p.created_at DESC",
+    "helpful": "p.like_count DESC, p.created_at DESC",
+    "highest": "p.rating DESC, p.created_at DESC",
+    "lowest": "p.rating ASC, p.created_at DESC",
+}
+
+
 @router.get("/entities/{entity_id}/reviews",
             summary="Get entity reviews",
             description="Returns paginated user reviews for an entity with sorting, rating filter, distribution, and the current user's own review if logged in.")
@@ -763,8 +771,6 @@ async def get_entity_reviews(
     ph = db._ph
     offset = (page - 1) * limit
     uid = str(user["id"]) if user else None
-    _REVIEW_SORT = {"newest": "p.created_at DESC", "helpful": "p.like_count DESC, p.created_at DESC",
-                     "highest": "p.rating DESC, p.created_at DESC", "lowest": "p.rating ASC, p.created_at DESC"}
     order = _REVIEW_SORT.get(sort, "p.created_at DESC")
     def _query():
         conditions = [f"p.entity_id = {ph}", "p.post_type = 'review'", "p.moderation_status = 'approved'", "p.deleted_at IS NULL"]

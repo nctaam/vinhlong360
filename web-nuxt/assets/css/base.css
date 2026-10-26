@@ -173,7 +173,7 @@ h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var
 .block + .block::before { content: ""; position: absolute; top: 0; left: var(--space-8); right: var(--space-8); height: 1px; background: linear-gradient(to right, transparent, color-mix(in srgb, var(--alluvial-gold) 35%, var(--line)) 25%, color-mix(in srgb, var(--alluvial-gold) 35%, var(--line)) 75%, transparent); opacity: .55; }
 @media (max-width: 520px) { .block + .block::before { left: var(--space-4); right: var(--space-4); } }
 .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6); gap: var(--space-3); }
-.section-head h2 { margin: 0; font-size: var(--text-2xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tighter); line-height: var(--leading-tight); text-wrap: balance; }
+.section-head h2 { margin: 0; font-size: var(--text-2xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tighter); line-height: var(--leading-snug); text-wrap: balance; overflow-wrap: break-word; }
 /* background/border/font-family: .see-all dùng cho CẢ <button> (du-lich.vue,
    ocop.vue) lẫn <NuxtLink> (index.vue). Không tắt nền UA thì <button> render
    trên ButtonFace #6b6b6b của Chrome — axe đo 2.19:1, và hai thẻ cùng class ra
@@ -199,7 +199,7 @@ h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var
   .page > .block { padding-inline: 0; }
 }
 .page-head { margin-bottom: var(--space-6); }
-.page-head h1 { margin: 0 0 var(--space-2); font-family: var(--font-editorial, serif); font-size: clamp(1.75rem, 4.5vw, 2.4rem); font-weight: 600; letter-spacing: var(--tracking-tight); }
+.page-head h1 { margin: 0 0 var(--space-2); font-family: var(--font-editorial); font-size: clamp(1.75rem, 4.5vw, 2.4rem); font-weight: 600; line-height: var(--leading-snug); letter-spacing: var(--tracking-tight); text-wrap: balance; overflow-wrap: break-word; }
 .page-head p { margin: 0; color: var(--muted); max-width: 720px; font-size: var(--text-lg); line-height: var(--leading-relaxed); }
 
 .empty { color: var(--muted); padding: var(--space-8) 0; text-align: center; font-size: var(--text-sm); }
@@ -298,9 +298,9 @@ html[data-reduced-motion="true"] *:not(.sk-shimmer)::after {
 .si-muted  { background: rgba(var(--gray-rgb), .12);       color: var(--muted); }
 
 /* ── MapLibre popup overrides ── */
-.maplibregl-popup-content { font-family: var(--font-body); font-size: var(--text-sm); line-height: var(--leading-normal); padding: var(--space-3) var(--space-4); border-radius: var(--radius-surface); box-shadow: var(--shadow-lg); border: .5px solid var(--line); background: var(--card); color: var(--ink); overflow-wrap: break-word; word-break: break-word; max-width: min(88vw, 320px); }
-.maplibregl-popup-content strong { display: block; font-weight: var(--weight-semibold); overflow-wrap: break-word; word-break: break-word; text-wrap: pretty; }
-.maplibregl-popup-content small { display: block; color: var(--muted); margin: var(--space-1) 0; overflow-wrap: break-word; word-break: break-word; }
+.maplibregl-popup-content { font-family: var(--font-body); font-size: var(--text-sm); line-height: var(--leading-normal); padding: var(--space-3) var(--space-4); border-radius: var(--radius-surface); box-shadow: var(--shadow-lg); border: .5px solid var(--line); background: var(--card); color: var(--ink); overflow-wrap: break-word; max-width: min(88vw, 320px); }
+.maplibregl-popup-content strong { display: block; font-weight: var(--weight-semibold); overflow-wrap: break-word; text-wrap: pretty; }
+.maplibregl-popup-content small { display: block; color: var(--muted); margin: var(--space-1) 0; overflow-wrap: break-word; }
 .maplibregl-popup-content a { display: inline-block; color: var(--color-action); font-weight: var(--weight-semibold); text-decoration: none; white-space: nowrap; line-height: var(--leading-normal); }
 .maplibregl-popup-content a:hover { text-decoration: underline; }
 .maplibregl-popup-content a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 2px; }
@@ -308,8 +308,6 @@ html[data-reduced-motion="true"] *:not(.sk-shimmer)::after {
 .maplibregl-popup-close-button:hover { background: var(--bg-alt); color: var(--ink); }
 .maplibregl-popup-close-button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .maplibregl-popup-tip { border-top-color: var(--card); }
-.dark .maplibregl-popup-content { background: var(--card); border-color: var(--line); }
-.dark .maplibregl-popup-tip { border-top-color: var(--card); }
 .dark .maplibregl-popup-close-button:hover { background: var(--overlay-light); }
 
 /* ── Reveal entrance animation (IntersectionObserver-driven) ──
@@ -608,7 +606,7 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 .chat-panel:not(.show) { visibility: hidden; }
 .chat-panel.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
 .chat-panel-head { background: var(--color-action); color: var(--color-on-action); padding: var(--space-3) var(--space-4); display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
-.chat-panel-head h3 { margin: 0; font-size: var(--text-base); flex: 1; }
+.chat-panel-head h3 { margin: 0; font-size: var(--text-base); line-height: var(--leading-snug); text-wrap: balance; overflow-wrap: break-word; flex: 1; }
 .chat-panel-head .cp-close { background: none; border: none; color: var(--text-on-dark); font-size: 1.4rem; cursor: pointer; opacity: .8; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-control); transition: opacity .3s, background .3s; }
 .chat-panel-head .cp-close:hover { opacity: 1; background: rgba(var(--white-rgb), .15); }
 .chat-panel-head .cp-close:active { transform: scale(.9); transition-duration: .08s; }
@@ -655,7 +653,7 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 .sidebar-card { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-5); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
 .sidebar-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 .sidebar-card:active { transform: scale(.97); transition-duration: .08s; }
-.sidebar-card h3 { margin: 0 0 var(--space-2); font-size: var(--text-base); font-weight: var(--weight-semibold); }
+.sidebar-card h3 { margin: 0 0 var(--space-2); font-size: var(--text-base); font-weight: var(--weight-semibold); line-height: var(--leading-snug); text-wrap: balance; overflow-wrap: break-word; }
 .sidebar-card p { margin: 0; color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-relaxed); }
 .sidebar-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--text-sm); }
 .sidebar-list li { padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); transition: background .3s var(--ease-out); }
@@ -690,13 +688,13 @@ a.thread-author:hover { color: var(--color-action); }
 .thread-rating .star { font-size: var(--text-sm); color: var(--muted); transition: transform .3s var(--ease-out-expo); display: inline-block; }
 .thread-rating .star.active { color: var(--color-material-amber); }
 .thread-body { text-decoration: none; color: inherit; display: block; }
-.thread-content { margin: 0; font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--ink); white-space: pre-line; overflow-wrap: break-word; word-break: break-word; text-wrap: pretty; }
+.thread-content { margin: 0; font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--ink); white-space: pre-line; overflow-wrap: break-word; text-wrap: pretty; }
 .thread-content.collapsed { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
 .thread-expand { background: none; border: none; color: var(--color-action); font-size: var(--text-sm); font-weight: 500; cursor: pointer; padding: var(--space-2) 0; margin-top: var(--space-05); min-height: var(--touch-min); display: inline-flex; align-items: center; text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .25s var(--ease-out); }
 .thread-expand:hover { text-decoration-color: var(--color-action); }
-.mention-link { color: var(--color-action); font-weight: var(--weight-medium); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; text-decoration-thickness: 1.5px; transition: text-decoration-color .25s var(--ease-out); overflow-wrap: break-word; word-break: break-word; }
+.mention-link { color: var(--color-action); font-weight: var(--weight-medium); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; text-decoration-thickness: 1.5px; transition: text-decoration-color .25s var(--ease-out); overflow-wrap: break-word; }
 .mention-link:hover { text-decoration-color: var(--color-action); }
-.hashtag-link { color: var(--color-action); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; text-decoration-thickness: 1.5px; transition: text-decoration-color .25s var(--ease-out); overflow-wrap: break-word; word-break: break-word; }
+.hashtag-link { color: var(--color-action); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; text-decoration-thickness: 1.5px; transition: text-decoration-color .25s var(--ease-out); overflow-wrap: break-word; }
 .hashtag-link:hover { text-decoration-color: currentColor; }
 .thread-repost-embed { display: flex; flex-direction: column; gap: .2rem; margin: var(--space-2) 0; padding: var(--space-2) var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-surface); background: var(--bg-alt); text-decoration: none; color: var(--ink); min-width: 0; overflow-wrap: break-word; }
 .thread-repost-embed:hover { border-color: var(--color-action); }
@@ -706,7 +704,7 @@ a.thread-author:hover { color: var(--color-action); }
 .thread-repost-menu button:hover { background: var(--bg-alt); }
 .thread-repost-menu button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .tre-head { font-size: var(--text-sm); color: var(--ink-700); overflow-wrap: break-word; }
-.tre-content { font-size: var(--text-sm); color: var(--ink); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: break-word; word-break: break-word; }
+.tre-content { font-size: var(--text-sm); color: var(--ink); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: break-word; }
 .thread-actions { display: flex; gap: var(--space-1); padding-top: var(--space-2); }
 .thread-act { background: none; border: none; padding: 6px var(--space-3); border-radius: var(--radius-full); cursor: pointer; color: var(--muted); display: inline-flex; align-items: center; gap: var(--space-1); min-height: 44px; min-width: 44px; justify-content: center; transition: background .2s var(--ease-out), color .2s, transform .25s var(--ease-out-expo); }
 .thread-act:hover { background: var(--bg-alt); color: var(--ink); }
@@ -780,7 +778,7 @@ a.thread-author:hover { color: var(--color-action); }
 /* h2 covers tao-lich-trinh.vue (WCAG 1.3.1 fix: was h3 with no page h2 to nest
    under); h3 kept for any other caller nesting this under a real h2. Same
    size/weight/margin regardless of level so the level bump has no visual effect. */
-.saved-plans h2, .saved-plans h3 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: 0 0 var(--space-3); }
+.saved-plans h2, .saved-plans h3 { font-size: var(--text-base); font-weight: var(--weight-semibold); line-height: var(--leading-snug); margin: 0 0 var(--space-3); text-wrap: balance; overflow-wrap: break-word; }
 .saved-plan-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; background: transparent; border: 0; border-block-end: 1px solid var(--line); border-radius: 0; margin-bottom: 0; transition: border-color .25s, background-color .25s; }
 .saved-plan-item:hover { background: var(--overlay-subtle); border-color: var(--border); }
 .saved-plan-info { flex: 1; cursor: pointer; }
@@ -803,7 +801,7 @@ a.thread-author:hover { color: var(--color-action); }
 /* h2 covers tao-lich-trinh.vue (WCAG 1.3.1 fix: was h3 with no page h2 to nest
    under); h3 kept for lich-trinh/[id].vue, which nests this under its own h2
    "Lịch trình chi tiết". Same size/margin regardless of level. */
-.route-map-section h2, .route-map-section h3 { font-size: 1.05rem; margin: 0 0 var(--space-3); }
+.route-map-section h2, .route-map-section h3 { font-size: 1.05rem; line-height: var(--leading-snug); margin: 0 0 var(--space-3); text-wrap: balance; overflow-wrap: break-word; }
 .route-map { height: 340px; border-radius: var(--radius-sheet); border: .5px solid var(--line); z-index: 0; }
 .route-marker { position: relative; }
 .route-marker::before {
@@ -822,7 +820,7 @@ a.thread-author:hover { color: var(--color-action); }
 .profile-avatar-wrap { position: absolute; bottom: -40px; left: 24px; border: 4px solid var(--card); border-radius: 50%; box-shadow: 0 2px 12px rgba(var(--black-rgb), .12); }
 .profile-avatar-wrap .avatar-xl { width: 88px; height: 88px; font-size: 1.8rem; }
 .profile-info { padding: 0 0 0 4px; }
-.profile-info h1 { margin: 0 0 var(--space-1); font-size: var(--text-xl); }
+.profile-info h1 { margin: 0 0 var(--space-1); font-size: var(--text-xl); line-height: var(--leading-snug); text-wrap: balance; overflow-wrap: break-word; }
 .profile-bio { color: var(--muted); font-size: var(--text-sm); margin: 0 0 var(--space-3); line-height: 1.5; }
 .profile-stats { display: flex; gap: var(--space-5); margin-top: var(--space-2); }
 .stat-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); transition: background .3s; }
@@ -943,17 +941,13 @@ a.thread-author:hover { color: var(--color-action); }
   }
 }
 /* Dark mode (color-mode thêm .dark; tự áp theo OS khi preference=system) */
-.dark .sidebar-card { background: var(--card); }
 .dark .hero-search input { background: var(--bg-alt); color: var(--ink); border-color: var(--line); }
 .dark .topbar-search input { background: var(--bg-alt); color: var(--ink); }
-.dark .chat-panel-input { background: var(--card); }
 .dark .chat-panel-input input { background: var(--bg-alt); color: var(--ink); }
-.dark .chat-panel-msgs .cmsg.assistant { background: var(--card); }
 .dark .thread-post { border-bottom-color: var(--overlay-light); }
 .dark .thread-post:hover { background: var(--glass-subtle); }
 .dark .thread-line { background: var(--glass-border); }
 .dark .thread-act:hover { background: var(--glass-light); }
-.dark .thread-act.active { color: var(--save-red); }
 .dark .thread-act-end.active { color: var(--color-action-hover); }
 .dark .thread-menu { background: var(--surface-2); border-color: var(--glass-border); box-shadow: 0 8px 32px rgba(var(--black-rgb), .5); }
 .dark .thread-more:hover { background: var(--overlay-light); }
@@ -964,10 +958,8 @@ a.thread-author:hover { color: var(--color-action); }
 .dark .chat-panel-input input:focus { box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .2); }
 .dark .csuggestions button { background: var(--glass-light); border-color: var(--line); }
 .dark .csuggestions button:hover { background: var(--glass-medium); border-color: var(--color-action); }
-.dark .stop-card, .dark .saved-plan-item, .dark .transport-mode, .dark .js-item { background: transparent; border-color: var(--line); }
 .dark .btn-icon-sm { background: var(--glass-light); }
 .dark .btn-icon-sm:hover { background: var(--glass-medium); }
-.dark .route-leg-info { background: transparent; }
 .dark img:not(.no-dim) { opacity: .92; }
 .dark .footer-bottom { border-top-color: var(--glass-light); }
 .dark .footer-col a:hover { color: var(--ink); }

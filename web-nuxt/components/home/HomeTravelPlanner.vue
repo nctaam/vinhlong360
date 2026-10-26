@@ -144,11 +144,11 @@ const ITINERARIES: readonly CuratedItinerary[] = [
     terroir: 'Phù Sa Cổ Chiên',
     durationLabel: '3 Ngày 2 Đêm',
     title: 'Toàn Cảnh Đất Phương Nam: Sinh Thái, Làng Nghề & Văn Hóa Tâm Linh',
-    theme: 'Đại hành trình liên kết tam giác văn hóa Vĩnh Long – Trà Vinh – Bến Tre từ sông ra biển lớn.',
+    theme: 'Đại hành trình liên kết các vùng đất di sản tỉnh Vĩnh Long thống nhất từ sông Cổ Chiên ra biển lớn.',
     stops: [
       { time: 'Ngày 1', name: 'Trọn vẹn Cù Lao An Bình & KDL Sinh thái Vinh Sang', desc: 'Vườn cây ăn trái nhiệt đới, dỡ chà bắt cá, nghỉ đêm nhà vườn sinh thái.' },
-      { time: 'Ngày 2', name: 'Vương quốc Đỏ Mang Thít → Quần thể Chùa Khmer Trà Vinh', desc: 'Viếng Chùa cổ Khmer Hạnh Phúc Tăng, Ao Bà Om, thưởng thức Bún nước lèo.' },
-      { time: 'Ngày 3', name: 'Thủy lộ Cồn Phụng sông Tiền & Xứ Dừa Bến Tre', desc: 'Đi thuyền khám phá sinh thái cồn bãi sông Tiền, kết thúc chuyến đi.' },
+      { time: 'Ngày 2', name: 'Vương quốc Đỏ Mang Thít → Vùng Di sản Chùa Khmer Cổ kính', desc: 'Viếng Chùa cổ Khmer Hạnh Phúc Tăng, Ao Bà Om, thưởng thức Bún nước lèo.' },
+      { time: 'Ngày 3', name: 'Thủy lộ Cồn Phụng sông Tiền & Xứ Dừa Phù Sa', desc: 'Đi thuyền khám phá sinh thái cồn bãi sông Tiền, kết thúc chuyến đi.' },
     ],
     to: '/lich-trinh/mien-tay-3-ngay',
   },
@@ -203,7 +203,7 @@ const activeItinerary = computed(() => {
   font-weight: var(--weight-semibold);
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.04);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .home-planner-tab-btn:hover {
@@ -234,10 +234,12 @@ const activeItinerary = computed(() => {
   border-radius: var(--radius-pill, 9999px);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
+  line-height: 1.35;
 }
 
 .home-planner-tab-btn__terroir {
   font-size: 11px;
+  line-height: 1.35;
   color: var(--alluvial-gold);
   font-weight: var(--weight-bold);
   padding: 1px 6px;
@@ -297,39 +299,6 @@ const activeItinerary = computed(() => {
   gap: var(--space-2);
 }
 
-.home-planner-card__terroir-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1h);
-  padding: 3px 10px;
-  background: color-mix(in srgb, var(--mangthit-600) 12%, transparent);
-  color: var(--mangthit-600);
-  border-radius: var(--radius-pill, 9999px);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
-}
-
-.home-planner-card__seal {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 3px 10px;
-  background: color-mix(in srgb, var(--orchard-600) 12%, transparent);
-  color: var(--orchard-600);
-  border-radius: var(--radius-pill, 9999px);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
-  border: 1px solid color-mix(in srgb, var(--orchard-600) 30%, transparent);
-}
-
-.home-planner-card__trust {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  margin-block-start: var(--space-1);
-}
-
 .home-planner-card__badge {
   display: inline-flex;
   align-items: center;
@@ -341,14 +310,17 @@ const activeItinerary = computed(() => {
   border-radius: var(--radius-pill, 9999px);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
+  line-height: 1.35;
 }
 
 .home-planner-card__title {
   margin: 0;
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: clamp(var(--text-xl), 3vw, var(--text-2xl));
   color: var(--color-text);
-  line-height: 1.25;
+  line-height: 1.28;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .home-planner-card__theme {
@@ -356,6 +328,8 @@ const activeItinerary = computed(() => {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
   line-height: 1.5;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
 }
 
 .home-planner-card__actions {
@@ -470,14 +444,7 @@ const activeItinerary = computed(() => {
 
 .home-planner-stop__desc {
   font-size: var(--text-xs);
+  line-height: 1.45;
   margin-top: 2px;
-}
-
-.home-travel-planner.sr-only {
-  display: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border: none !important;
-  min-height: 0 !important;
 }
 </style>

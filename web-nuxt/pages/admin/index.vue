@@ -79,7 +79,7 @@
     <!-- Dynamic priority alerts -->
     <div class="dash-alerts" v-if="alerts.length">
       <NuxtLink v-for="a in alerts" :key="a.type" :to="a.link" :class="['dash-alert', a.priority <= 2 ? 'warn' : a.priority <= 3 ? 'error' : 'info']">
-        <span class="dash-alert-icon">{{ a.icon }}</span>
+        <span class="dash-alert-icon" aria-hidden="true"><IconLine :name="a.icon || 'alert-triangle'" /></span>
         <span class="dash-alert-num">{{ a.count }}</span>
         <span class="dash-alert-text">{{ a.label.replace(String(a.count) + ' ', '') }}</span>
         <span class="dash-alert-arrow"><IconLine name="arrow-right" /></span>
@@ -284,6 +284,7 @@ useHead({ title: 'Bảng điều khiển — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
+const { timeAgo } = useTimeAgo()
 const { adminOpsActions: buildAdminOpsActions } = useJourneyActions()
 
 interface DashboardBackup {
@@ -402,14 +403,6 @@ function formatQualityTrendDetail(trend?: DashboardOps['quality_trend']): string
   if (failures) parts.push(`${failures} budget cần xử lý`)
   if (!parts.length && trend.sample_count) parts.push(`${trend.sample_count} snapshot 30 ngày`)
   return parts.join(' · ') || 'Ổn định'
-}
-
-function timeAgo(ts: string): string {
-  const diff = (Date.now() - new Date(ts).getTime()) / 1000
-  if (diff < 60) return 'vừa xong'
-  if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`
-  if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`
-  return `${Math.floor(diff / 86400)} ngày trước`
 }
 
 function activityLabel(a: { method: string; path: string }): string {
@@ -575,7 +568,7 @@ onMounted(fetchDashboard)
   transition: transform .25s var(--ease-soft);
 }
 .dash-stat-card:hover .dash-stat-icon { transform: scale(1.08); }
-.dash-stat-value { font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
+.dash-stat-value { font-size: 1.5rem; font-weight: 800; line-height: 1.24; font-variant-numeric: tabular-nums; }
 .dash-stat-label { font-size: .75rem; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
 .dash-delta { font-size: .7rem; font-weight: 600; color: var(--color-success); margin-left: var(--space-1); }
 
@@ -698,7 +691,7 @@ onMounted(fetchDashboard)
   display: flex; flex-direction: column; align-items: center;
   pointer-events: none;
 }
-.dash-donut-total { font-size: 1.4rem; font-weight: 800; line-height: 1.2; }
+.dash-donut-total { font-size: 1.4rem; font-weight: 800; line-height: 1.24; font-variant-numeric: tabular-nums; }
 .dash-donut-label { font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 .dash-donut-legend {
   display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: center;
@@ -737,7 +730,7 @@ onMounted(fetchDashboard)
 .dark .dash-alert.warn { background: rgba(var(--warning-rgb),.08); color: var(--color-warning); border-color: rgba(var(--warning-rgb),.15); }
 .dark .dash-alert.error { background: rgba(var(--danger-rgb),.08); color: rgb(var(--red-rgb)); border-color: rgba(var(--danger-rgb),.15); }
 .dark .dash-action { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
-.dark .dash-action:hover { border-color: var(--color-action); box-shadow: 0 4px 12px rgba(var(--black-rgb),.3); background: color-mix(in oklab, var(--color-action) 12%, var(--card)); }
+.dark .dash-action:hover { box-shadow: 0 4px 12px rgba(var(--black-rgb),.3); background: color-mix(in oklab, var(--color-action) 12%, var(--card)); }
 .dark .admin-refresh:disabled { border-color: rgba(var(--white-rgb),.12); }
 .dark .dash-chart-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .dash-chart-card:hover { box-shadow: 0 2px 12px rgba(var(--black-rgb),.2); }
@@ -767,7 +760,6 @@ onMounted(fetchDashboard)
   .dash-stat-icon { width: 36px; height: 36px; font-size: 1.1rem; }
   .dash-stat-value { font-size: 1.2rem; }
   .dash-actions { grid-template-columns: repeat(2, 1fr); }
-  .dash-chart-row { grid-template-columns: 1fr; }
   .dash-bar-row { grid-template-columns: 70px 1fr 36px; }
   .dash-bar-name { font-size: .72rem; }
 }
