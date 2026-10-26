@@ -9,6 +9,9 @@ from pathlib import Path
 import pytest
 
 
+pytestmark = pytest.mark.subprocess_heavy
+
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "run_entity_status_stage_b.ps1"
 

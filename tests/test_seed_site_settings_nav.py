@@ -108,3 +108,62 @@ def test_ham_kiem_route_that_su_biet_phan_biet():
     """Nếu `_route_exists` luôn trả True thì test trên vô dụng — chốt lại ở đây."""
     assert _route_exists("/lich-van-nien") is True
     assert _route_exists("/khong-bao-gio-co-trang-nay-2026") is False
+
+
+def test_seed_defaults_khop_editorial_fallback_khong_ai_slop():
+    """Hợp đồng chống trôi lệch nguồn chân lý (Critique #6):
+    DEFAULTS trong agent/seed_site_settings.py phải khớp với fallback điền dã
+    trên Frontend (ChatWidget.vue, AIBestTime.vue, AISearchAssist.vue, AITravelTips.vue)
+    và tuyệt đối không tái xuất hiện cụm từ AI Slop cũ."""
+    defaults = _load_defaults()
+    chat_disclaimer = defaults["chat.disclaimer"]["value"]
+    ai_disclaimer = defaults["ai.disclaimer_text"]["value"]
+    assert isinstance(chat_disclaimer, str) and chat_disclaimer
+    assert isinstance(ai_disclaimer, str) and ai_disclaimer
+
+    for forbidden in ("do AI tạo", "AI có thể sai", "Trợ lý AI", "✨"):
+        assert forbidden not in chat_disclaimer
+        assert forbidden not in ai_disclaimer
+
+    chat_vue = (ROOT / "web-nuxt" / "components" / "ChatWidget.vue").read_text(encoding="utf-8")
+    assert chat_disclaimer in chat_vue
+
+    for comp_name in ("AIBestTime.vue", "AISearchAssist.vue", "AITravelTips.vue"):
+        comp_text = (ROOT / "web-nuxt" / "components" / comp_name).read_text(encoding="utf-8")
+        assert ai_disclaimer in comp_text, f"{comp_name} lệch fallback so với seed_site_settings.py"
+
+
+def test_seed_nav_footer_synchronized_and_emoji_free():
+    """Hợp đồng đồng bộ cấu trúc điều hướng & footer giữa seed_site_settings.py và default.vue,
+    đồng thời khóa cứng không còn emoji hoặc khẩu hiệu 3 tỉnh cũ (QW-16)."""
+    import json
+    import re
+
+    defaults = _load_defaults()
+    emoji_re = re.compile(r"[\U0001F300-\U0001FAFF☀-➿⭐❤]")
+
+    raw_seed_text = (ROOT / "agent" / "seed_site_settings.py").read_text(encoding="utf-8")
+    assert not emoji_re.search(raw_seed_text), (
+        "agent/seed_site_settings.py không được chứa ký tự emoji (QW-16)"
+    )
+
+    for key in ("branding.tagline", "footer.tagline"):
+        val = defaults[key]["value"]
+        assert "Bến Tre, Trà Vinh" not in val, f"{key} còn câu khẩu hiệu 3 tỉnh cũ"
+        assert "Khám phá tỉnh Vĩnh Long" in val
+
+    assert "Trợ lý AI" not in defaults["homepage.chatbot_cta_text"]["value"]
+
+    nav_groups = defaults["navigation.nav_groups"]["value"]
+    nav_json = json.dumps(nav_groups, ensure_ascii=False)
+    assert '"/da-luu"' in nav_json and '"Đã lưu"' in nav_json
+    assert '"/dia-diem"' in nav_json and '"/bang-xep-hang"' in nav_json
+
+    footer_cols = defaults["footer.columns"]["value"]
+    titles = [c["title"] for c in footer_cols]
+    assert titles == ["Gợi ý nhanh", "Công cụ", "Khu vực", "Dành cho cơ sở"]
+
+    legal_links = defaults["footer.legal_links"]["value"]
+    assert legal_links[0] == {"to": "/gioi-thieu", "label": "Về chúng tôi"}
+
+

@@ -66,9 +66,39 @@ def has_bad_sentence_join(text: str) -> bool:
     masked = SAFE_DOT_TOKEN.sub(lambda m: m.group(0).replace(".", " "), text)
     return BAD_SENTENCE_JOIN.search(masked) is not None
 
+
+# Thực thể điểm đầu mối kết nối ngoại tỉnh (như ben-xe-mien-tay-hcm) dùng mã placeId
+# chuyên biệt để tách khỏi 124 xã/phường nội tỉnh Vĩnh Long.
+EXTERNAL_GATEWAY_PLACE_IDS: frozenset[str] = frozenset({"gateway-hcm"})
+
+
+def is_external_gateway_place_id(place_id: Any) -> bool:
+    return isinstance(place_id, str) and place_id.strip() in EXTERNAL_GATEWAY_PLACE_IDS
+
+
 def is_external_gateway(entity: dict[str, Any]) -> bool:
     attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
-    return bool(attrs.get("external_gateway"))
+    return bool(attrs.get("external_gateway")) or is_external_gateway_place_id(entity.get("placeId"))
+
+
+def classify_entity_place_link(entity: dict[str, Any], valid_place_ids: set[str]) -> str:
+    """Phân loại liên kết placeId của thực thể:
+    - 'none': thực thể không có placeId (như place hoặc festival cấp vùng)
+    - 'valid_place': placeId trỏ tới đơn vị hành chính nội tỉnh hợp lệ
+    - 'external_gateway': thực thể đầu mối ngoại tỉnh có khai báo external_gateway + placeId gateway-*
+    - 'dangling': placeId trỏ tới mã không tồn tại hoặc thiếu khai báo external_gateway
+    """
+    place_id = entity.get("placeId")
+    if not isinstance(place_id, str) or not place_id.strip():
+        return "none"
+    pid = place_id.strip()
+    if pid in valid_place_ids:
+        return "valid_place"
+    attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+    if pid in EXTERNAL_GATEWAY_PLACE_IDS and bool(attrs.get("external_gateway")):
+        return "external_gateway"
+    return "dangling"
+
 
 def image_url(value: Any) -> str:
     if isinstance(value, str) and value.startswith("http"):

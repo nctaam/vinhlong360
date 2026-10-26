@@ -1,3 +1,4 @@
 config/launch-indexing-policy.json text eol=lf
 config/ai-disclosure.json text eol=lf
 *.sh text eol=lf
+web-nuxt/nuxt.config.ts whitespace=cr-at-eol

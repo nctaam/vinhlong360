@@ -1,4 +1,4 @@
-import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { defineComponent, h, nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import EntityFeed from '../components/EntityFeed.vue'
@@ -19,6 +19,7 @@ import {
 const apiFetchMock = vi.hoisted(() => vi.fn())
 const fetchMock = vi.hoisted(() => vi.fn())
 vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
+mockNuxtImport('$fetch', () => (...args: any[]) => (globalThis as any).$fetch(...args))
 
 vi.setConfig({ hookTimeout: 30_000 })
 const mountedWrappers: Array<{ unmount: () => void }> = []
@@ -58,6 +59,7 @@ const postUgcDescriptor: ImageDescriptor = {
   full_disclosure: aiDisclosure.ugc_photo.full_disclosure,
   credit: 'Lan',
   source_url: null,
+
   width: null,
   height: null,
 }
@@ -79,6 +81,8 @@ const entityAiDescriptor: ImageDescriptor = {
   short_label: aiDisclosure.entity_ai.short_label,
   full_disclosure: aiDisclosure.entity_ai.full_disclosure,
   credit: null,
+  source_url: null,
+
 }
 
 const aiWording = /Minh họa AI|Ảnh minh họa do AI dựng|AI-generated|AI photo/i

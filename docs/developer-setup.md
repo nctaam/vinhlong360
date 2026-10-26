@@ -72,19 +72,19 @@ The `.env.example` has `DATABASE_URL=postgresql://vl360:change_me@localhost:5432
 
 ## 3. Seed the Database
 
-> ⚠️ **`--replace` is for a FRESH CLONE only** (no existing DB, or a DB you are happy to discard).
-> The DB is the source of truth and carries AdminCP write-through edits that `data.json` does not —
-> on an existing DB, `--replace` overwrites those edits with the (diverged) `data.json` snapshot.
-> If your DB has any edits: run `python scripts/backup_data.py` FIRST. See CLAUDE.md invariants
-> **B1** (snapshot before any data operation) and **B7** (`--replace` is a destructive op — never
-> run it without explicit instruction + backup).
+> ⚠️ **`--replace` is only for fresh-clone/bootstrap creation or reconstruction when no existing DB is present.**
+> Do not run it against an existing database while parity drift is unexplained.
+> The configured database is primary for backend runtime writes; `web/data.json` is a tracked export/fallback.
+> Neither current store may overwrite the other until reviewed reconciliation.
+> See CLAUDE.md invariants **B1** (snapshot before any data operation) and **B7** (`--replace` is
+> destructive; use it only with explicit instruction, a backup where applicable, and a missing DB target).
 
 ```bash
-# Fresh clone only: import data.json into SQLite (knowledge-base dev without Postgres)
+# Fresh-clone/bootstrap only: create SQLite when agent/data/vinhlong360.db does not exist
 python agent/database.py --replace
 # This creates agent/data/vinhlong360.db
 
-# Or import into PostgreSQL (set DATABASE_URL in .env first)
+# Fresh PostgreSQL bootstrap only: target database must contain no existing data
 ALLOW_DESTRUCTIVE_DB_REPLACE=1 python agent/database.py --replace
 ```
 
@@ -160,6 +160,19 @@ python scripts/validate_data.py --json
 
 # Backup before any data operation (invariant B1)
 python scripts/backup_data.py
+```
+
+### Phase A Data Contract Evidence
+
+```powershell
+# Phase A root data contracts (18 suites, Node environment)
+npm --prefix web-nuxt run test:data
+
+# Read-only SQLite/JSON audit; drift is reported without failing
+python scripts/checks/audit_data_parity.py
+
+# Strict parity mode for use after reviewed reconciliation
+python scripts/checks/audit_data_parity.py --fail-on-drift
 ```
 
 ## 8. Project Structure

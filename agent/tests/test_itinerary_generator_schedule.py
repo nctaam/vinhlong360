@@ -234,7 +234,7 @@ def test_rest_anchor_emits_synthetic_fixed_window_stop(generator_entities):
         "type": "rest",
         "summary": "Khoảng nghỉ",
     }
-    assert rests[0]["note"] == "🪑 Nghỉ/đệm thời gian"
+    assert rests[0]["note"] == "Nghỉ/đệm thời gian"
 
 
 def test_explicit_empty_meal_anchors_disable_meal_insertion(generator_entities_with_food):

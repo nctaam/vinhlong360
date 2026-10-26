@@ -127,7 +127,6 @@ def test_image_object_only_when_images_present(sample_entities):
         "name": "Ảnh minh họa",
         "type": "attraction",
         "images": ["/img/entities/editorial.webp"],
-        "attributes": {"image_type": "ai-generated", "is_verified_photo": False},
     }
     img = seo.build_entity_jsonld(editorial, {})["image"]
     assert isinstance(img, list) and img[0]["@type"] == "ImageObject"
@@ -148,8 +147,6 @@ def test_image_object_ignores_legacy_attribution_fallbacks():
         "type": "craft_village",
         "images": ["/img/entities/lang-nghe.webp"],
         "attributes": {
-            "image_type": "ai-generated",
-            "is_verified_photo": False,
             "image_author": "Nguyễn Văn A",
             "image_license": "https://creativecommons.org/licenses/by/4.0/",
         },
@@ -173,8 +170,6 @@ def test_image_object_does_not_read_per_url_legacy_credits():
         "type": "craft_village",
         "images": ["/img/entities/a.webp"],
         "attributes": {
-            "image_type": "ai-generated",
-            "is_verified_photo": False,
             "image_credits": [
                 {
                     "url": "https://cdn.example.com/a.webp",
@@ -195,20 +190,16 @@ def test_image_object_does_not_read_per_url_legacy_credits():
 def test_bo_may_ghi_cong_cap_phep_anh_khong_duoc_song_lai():
     """Bốn ký hiệu ghi-công/cấp-phép ảnh đã gỡ 2026-08-30 — đừng dựng lại.
 
-    Chúng là di tích thời dự án còn nhận ảnh từ nguồn ngoài (kho ảnh cộng đồng,
-    ảnh kho bán sẵn — R10.6 cấm gọi tên chúng ở đây). CLAUDE.md §1.5 nay chốt
-    CHỈ ảnh AI-gen, nên `_build_image_objects` trả [] vô điều kiện và cả cụm
-    thành mã chết. Các test trên chỉ khẳng định ĐẦU RA không có author/license —
-    chúng vẫn xanh nếu ai đó dựng lại bảng alias CC-BY rồi để đó không gọi, và
-    người đọc sau sẽ tưởng dự án vẫn có đường nhận ảnh ngoài. Rào này chặn đúng
-    chỗ đó: cụm phải KHÔNG TỒN TẠI, không chỉ là không được gọi.
+    Danh sách URL ảnh thô không đủ chứng minh provenance. Ảnh tư liệu hợp lệ đi
+    qua metadata có tác giả/nguồn/giấy phép và `_enrich_image_license_fields`,
+    không qua bảng alias suy đoán. Rào này giữ bộ mã chết đó không sống lại.
     """
     da_go = ("LICENSE_URL_ALIASES", "_normalise_license_url",
              "_image_credit_direct", "_image_credit_for_url")
     song_lai = [ten for ten in da_go if hasattr(seo, ten)]
     assert not song_lai, (
         "agent/seo.py dựng lại bộ máy cấp phép ảnh đã gỡ: " + ", ".join(song_lai)
-        + " — ảnh AI-gen không cần giấy phép nguồn (CLAUDE.md §1.5)."
+        + " — dùng metadata provenance đã xác thực theo CLAUDE.md §1.5."
     )
 
     # Đối chứng chống rào-rỗng: hai hàm LÁNG GIỀNG phải còn sống. Nếu ai xoá nhầm
@@ -645,8 +636,7 @@ def test_media_sitemap_includes_image_title(monkeypatch):
     data = {
         "entities": [
             {"id": "e1", "name": "Test Entity", "type": "attraction", "status": "published",
-             "verified": True, "summary": "chữ " * 130, "images": ["/img/entities/img.webp"],
-             "attributes": {"image_type": "ai-generated", "is_verified_photo": False}},
+             "verified": True, "summary": "chữ " * 130, "images": ["/img/entities/img.webp"]},
         ],
         "relationships": [],
         "itineraries": [],
@@ -672,8 +662,6 @@ def test_media_sitemap_ignores_legacy_license_credits(monkeypatch):
                 "area": "vinh-long",
                 "images": ["/img/entities/img.webp"],
                 "attributes": {
-                    "image_type": "ai-generated",
-                    "is_verified_photo": False,
                     "image_credits": [
                         {
                             "url": "/img/entities/img.webp",
@@ -701,8 +689,7 @@ def test_media_sitemap_excludes_non_public(monkeypatch):
     data = {
         "entities": [
             {"id": "e1", "name": "OK", "type": "attraction", "status": "published", "verified": True,
-             "summary": "chữ " * 130, "images": ["/img/entities/a.webp"],
-             "attributes": {"image_type": "ai-generated", "is_verified_photo": False}},
+             "summary": "chữ " * 130, "images": ["/img/entities/a.webp"]},
             {"id": "e2", "name": "Hidden", "type": "attraction", "status": "provisional", "verified": True,
              "summary": "chữ " * 130, "images": ["/img/entities/b.webp"]},
         ],
@@ -1014,7 +1001,6 @@ def test_entity_jsonld_mixed_images_filtered():
         "name": "Test",
         "type": "attraction",
         "images": ["https://example.com/unknown.jpg", None, 42, "/img/entities/ok.webp", "data:image/png;base64,xxx"],
-        "attributes": {"image_type": "ai-generated", "is_verified_photo": False},
     }
     ld = seo.build_entity_jsonld(entity, {})
     assert [image["url"] for image in ld["image"]] == [
@@ -1035,7 +1021,6 @@ def test_og_meta_uses_only_classified_ai_entity_media():
         "id": "editorial",
         "name": "Editorial",
         "images": ["/img/entities/editorial.webp"],
-        "attributes": {"image_type": "ai-generated", "is_verified_photo": False},
     })
     expected = f"{seo.SITE}/img/entities/editorial.webp"
     assert editorial["og:image"] == expected
@@ -2259,8 +2244,7 @@ def test_sitemap_media_has_caption(monkeypatch):
             {"id": "cap-e", "name": "Captioned", "type": "attraction",
              "status": "published", "verified": True,
              "summary": "Beautiful place in VL", "description": "chữ " * 130, "confidence": 0.9,
-             "images": ["/img/entities/cap-e.webp"],
-             "attributes": {"image_type": "ai-generated", "is_verified_photo": False}},
+             "images": ["/img/entities/cap-e.webp"]},
         ],
         "relationships": [],
         "itineraries": [],

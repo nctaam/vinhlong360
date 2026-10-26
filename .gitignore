@@ -43,6 +43,7 @@ temp_analysis.txt
 # Local verification scratch (regenerable; keep out of the source tree)
 .tmp-*
 .tmp-*/
+.tmp/pytest/
 .pytest-*
 .pytest-*/
 *.pytest-*
@@ -72,8 +73,11 @@ scratch-axe-detail.json
 # Generated from maplibre-gl dependency during frontend install/build.
 web-nuxt/public/maplibre-gl-csp-worker.js
 web-nuxt/public/maplibre-gl-csp.js
+web-nuxt/public/maplibre-gl-loader.mjs
+web-nuxt/public/maplibre-gl-shared.mjs
+web-nuxt/public/maplibre-gl-worker.mjs
+web-nuxt/public/maplibre-gl.mjs
 web-nuxt/public/maplibre-gl.css
 
 # Local Stitch design cache
 .stitch/
-

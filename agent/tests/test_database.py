@@ -1323,6 +1323,16 @@ def test_search_entities_by_area(db):
     assert "a1" in ids
 
 
+def test_search_entities_current_vinh_long_includes_legacy_provenance_buckets(db):
+    db.upsert_entity(_entity(eid="current-vl", etype="dish", area="vinh-long"))
+    db.upsert_entity(_entity(eid="current-bt", etype="dish", area="ben-tre"))
+    db.upsert_entity(_entity(eid="current-tv", etype="dish", area="tra-vinh"))
+
+    ids = {item["id"] for item in db.search_entities(area="vinh-long")}
+
+    assert {"current-vl", "current-bt", "current-tv"} <= ids
+
+
 def test_search_entities_excludes_place(db):
     db.upsert_entity(_entity(eid="p1", etype="place", name="Xã A"))
     db.upsert_entity(_entity(eid="d1", etype="dish", name="Xã A dish"))

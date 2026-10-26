@@ -44,9 +44,13 @@ The Vĩnh Long 360 testing infrastructure safeguards the platform's editorial cr
    - When external data (weather, tides, or field sensors) is missing or unavailable, the system must cleanly collapse the view rather than render empty boxes, skeleton placeholders, or fabricated fallback metrics.
 4. **Data Authenticity & Invariance**:
    - 100% of displayed entities must stem from verified SQLite and JSON records (`vinhlong360.db` and `data.json`).
-   - Bit-for-bit SHA-256 hash preservation is strictly enforced.
+   - For every protected read-only test run, bit-for-bit SHA-256 equality between the immediately captured before/after values is strictly enforced; this does not define one eternal approved content hash.
 5. **Absolute Zero Audio, Zero Video Policy**:
    - Complete prohibition of `<audio>`, `<video>`, `.mp3`, `.mp4`, `.webm`, autoplay media, or background soundtracks across all public surfaces.
+6. **Repository-local pytest workspace**:
+   - The repository config sets `--basetemp=.tmp/pytest` so Windows hosts with an inaccessible `AppData\Local\Temp\pytest-of-*` directory can still create `tmp_path` fixtures.
+   - The local scratch directory is ignored by Git and must never resolve under `agent/data`.
+   - Run the normal local suite with `python -m pytest -q`; override with `--basetemp` only when a parallel or CI runner supplies its own isolated workspace.
 
 ---
 
@@ -92,9 +96,7 @@ Every primary requirement is verified with at least 5 dedicated, automated test 
 - **F5.1: Zero Audio / Zero Video Invariant**: Absolute prohibition of audio/video elements across templates, layouts, and components.
 - **F5.2: Extreme Accessibility WCAG 2.2 AAA**: Text contrast `>= 7:1` on background canvas/surface; `>= 14:1` in high-glare outdoor mode.
 - **F5.3: Interactive Touch Target Minimums**: 100% buttons, chips, and links meet `>= 44x44px`.
-- **F5.4: SHA-256 Immutability**:
-  - `agent/data/vinhlong360.db`: `8b093b9537711ef6c060a4b5a49e4228cf11b840862b20647009254cc19ac5cf`
-  - `web/data.json`: `45e528447c08205c774695acae1c9a7a4c8e9a535fc7a945e3a7120360d598c8`
+- **F5.4: Read-Only SHA-256 Invariance**: Tests record the SHA-256 values for `agent/data/vinhlong360.db` and `web/data.json` immediately before and after a read-only operation, and require each before/after pair to be equal. No dated file-content hash is a live contract.
 - **F5.5: 9 Protected Variables Under `[data-home-pilot="nocturne-b1"]`**: Preserves `--home-color-amber-text`, `--home-color-amber-surface`, `--home-color-focus-on-action`, `--home-color-focus-on-media`, `--home-color-focus-on-media-halo`, `--home-color-on-media-text`, `--home-color-on-media-plate`, `--home-color-today-text`, `--home-color-today-surface`.
 
 ---
@@ -129,7 +131,7 @@ Probes edge limits, extreme input sizes, boundary transitions, and error resilie
 | **B5.2** | R5 Safety | Negative or undersized touch target dimensions | Rejects dimensions `< 44px` |
 | **B5.3** | R5 Safety | Malicious CSS overrides hidden in comments | Detects and blocks illicit style resets |
 | **B5.4** | R5 Safety | Hex color syntax case-insensitivity & validity | Validates hex codes across variables |
-| **B5.5** | R5 Safety | SHA-256 hash constant immutability | 64-char hex integrity checked against tampering |
+| **B5.5** | R5 Safety | Read-only SHA-256 before/after equality | Rejects an audit whose protected-input hash changes during the operation |
 
 ---
 

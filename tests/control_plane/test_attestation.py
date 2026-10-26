@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import shutil
+import uuid
+
 import pytest
 
 from agent.control_plane.attestation import (
@@ -20,12 +23,29 @@ DIGEST = "a" * 64
 SIGNED_AT = "2026-09-02T00:00:00+00:00"
 
 
+def _external_owner_key(tmp_path_factory, request, *, material=b"owner-key-material-0123456789abcdefghij"):
+    from agent.control_plane.attestation import _REPO_ROOT
+
+    base_parent = tmp_path_factory.getbasetemp().resolve().parent
+    try:
+        base_parent.relative_to(_REPO_ROOT)
+    except ValueError:
+        key_parent = base_parent
+    else:
+        key_parent = _REPO_ROOT.parent
+    key_dir = key_parent / f"attestation-test-owner-{uuid.uuid4().hex}"
+    key_dir.mkdir(parents=True, exist_ok=False)
+    request.addfinalizer(lambda: shutil.rmtree(key_dir, ignore_errors=True))
+    owner_key = key_dir / "owner.key"
+    owner_key.write_bytes(material)
+    return owner_key
+
+
 @pytest.fixture
-def references(tmp_path, monkeypatch):
+def references(tmp_path_factory, monkeypatch, request):
     """Provide one authorised key per role, with owner and CI held off-machine."""
 
-    owner_key = tmp_path / "owner.key"
-    owner_key.write_bytes(b"owner-key-material-0123456789abcdefghij")
+    owner_key = _external_owner_key(tmp_path_factory, request)
     # Một runner Actions thật công bố CẢ MỘT BỘ định danh mạch lạc. Chỉ
     # `GITHUB_ACTIONS=true` thì shell nào cũng export được, nên nó không bao giờ
     # phân biệt được custody CI với một tiến trình local — đúng thứ mà
@@ -243,7 +263,7 @@ def test_a_signed_attestation_declares_the_hmac_scheme(references):
 # `GITHUB_ACTIONS=true` — một chuỗi tự khai mà shell nào cũng export được.
 
 
-def test_offline_owner_custody_refuses_a_relative_reference(tmp_path, monkeypatch):
+def test_offline_owner_custody_refuses_a_relative_reference(tmp_path, tmp_path_factory, monkeypatch, request):
     """Khoá owner tương đối là một FILE KHÁC NHAU tuỳ chỗ khởi động trình thông dịch."""
     key = tmp_path / "owner.key"
     key.write_bytes(b"owner-key-material-0123456789abcdefghij")
@@ -251,7 +271,9 @@ def test_offline_owner_custody_refuses_a_relative_reference(tmp_path, monkeypatc
 
     assert resolve_key("offline-owner:owner.key") is None
     # Cùng vật liệu đó, khai bằng đường dẫn tuyệt đối ngoài checkout, thì được.
-    assert resolve_key(f"offline-owner:{key}") is not None
+    external = _external_owner_key(tmp_path_factory, request)
+    external.write_bytes(key.read_bytes())
+    assert resolve_key(f"offline-owner:{external}") is not None
 
 
 def test_offline_owner_custody_refuses_material_inside_the_checkout(tmp_path):

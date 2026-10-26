@@ -6,6 +6,13 @@ import { describe, expect, it } from 'vitest'
 
 const configPath = resolve(process.cwd(), 'nuxt.config.ts')
 const buildWrapperPath = resolve(process.cwd(), '..', 'scripts', 'build-prerender.sh')
+const mapLibreAssetPaths = [
+  '/maplibre-gl-loader.mjs',
+  '/maplibre-gl.mjs',
+  '/maplibre-gl-shared.mjs',
+  '/maplibre-gl-worker.mjs',
+  '/maplibre-gl.css',
+]
 
 interface LaunchOutputAuditInput {
   readonly publicFiles: readonly string[]
@@ -29,7 +36,7 @@ function auditLaunchOutput(input: LaunchOutputAuditInput): void {
       headers?.['cache-control'] !== undefined
       && !(
         (path === '/_nuxt/**' && headers['cache-control'] === 'public, max-age=31536000, immutable')
-        || (path === '/maplibre-gl-csp-worker.js' && headers['cache-control'] === 'no-cache, must-revalidate')
+        || (mapLibreAssetPaths.includes(path) && headers['cache-control'] === 'no-cache, must-revalidate')
       )
     ) {
       throw new Error(`launch build emitted a policy-bearing cache rule: ${path}`)
@@ -42,6 +49,9 @@ const cleanOutputFixture: LaunchOutputAuditInput = {
   routeRules: {
     '/api/**': { proxy: 'http://backend/api/**' },
     '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+    ...Object.fromEntries(mapLibreAssetPaths.map(path => [path, {
+      headers: { 'cache-control': 'no-cache, must-revalidate' },
+    }])),
     '/**': { headers: { 'X-Content-Type-Options': 'nosniff' } },
   },
 }
@@ -61,7 +71,7 @@ describe('launch cache isolation', () => {
     const nitroRules = config.slice(config.indexOf('    routeRules:', config.indexOf('  nitro:')))
 
     expect(nitroRules).toContain("'/_nuxt/**'")
-    expect(nitroRules).toContain("'/maplibre-gl-csp-worker.js'")
+    for (const path of mapLibreAssetPaths) expect(nitroRules).toContain(`'${path}'`)
     expect(nitroRules).toContain("'no-cache, must-revalidate'")
     expect(nitroRules).toContain("'/**'")
     expect(nitroRules).toContain('immutable')

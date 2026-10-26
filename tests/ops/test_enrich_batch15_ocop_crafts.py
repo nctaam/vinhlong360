@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Unit tests for Batch 15 OCOP products & craft specialties enrichment."""
-import pytest
 from scripts.ops.enrich_batch15_ocop_crafts import BATCH15_DATA, apply_batch15_enrichment
 
 

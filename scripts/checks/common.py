@@ -35,10 +35,13 @@ _SKIP_DIRS = {".git", "node_modules", ".nuxt", ".output", "dist", "__pycache__",
 
 
 def repo_root() -> Path:
-    out = subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True, check=True
-    )
-    return Path(out.stdout.strip())
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True, check=True
+        )
+        return Path(out.stdout.strip())
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return Path(__file__).resolve().parents[2]
 
 
 def staged_files(root: Path | None = None) -> list[str]:
@@ -70,7 +73,7 @@ def _prune_walk_directories(
     kept_directories = []
     for dirname in sorted(directories):
         relative = _norm(str((current_path / dirname).relative_to(root)))
-        if dirname in _SKIP_DIRS or _is_excluded(relative, excluded_paths):
+        if dirname in _SKIP_DIRS or dirname.startswith(".output") or relative == "agent/data" or _is_excluded(relative, excluded_paths):
             continue
         kept_directories.append(dirname)
     directories[:] = kept_directories
@@ -232,3 +235,19 @@ def ratchet_violations(results: list[dict], baseline: dict) -> tuple[list[str], 
                 f'{r["rule"]} ({r["check"]}): {r["count"]} < baseline {base} — chạy baseline_tool --write để ghi nhận tiến bộ.'
             )
     return blockers, suggestions
+
+
+_JSON_CACHE: dict[tuple[str, int, int], dict] = {}
+
+
+def load_json_cached(path: Path) -> dict:
+    st = path.stat()
+    key = (str(path.resolve()), st.st_mtime_ns, st.st_size)
+    cached = _JSON_CACHE.get(key)
+    if cached is not None:
+        return cached
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if len(_JSON_CACHE) >= 8:
+        _JSON_CACHE.clear()
+    _JSON_CACHE[key] = data
+    return data

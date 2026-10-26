@@ -49,6 +49,8 @@ ALLOWLIST đang RỖNG và nên giữ rỗng: gặp báo nhầm thì siết rule
 from __future__ import annotations
 
 import ast
+import importlib.util
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -62,6 +64,65 @@ SCAN_ROOTS = ("tests", "agent/tests", "scripts/tests")
 # {đường-dẫn-tương-đối: lý do}. Mỗi mục là một lỗ hổng đã biết — phải ghi lý do cụ
 # thể, không được dùng để làm im tiếng chuông.
 ALLOWLIST: dict[str, str] = {}
+
+
+def _load_root_conftest():
+    spec = importlib.util.spec_from_file_location(
+        "vinhlong360_root_conftest_contract", ROOT / "conftest.py"
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_pytest_singleton_uses_host_temporary_sqlite_database():
+    """Pytest must never bind the runtime SQLite file to ``database.db``."""
+    import database
+
+    singleton_path = Path(database.db.db_path).resolve()
+    protected_path = (ROOT / "agent" / "data" / "vinhlong360.db").resolve()
+    temporary_root = Path(tempfile.gettempdir()).resolve()
+
+    assert database.db._use_pg is False
+    assert database.db._dsn is None
+    assert singleton_path != protected_path
+    assert temporary_root in singleton_path.parents
+
+
+def test_package_qualified_database_uses_the_pytest_singleton():
+    """Package-qualified imports must not construct a second default singleton."""
+    import database
+    from agent import database as package_database
+
+    assert package_database.db is database.db
+
+
+def test_pytest_configure_rejects_temporary_directory_under_agent_data(monkeypatch):
+    """A hostile TEMP/TMP configuration must fail before binding the singleton."""
+    import database
+
+    conftest = _load_root_conftest()
+    original_values = (
+        database.DATABASE_URL,
+        database.USE_PG,
+        database.DB_PATH,
+        database.db,
+    )
+    unsafe_temp_directory = ROOT / "agent" / "data" / "pytest-temp"
+    monkeypatch.setattr(
+        conftest.tempfile, "mkdtemp", lambda **_kwargs: str(unsafe_temp_directory)
+    )
+    try:
+        with pytest.raises(pytest.UsageError, match="agent/data"):
+            conftest.pytest_configure(None)
+    finally:
+        (
+            database.DATABASE_URL,
+            database.USE_PG,
+            database.DB_PATH,
+            database.db,
+        ) = original_values
 
 
 def _iter_test_files():

@@ -17,6 +17,7 @@ mockNuxtImport('useAuth', () => () => ({
 }))
 mockNuxtImport('useToast', () => () => ({ show: mocks.showToast }))
 mockNuxtImport('downloadBlob', () => mocks.downloadBlob)
+mockNuxtImport('$fetch', () => (...args: any[]) => (globalThis as any).$fetch(...args))
 
 async function flushUi() {
   await new Promise(resolve => setTimeout(resolve, 0))

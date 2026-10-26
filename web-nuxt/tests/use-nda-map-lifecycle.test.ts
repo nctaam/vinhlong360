@@ -127,7 +127,7 @@ describe('useNDAMap lifecycle boundary', () => {
       isActive: () => true,
       onStateChange,
     })
-    expect(mocks.setWorkerUrl).toHaveBeenCalledWith('/maplibre-gl-csp-worker.js')
+    expect(mocks.setWorkerUrl).toHaveBeenCalledWith('/maplibre-gl-worker.mjs')
     const errorHandler = mocks.addListener.mock.calls.find(call => call[0] === 'error')?.[1] as ((event: { error?: unknown }) => void) | undefined
     errorHandler?.({ error: new Error('WebGL context lost') })
 

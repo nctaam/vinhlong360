@@ -1,6 +1,6 @@
 # Hướng dẫn tạo nội dung chất lượng cao
 
-> STATUS: active (2026-09-15) — Hướng dẫn sáng tác nội dung biên tập di sản chất lượng cao và quy tắc ảnh AI.
+> STATUS: active (2026-09-21) — Hướng dẫn sáng tác nội dung biên tập di sản chất lượng cao và quy tắc provenance ảnh.
 
 > Ngày cập nhật: 07/07/2026 | Dành cho: người nhập liệu, quản trị nội dung
 > Tài liệu này hướng dẫn cách tạo và chỉnh sửa nội dung entity trên vinhlong360.vn
@@ -21,11 +21,12 @@
 
 | Nguồn | Cho phép | Lý do |
 |-------|----------|-------|
-| AI-generated (cx/gpt-5.5-image, qua `scripts/gen_image.py`) | **NGUỒN DUY NHẤT** | Chốt chủ dự án: CHỈ ảnh AI-gen. Sạch bản quyền, phong cách nhất quán; luôn kèm nhãn "minh hoạ AI", không giả làm ảnh chụp thật |
+| AI-generated (cx/gpt-5.5-image, qua `scripts/gen_image.py`) | **CO** | Luôn kèm nhãn "minh hoạ AI", dùng `image_type=ai-generated`, không đặt `is_verified_photo=true` và không giả làm ảnh chụp thật |
+| Báo chí / tư liệu / cơ quan chính thức | **CO DIEU KIEN** | Chỉ re-host khi có căn cứ quyền sử dụng; bắt buộc ghi tác giả, cơ quan nguồn, giấy phép/phạm vi sử dụng, URL truy vết và hiển thị credit tác giả/nguồn |
 | UGC (người dùng tải lên) | **KHONG DUNG** | Chốt chủ dự án 2026 (override hướng dẫn cũ): không gắn ảnh người dùng vào entity |
 | Pexels / Unsplash / stock photo | **KHONG DUNG** | Bị cấm theo chốt ảnh; ảnh generic, không chính xác cho địa phương cụ thể |
 | Wikimedia | **KHONG DUNG** | Bị cấm theo chốt ảnh |
-| Lấy từ Google Maps / website khác | **KHONG DUNG** | Vi phạm bản quyền |
+| Google Maps / website khác không có quyền rõ ràng | **KHONG DUNG** | Không cào, hotlink hoặc sao chép chỉ vì ảnh đang hiển thị công khai |
 
 ### 1.3 Yêu cầu tối thiểu mỗi entity
 
@@ -220,11 +221,11 @@ python3 scripts/validate_data.py
 
 ---
 
-## 5. Ảnh AI-generated
+## 5. Ảnh entity và provenance
 
-### 5.1 Cách tạo ảnh
+### 5.1 Tạo ảnh AI-generated
 
-Đường tạo ảnh **DUY NHẤT**: `python scripts/gen_image.py --prompt "..." --out web-nuxt/public/img/x.webp` (endpoint cx/gpt-5.5-image, cần `IMAGE_API_KEY` trong env). Không dùng nguồn ảnh nào khác (xem §1.2).
+Đường tạo ảnh AI chuẩn: `python scripts/gen_image.py --prompt "..." --out web-nuxt/public/img/x.webp` (endpoint cx/gpt-5.5-image, cần `IMAGE_API_KEY` trong env). Ảnh tạo ra phải giữ nhãn minh hoạ, dùng `image_type=ai-generated` và không được đặt `is_verified_photo=true`.
 
 ### 5.2 Template prompt
 
@@ -246,20 +247,36 @@ A photograph of [tên entity], [vị trí cụ thể — xã/phường thật], 
 | Sản phẩm OCOP | "Product photography of Vietnamese coconut candy (keo dua) from Ben Tre. Wrapped candies arranged on banana leaf, rustic wooden table. Studio lighting, clean background." |
 | Làng nghề | "Documentary photograph of traditional pottery making in Vinh Long, Mekong Delta. Artisan shaping clay on wheel, kiln in background. Natural ambient light." |
 
-### 5.3 Quy trình duyệt ảnh
+### 5.3 Ảnh báo chí / tư liệu / chính thức
 
-1. Ảnh AI-generated được tải lên hệ thống
-2. Admin vào `/admin/duyet-anh` để duyệt
-3. Kiểm tra: ảnh có phù hợp với entity không, có đúng đặc thù cảnh quan Vĩnh Long không (người bản địa nhận ra ngay cảnh "không có thật ở đây" — lỗi tay/chữ biển hiệu/hoạ tiết Khmer-gốm phải loại)
-4. Phê duyệt hoặc từ chối (có thể yêu cầu tạo lại với prompt khác)
-5. Ảnh đã duyệt tự động gắn vào entity
+Chỉ nhập ảnh khi hồ sơ quyền sử dụng cho phép re-host. Mỗi entity có ảnh loại này phải lưu đủ:
 
-### 5.4 Luu y quan trong
+- `image_type`: `documentary`, `journalistic`, `official` hoặc `press`
+- `image_author`: tên tác giả/nhiếp ảnh gia hoặc credit chính thức
+- `image_source`: tên cơ quan báo chí/đơn vị phát hành
+- `image_license`: giấy phép, văn bản cho phép hoặc phạm vi sử dụng được công bố
+- URL truy vết: `image_source_url`, URL trong `source`, hoặc `source_citations`
+- `is_verified_photo=true` chỉ khi đây thực sự là ảnh chụp/tư liệu, không dùng cho ảnh AI
 
-- **KHONG** dùng ảnh stock (Pexels, Unsplash), Wikimedia, hay ảnh UGC người dùng tải lên — chốt chủ dự án: CHỈ AI-generated
-- **KHONG** lấy ảnh từ Google Maps hay website khác — vi phạm bản quyền
+Trang chi tiết phải hiển thị ít nhất `Ảnh: [tác giả] · Nguồn: [cơ quan]`. Việc dẫn nguồn không tự tạo ra quyền sử dụng: nếu giấy phép không cho phép sao chép/re-host thì chỉ dẫn link bài gốc, không tải ảnh về hệ thống.
+
+### 5.4 Quy trình duyệt ảnh
+
+1. Xác định loại ảnh: AI hay báo chí/tư liệu/chính thức.
+2. Kiểm tra ảnh phù hợp với đúng entity và đúng đặc thù cảnh quan Vĩnh Long; loại ảnh AI có lỗi tay/chữ biển hiệu/hoạ tiết hoặc cảnh "không có thật ở đây".
+3. Với ảnh báo chí/tư liệu: đối chiếu quyền sử dụng, tác giả, nguồn, giấy phép và URL truy vết trước khi gắn ảnh.
+4. Kiểm tra phân loại và disclosure: AI phải có nhãn minh hoạ; ảnh chụp phải có credit tác giả/nguồn.
+5. Chỉ publish sau khi toàn bộ metadata bắt buộc đã được lưu và hiển thị đúng.
+
+`/admin/duyet-anh` hiện chỉ phục vụ hàng đợi tồn từ pipeline cũ; không coi việc ảnh xuất hiện trong hàng đợi là bằng chứng rằng ảnh có quyền sử dụng.
+
+### 5.5 Luu y quan trong
+
+- **KHONG** dùng ảnh stock (Pexels, Unsplash), Wikimedia hay ảnh UGC người dùng tải lên
+- **KHONG** lấy ảnh từ Google Maps hoặc website khác khi chưa có quyền re-host rõ ràng
 - Ảnh AI **không được giả làm ảnh chụp thật**: giữ nhãn minh hoạ, KHÔNG giả EXIF/credit/tác giả
-- Mỗi ảnh AI phải được con người duyệt trước khi hiển thị public
+- Ảnh báo chí/tư liệu phải giữ credit tác giả/nguồn và hồ sơ quyền sử dụng truy vết được
+- Mỗi ảnh phải được con người duyệt trước khi hiển thị public
 - Ảnh entity nên có tỉ lệ 16:9 hoặc 4:3, độ phân giải tối thiểu 800x600
 
 ---

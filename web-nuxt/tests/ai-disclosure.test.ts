@@ -552,7 +552,7 @@ describe('parseAiDisclosure', () => {
   it.each([
     ['null root', null],
     ['array root', []],
-    ['scalar root', 'ai-disclosure-v1'],
+    ['scalar root', 'media-disclosure-v2'],
   ])('rejects a non-object JSON root: %s', (_name, candidate) => {
     expect(() => parseAiDisclosure(candidate)).toThrow(/root.*plain JSON object/i)
   })

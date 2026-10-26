@@ -469,10 +469,10 @@ class TestGenerateItinerary:
         assert out["days"] == 1
 
     def test_default_interests_and_areas(self, kb_itinerary):
-        # interests=None → ["tong_hop"]; areas=None → cả 3 vùng
+        # interests=None → ["tong_hop"]; areas=None → toàn tỉnh hiện hành
         out = ig.generate_itinerary(days=1)
         assert out["interests"] == ["tong_hop"]
-        assert out["areas"] == ["vinh-long", "ben-tre", "tra-vinh"]
+        assert out["areas"] == ["vinh-long"]
 
     def test_one_day_five_stops(self, kb_itinerary):
         # 1 ngày → stops_per_day=5; vinh-long có đủ >=5 content entity
@@ -492,10 +492,11 @@ class TestGenerateItinerary:
             assert len(base_stops) <= 4
 
     def test_area_filter_excludes_other_areas(self, kb_itinerary):
-        # chỉ chọn vinh-long → không có entity ben-tre/tra-vinh lọt vào
+        # Vĩnh Long hiện hành bao gồm các bucket provenance cũ.
         out = ig.generate_itinerary(days=1, interests=["tong_hop"], areas=["vinh-long"])
         all_ids = [s["entity"]["id"] for dp in out["day_plans"] for s in dp["stops"]]
-        assert all(not i.startswith("bt-") and not i.startswith("tv-") for i in all_ids)
+        assert all_ids
+        assert all(i in kb_itinerary for i in all_ids)
 
     def test_orphan_without_place_excluded(self, kb_itinerary):
         # entity 'orphan' confidence rất cao nhưng không có placeId → phải bị loại

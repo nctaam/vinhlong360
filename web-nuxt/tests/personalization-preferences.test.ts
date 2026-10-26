@@ -26,6 +26,7 @@ vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
 mockNuxtImport('useAuth', () => () => authState)
 mockNuxtImport('useFeature', () => () => ({ enabled: () => true }))
 mockNuxtImport('useSiteSettings', () => () => ({ get: () => ({}) }))
+mockNuxtImport('$fetch', () => (...args: any[]) => (globalThis as any).$fetch(...args))
 
 const defaultSnapshot: PreferenceSnapshot & { location_reconfirm_required: boolean } = {
   region_id: null,

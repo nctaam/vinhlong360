@@ -317,7 +317,7 @@ KHÔNG ĐƯỢC sửa: agent/**, web-nuxt/{components,pages,composables}/**,
 ## Quy tắc
 - B1: python scripts/backup_data.py TRƯỚC MỌI thao tác dữ liệu
 - B6: không re-host nội dung có bản quyền
-- Ảnh: CHỈ AI-generated (cx/gpt-5.5-image) — KHÔNG stock/UGC/Wikimedia
+- Ảnh: AI phải ghi nhãn; ảnh báo chí/tư liệu chỉ dùng khi đủ quyền + tác giả + nguồn + giấy phép + URL — KHÔNG stock/UGC/Wikimedia
 
 ## Commit: Branch session-content, format [Content] <mô tả>. KHÔNG push/merge.
 

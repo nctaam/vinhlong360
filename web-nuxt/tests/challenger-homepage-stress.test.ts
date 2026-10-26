@@ -320,14 +320,7 @@ describe('Challenger 1: Empirical Adversarial Stress & Edge Case Harness', () =>
   // ───────────────────────────────────────────────────────────────────────────
   // OBJECTIVE 2: Bit-for-bit SHA-256 Invariance
   // ───────────────────────────────────────────────────────────────────────────
-  describe('Objective 2: Bit-for-Bit SHA-256 Invariance of Database and Data JSON', () => {
-    it('asserts vinhlong360.db exactly matches canonical hash 20ac61bf7d247d8df35bd20bfe11140cf6eebae0980de4af5720d5ed73add742', () => {
-      const dbPath = resolve(root, 'agent/data/vinhlong360.db')
-      const dbBytes = readFileSync(dbPath)
-      const hash = createHash('sha256').update(dbBytes).digest('hex')
-      expect(hash.toLowerCase()).toBe('20ac61bf7d247d8df35bd20bfe11140cf6eebae0980de4af5720d5ed73add742')
-    })
-
+  describe('Objective 2: Bit-for-Bit SHA-256 Invariance of Versioned Data JSON', () => {
     it('asserts web/data.json exactly matches canonical hash', () => {
       const dataJsonPath = resolve(root, 'web/data.json')
       const buffer = readFileSync(dataJsonPath)

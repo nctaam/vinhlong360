@@ -33,7 +33,7 @@ def _public_address(port: int) -> ph.ResolvedAddress:
 def _pinned_response(content: bytes) -> ph.PinnedResponse:
     return ph.PinnedResponse(
         200,
-        "https://nominatim.openstreetmap.org/search",
+        "https://mapapis.openmap.vn/v1/geocode/forward",
         (("content-type", "application/json; charset=utf-8"),),
         content,
         (),
@@ -57,6 +57,7 @@ def _isolate(tmp_path, monkeypatch):
         },
     )
     monkeypatch.setattr(geocode, "_last_request", [0.0])
+    monkeypatch.delenv("NDA_MAP_KEY", raising=False)
     yield
 
 
@@ -215,12 +216,12 @@ class TestPinnedNominatimEgress:
         )
 
         assert geocode._query_nominatim("Bảo tàng Bến Tre") == [10.236, 106.387]
-        assert resolved == [("nominatim.openstreetmap.org", 443)]
+        assert resolved == [("mapapis.openmap.vn", 443)]
         assert len(requested) == 1
         assert str(requested[0].url) == (
-            "https://nominatim.openstreetmap.org/search?format=jsonv2&"
-            "q=B%E1%BA%A3o+t%C3%A0ng+B%E1%BA%BFn+Tre&limit=1&"
-            "viewbox=105.7%2C10.55%2C106.85%2C9.4&bounded=1"
+            "https://mapapis.openmap.vn/v1/geocode/forward?"
+            "address=B%E1%BA%A3o+t%C3%A0ng+B%E1%BA%BFn+Tre&"
+            "bounds=105.7%2C10.55%2C106.85%2C9.4"
         )
         assert requested[0].headers["user-agent"] == geocode.USER_AGENT
         assert requested[0].headers["accept-encoding"] == "gzip, identity"
@@ -232,7 +233,7 @@ class TestPinnedNominatimEgress:
                 inactivity_timeout_seconds=15.0,
                 total_timeout_seconds=15.0,
                 max_redirects=2,
-                allowed_origins=("https://nominatim.openstreetmap.org",),
+                allowed_origins=("https://mapapis.openmap.vn",),
             )
         ]
 
@@ -269,11 +270,11 @@ class TestPinnedNominatimEgress:
         with caplog.at_level("WARNING", logger="security.egress"):
             assert geocode._query_nominatim("somewhere") is None
 
-        assert resolved == [("nominatim.openstreetmap.org", 443)]
-        assert [url.host for url in requested] == ["nominatim.openstreetmap.org"]
+        assert resolved == [("mapapis.openmap.vn", 443)]
+        assert [url.host for url in requested] == ["mapapis.openmap.vn"]
         records = [record for record in caplog.records if record.name == "security.egress"]
         assert len(records) == 1
         assert records[0].getMessage() == (
             "Pinned egress denied consumer=geocode reason=redirect_policy "
-            "target=https://nominatim.openstreetmap.org:443 hop=0"
+            "target=https://mapapis.openmap.vn:443 hop=0"
         )

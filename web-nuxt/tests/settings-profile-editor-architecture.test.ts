@@ -1,3 +1,4 @@
+import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ref } from 'vue'
 import {
@@ -5,6 +6,8 @@ import {
   ALLOWED_PROFILE_IMG,
   MAX_PROFILE_IMG_SIZE,
 } from '../composables/useSettingsProfileEditor'
+
+mockNuxtImport('$fetch', () => (...args: any[]) => (globalThis as any).$fetch(...args))
 
 describe('Moc 168: Settings Profile Editor Composable Architecture', () => {
   const fetchMock = vi.fn()

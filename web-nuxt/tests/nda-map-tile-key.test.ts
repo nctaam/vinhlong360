@@ -44,7 +44,7 @@ beforeEach(() => {
 })
 
 describe('useNDAMap tile key handling', () => {
-  it('starts on the OpenStreetMap fallback instead of requesting a keyless tile style', async () => {
+  it('starts on the OpenMap.vn vector fallback instead of requesting a keyless tile style', async () => {
     setKey('')
     const { createMap } = useNDAMap()
 
@@ -53,7 +53,8 @@ describe('useNDAMap tile key handling', () => {
     expect(result).not.toBeNull()
     const options = mocks.constructMap.mock.calls[0]![0] as { style: unknown }
     expect(typeof options.style).toBe('object')
-    expect(JSON.stringify(options.style)).toContain('tile.openstreetmap.org')
+    expect(JSON.stringify(options.style)).toContain('maptiles.openmap.vn/data/base.json')
+    expect(JSON.stringify(options.style)).not.toContain('tile.openstreetmap.org')
     expect(JSON.stringify(options.style)).not.toContain('apikey')
   })
 

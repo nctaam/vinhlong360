@@ -8,13 +8,14 @@ FE code (.vue/.ts): mọi match đều là vi phạm (không có whitelist).
 """
 from __future__ import annotations
 
-import json
 import re
 from pathlib import Path
 
-from .common import iter_text_files, repo_root
+from .common import iter_text_files, load_json_cached, repo_root
 
 PAT = re.compile(r"tỉnh (Bến Tre|Trà Vinh)")
+AGENT_PAT = re.compile(r"tỉnh (Bến Tre|Trà Vinh)|Vĩnh Long\s*,\s*Bến Tre\s*,\s*Trà Vinh|Vĩnh Long Bến Tre Trà Vinh")
+HISTORICAL_CTX_RE = re.compile(r"trước 7-2025|trước 07/2025|\bcũ\b|sáp nhập|hợp nhất", re.I)
 WHITELIST_REL = "docs/standards/whitelist-tinh-cu.txt"
 DATA_REL = "web/data.json"
 
@@ -90,7 +91,7 @@ def _data_occurrences(root: Path):
     path = root / DATA_REL
     if not path.exists():
         return
-    data = json.loads(path.read_text(encoding="utf-8"))
+    data = load_json_cached(path)
     for entity in data.get("entities", []):
         yield from _entity_occurrences(entity)
     for itinerary in data.get("itineraries", []):
@@ -142,9 +143,35 @@ class TinhCuCheck:
                                        "msg": "tỉnh cũ trong FE code — dùng khung tỉnh-mới (§1.6)"})
         return violations
 
+    def _be_files(self, norm: list[str] | None) -> list[str]:
+        return (
+            iter_text_files(self.root, ["*.py"], ["agent"], ["agent/tests", "agent/scripts", "agent/__pycache__"])
+            if norm is None
+            else [
+                f for f in norm
+                if f.startswith("agent/") and f.endswith(".py")
+                and not f.startswith("agent/tests/") and not f.startswith("agent/scripts/")
+            ]
+        )
+
+    def _be_violations(self, norm: list[str] | None) -> list[dict]:
+        """3) BE code (agent/*.py) — cấm tỉnh cũ hoặc liệt kê 3 tỉnh thiếu ngữ cảnh lịch sử."""
+        violations = []
+        for rel in self._be_files(norm):
+            p = self.root / rel
+            if not p.exists():
+                continue
+            for i, line in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+                if line.lstrip().startswith("#"):
+                    continue
+                if AGENT_PAT.search(line) and not HISTORICAL_CTX_RE.search(line):
+                    violations.append({"file": rel, "line": i, "rule": self.rule,
+                                       "msg": "tỉnh cũ trong BE code — dùng khung tỉnh-mới (§1.6)"})
+        return violations
+
     def run(self, files: list[str] | None = None) -> dict:
         norm = [f.replace("\\", "/") for f in files] if files is not None else None
-        violations = self._data_violations(norm) + self._fe_violations(norm)
+        violations = self._data_violations(norm) + self._fe_violations(norm) + self._be_violations(norm)
         return {"check": self.name, "level": self.level, "rule": self.rule,
                 "count": len(violations), "violations": violations}
 

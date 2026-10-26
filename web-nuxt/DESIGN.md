@@ -240,7 +240,7 @@ Toàn bộ 10 phân hệ cấu thành nền tảng Vĩnh Long 360 đều phục 
    - Tích hợp Chú giải lề học thuật `<TufteSidenote>` và nhãn chứng nhận Tiêu chí Du lịch Xanh.
 
 6. **Phân Hệ Bản Đồ Số Tràn Viền & Tuyến Đường (`pages/ban-do.vue`, `tuyen-duong.vue`):**
-   - Full-bleed cartography mở rộng chạm mép màn hình, tạo cảm giác hòa mình vào châu thổ.
+   - Full-bleed cartography mở rộng chạm mép màn hình, bao quát toàn cảnh không gian châu thổ.
    - Thanh điều khiển nổi ngón tay cái Floating Thumb Dock (`.map-floating-thumb-dock`) đặt tại góc dưới thuận tiện thao tác một tay.
    - Chế độ Nắng Gắt kích hoạt bộ lọc quang học chống chói `contrast(1.6) saturate(1.2)`.
 
@@ -285,7 +285,7 @@ Thay thế 100% generic emoji và biểu tượng AI rẻ tiền bằng thư vi�
 | 6 | `water-lily` | Bông súng mùa nước nổi | Biểu trưng ẩm thực và sinh thái miệt vườn |
 | 7 | `son-fruit` | Cây bần và trái bần ven sông | Loài cây tiên phong giữ đất bãi bồi cù lao |
 | 8 | `pomelo-5roi` | Trái bưởi Năm Roi | Đặc sản chỉ dẫn địa lý thị xã Bình Minh |
-| 9 | `durian-ri6` | Trái sầu riêng Ri6 cơm vàng | Đặc sản Cù Lao An Bình nức tiếng |
+| 9 | `durian-ri6` | Trái sầu riêng Ri6 cơm vàng | Đặc sản Cù Lao An Bình trứ danh |
 | 10 | `conical-hat` | Chiếc nón lá điền dã | Tinh thần lao động bền bỉ của người phương Nam |
 | 11 | `clay-tile` | Phiến ngói âm dương đất nung | Kiến trúc đình chùa và nhà cổ Nam Bộ |
 | 12 | `co-chien-wave` | Ba ngọn sóng nước Cổ Chiên | Dòng sông mẹ nuôi dưỡng thổ nhưỡng Vĩnh Long |

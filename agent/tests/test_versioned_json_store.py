@@ -141,3 +141,20 @@ def test_publication_lock_requires_at_least_one_path():
     with pytest.raises(ValueError):
         with publication_lock():
             pass
+
+
+def test_no_fixed_tmp_suffix_in_runtime_persistence():
+    agent_dir = Path(__file__).resolve().parent.parent
+    for py_file in sorted(agent_dir.rglob("*.py")):
+        if "tests" in py_file.parts:
+            continue
+        src = py_file.read_text(encoding="utf-8")
+        for lineno, line in enumerate(src.splitlines(), 1):
+            stripped = line.strip()
+            if stripped.startswith("#") or "`" in stripped:
+                continue
+            assert '.with_suffix(".tmp")' not in stripped and ".with_suffix('.tmp')" not in stripped, (
+                f"{py_file.relative_to(agent_dir)}:{lineno} still uses non-unique .with_suffix('.tmp')"
+            )
+
+

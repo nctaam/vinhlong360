@@ -438,7 +438,7 @@ def test_tool_list_itineraries_tat_ca(kb):
 
 def test_tool_list_itineraries_loc_area(kb):
     out = json.loads(chat_api._tool_list_itineraries({"area": "ben-tre"}))
-    assert [it["id"] for it in out] == ["it-2"]
+    assert [it["id"] for it in out] == ["it-1", "it-2"]
     # khớp qua danh sách `areas` (không chỉ trường `area` đơn)
     out2 = json.loads(chat_api._tool_list_itineraries({"area": "lien-vung"}))
     assert [it["id"] for it in out2] == ["it-1"]
@@ -467,15 +467,23 @@ def test_tool_itinerary_detail_khong_thay(kb):
 
 def test_tool_places_in_area_dem_noi_dung(kb):
     out = json.loads(chat_api._tool_places_in_area({"area": "vinh-long"}))
-    # tinh-vinh-long không có parentId → bị loại; facility không tính vào content_count
-    assert out == [{"id": "xa-an-binh", "name": "Xã An Bình", "level": "xa",
-                    "legacyArea": "Trà Ôn", "content_count": 2}]
+    # Toàn bộ xã/phường hiện hành được gom vào Vĩnh Long; facility không tính vào content_count.
+    assert out == [
+        {"id": "phuong-1", "name": "Phường 1", "level": "phuong",
+         "legacyArea": "", "content_count": 1},
+        {"id": "xa-an-binh", "name": "Xã An Bình", "level": "xa",
+         "legacyArea": "Trà Ôn", "content_count": 2},
+    ]
 
 
 def test_tool_places_in_area_khu_vuc_khac(kb):
     out = json.loads(chat_api._tool_places_in_area({"area": "ben-tre"}))
-    assert out == [{"id": "phuong-1", "name": "Phường 1", "level": "phuong",
-                    "legacyArea": "", "content_count": 1}]
+    assert out == [
+        {"id": "phuong-1", "name": "Phường 1", "level": "phuong",
+         "legacyArea": "", "content_count": 1},
+        {"id": "xa-an-binh", "name": "Xã An Bình", "level": "xa",
+         "legacyArea": "Trà Ôn", "content_count": 2},
+    ]
 
 
 # ── _tool_stats ───────────────────────────────────────────────────────────────
@@ -515,7 +523,7 @@ def test_tool_generate_itinerary_mac_dinh(monkeypatch):
 
     monkeypatch.setattr(chat_api, "generate_itinerary", _fake)
     out = json.loads(chat_api._tool_generate_itinerary({}))
-    assert captured == {"days": 1, "interests": None, "areas": None,
+    assert captured == {"days": 1, "interests": None, "areas": ["vinh-long"],
                         "month": None, "budget": "trung_binh"}
     assert out == {"days": 1, "title": "lịch trình test"}
 
@@ -532,6 +540,6 @@ def test_tool_generate_itinerary_truyen_du_tham_so(monkeypatch):
         "days": 2, "interests": ["ẩm thực"], "areas": ["ben-tre"],
         "month": 7, "budget": "tiet_kiem",
     }))
-    assert captured == {"days": 2, "interests": ["ẩm thực"], "areas": ["ben-tre"],
+    assert captured == {"days": 2, "interests": ["ẩm thực"], "areas": ["vinh-long"],
                         "month": 7, "budget": "tiet_kiem"}
     assert out == {"ok": True}

@@ -2277,3 +2277,29 @@ def test_remapped_hotel_uses_current_name_and_preserves_legacy_provenance() -> N
             "Liên hệ: 0703979888."
         ),
     }
+
+
+def test_tracked_data_place_ids_resolve_or_are_declared_external_gateway() -> None:
+    data = json.loads((ROOT / "web" / "data.json").read_text(encoding="utf-8"))
+    entities = data["entities"]
+    valid_place_ids = {
+        e["id"]
+        for e in entities
+        if isinstance(e, dict) and e.get("type") == "place" and isinstance(e.get("id"), str)
+    }
+
+    dangling: list[tuple[str, Any]] = []
+    external_gateways: list[str] = []
+    for entity in entities:
+        status = validate_data.classify_entity_place_link(entity, valid_place_ids)
+        if status == "dangling":
+            dangling.append((entity.get("id", "<unknown>"), entity.get("placeId")))
+        elif status == "external_gateway":
+            external_gateways.append(entity["id"])
+
+    assert dangling == []
+    assert external_gateways == ["ben-xe-mien-tay-hcm"]
+    gateway_entity = next(e for e in entities if e["id"] == "ben-xe-mien-tay-hcm")
+    assert validate_data.is_external_gateway(gateway_entity) is True
+    assert validate_data.is_external_gateway_place_id(gateway_entity["placeId"]) is True
+

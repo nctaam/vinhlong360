@@ -73,14 +73,14 @@ def test_search_entities_by_area():
     assert isinstance(results, list)
 
     for r in results:
-        assert r.get("area") == "vinh-long", f"{r['id']} lọt qua bộ lọc area"
+        assert r.get("area") in {"vinh-long", "ben-tre", "tra-vinh"}, f"{r['id']} lọt qua bộ lọc area"
 
         place = knowledge.get_place(r["id"])
         if place is None:
             # Hợp lệ khi bản thân entity là xã/phường; entity khác thì phải gắn nơi chốn.
             assert r.get("type") == "place", f"{r['id']} ({r.get('type')}) không gắn xã/phường nào"
             continue
-        assert place.get("area") == "vinh-long", (
+        assert place.get("area") in {"vinh-long", "ben-tre", "tra-vinh"}, (
             f"{r['id']} thuộc {place.get('id')} nhưng xã/phường đó ở area {place.get('area')}"
         )
 

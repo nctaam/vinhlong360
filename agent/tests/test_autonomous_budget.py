@@ -51,3 +51,19 @@ def test_task_noop_when_disabled(tmp_path, monkeypatch):
     monkeypatch.setattr(scheduler, "_send_telegram_admins", lambda *a, **k: called.__setitem__("send", True))
     scheduler.task_autonomous_agent()  # phải no-op, không ném
     assert called["send"] is False
+
+
+def test_interprocess_file_lock_contract(tmp_path, monkeypatch):
+    import cost_tracker as ct
+    import guardrails as gr
+
+    _fresh(tmp_path, monkeypatch, cap=2, enabled=True)
+    assert ab.try_consume(1) is True
+    assert (tmp_path / "budget.json.lock").exists()
+
+    for mod in (ab, ct, gr):
+        lock_fn = getattr(mod, "_interprocess_file_lock", None)
+        assert callable(lock_fn)
+        target = tmp_path / f"{mod.__name__}.json"
+        with lock_fn(target):
+            assert target.with_suffix(".json.lock").exists()

@@ -211,10 +211,10 @@ describe('design-system and legal disclosure authority', () => {
       readFile(resolve(root, 'web-nuxt/assets/css/events.css'), 'utf8'),
       readFile(resolve(root, 'web-nuxt/pages/lich-van-nien.vue'), 'utf8'),
     ])
-    expect(darkOverrides).not.toMatch(/--secondary-fg-strong|--error-light/)
+    expect(darkOverrides).not.toMatch(/--secondary-fg(?:-strong)?|--error-light/)
     expect(events).not.toContain('--card-hover')
     expect(calendar).not.toContain('--card-hover')
-    expect(darkOverrides).toContain('var(--secondary-fg)')
+    expect(darkOverrides).toContain('var(--color-success)')
     expect(darkOverrides).toContain('var(--error)')
     expect(events).toContain('var(--state-hover)')
     expect(calendar).toContain('var(--state-hover)')
@@ -427,4 +427,67 @@ describe('design-system and legal disclosure authority', () => {
     expect(source).toContain('secure=production')
     expect(source).toContain('httponly=httponly')
   })
+
+  it('resolves all static IconLine usages, manifests, and backend badge/alert icons in IconLine.vue', async () => {
+    const { readdir } = await import('node:fs/promises')
+    const iconLineSrc = await readFile(resolve(root, 'web-nuxt/components/IconLine.vue'), 'utf8')
+    const registeredIcons = new Set<string>()
+    for (const match of iconLineSrc.matchAll(/^\s*(?:'([^']+)'|(\w+)):\s*W\(/gm)) {
+      registeredIcons.add(match[1] || match[2]!)
+    }
+    expect(registeredIcons.size).toBeGreaterThanOrEqual(120)
+
+    const [manifestSrc, amenitySrc, navSrc, timelineSrc, achievementsSrc, adminSrc] = await Promise.all([
+      readFile(resolve(root, 'web-nuxt/utils/pageManifest.ts'), 'utf8'),
+      readFile(resolve(root, 'web-nuxt/composables/useAdminEntityAttributes.ts'), 'utf8'),
+      readFile(resolve(root, 'web-nuxt/utils/adminNavigation.ts'), 'utf8'),
+      readFile(resolve(root, 'web-nuxt/composables/useUserProfileActivity.ts'), 'utf8'),
+      readFile(resolve(root, 'agent/achievements.py'), 'utf8'),
+      readFile(resolve(root, 'agent/admin.py'), 'utf8'),
+    ])
+
+    for (const src of [manifestSrc, amenitySrc, navSrc]) {
+      for (const match of src.matchAll(/\bicon:\s*'([^']+)'/g)) {
+        expect(registeredIcons.has(match[1]!)).toBe(true)
+      }
+    }
+    for (const match of timelineSrc.matchAll(/return\s+'([^']+)'/g)) {
+      expect(registeredIcons.has(match[1]!)).toBe(true)
+    }
+    for (const src of [achievementsSrc, adminSrc]) {
+      for (const match of src.matchAll(/"icon":\s*"([^"]+)"/g)) {
+        expect(registeredIcons.has(match[1]!)).toBe(true)
+      }
+    }
+
+    async function walkVueFiles(dir: string): Promise<string[]> {
+      const entries = await readdir(dir, { withFileTypes: true })
+      const files: string[] = []
+      for (const entry of entries) {
+        const full = resolve(dir, entry.name)
+        if (entry.isDirectory()) {
+          files.push(...await walkVueFiles(full))
+        } else if (entry.name.endsWith('.vue')) {
+          files.push(full)
+        }
+      }
+      return files
+    }
+
+    const vueDirs = ['web-nuxt/pages', 'web-nuxt/components', 'web-nuxt/layouts']
+    for (const relDir of vueDirs) {
+      const files = await walkVueFiles(resolve(root, relDir))
+      for (const file of files) {
+        const content = await readFile(file, 'utf8')
+        for (const tagMatch of content.matchAll(/<IconLine\b[^>]*>/g)) {
+          const tag = tagMatch[0]
+          for (const staticName of tag.matchAll(/(?<!:)\bname="([^"]+)"/g)) {
+            expect(registeredIcons.has(staticName[1]!), `Missing icon '${staticName[1]}' in ${file}`).toBe(true)
+          }
+        }
+      }
+    }
+  })
 })
+
+

@@ -5,6 +5,7 @@ Tuân thủ chuẩn llmstxt.org và quy tắc địa giới hành chính 2 cấp
 """
 
 import json
+import sys
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
@@ -140,7 +141,7 @@ Từ tháng 7-2025, ba địa bàn Vĩnh Long, Bến Tre và Trà Vinh đã **H�
 - **Lộ trình du lịch gợi ý**: {SITE_URL}/lich-trinh
 - **Bản đồ tương tác 124 xã/phường**: {SITE_URL}/ban-do
 - **Danh mục 124 xã/phường**: {SITE_URL}/xa-phuong
-- **Trò chuyện cùng Trợ lý AI**: {SITE_URL}/chat
+- **Sổ tay hỏi đáp thực địa**: {SITE_URL}/chat
 
 ## Giao Tiếp Lập Trình (API Endpoints cho AI Agents)
 
@@ -242,7 +243,7 @@ def generate_llms(data_path: Path, output_dir: Path) -> dict[str, Path]:
     verified_entities = [e for e in entities if sourced_photo_evidence(e.get("attributes") or {}) is not None]
     wards = [
         e for e in entities
-        if e.get("type") == "place" and e.get("id") != "prov-1"
+        if e.get("type") == "place" and e.get("id") not in ("prov-1", "vinh-long")
     ]
 
     llms_txt_content = build_llms_txt(entities, itineraries, verified_entities, wards)
@@ -259,6 +260,10 @@ def generate_llms(data_path: Path, output_dir: Path) -> dict[str, Path]:
 
 
 def main(argv: list[str] | None = None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--llms-output", type=Path, required=True)

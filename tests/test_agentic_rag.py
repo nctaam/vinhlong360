@@ -49,12 +49,12 @@ def test_classify_without_diacritics():
 
 def test_detect_areas():
     areas = _detect_areas("du lịch Bến Tre")
-    assert "ben-tre" in areas
+    assert areas == ["vinh-long"]
 
 
 def test_detect_areas_no_diacritics():
     areas = _detect_areas("du lich Ben Tre")
-    assert "ben-tre" in areas
+    assert areas == ["vinh-long"]
 
 
 # ── _detect_intent ──

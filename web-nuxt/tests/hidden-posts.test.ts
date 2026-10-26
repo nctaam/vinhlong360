@@ -37,6 +37,7 @@ mockNuxtImport('useAuth', () => () => ({
   user: { value: { id: 'me' } },
 }))
 mockNuxtImport('useToast', () => () => ({ show: mocks.showToast }))
+mockNuxtImport('$fetch', () => mocks.fetch)
 
 const wrappers: Array<{ unmount: () => void }> = []
 
@@ -62,7 +63,6 @@ beforeEach(() => {
   mocks.handleSessionExpired.mockReset()
   mocks.showToast.mockReset()
   mocks.isLoggedIn.value = true
-  vi.stubGlobal('$fetch', mocks.fetch)
 })
 
 afterEach(() => {

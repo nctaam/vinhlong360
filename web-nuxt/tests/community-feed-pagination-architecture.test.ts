@@ -1,8 +1,11 @@
+import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ref } from 'vue'
 import type { Post } from '~/types'
 import { useCommunityFeedPagination } from '../composables/useCommunityFeedPagination'
 import { useCommunityUndoHide } from '../composables/useCommunityUndoHide'
+
+mockNuxtImport('$fetch', () => (...args: any[]) => (globalThis as any).$fetch(...args))
 
 describe('Moc 169: Community Feed Pagination & Undo-Hide Architecture', () => {
   const fetchMock = vi.fn()

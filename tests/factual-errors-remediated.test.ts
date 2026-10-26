@@ -15,6 +15,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import fs from 'node:fs';
+import { openReadOnlyDatabase } from './helpers/data-contract';
 
 const repoRoot = fs.existsSync(path.resolve('agent/data/vinhlong360.db'))
   ? path.resolve('.')
@@ -25,7 +26,7 @@ let db: DatabaseSync;
 
 beforeAll(() => {
   expect(fs.existsSync(dbPath), `Database file must exist at ${dbPath}`).toBe(true);
-  db = new DatabaseSync(dbPath, { readOnly: true });
+  db = openReadOnlyDatabase();
 });
 
 afterAll(() => {

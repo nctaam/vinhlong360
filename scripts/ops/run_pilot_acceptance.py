@@ -366,9 +366,9 @@ def _is_digest_excluded(relative_path: str) -> bool:
     """Report whether one repository-relative path is outside the tree digest.
 
     Acceptance artifacts and temporary/build directories are excluded because
-    the runner creates them while producing its own bundle.  Matching is done
-    on whole path segments so a real file such as ``.tmpl`` is never mistaken
-    for one of the runner's own ``.tmp-*`` scratch directories.
+    the runner and repository-local pytest create them while producing evidence.
+    Matching is done on whole path segments so a real file such as ``.tmpl`` is
+    never mistaken for one of the runner's own scratch directories.
     """
 
     parts = [part for part in relative_path.split("/") if part]
@@ -376,7 +376,7 @@ def _is_digest_excluded(relative_path: str) -> bool:
         return False
     if any(part.startswith(".pytest-") for part in parts):
         return True
-    if parts[0] == ".git" or parts[0] in {"artifacts", "graphify-out"}:
+    if parts[0] == ".git" or parts[0] in {"artifacts", "graphify-out", ".tmp"}:
         return True
     if parts[0].startswith(".tmp-"):
         return True

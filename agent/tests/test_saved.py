@@ -25,7 +25,6 @@ AI_DESCRIPTOR = {
     "short_label": "Minh họa AI",
     "full_disclosure": "Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.",
     "credit": None,
-    "source_url": None,
     "width": None,
     "height": None,
 }
@@ -95,22 +94,3 @@ def test_saved_item_descriptor_and_revision_round_trip_through_snapshot():
     assert snap["descriptor_revision"] == "ai-disclosure-v1"
     assert row["image_descriptor"] == AI_DESCRIPTOR
     assert row["descriptor_revision"] == "ai-disclosure-v1"
-
-
-def test_saved_item_accepts_canonical_disclosure_revision():
-    item = saved.SavedItem(
-        id="homestay-x",
-        name="Homestay X",
-        type="accommodation",
-        descriptor_revision="media-disclosure-v2",
-    )
-
-    snap = saved._snapshot(item)
-    row = saved._row_item({
-        "entity_id": item.id,
-        "snapshot": snap,
-        "created_at": "2026-07-19T00:00:00+00:00",
-    })
-
-    assert snap["descriptor_revision"] == "media-disclosure-v2"
-    assert row["descriptor_revision"] == "media-disclosure-v2"

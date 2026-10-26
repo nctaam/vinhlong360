@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from checks.check_api_contract import ApiContractCheck  # noqa: E402
 from checks.check_banned_claims import build_checks as banned_checks  # noqa: E402
-from checks.check_data_schema import DataSchemaCheck  # noqa: E402
+from checks.check_data_schema import DataSchemaCheck, DataStoreHashGuard  # noqa: E402
 from checks.check_secrets import SecretsCheck  # noqa: E402
 from checks.check_entity_image_renderers import EntityImageRendererCheck  # noqa: E402
 
@@ -113,6 +113,304 @@ def test_banned_claims_neg_context_and_archive_pass(tmp_path):
     assert all(r["count"] == 0 for r in results)
 
 
+def _image_source_policy_result(
+    tmp_path: Path, entity: dict, files: list[str] | None = None
+) -> dict:
+    _mk(
+        tmp_path,
+        "web/data.json",
+        json.dumps(
+            {"entities": [entity], "relationships": [], "itineraries": []},
+            ensure_ascii=False,
+        ),
+    )
+    return next(
+        result
+        for result in (check.run(files=files) for check in banned_checks(root=tmp_path))
+        if result["rule"] == "R10.6"
+    )
+
+
+def test_image_source_policy_allows_attributed_press_photo(tmp_path):
+    result = _image_source_policy_result(tmp_path, {
+        "id": "bao-chi-hop-le",
+        "images": ["/img/entities/bao-chi-hop-le.webp"],
+        "attributes": {
+            "image_type": "documentary",
+            "is_verified_photo": True,
+            "image_author": "Nguyễn Văn A",
+            "image_source": "Báo Vĩnh Long",
+            "image_license": "CC BY 4.0",
+            "image_source_url": "https://baovinhlong.com.vn/images/bao-chi-hop-le.webp",
+        },
+    })
+
+    assert result["count"] == 0
+
+
+def test_image_source_policy_rejects_generic_urls_and_copyright_text(tmp_path):
+    result = _image_source_policy_result(tmp_path, {
+        "id": "bao-chi-generic-evidence",
+        "images": ["/img/entities/bao-chi-generic-evidence.webp"],
+        "source": [{"url": "https://baovinhlong.com.vn/articles/story"}],
+        "attributes": {
+            "image_type": "documentary",
+            "is_verified_photo": True,
+            "image_author": "Nguyễn Văn A",
+            "image_source": "Báo Vĩnh Long",
+            "image_license": "Copyright Publisher",
+            "source_citations": [
+                {"url": "https://baovinhlong.com.vn/articles/citation"}
+            ],
+        },
+    })
+
+    assert result["count"] == 1
+    message = result["violations"][0]["msg"]
+    assert "image_license" in message
+    assert "URL nguồn" in message
+
+
+def test_image_source_policy_rejects_placeholder_source_url(tmp_path):
+    result = _image_source_policy_result(tmp_path, {
+        "id": "bao-chi-placeholder-url",
+        "images": ["/img/entities/bao-chi-placeholder-url.webp"],
+        "attributes": {
+            "image_type": "documentary",
+            "is_verified_photo": True,
+            "image_author": "Nguyễn Văn A",
+            "image_source": "Báo Vĩnh Long",
+            "image_license": "Được phép sử dụng khi ghi nguồn",
+            "image_source_url": "https://example.test/source",
+        },
+    })
+
+    assert result["count"] == 1
+    assert "placeholder" in result["violations"][0]["msg"]
+
+
+@pytest.mark.parametrize("host", ["127.0.0.2", "[::1]", "10.25.0.8"])
+def test_image_source_policy_rejects_non_public_ip_source_url(tmp_path, host):
+    result = _image_source_policy_result(tmp_path, {
+        "id": "bao-chi-private-ip-url",
+        "images": ["/img/entities/bao-chi-private-ip-url.webp"],
+        "attributes": {
+            "image_type": "documentary",
+            "is_verified_photo": True,
+            "image_author": "Nguyễn Văn A",
+            "image_source": "Báo Vĩnh Long",
+            "image_license": "Được phép sử dụng khi ghi nguồn",
+            "image_source_url": f"https://{host}/source",
+        },
+    })
+
+    assert result["count"] == 1
+    assert "placeholder" in result["violations"][0]["msg"]
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://intranet/source",
+        "https://rights.corp/source",
+        "https://2130706433/source",
+        "https://[::1/source",
+    ],
+)
+def test_image_source_policy_fails_closed_for_non_public_or_malformed_urls(
+    tmp_path, url
+):
+    result = _image_source_policy_result(tmp_path, {
+        "id": "bao-chi-non-public-url",
+        "images": ["/img/entities/bao-chi-non-public-url.webp"],
+        "attributes": {
+            "image_type": "documentary",
+            "is_verified_photo": True,
+            "image_author": "Nguyễn Văn A",
+            "image_source": "Báo Vĩnh Long",
+            "image_license": "CC BY 4.0",
+            "image_source_url": url,
+        },
+    })
+
+    assert result["count"] == 1
+    assert "URL nguồn" in result["violations"][0]["msg"]
+
+
+def test_local_source_url_fails_closed(tmp_path):
+    result = _image_source_policy_result(tmp_path, {
+        "id": "local-source",
+        "images": ["/img/entities/local-source.webp"],
+        "attributes": {
+            "image_type": "documentary",
+            "is_verified_photo": True,
+            "image_author": "Author",
+            "image_source": "Publisher",
+            "image_license": "CC BY 4.0",
+            "image_source_url": "https://printer.local/image.webp",
+        },
+    })
+    assert result["count"] == 1
+    assert "URL nguồn" in result["violations"][0]["msg"]
+
+
+@pytest.mark.parametrize(
+    "host",
+    ["foo.example.test", "foo.example.com", "foo.example.net", "foo.example.org", "foo.localhost", "foo.localdomain"],
+)
+def test_image_source_policy_rejects_placeholder_subdomains(tmp_path, host):
+    result = _image_source_policy_result(tmp_path, {
+        "id": f"bao-chi-{host.replace('.', '-')}",
+        "images": ["/img/entities/placeholder-subdomain.webp"],
+        "attributes": {
+            "image_type": "documentary",
+            "is_verified_photo": True,
+            "image_author": "Nguyễn Văn A",
+            "image_source": "Báo Vĩnh Long",
+            "image_license": "Được phép sử dụng khi ghi nguồn",
+            "image_source_url": f"https://{host}/source",
+        },
+    })
+
+    assert result["count"] == 1
+    assert "placeholder" in result["violations"][0]["msg"]
+
+
+def test_image_source_policy_rejects_malformed_source_url(tmp_path):
+    result = _image_source_policy_result(tmp_path, {
+        "id": "bao-chi-malformed-url",
+        "images": ["/img/entities/bao-chi-malformed-url.webp"],
+        "attributes": {
+            "image_type": "documentary",
+            "is_verified_photo": True,
+            "image_author": "Nguyễn Văn A",
+            "image_source": "Báo Vĩnh Long",
+            "image_license": "Được phép sử dụng khi ghi nguồn",
+            "image_source_url": "https://",
+        },
+    })
+
+    assert result["count"] == 1
+    assert "URL nguồn" in result["violations"][0]["msg"]
+
+
+def test_image_source_policy_rejects_generic_placeholder_article_url(tmp_path):
+    result = _image_source_policy_result(tmp_path, {
+        "id": "bao-chi-generic-placeholder-url",
+        "images": ["/img/entities/bao-chi-generic-placeholder-url.webp"],
+        "source": [{"url": "https://news.example/article"}],
+        "attributes": {
+            "image_type": "documentary",
+            "is_verified_photo": True,
+            "image_author": "Nguyễn Văn A",
+            "image_source": "Báo Vĩnh Long",
+            "image_license": "Được phép sử dụng khi ghi nguồn",
+        },
+    })
+
+    assert result["count"] == 1
+    assert "placeholder" in result["violations"][0]["msg"]
+
+
+def test_image_source_policy_blocks_unlisted_press_photo_without_source_url(tmp_path):
+    result = _image_source_policy_result(tmp_path, {
+        "id": "bao-chi-chua-co-url",
+        "images": ["/img/entities/bao-chi-chua-co-url.webp"],
+        "attributes": {
+            "image_type": "documentary",
+            "is_verified_photo": True,
+            "image_author": "Nguyễn Văn A",
+            "image_source": "Báo Vĩnh Long",
+            "image_license": "Được phép sử dụng khi ghi nguồn",
+        },
+    })
+
+    assert result["count"] == 1
+    assert "URL nguồn" in result["violations"][0]["msg"]
+
+
+def test_image_source_policy_allows_exact_legacy_url_debt_id(tmp_path):
+    _mk(tmp_path, "docs/standards/r10.6-image-url-debt.txt", "bao-chi-no-url-cu\n")
+    result = _image_source_policy_result(tmp_path, {
+        "id": "bao-chi-no-url-cu",
+        "images": ["/img/entities/bao-chi-no-url-cu.webp"],
+        "attributes": {
+            "image_type": "documentary",
+            "is_verified_photo": True,
+            "image_author": "Nguyễn Văn A",
+            "image_source": "Báo Vĩnh Long",
+            "image_license": "CC BY 4.0",
+        },
+    })
+
+    assert result["count"] == 0
+
+
+def test_image_source_policy_rechecks_data_when_url_debt_file_is_staged(tmp_path):
+    result = _image_source_policy_result(
+        tmp_path,
+        {
+            "id": "bao-chi-no-url-moi",
+            "images": ["/img/entities/bao-chi-no-url-moi.webp"],
+            "attributes": {
+                "image_type": "documentary",
+                "is_verified_photo": True,
+                "image_author": "Nguyễn Văn A",
+                "image_source": "Báo Vĩnh Long",
+                "image_license": "Được phép sử dụng khi ghi nguồn",
+            },
+        },
+        files=["docs/standards/r10.6-image-url-debt.txt"],
+    )
+
+    assert result["count"] == 1
+    assert "URL nguồn" in result["violations"][0]["msg"]
+
+
+def test_image_source_policy_blocks_press_photo_without_attribution(tmp_path):
+    result = _image_source_policy_result(tmp_path, {
+        "id": "bao-chi-thieu-ghi-nguon",
+        "images": ["/img/entities/bao-chi-thieu-ghi-nguon.webp"],
+        "source": [],
+        "attributes": {
+            "image_type": "documentary",
+            "is_verified_photo": True,
+        },
+    })
+
+    assert result["count"] == 1
+    message = result["violations"][0]["msg"]
+    assert "image_author" in message
+    assert "image_source" in message
+    assert "image_license" in message
+    assert "URL nguồn" in message
+
+
+def test_image_source_policy_rejects_ai_image_marked_as_verified_photo(tmp_path):
+    result = _image_source_policy_result(tmp_path, {
+        "id": "anh-ai-ghi-sai-loai",
+        "images": ["/img/entities/anh-ai-ghi-sai-loai.webp"],
+        "attributes": {
+            "image_type": "ai-generated",
+            "is_verified_photo": True,
+        },
+    })
+
+    assert result["count"] == 1
+    assert "AI-generated" in result["violations"][0]["msg"]
+
+
+def test_current_image_source_policy_revokes_batch_21_legacy_compatibility():
+    result = next(
+        check.run()
+        for check in banned_checks(root=ROOT)
+        if check.rule == "R10.6"
+    )
+
+    assert result["count"] == 40
+    assert any("prov-1" in violation["msg"] for violation in result["violations"])
+
+
 def test_banned_tailwind_in_web_nuxt(tmp_path):
     _mk(tmp_path, "web-nuxt/package.json", '{"dependencies": {"tailwindcss": "^3"}}\n')
     results = {r["rule"]: r["count"] for r in (c.run() for c in banned_checks(root=tmp_path))}
@@ -153,6 +451,24 @@ def test_data_schema_skips_when_not_staged(tmp_path):
     assert DataSchemaCheck(root=tmp_path).run(files=["agent/x.py"])["count"] == 0
 
 
+def test_data_store_hash_all_ignores_untracked_runtime_db(tmp_path):
+    _mk(tmp_path, "agent/data/vinhlong360.db", "mutable local runtime state")
+
+    result = DataStoreHashGuard(root=tmp_path).run()
+
+    assert result["count"] == 0
+
+
+def test_data_store_hash_checks_db_when_explicitly_requested(tmp_path):
+    db_rel = "agent/data/vinhlong360.db"
+    _mk(tmp_path, db_rel, "unexpected database bytes")
+
+    result = DataStoreHashGuard(root=tmp_path).run(files=[db_rel])
+
+    assert result["count"] == 1
+    assert result["violations"][0]["file"] == db_rel
+
+
 # ---------- R10.3b per-type required (SP2 T3) ----------
 
 def test_typed_required_catches_missing_person_role(tmp_path):
@@ -188,7 +504,7 @@ def test_rich_source_catches_rich_entity_without_source(tmp_path):
          "summary": "s", "description": RICH_TEXT, "source": []},
         {"id": "rich-ok", "type": "dish", "name": "B", "status": "published", "verified": True,
          "summary": "s", "description": RICH_TEXT,
-         "source": [{"url": "https://example.org"}]},
+         "source": [{"url": "https://baovinhlong.com.vn/bai-viet"}]},
         {"id": "thin-0src", "type": "dish", "name": "C", "status": "published", "verified": True,
          "summary": "s", "description": "ngắn", "source": []},
         {"id": "private-rich", "type": "dish", "name": "D", "status": "private", "verified": True,

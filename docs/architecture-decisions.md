@@ -94,10 +94,10 @@ Redis
     - `admin` keeps the full standard scope set; `superadmin` and admin-key receive wildcard access.
     - New AdminCP endpoints must map to one of: `content.editor`, `moderation.manager`, `ops.deploy`, `settings.admin`, `security.admin`, or be deliberately dashboard/read-only.
 
-17. **Images: AI-generated only** (owner decision, 2026-06-25).
-    - All site imagery is generated via `scripts/gen_image.py` (cx/gpt-5.5-image endpoint, `IMAGE_API_KEY`).
-    - No Wikimedia, no stock (Pexels/Unsplash), no UGC photos, no crawled gov/news images. Supersedes all earlier "licensed sources" guidance (ROADMAP 8.2 SUPERSEDED).
-    - AI images must not pose as real photos: keep the illustration label (`dc-nophoto-note`) until an entity has a real photo.
+17. **Images: explicit provenance, with AI and rights-cleared documentary media** (owner decision updated 2026-09-21).
+    - AI imagery is generated via `scripts/gen_image.py` (cx/gpt-5.5-image endpoint, `IMAGE_API_KEY`) and must retain an honest illustration disclosure; it must not be classified as a verified photo.
+    - Press, documentary, and official imagery may be re-hosted only when the right to use it is documented. Every such image requires author, publication/source, license or permission basis, a traceable source URL, and visible author/source credit.
+    - The prohibited-source list in `CLAUDE.md` §1.5 and the UGC ban remain in force. Crawling or hotlinking government/news images without an explicit rights basis remains prohibited.
 
 18. **Positioning: Vĩnh-Long-specific content + deliberate noindex** (owner decision, 2026-07-06).
     - The site is about the merged Vĩnh Long province — not generic "miền Tây/ĐBSCL" filler. Quality via local specificity (proper names, numbers, seasons, first-hand detail) + E-E-A-T, never detector evasion.

@@ -8,12 +8,11 @@ Tái dùng _authored_texts từ check_content_voice (1 nguồn trích trường)
 """
 from __future__ import annotations
 
-import json
 import re
 from pathlib import Path
 
 from .check_content_voice import _authored_texts
-from .common import _norm, repo_root
+from .common import _norm, load_json_cached, repo_root
 
 DATA_REL = "web/data.json"
 
@@ -57,8 +56,8 @@ class _DataGate:
             path = self.root / DATA_REL
             if path.exists():
                 try:
-                    data = json.loads(path.read_text(encoding="utf-8"))
-                except (OSError, json.JSONDecodeError):
+                    data = load_json_cached(path)
+                except (OSError, ValueError):
                     data = None
                 if data:
                     n = self._data_hits(_authored_texts(data))

@@ -15,8 +15,9 @@ const ai = (url: string, alt = 'Điểm đến — ảnh minh họa'): ImageDesc
   disclosure_key: 'entity-ai',
   short_label: aiDisclosure.entity_ai.short_label,
   full_disclosure: aiDisclosure.entity_ai.full_disclosure,
-  credit: null,
+  credit: null,
   source_url: null,
+
   width: null,
   height: null,
 })
@@ -29,8 +30,9 @@ const placeholder: ImageDescriptor = {
   disclosure_key: 'entity-placeholder',
   short_label: null,
   full_disclosure: aiDisclosure.placeholder.full_disclosure,
-  credit: null,
+  credit: null,
   source_url: null,
+
   width: null,
   height: null,
 }
@@ -132,10 +134,7 @@ describe('EntityCard image disclosure', () => {
 
   it('classifies legacy entity images as AI with the exact canonical copy', async () => {
     const wrapper = await mountSuspended(EntityCard, {
-      props: { entity: entity({
-        images: ['/img/entities/legacy.webp'],
-        attributes: { image_type: 'ai-generated', is_verified_photo: false },
-      }) },
+      props: { entity: entity({ images: ['/img/entities/legacy.webp'] }) },
       global: globals,
     })
 

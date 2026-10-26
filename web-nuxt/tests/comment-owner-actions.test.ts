@@ -42,6 +42,7 @@ mockNuxtImport('useAuth', () => () => ({
   user: mocks.user,
 }))
 mockNuxtImport('useToast', () => () => ({ show: mocks.showToast }))
+mockNuxtImport('$fetch', () => (...args: any[]) => (globalThis as any).$fetch(...args))
 
 const wrappers: Array<{ unmount: () => void }> = []
 

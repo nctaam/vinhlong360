@@ -41,11 +41,13 @@ from checks.check_secrets import CHECKS as secrets  # noqa: E402
 from checks.check_test_pairing import CHECKS as pairing  # noqa: E402
 from checks.check_thin_content import CHECKS as thin  # noqa: E402
 from checks.check_tinh_cu import CHECKS as tinh_cu  # noqa: E402
+from checks.verify_phase_b_readiness import CHECKS as phase_b_readiness  # noqa: E402
 
 ALL_CHECKS = (secrets + banned + schema + api_checks
               + tinh_cu + fe_tokens + doc_status + links
               + voice + content_gates + thin + pairing + complexity + ruff_lint + coverage
-              + bundle + axe + policy_http_registry + entity_image_renderers + image_hygiene)
+              + bundle + axe + policy_http_registry + entity_image_renderers + image_hygiene
+              + phase_b_readiness)
 REGISTRY = {c.name: c for c in ALL_CHECKS}
 
 

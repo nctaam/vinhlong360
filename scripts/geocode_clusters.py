@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Re-geocode entities đang dùng toạ độ trung tâm thành phố.
 
-Dùng Nominatim (OpenStreetMap) — miễn phí, rate limit 1 req/s.
+Dùng OpenMap.vn Geocoding API — rate limit 1 req/s.
 Chỉ update nếu kết quả nằm trong vùng VL+BT+TV.
 
 Usage:
@@ -36,7 +36,7 @@ REGION_BOUNDS = {
     "lon_min": 105.5, "lon_max": 107.0,
 }
 
-NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
+NOMINATIM_URL = "https://mapapis.openmap.vn/v1/geocode/forward"
 USER_AGENT = "vinhlong360-geocoder/1.0 (data-quality-fix)"
 
 

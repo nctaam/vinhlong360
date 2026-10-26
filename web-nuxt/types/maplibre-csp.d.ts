@@ -1,3 +1,7 @@
-declare module 'maplibre-gl/dist/maplibre-gl-csp.js' {
-  export * from 'maplibre-gl'
+import type * as MapLibreGL from 'maplibre-gl'
+
+declare global {
+  var maplibregl: typeof MapLibreGL | undefined
 }
+
+export {}

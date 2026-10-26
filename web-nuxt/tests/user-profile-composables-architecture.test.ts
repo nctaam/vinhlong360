@@ -15,10 +15,10 @@ describe('Moc 164: User Profile Composables Architecture & State Hygiene', () =>
     })
 
     it('maps timeline item types to evocative visual icons', () => {
-      expect(timelineIcon('post')).toBe('✍️')
-      expect(timelineIcon('review')).toBe('⭐')
-      expect(timelineIcon('follow')).toBe('👥')
-      expect(timelineIcon('custom')).toBe('📌')
+      expect(timelineIcon('post')).toBe('pencil')
+      expect(timelineIcon('review')).toBe('star')
+      expect(timelineIcon('follow')).toBe('users')
+      expect(timelineIcon('custom')).toBe('pin')
     })
 
     it('computes XP level progress and distance to next rank accurately', () => {

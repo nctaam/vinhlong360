@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -774,27 +775,14 @@ describe('Tri-Region color contract', () => {
   // nên toàn bộ nằm trong phạm vi phiên bản đã khai. Verify: typecheck exit 0,
   // vitest 1613/1615 (hai bài đỏ là bài flaky đã biết + chính cổng này).
   //
-  // BA LỖ CÒN LẠI đều ở `nuxt` 4.0.0–4.5.0 và đều nặng — RCE qua template injection
-  // trong Server Island Props, rò dữ liệu SSR giữa các người dùng, và route rule bị bỏ
-  // với đường dẫn hoa/thường lẫn lộn (vòng qua cổng xác thực). Vá được: `nuxt@4.5.2`
-  // + `@nuxt/test-utils@4.1.0` đưa về 1 lỗ low và typecheck vẫn sạch. CHƯA làm vì nó
-  // kéo theo một cuộc di trú test: `$fetch` không còn phân giải qua `globalThis` nên
-  // `vi.stubGlobal('$fetch', …)` mất tác dụng — 63 bài trên 16 file đỏ, tất cả cùng
-  // một nguyên nhân đó. Đây là task riêng, KHÔNG được làm vội vì nó chạm đúng các
-  // đường UGC vừa sửa. Site đang noindex nên chưa có mặt tiền để khai thác, nhưng
-  // PHẢI xong trước khi public.
-  //
-  // Mốc dời trước đó 358fe697 → 98b8649e (2026-08-25): cập nhật dependency;
-  // Mốc dời 98b8649e → 0c060e56 (2026-09-04): ghim phiên bản TypeScript 5.9.3
-  // (commit 705a9701/0c060e56) theo quyết định của chủ dự án; khác biệt đúng một dòng.
-  // Chốt chặn giữ nguyên tác dụng: mọi dependency thêm sau đây vẫn làm test đỏ
-  // cho tới khi có người dời mốc và giải trình.
-  it('keeps dependency declarations identical to the remediation base', async () => {
-    const [{ stdout: baselineSource }, currentSource] = await Promise.all([
-      execFileAsync('git', ['show', '0c060e56:web-nuxt/package.json'], { cwd: root }),
-      readFile(resolve(root, 'web-nuxt/package.json'), 'utf8'),
-    ])
-    const baseline = JSON.parse(baselineSource)
+  // Mốc hiện tại (2026-09-21) vá Nuxt lên 4.5.2, ghim @nuxt/test-utils 4.1.0
+  // và chuyển các test gọi trực tiếp `$fetch` sang mock auto-import. Cùng đợt này,
+  // Vitest/@vitest/mocker được vá path traversal bằng 4.1.11; MapLibre lên 6.10.0
+  // để vá sanitizer XSS và chuyển pipeline tự host sang các ESM asset của v6.
+  // Chốt chặn giữ nguyên tác dụng: mọi dependency thêm hoặc đổi sau đây vẫn làm
+  // test đỏ cho tới khi có người dời mốc và giải trình.
+  it('keeps dependency declarations identical to the approved remediation base', async () => {
+    const currentSource = await readFile(resolve(root, 'web-nuxt/package.json'), 'utf8')
     const current = JSON.parse(currentSource)
 
     expect({
@@ -804,21 +792,35 @@ describe('Tri-Region color contract', () => {
       peerDependencies: current.peerDependencies,
       overrides: current.overrides,
     }).toEqual({
-      dependencies: baseline.dependencies,
-      devDependencies: baseline.devDependencies,
-      optionalDependencies: baseline.optionalDependencies,
-      peerDependencies: baseline.peerDependencies,
-      overrides: baseline.overrides,
+      dependencies: {
+        'maplibre-gl': '^6.10.0',
+        nuxt: '^4.5.2',
+        vue: '^3.5.35',
+        'vue-router': '^5.1.0',
+      },
+      devDependencies: {
+        '@nuxt/fonts': '^0.14.0',
+        '@nuxt/image': '^2.0.0',
+        '@nuxt/test-utils': '4.1.0',
+        '@nuxtjs/color-mode': '^4.0.1',
+        '@vue/test-utils': '^2.4.11',
+        'axe-core': '^4.12.1',
+        'happy-dom': '^20.10.6',
+        typescript: '5.9.3',
+        vitest: '^4.1.11',
+        'vue-tsc': '^3.3.5',
+      },
+      optionalDependencies: undefined,
+      peerDependencies: undefined,
+      overrides: undefined,
     })
   })
 
-  it('keeps package-lock.json identical to the remediation base', async () => {
-    const [{ stdout: baseline }, current] = await Promise.all([
-      execFileAsync('git', ['show', '0c060e56:web-nuxt/package-lock.json'], { cwd: root }),
-      readFile(resolve(root, 'web-nuxt/package-lock.json'), 'utf8'),
-    ])
+  it('keeps package-lock.json identical to the approved remediation base', async () => {
+    const current = await readFile(resolve(root, 'web-nuxt/package-lock.json'), 'utf8')
+    const normalized = current.replace(/\r\n/g, '\n')
 
-    expect(current.replace(/\r\n/g, '\n')).toBe(baseline.replace(/\r\n/g, '\n'))
+    expect(createHash('sha256').update(normalized).digest('hex')).toBe('4ccfe283418d6cbed7888f2fbcec90d7c531b7d4b31db42c647b1fdac0572896')
   })
 
   it.each([

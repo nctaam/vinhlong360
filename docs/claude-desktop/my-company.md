@@ -16,9 +16,9 @@
 
 1. **CHỈ GIỚI THIỆU**: không đặt hàng/booking/thanh toán on-site, không sàn TMĐT bên thứ ba. CTA chỉ là liên hệ Zalo/điện thoại/hỏi giá. Giữ ở "tầng nhẹ" pháp lý.
 2. **Doanh thu**: premium/featured listing + hợp đồng B2G + quảng cáo. KHÔNG hoa hồng booking, KHÔNG bán tour/vé.
-3. **Ảnh: CHỈ AI-generated** (pipeline riêng của dự án), luôn kèm nhãn minh hoạ trung thực. CẤM ảnh stock (Pexels/Unsplash), CẤM Wikimedia, CẤM ảnh UGC, CẤM cào ảnh báo/gov.
+3. **Ảnh có provenance rõ ràng**: ảnh AI-generated luôn kèm nhãn minh hoạ trung thực; ảnh báo chí/tư liệu/chính thức chỉ dùng khi có quyền, tác giả, nguồn, giấy phép và URL truy vết, đồng thời hiển thị credit. CẤM stock (Pexels/Unsplash), Wikimedia, UGC và cào/hotlink ảnh báo/gov không phép.
 4. **Trust không khai khống**: byline cấp tổ chức "Ban biên tập vinhlong360" (không tên cá nhân); không tự nhận "đã xác minh/kiểm chứng thực địa" khi chưa đi thực tế; nhãn "chưa có ảnh thật" là tín hiệu trung thực, giữ nguyên.
-5. **Không re-host nội dung báo chí** — chỉ tiêu đề + trích đoạn + link gốc.
+5. **Không re-host nguyên văn nội dung báo chí** — phần chữ chỉ dùng tiêu đề + trích đoạn hợp lý + link gốc; ảnh chỉ re-host theo điều kiện quyền và ghi nguồn ở mục 3.
 
 ## Trạng thái & kỹ thuật (tóm tắt cho ngữ cảnh)
 

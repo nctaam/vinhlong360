@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+import shutil
+import uuid
 
 from scripts import generate_data_verification_report as report_generator
 
@@ -54,8 +56,11 @@ def _assert_exact_artifacts(output_dir: Path) -> None:
     assert {path.name for path in output_dir.iterdir()} == ARTIFACT_NAMES
 
 
-def test_generate_report_routes_every_artifact_to_requested_directory(tmp_path: Path) -> None:
-    output_dir = tmp_path / "forensic-output"
+def test_generate_report_routes_every_artifact_to_requested_directory(request) -> None:
+    external_root = report_generator.ROOT.parent / f".report-generator-test-{uuid.uuid4().hex}"
+    external_root.mkdir()
+    request.addfinalizer(lambda: shutil.rmtree(external_root, ignore_errors=True))
+    output_dir = external_root / "forensic-output"
     assert report_generator.ROOT not in output_dir.parents
 
     protected_paths = [

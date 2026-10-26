@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { DatabaseSync } from 'node:sqlite'
 import path from 'node:path'
 import fs from 'node:fs'
+import { openReadOnlyDatabase, relationshipParitySummary } from './helpers/data-contract'
 
 const repoRoot = fs.existsSync(path.resolve('agent/data/vinhlong360.db'))
   ? path.resolve('.')
@@ -13,7 +14,7 @@ let db: DatabaseSync
 
 beforeAll(() => {
   expect(fs.existsSync(dbPath), `Database file must exist at ${dbPath}`).toBe(true)
-  db = new DatabaseSync(dbPath, { readOnly: true })
+  db = openReadOnlyDatabase()
 })
 
 afterAll(() => {
@@ -183,13 +184,17 @@ describe('Phase 3: Comprehensive Data Standardization Suite', () => {
     expect(searchAoBaOm.length).toBeGreaterThan(0)
   })
 
-  it('verifies web/data.json matches database synchronization with zero corrupt JSON', () => {
+  it('verifies web/data.json content and canonical relationship parity; see outputs/data-parity-audit-2026-09-22.json', () => {
     const dataRaw = fs.readFileSync(dataJsonPath, 'utf-8')
     const data = JSON.parse(dataRaw)
+    const parity = relationshipParitySummary()
 
     expect(data.entities.length).toBe(1772)
-    expect(data.relationships.length).toBe(13343)
     expect(data.itineraries.length).toBe(33)
+    expect(parity.sqliteRows).toBe(parity.jsonRows)
+    expect(parity.duplicateJsonTriples).toBe(0)
+    expect(parity.sqliteOnlyTriples).toBe(0)
+    expect(parity.jsonOnlyTriples).toBe(0)
 
     // Validate no entity has empty description, attributes.sub_category, or placeId in web/data.json
     for (const e of data.entities) {

@@ -73,10 +73,10 @@ def test_llms_output_does_not_invent_press_credits(tmp_path: Path) -> None:
 
 def test_llms_cli_requires_explicit_paths_and_help_is_read_only(tmp_path: Path) -> None:
     script = Path(__file__).resolve().parents[1] / "scripts/generate_llms_txt.py"
-    refused = subprocess.run([sys.executable, str(script)], capture_output=True, text=True)
+    refused = subprocess.run([sys.executable, str(script)], capture_output=True, text=True, encoding="utf-8")
     assert refused.returncode != 0
     output = tmp_path / "help-output.txt"
     env = {**__import__("os").environ, "PYTHONIOENCODING": "utf-8"}
-    help_run = subprocess.run([sys.executable, str(script), "--help"], cwd=tmp_path, capture_output=True, text=True, env=env)
+    help_run = subprocess.run([sys.executable, str(script), "--help"], cwd=tmp_path, capture_output=True, text=True, encoding="utf-8", env=env)
     assert help_run.returncode == 0
     assert not output.exists()

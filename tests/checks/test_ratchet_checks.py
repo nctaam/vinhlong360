@@ -104,6 +104,35 @@ def test_fe_colors_token_based_rgba_not_flagged(tmp_path):
     assert results["R30.3"] == 1  # chỉ .bad (rgba literal); 2 token-based bỏ qua
 
 
+def test_fe_colors_scans_css_files_and_ignores_comments_and_variables(tmp_path):
+    """Chấm dứt Split-Brain Gate: R30.3 phải bắt màu thô trong assets/css/*.css
+    (như var(--focus-ring-inner, #fff) ở components.css), nhưng bỏ qua comment
+    /* #fff */ và bảng khai báo token gốc variables.css."""
+    _mk(tmp_path, "web-nuxt/assets/css/variables.css", ":root { --surface-white: #ffffff; }\n")
+    _mk(
+        tmp_path,
+        "web-nuxt/assets/css/components.css",
+        "/* Comment mentions #ffffff and rgba(0,0,0,.5) */\n"
+        ".sheet-close:focus-visible { outline: 2px solid var(--focus-ring-inner, #fff); }\n"
+        ".ok { outline: 2px solid var(--focus-ring-inner, var(--surface-white)); }\n",
+    )
+    results = {r["rule"]: r["count"] for r in (c.run() for c in fe_checks(root=tmp_path))}
+    assert results["R30.3"] == 1
+
+
+def test_fe_emoji_catches_html_numeric_entities(tmp_path):
+    """Bịt lỗ hổng §R30.2: HTML numeric entity như &#128269; (🔍) hay &#128247; (📷)
+    phải bị bắt bởi R30.2 (fe_emoji), trong khi &#10; (newline) không bị bắt."""
+    _mk(
+        tmp_path,
+        "web-nuxt/components/x.vue",
+        "<template><span>&#128269;</span><span>&#128247;</span><textarea placeholder='a&#10;b' /></template>\n",
+    )
+    results = {r["rule"]: r["count"] for r in (c.run() for c in fe_checks(root=tmp_path))}
+    assert results["R30.2"] == 2
+    assert results["R30.3"] == 0
+
+
 # ---------- doc_status ----------
 
 def test_doc_status_missing_and_present(tmp_path):

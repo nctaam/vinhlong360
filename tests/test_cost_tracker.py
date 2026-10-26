@@ -307,6 +307,8 @@ class TestCostAttributionPersistence(unittest.TestCase):
                 _record_helper(attr, cost=0.02)
                 attr.force_save()
                 self.assertTrue(os.path.exists(test_file))
+                leftover_tmp = [name for name in os.listdir(tmpdir) if name.endswith(".tmp")]
+                self.assertEqual(leftover_tmp, [])
                 # Load into a new instance
                 attr2 = _fresh_attribution()
                 attr2._load()

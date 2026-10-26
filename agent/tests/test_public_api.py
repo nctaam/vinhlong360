@@ -244,16 +244,11 @@ from public_api import (  # noqa: E402
 
 def _sp(eid, name="Sản phẩm thử", summary=None, **kw):
     """Product hợp lệ tối thiểu: có ảnh, summary trong khoảng, tên đủ ngắn."""
-    attributes = {
-        "image_type": "ai-generated",
-        "is_verified_photo": False,
-    }
-    attributes.update(kw.pop("attributes", {}))
     e = {
         "id": eid, "type": "product", "name": name,
         "summary": summary if summary is not None else ("x" * 150),
         "images": ["/img/entities/" + eid + ".webp"],
-        "attributes": attributes,
+        "attributes": {},
     }
     e.update(kw)
     return e
@@ -706,3 +701,4 @@ def test_homepage_score_uu_tien_bieu_tuong_di_san_vinh_long():
         "attributes": {"rating": 5.0},
     }
     assert _homepage_score(e_mang_thit, 9) > _homepage_score(e_generic, 9)
+

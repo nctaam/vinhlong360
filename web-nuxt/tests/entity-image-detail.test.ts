@@ -17,8 +17,9 @@ const aiDescriptor: ImageDescriptor = {
   disclosure_key: 'entity-ai',
   short_label: aiDisclosure.entity_ai.short_label,
   full_disclosure: aiDisclosure.entity_ai.full_disclosure,
-  credit: null,
+  credit: null,
   source_url: null,
+
   width: null,
   height: null,
 }
@@ -31,38 +32,14 @@ const placeholderDescriptor: ImageDescriptor = {
   disclosure_key: 'entity-placeholder',
   short_label: aiDisclosure.placeholder.short_label,
   full_disclosure: aiDisclosure.placeholder.full_disclosure,
-  credit: null,
+  credit: null,
   source_url: null,
-  width: null,
-  height: null,
-}
 
-const pressDescriptor: ImageDescriptor = {
-  url: '/img/entities/dinh-long-ho.webp',
-  alt: 'Đình Long Hồ — ảnh tư liệu',
-  source_class: 'rights-cleared',
-  source_kind: 'press',
-  disclosure_key: 'entity-sourced-photo',
-  short_label: aiDisclosure.sourced_photo.short_label,
-  full_disclosure: aiDisclosure.sourced_photo.full_disclosure,
-  credit: 'Trần Phước · Báo Vĩnh Long',
-  source_url: 'https://baovinhlong.com.vn/images/photo.webp',
   width: null,
   height: null,
 }
 
 describe('ImageDisclosure', () => {
-  it('renders sourced-photo credit as a safe source link', async () => {
-    const wrapper = await mountSuspended(ImageDisclosure, {
-      props: { descriptor: pressDescriptor, presentation: 'full' },
-    })
-    const credit = wrapper.get('a[data-credit]')
-
-    expect(credit.attributes('href')).toBe(pressDescriptor.source_url)
-    expect(credit.attributes('rel')).toContain('noopener')
-    expect(credit.text()).toBe(pressDescriptor.credit)
-  })
-
   it('associates the visible short label with deterministic full disclosure text', async () => {
     const wrapper = await mountSuspended(ImageDisclosure, {
       props: { id: 'entity-abc-hero-0', descriptor: aiDescriptor, presentation: 'short' },

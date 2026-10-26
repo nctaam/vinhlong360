@@ -1,7 +1,10 @@
+import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ref } from 'vue'
 import type { Entity } from '~/types'
 import { useAdminEntityDeletion } from '../composables/useAdminEntityDeletion'
+
+mockNuxtImport('$fetch', () => (...args: any[]) => (globalThis as any).$fetch(...args))
 
 describe('Moc 170: Admin Entity Deletion & Bulk Operations Architecture', () => {
   const fetchMock = vi.fn()

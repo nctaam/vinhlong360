@@ -12,10 +12,9 @@ mà không ai thấy.
 """
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-from .common import repo_root
+from .common import load_json_cached, repo_root
 
 THRESHOLD = 200  # khớp sàn tối thiểu content-creation-guide (ngưỡng index-worthy cao hơn — SP6)
 DATA_REL = "web/data.json"
@@ -37,7 +36,7 @@ class ThinContentCheck:
         violations = []
         path = self.root / DATA_REL
         if path.exists():
-            data = json.loads(path.read_text(encoding="utf-8"))
+            data = load_json_cached(path)
             for e in data.get("entities", []):
                 text = (e.get("summary") or "") + (e.get("description") or "")
                 if len(text) < THRESHOLD:

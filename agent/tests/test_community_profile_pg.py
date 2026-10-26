@@ -325,16 +325,17 @@ def test_upload_image_chan_moi_media_theo_chinh_sach_ai_only(monkeypatch):
     assert rate_calls == []
 
 
-def test_upload_image_openapi_mo_ta_dung_chinh_sach_ai_only():
+def test_upload_image_openapi_mo_ta_dung_chinh_sach_cam_ugc():
     """Bug 13 đã sửa: summary/description của route /upload/image phải nói đúng
     hành vi thật (từ chối 400 ai_only_media), không hứa 'returns the URL'."""
     route = next(
         r for r in community_api.router.routes
         if getattr(r, "path", "") == "/api/upload/image"
     )
-    assert "AI-only" in route.summary
+    assert "UGC" in route.summary
     assert "ai_only_media" in route.description
     assert "rejected" in route.description
+    assert "curated out-of-band" in route.description
     assert "Returns the uploaded image URL" not in route.description
 
 

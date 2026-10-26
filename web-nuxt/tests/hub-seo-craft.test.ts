@@ -667,6 +667,18 @@ describe('SEO & Editorial Craft Guardrails', () => {
     const plannerLines = planner.split('\n').length
     expect(plannerLines).toBeLessThan(1500)
   })
+
+  it('DetailRelationships and OnboardingSheet render vector IconLine instead of indirect .emoji strings', () => {
+    const rels = doc('components/DetailRelationships.vue')
+    expect(rels).toContain('<IconLine v-if="rel.icon" :name="rel.icon"')
+    expect(rels).not.toContain('meta.emoji')
+
+    const onboarding = doc('components/OnboardingSheet.vue')
+    expect(onboarding).toContain('resolveOnboardingIcon(ob.emoji')
+    expect(onboarding).toContain('resolveOnboardingIcon(f.icon')
+    expect(onboarding).not.toContain('{{ ob.emoji }}')
+    expect(onboarding).not.toContain('{{ f.icon }}')
+  })
 })
 
 

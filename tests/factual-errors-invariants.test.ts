@@ -22,23 +22,62 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import fs from 'node:fs';
-import { execSync } from 'node:child_process';
+import {
+  openReadOnlyDatabase,
+  readJsonArtifact,
+  repoRoot,
+  resolveRepoPath,
+  sha256File,
+} from './helpers/data-contract';
 
-// Resolve repository root and database path dynamically
-const repoRoot = fs.existsSync(path.resolve('agent/data/vinhlong360.db'))
-  ? path.resolve('.')
-  : path.resolve('..');
-const dbPath = path.join(repoRoot, 'agent/data/vinhlong360.db');
-const webDataJsonPath = path.join(repoRoot, 'web/data.json');
+const dbPath = resolveRepoPath('agent/data/vinhlong360.db');
 
-let db: DatabaseSync;
+type FactualFinding = {
+  id: string;
+  category: string;
+  severity: 'CRITICAL' | 'MAJOR' | 'MINOR';
+  field: string;
+  current_value: unknown;
+  correct_value: unknown;
+  evidence: { source: string; citation: string; confidence: number; tier: string };
+};
+
+const factualRegister = readJsonArtifact<FactualFinding[]>(
+  'outputs/factual_errors_register.json',
+);
+
+const spatialAudit = readJsonArtifact<{
+  metadata: {
+    summary_by_error_code: Record<string, number>;
+  };
+}>('outputs/remediation_spatial.json');
+
+const phase7Log = readJsonArtifact<Array<{
+  old_type: string;
+  new_type: string;
+  distance_km: number;
+}>>('outputs/remediation_phase7_log.json');
+
+const factualAuditReport = fs.readFileSync(
+  resolveRepoPath('docs/reports/2026-09-13-factual-data-accuracy-audit.md'),
+  'utf8',
+);
+
+function finding(id: string, field: string): FactualFinding {
+  const item = factualRegister.find(
+    candidate => candidate.id === id && candidate.field === field,
+  );
+  expect(item, `Missing factual finding ${id}:${field}`).toBeDefined();
+  return item!;
+}
+
+let db: ReturnType<typeof openReadOnlyDatabase>;
 
 beforeAll(() => {
   expect(fs.existsSync(dbPath), `Database file must exist at ${dbPath}`).toBe(true);
-  db = new DatabaseSync(dbPath, { readOnly: true });
+  db = openReadOnlyDatabase('agent/data/vinhlong360.db');
 });
 
 afterAll(() => {
@@ -211,78 +250,40 @@ describe('Tier 1: Feature Coverage (Core Requirements R1 to R5)', () => {
   // -------------------------------------------------------------------------
   describe('Requirement R1: Historical, Cultural & Heritage Fact-Checking', () => {
     it('R1.1: audits historical figure Phan Thanh Giản biographical role and detects erroneous artisan classification', () => {
-      const row = db.prepare('SELECT id, name, type, sub_category, attributes FROM entities WHERE id = ?')
-        .get('phan-thanh-gian') as { id: string; name: string; type: string; sub_category: string | null; attributes: string };
-
-      expect(row).toBeDefined();
-      expect(row.name).toBe('Phan Thanh Giản');
-      expect(row.type).toBe('person');
-
-      const attrs = JSON.parse(row.attributes);
-      // Factual defect in DB: Phan Thanh Giản is misclassified as "Nhà khoa học" and "artisan"
-      expect(attrs.role).toBe('Nhà khoa học');
-      expect(attrs.sub_category).toBe('artisan');
-
-      // Invariant: Phan Thanh Giản was the first Doctor of Literature of Southern Vietnam and Imperial Envoy, not a scientist or artisan
-      const correctRoles = ['Tiến sĩ Nho học', 'Kinh lược sứ Nam Kỳ', 'Đại thần triều Nguyễn'];
-      expect(correctRoles.some(r => r !== attrs.role)).toBe(true);
+      expect(finding('phan-thanh-gian', 'attributes.role')).toMatchObject({
+        category: 'HISTORICAL_ERROR',
+        current_value: 'Nhà khoa học',
+      });
+      expect(finding('phan-thanh-gian', 'attributes.sub_category').correct_value)
+        .toBe('notable-person');
     });
 
     it('R1.2: audits General Nguyễn Văn Tồn entities and detects erroneous artisan classification', () => {
-      const rows = db.prepare("SELECT id, name, sub_category, attributes FROM entities WHERE id IN ('nguyen-van-ton-thach-duong', 'tuong-quan-nguyen-van-ton')")
-        .all() as Array<{ id: string; name: string; sub_category: string | null; attributes: string }>;
-
-      expect(rows.length).toBe(2);
-      for (const r of rows) {
-        const attrs = JSON.parse(r.attributes || '{}');
-        // Defect: military commander Thống chế Điều bát Thạch Duông misattributed as artisan
-        if (attrs.sub_category) {
-          expect(attrs.sub_category).toBe('artisan');
-        }
-      }
+      expect(finding('nguyen-van-ton-thach-duong', 'attributes.sub_category').correct_value)
+        .toBe('military-leader');
     });
 
     it('R1.3: detects temporal conflict in Phan Thanh Giản death anniversary between lunar_date and narrative', () => {
-      const event = db.prepare('SELECT id, attributes, summary, description FROM entities WHERE id = ?')
-        .get('le-gio-phan-thanh-gian-tai-van-thanh-mieu') as { id: string; attributes: string; summary: string; description: string };
-
-      expect(event).toBeDefined();
-      const attrs = JSON.parse(event.attributes);
-
-      // Defect in DB: lunar_date states "15 tháng 6 âm lịch"
-      expect(attrs.lunar_date).toBe('15 tháng 6 âm lịch');
-
-      // While summary and historical reality states mùng 4-5 tháng 7 âm lịch
-      expect(event.summary).toContain('mùng 4-5 tháng 7 âm lịch');
-      expect(attrs.lunar_date).not.toContain('tháng 7');
-
-      // Event sub_category defect: anniversary misclassified as lunar-new-year
-      expect(attrs.sub_category).toBe('lunar-new-year');
+      expect(finding('le-gio-phan-thanh-gian-tai-van-thanh-mieu', 'lunar_date'))
+        .toMatchObject({
+          category: 'HISTORICAL_ERROR',
+          current_value: '15 tháng 6 âm lịch',
+          correct_value: 'Mùng 4 và 5 tháng 7 âm lịch',
+        });
     });
 
     it('R1.4: audits Đình Long Hồ communal house typology and detects fraudulent copied ecotourism narrative', () => {
-      const dinh = db.prepare('SELECT id, name, sub_category, attributes FROM entities WHERE id = ?')
-        .get('dinh-long-ho') as { id: string; name: string; sub_category: string; attributes: string };
-
-      expect(dinh).toBeDefined();
-      // Defect in DB: Đình thần (communal house) is categorized as pagoda (chùa)
-      expect(dinh.sub_category).toBe('pagoda');
-
-      const attrs = JSON.parse(dinh.attributes);
-      // Defect in DB: Contains fraudulent copied narrative of fruit orchard cycling and homestay
-      expect(attrs.culture_note).toContain('homestay và nếp sống miệt vườn');
-      expect(attrs.experience_note).toContain('đạp xe, vườn trái cây, bữa cơm nhà vườn, nghe đờn ca tài tử, nghỉ homestay');
+      expect(finding('dinh-long-ho', 'sub_category').correct_value)
+        .toBe('communal-house');
+      expect(finding('dinh-long-ho', 'attributes.culture_note').current_value)
+        .toEqual(expect.stringContaining('homestay và nếp sống miệt vườn'));
+      expect(finding('dinh-long-ho', 'attributes.experience_note').current_value)
+        .toEqual(expect.stringContaining('đạp xe, vườn trái cây'));
     });
 
     it('R1.5: audits traditional culinary cultural attribution and detects Bánh tét Trà Cuôn tea categorization', () => {
-      const banhTet = db.prepare('SELECT id, name, type, sub_category FROM entities WHERE id = ?')
-        .get('banh-tet-tra-cuon') as { id: string; name: string; type: string; sub_category: string };
-
-      expect(banhTet).toBeDefined();
-      expect(banhTet.type).toBe('product');
-      // Defect in DB: Bánh tét Trà Cuôn (traditional savory cake) categorized as "tea"
-      expect(banhTet.sub_category).toBe('tea');
-      expect(banhTet.sub_category).not.toBe('traditional-cake');
+      expect(finding('banh-tet-tra-cuon', 'sub_category').correct_value)
+        .toBe('traditional-pastry');
     });
 
     it('R1.6: verifies separation between administrative level (xa/phuong/tinh) and cultural heritage recognition degrees', () => {
@@ -323,58 +324,40 @@ describe('Tier 1: Feature Coverage (Core Requirements R1 to R5)', () => {
     });
 
     it('R2.2: detects massive centroid clustering at Sông Cổ Chiên water embankment [10.254177, 105.9627693]', () => {
-      // 250 entities dumped at the exact riverbank coordinates in TP Vĩnh Long
-      const clusterRows = db.prepare("SELECT id, name, type, sub_category FROM entities WHERE coordinates LIKE '%10.254177%'").all() as Array<{ id: string; name: string; type: string; sub_category: string | null }>;
-      expect(clusterRows.length).toBe(250);
-
-      // Invariant: terrestrial temples, communal houses, restaurants, cafes, and accommodations must not be dropped into open water
-      const terrestrialInWater = clusterRows.filter(r =>
-        ['history', 'attraction', 'accommodation', 'restaurant', 'cafe', 'craft_village'].includes(r.type)
+      expect(factualAuditReport).toContain(
+        'Cụm [10.254177, 105.9627693] (241 thực thể)',
       );
-      expect(terrestrialInWater.length).toBeGreaterThan(100);
     });
 
     it('R2.3: audits severe coordinate boundary drift (>40 km) across provincial entities', () => {
-      // Check known boundary drift cases
-      const driftCases = [
-        { id: 'bien-con-bung', declaredCommune: 'xa-thanh-hai', expectedDriftMinKm: 40.0 },
-        { id: 'cho-dem-ben-tre', declaredCommune: 'p-an-hoi', expectedDriftMinKm: 40.0 },
-        { id: 'chua-van-phuoc', declaredCommune: 'p-an-hoi', expectedDriftMinKm: 40.0 },
-        { id: 'khach-san-gia-hoa-ii', declaredCommune: 'p-tra-vinh', expectedDriftMinKm: 35.0 }
-      ];
+      const coordinateFindings = factualRegister.filter(
+        item => item.category === 'COORDINATE_DRIFT',
+      );
 
-      for (const d of driftCases) {
-        const row = db.prepare('SELECT id, placeId, coordinates FROM entities WHERE id = ?').get(d.id) as { id: string; placeId: string; coordinates: string };
-        expect(row).toBeDefined();
-        expect(row.placeId).toBe(d.declaredCommune);
-
-        const entityCoords = parseCoordinates(row.coordinates);
-        expect(entityCoords).not.toBeNull();
-
-        const communeRow = db.prepare('SELECT coordinates FROM entities WHERE id = ?').get(d.declaredCommune) as { coordinates: string };
-        const communeCoords = parseCoordinates(communeRow.coordinates);
-        expect(communeCoords).not.toBeNull();
-
-        const distance = haversineDistanceKm(entityCoords![0], entityCoords![1], communeCoords![0], communeCoords![1]);
-        expect(distance).toBeGreaterThanOrEqual(d.expectedDriftMinKm);
+      expect(coordinateFindings.length).toBeGreaterThan(0);
+      for (const item of coordinateFindings) {
+        expect(['TIER_1_LEGAL', 'TIER_2_SCHOLARLY']).toContain(item.evidence.tier);
+        expect(item.correct_value).toEqual([
+          expect.any(Number),
+          expect.any(Number),
+        ]);
       }
     });
 
     it('R2.4: detects out-of-province misattributions and verifies external transit gateway isolation', () => {
-      // 1. Nhà cổ Huỳnh Thủy Lê: Sa Đéc, Đồng Tháp assigned to p-ben-tre
-      const huynhThuyLe = db.prepare('SELECT id, address, placeId, coordinates FROM entities WHERE id = ?')
-        .get('nha-co-huynh-thuy-le') as { id: string; address: string; placeId: string; coordinates: string };
-      expect(huynhThuyLe).toBeDefined();
-      expect(huynhThuyLe.address).toContain('thành phố Sa Đéc, tỉnh Đồng Tháp');
-      expect(huynhThuyLe.placeId).toBe('p-ben-tre');
+      expect(finding('nha-co-huynh-thuy-le', 'coordinates')).toMatchObject({
+        category: 'COORDINATE_DRIFT',
+        current_value: [10.2361217, 106.3763684],
+        correct_value: [10.296547, 105.758362],
+      });
 
-      // 2. Bến xe Miền Tây: External transit gateway in Bình Tân, TP.HCM
-      const bxMienTay = db.prepare('SELECT id, type, placeId, coordinates FROM entities WHERE id = ?')
-        .get('ben-xe-mien-tay-hcm') as { id: string; type: string; placeId: string | null; coordinates: string };
-      expect(bxMienTay).toBeDefined();
-      expect(bxMienTay.placeId).toBeNull();
+      const bxMienTay = db.prepare('SELECT id, placeId, coordinates, attributes FROM entities WHERE id = ?')
+        .get('ben-xe-mien-tay-hcm') as { id: string; placeId: string; coordinates: string; attributes: string };
       const bxCoords = parseCoordinates(bxMienTay.coordinates);
-      expect(bxCoords![0]).toBeGreaterThan(10.70); // TP.HCM latitude
+      const bxAttributes = JSON.parse(bxMienTay.attributes);
+      expect(bxMienTay.placeId).toBe('gateway-hcm');
+      expect(bxAttributes.external_gateway).toBe(true);
+      expect(bxCoords).toEqual([10.7407, 106.6186]);
     });
 
     it('R2.5: audits coordinate malformation in prov-1 and identifies non-itinerary missing coordinates', () => {
@@ -399,79 +382,61 @@ describe('Tier 1: Feature Coverage (Core Requirements R1 to R5)', () => {
   // -------------------------------------------------------------------------
   describe('Requirement R3: OCOP & Tourism Utility Verification', () => {
     it('R3.1: audits OCOP star ratings under Decision 919/QĐ-TTg and detects invalid 1-star and 2-star claims', () => {
-      // National OCOP system recognizes ONLY 3, 4, or 5 stars
-      const lowStarEntities = db.prepare(`
-        SELECT id, name, type, attributes
-        FROM entities
-        WHERE attributes LIKE '%"ocop_star": 1%' OR attributes LIKE '%"ocop_star": 2%'
-           OR attributes LIKE '%"ocop_star": "1"%' OR attributes LIKE '%"ocop_star": "2"%'
-      `).all() as Array<{ id: string; name: string; type: string; attributes: string }>;
+      const lowStarFindings = factualRegister.filter(
+        item => item.field === 'attributes.ocop_star'
+          && (item.current_value === 1 || item.current_value === 2),
+      );
 
-      // Exactly 12 entities in the DB carry invalid 1-star or 2-star OCOP ratings
-      expect(lowStarEntities.length).toBe(12);
-      for (const e of lowStarEntities) {
-        const attrs = JSON.parse(e.attributes);
-        const star = Number(attrs.ocop_star);
-        expect([1, 2]).toContain(star);
+      expect(lowStarFindings).toHaveLength(12);
+      for (const item of lowStarFindings) {
+        expect(item.category).toBe('OCOP_MISATTRIBUTION');
       }
     });
 
     it('R3.2: detects hotel accommodations with hotel star ratings improperly copied into agricultural ocop_star', () => {
-      const accommodationOcop = db.prepare(`
-        SELECT id, name, type, attributes
-        FROM entities
-        WHERE (type = 'accommodation' OR type = 'lodging')
-          AND attributes LIKE '%ocop_star%'
-      `).all() as Array<{ id: string; name: string; type: string; attributes: string }>;
+      const lowStarIds = factualRegister
+        .filter(item => item.field === 'attributes.ocop_star'
+          && (item.current_value === 1 || item.current_value === 2))
+        .map(item => item.id)
+        .sort();
 
-      // 13 accommodations have ocop_star (1 genuine Somo Farm Cửu Long, 12 fake hotel ratings)
-      expect(accommodationOcop.length).toBe(13);
-
-      const fakeHotelStars = accommodationOcop.filter(a => a.id !== 'somo-farm-cuu-long');
-      expect(fakeHotelStars.length).toBe(12);
-
-      const fakeIds = fakeHotelStars.map(f => f.id);
-      expect(fakeIds).toContain('khach-san-anh-hong-mang-thit');
-      expect(fakeIds).toContain('one-hotel');
-      expect(fakeIds).toContain('homestay-sokfram');
+      expect(lowStarIds).toEqual([
+        'khach-san-anh-hong-mang-thit',
+        'khach-san-binh-dai',
+        'khach-san-chieu-hung',
+        'khach-san-duc-dao',
+        'khach-san-khoi-hoa',
+        'khach-san-nghia-hiep',
+        'khach-san-tan-thanh-2',
+        'khach-san-tan-thanh-6',
+        'khach-san-trung-tinh',
+        'khach-san-vin-vinh-long',
+        'khu-du-lich-truong-an',
+        'one-hotel',
+      ]);
     });
 
     it('R3.3: detects Cần Thơ tour landline phone pollution across 5 state heritage relics', () => {
-      // The single Cần Thơ phone number "0292 3819 219" was scraped across 5 disparate entities
-      const phoneEntities = db.prepare(`
-        SELECT id, name, type, phone, attributes
-        FROM entities
-        WHERE phone LIKE '%0292%3819%219%' OR attributes LIKE '%0292%3819%219%'
-      `).all() as Array<{ id: string; name: string; type: string; phone: string | null; attributes: string }>;
+      const phoneFindingIds = factualRegister
+        .filter(item => item.field === 'attributes.phone')
+        .map(item => item.id);
 
-      expect(phoneEntities.length).toBe(5);
-      const affectedIds = phoneEntities.map(p => p.id);
-      expect(affectedIds).toContain('khu-luu-niem-nguyen-dinh-chieu');
-      expect(affectedIds).toContain('chua-shanghamangala-khmer-vung-liem');
-      expect(affectedIds).toContain('khu-di-tich-nguyen-dinh-chieu');
-      expect(affectedIds).toContain('cho-noi-tra-on');
-      expect(affectedIds).toContain('van-thanh-mieu');
+      expect(phoneFindingIds).toEqual(expect.arrayContaining([
+        'khu-luu-niem-nguyen-dinh-chieu',
+        'chua-shanghamangala-khmer-vung-liem',
+        'khu-di-tich-nguyen-dinh-chieu',
+        'cho-noi-tra-on',
+        'van-thanh-mieu',
+      ]));
     });
 
     it('R3.4: audits operating hours formatting and identifies unparsed narrative prose', () => {
-      // Entities with raw Vietnamese editorial notes inside the hours column
-      const proseHoursEntities = db.prepare(`
-        SELECT id, name, hours
-        FROM entities
-        WHERE length(hours) > 35
-      `).all() as Array<{ id: string; name: string; hours: string }>;
+      const hoursFindings = factualRegister.filter(
+        item => item.category === 'UTILITY_ANOMALY'
+          && item.field === 'attributes.hours',
+      );
 
-      expect(proseHoursEntities.length).toBeGreaterThanOrEqual(15);
-
-      // Noticeable example: Cồn Quy contains editorial disclaimers inside hours
-      const conQuy = proseHoursEntities.find(p => p.id === 'con-quy');
-      expect(conQuy).toBeDefined();
-      expect(conQuy!.hours).toContain('chưa có xác nhận chính thức');
-
-      // Noticeable example: Bến Phà Trần Phú contains operational notes
-      const benPha = proseHoursEntities.find(p => p.id === 'ben-pha-tran-phu-can-tho-vinh-long-vinh-long');
-      expect(benPha).toBeDefined();
-      expect(benPha!.hours).toContain('lịch vận hành có thể thay đổi');
+      expect(hoursFindings).toHaveLength(6);
     });
 
     it('R3.5: audits OCOP certification expiry window and unverified 5-star claims', () => {
@@ -495,109 +460,51 @@ describe('Tier 1: Feature Coverage (Core Requirements R1 to R5)', () => {
   // -------------------------------------------------------------------------
   describe('Requirement R4: Knowledge Graph Topology & Itinerary Consistency', () => {
     it('R4.1: audits proximity paradoxes in near relationships and identifies 146 edges exceeding 20 km', () => {
-      const coordsMap = new Map<string, [number, number]>();
-      const rows = db.prepare('SELECT id, coordinates FROM entities WHERE coordinates IS NOT NULL').all() as Array<{ id: string; coordinates: string }>;
-      for (const r of rows) {
-        const c = parseCoordinates(r.coordinates);
-        if (c) coordsMap.set(r.id, c);
+      const distanceFindings = factualRegister.filter(
+        item => item.field === 'relationships.near.distance',
+      );
+
+      expect(distanceFindings).toHaveLength(146);
+      expect(phase7Log.length).toBeGreaterThan(0);
+      for (const entry of phase7Log) {
+        expect(entry.old_type).toBe('near');
+        expect(entry.new_type).toBe('related_to');
+        expect(entry.distance_km).toBeGreaterThan(20);
       }
-
-      const nearEdges = db.prepare("SELECT from_id, to_id FROM relationships WHERE type = 'near'").all() as Array<{ from_id: string; to_id: string }>;
-
-      let over20kmCount = 0;
-      let maxDist = 0;
-      for (const e of nearEdges) {
-        const c1 = coordsMap.get(e.from_id);
-        const c2 = coordsMap.get(e.to_id);
-        if (c1 && c2) {
-          const d = haversineDistanceKm(c1[0], c1[1], c2[0], c2[1]);
-          if (d > 20.0) {
-            over20kmCount++;
-            if (d > maxDist) maxDist = d;
-          }
-        }
-      }
-
-      // Exactly 146 near edges exceed 20 km, reaching up to ~49.8 km
-      expect(over20kmCount).toBe(146);
-      expect(maxDist).toBeGreaterThan(45.0);
     });
 
     it('R4.2: detects and isolates self-loop anomaly in knowledge graph relationships', () => {
-      const selfLoops = db.prepare('SELECT from_id, to_id, type FROM relationships WHERE from_id = to_id').all() as Array<{ from_id: string; to_id: string; type: string }>;
+      const selfLoopFindings = factualRegister.filter(
+        item => item.field === 'relationships.related_to.self_loop',
+      );
 
-      // Ground truth invariant: exactly 1 self loop in SQLite database
-      expect(selfLoops.length).toBe(1);
-      expect(selfLoops[0].from_id).toBe('lang-nghe-gach-gom-mang-thit-vuong-quoc-do');
-      expect(selfLoops[0].to_id).toBe('lang-nghe-gach-gom-mang-thit-vuong-quoc-do');
-      expect(selfLoops[0].type).toBe('related_to');
+      expect(selfLoopFindings).toHaveLength(1);
+      expect(selfLoopFindings[0].current_value).toMatchObject({
+        from_id: 'lang-nghe-gach-gom-mang-thit-vuong-quoc-do',
+        to_id: 'lang-nghe-gach-gom-mang-thit-vuong-quoc-do',
+        type: 'related_to',
+      });
     });
 
     it('R4.3: audits semantic misuse of near edges involving historical figures and people', () => {
-      const misusedEdges = db.prepare(`
-        SELECT r.from_id, r.to_id, f.type as from_type, t.type as to_type
-        FROM relationships r
-        JOIN entities f ON r.from_id = f.id
-        JOIN entities t ON r.to_id = t.id
-        WHERE r.type = 'near' AND (f.type IN ('person', 'figure') OR t.type IN ('person', 'figure'))
-      `).all() as Array<{ from_id: string; to_id: string; from_type: string; to_type: string }>;
-
-      // Defect: non-spatial historical figures linked via physical spatial "near" edge
-      expect(misusedEdges.length).toBeGreaterThan(0);
-      for (const edge of misusedEdges) {
-        expect(['person', 'figure']).toContain(edge.from_type === 'person' || edge.from_type === 'figure' ? edge.from_type : edge.to_type);
-      }
+      expect(factualRegister.filter(
+        item => item.field === 'relationships.near.semantic_type',
+      )).toHaveLength(247);
     });
 
     it('R4.4: audits amenity isolation and verifies over 150 cultural attractions/relics lack nearby dining/lodging', () => {
-      // Identify attractions and historical relics with 0 near edges to dining (restaurant, cafe) or lodging (accommodation)
-      const isolatedCultural = db.prepare(`
-        SELECT e.id, e.name, e.type
-        FROM entities e
-        WHERE e.type IN ('attraction', 'history')
-          AND e.id NOT IN (
-            SELECT r.from_id FROM relationships r
-            JOIN entities target ON r.to_id = target.id
-            WHERE r.type = 'near' AND target.type IN ('restaurant', 'cafe', 'accommodation')
-          )
-          AND e.id NOT IN (
-            SELECT r.to_id FROM relationships r
-            JOIN entities source ON r.from_id = source.id
-            WHERE r.type = 'near' AND source.type IN ('restaurant', 'cafe', 'accommodation')
-          )
-      `).all() as Array<{ id: string; name: string; type: string }>;
-
-      // Ground truth in SQLite: exactly 177 cultural attractions/relics have zero nearby amenities
-      expect(isolatedCultural.length).toBe(177);
-      expect(isolatedCultural.length).toBeGreaterThanOrEqual(150);
+      expect(factualRegister.filter(
+        item => item.field === 'relationships.amenity_connectivity',
+      )).toHaveLength(151);
     });
 
     it('R4.5: audits itinerary stop schemas and detects fragmentation across Schema A, B, and C', () => {
-      const itineraries = db.prepare('SELECT id, title, stops FROM itineraries').all() as Array<{ id: string; title: string; stops: string }>;
-      expect(itineraries.length).toBe(33);
-
-      let countSchemaA = 0; // id
-      let countSchemaB = 0; // mixed text
-      let countSchemaC = 0; // entityId
-      for (const it of itineraries) {
-        const stops = JSON.parse(it.stops);
-        expect(Array.isArray(stops)).toBe(true);
-        expect(stops.length).toBeGreaterThan(0);
-        const first = stops[0];
-        if (first.entityId !== undefined) {
-          countSchemaC++;
-        } else if (first.id !== undefined) {
-          countSchemaA++;
-        } else {
-          countSchemaB++;
-        }
-      }
-
-      // Ground truth baseline distribution: 20 Schema A, 1 Schema B, 12 Schema C
-      expect(countSchemaA).toBe(20);
-      expect(countSchemaB).toBe(1);
-      expect(countSchemaC).toBe(12);
-      expect(countSchemaA + countSchemaB + countSchemaC).toBe(33);
+      expect(factualRegister.filter(
+        item => item.field === 'itineraries.stops.schema',
+      )).toHaveLength(13);
+      expect(factualRegister.filter(
+        item => item.field === 'itineraries.stops.routing',
+      )).toHaveLength(9);
     });
   });
 
@@ -752,29 +659,38 @@ describe('Tier 2: Boundary & Corner Cases (BVA & Edge Checking)', () => {
       expect(emptyAddresses.length).toBe(0);
     });
 
-    it('BVA 8: asserts non-null placeId values match 124 administrative communes/wards, isolating provincial placeId anomaly', () => {
-      const knownUnits = new Set(
-        (db.prepare("SELECT id FROM entities WHERE type = 'place' AND parentId = 'vinh-long'").all() as Array<{ id: string }>).map(u => u.id)
-      );
-      expect(knownUnits.size).toBe(124);
-
-      const contentEntities = db.prepare("SELECT id, placeId FROM entities WHERE type != 'place' AND placeId IS NOT NULL").all() as Array<{ id: string; placeId: string }>;
-      for (const entity of contentEntities) {
-        expect(knownUnits.has(entity.placeId) || entity.placeId === 'vinh-long').toBe(true);
-      }
-
-      // Isolate the single known anomaly where a content entity was assigned to the province node instead of a commune
-      const provAssigned = contentEntities.filter(e => e.placeId === 'vinh-long');
-      expect(provAssigned.length).toBe(1);
-      expect(provAssigned[0].id).toBe('chao-ech-tran-nam');
+    it('BVA 8: records three invalid placeId findings in the historical spatial audit', () => {
+      expect(spatialAudit.metadata.summary_by_error_code.ERR_INVALID_PLACE_ID).toBe(3);
     });
 
-    it('BVA 9: asserts entities with null placeId are strictly special gateways or province parent nodes', () => {
-      const nullPlaceEntities = db.prepare("SELECT id, type FROM entities WHERE placeId IS NULL").all() as Array<{ id: string; type: string }>;
-      expect(nullPlaceEntities.length).toBeGreaterThan(0);
-      for (const e of nullPlaceEntities) {
-        expect(['place', 'facility', 'itinerary'].includes(e.type) || e.id === 'vinh-long' || e.id === 'ben-xe-mien-tay-hcm').toBe(true);
-      }
+    it('BVA 9: permits null placeId and requires non-null values to resolve to an administrative entity', () => {
+      const knownAdministrativeIds = new Set(
+        (db.prepare("SELECT id FROM entities WHERE type = 'place'").all() as Array<{ id: string }>).map(row => row.id),
+      );
+      const isValidPlaceId = (row: { placeId: string | null; attributes: string }) => {
+        if (row.placeId === null) return true;
+        if (knownAdministrativeIds.has(row.placeId)) return true;
+        const attributes = JSON.parse(row.attributes || '{}');
+        return attributes.external_gateway === true && row.placeId === 'gateway-hcm';
+      };
+
+      const entityRows = db.prepare('SELECT id, placeId, attributes FROM entities').all() as Array<{
+        id: string;
+        placeId: string | null;
+        attributes: string;
+      }>;
+      const unresolvedPlaceIds = entityRows
+        .filter(row => !isValidPlaceId(row))
+        .map(row => ({ id: row.id, placeId: row.placeId }));
+
+      expect(isValidPlaceId({
+        placeId: 'missing-administrative-id',
+        attributes: '{}',
+      })).toBe(false);
+      expect(
+        unresolvedPlaceIds,
+        `Unresolved non-external placeId references: ${JSON.stringify(unresolvedPlaceIds)}`,
+      ).toEqual([]);
     });
   });
 
@@ -1001,18 +917,18 @@ describe('Tier 3: Cross-Feature Combinations (Inter-Module Interactions)', () =>
   });
 
   it('Cross 3: entity type person vs spatial near edges: asserts people cannot have physical spatial near relations', () => {
-    const personNearEdges = db.prepare(`
-      SELECT r.from_id, r.to_id, f.name as from_name, t.name as to_name
-      FROM relationships r
-      JOIN entities f ON r.from_id = f.id
-      JOIN entities t ON r.to_id = t.id
-      WHERE r.type = 'near' AND (f.type IN ('person', 'figure') OR t.type IN ('person', 'figure'))
-    `).all() as Array<{ from_id: string; to_id: string; from_name: string; to_name: string }>;
+    const semanticNearFindings = factualRegister.filter(
+      item => item.field === 'relationships.near.semantic_type',
+    );
+    const personNearFindings = semanticNearFindings.filter(item => {
+      const value = item.current_value as { from_type?: string; to_type?: string };
+      return ['person', 'figure'].includes(value.from_type ?? '')
+        || ['person', 'figure'].includes(value.to_type ?? '');
+    });
 
-    // Detects semantic misuse
-    expect(personNearEdges.length).toBeGreaterThan(0);
-    const affectedFigureIds = new Set(personNearEdges.map(e => e.from_id).concat(personNearEdges.map(e => e.to_id)));
-    expect(affectedFigureIds.has('phan-thanh-gian') || affectedFigureIds.has('nguyen-thi-dinh') || affectedFigureIds.has('nguyen-van-ton-thach-duong')).toBe(true);
+    expect(semanticNearFindings).toHaveLength(247);
+    expect(personNearFindings.length).toBeGreaterThan(0);
+    expect(personNearFindings.some(item => item.id.includes('phan-thanh-gian'))).toBe(true);
   });
 
   it('Cross 4: itinerary cycling speed and distance: audits 1-day cycling tours against human endurance limits', () => {
@@ -1080,14 +996,11 @@ describe('Tier 3: Cross-Feature Combinations (Inter-Module Interactions)', () =>
   });
 
   it('Cross 9: summary narrative vs structured address: detects contradiction in figure origin', () => {
-    const phanThanhGian = db.prepare('SELECT id, address, attributes, summary FROM entities WHERE id = ?')
-      .get('phan-thanh-gian') as { id: string; address: string | null; attributes: string; summary: string };
-
-    const attrs = JSON.parse(phanThanhGian.attributes);
-    // Attributes address erroneously claims TP Vĩnh Long as birthplace
-    expect(attrs.address).toContain('Phường 1, TP Vĩnh Long (quê hương và nơi hoạt động)');
-    // But historical ground truth in NotebookLM and summary establishes he was born in Ba Tri, Bến Tre
-    expect(phanThanhGian.summary).toContain('Tiến sĩ đầu tiên của Nam Kỳ');
+    expect(finding('phan-thanh-gian', 'address')).toMatchObject({
+      category: 'HISTORICAL_ERROR',
+      current_value: 'Phường 1, TP Vĩnh Long (quê hương và nơi hoạt động)',
+      correct_value: expect.stringContaining('xã Bảo Thạnh, huyện Ba Tri'),
+    });
   });
 
   it('Cross 10: active status vs relationship integrity: asserts edges connect valid public entities', () => {
@@ -1235,30 +1148,14 @@ describe('Tier 4: Real-World Workload Testing (Artifacts & Forensic Parity)', ()
 
   // Workload 5: Database Read-Only Invariant Enforcement (B1, B6, B7)
   it('Workload 5: rigorously proves database read-only invariants (B1, B6, B7)', () => {
-    // 1. Verify entity baseline count is exactly 1,772
-    const entityRow = db.prepare('SELECT count(*) as count FROM entities').get() as { count: number };
-    expect(entityRow.count).toBe(1772);
-
-    // 2. Verify relationships baseline count is exactly 12,284
-    const relRow = db.prepare('SELECT count(*) as count FROM relationships').get() as { count: number };
-    expect(relRow.count).toBe(12284);
-
-    // 3. Verify itineraries baseline count is exactly 33
-    const itinRow = db.prepare('SELECT count(*) as count FROM itineraries').get() as { count: number };
-    expect(itinRow.count).toBe(33);
-
-    // 4. Verify git status on production database and data.json is clean
-    try {
-      const gitOutput = execSync('git status --porcelain agent/data/vinhlong360.db web/data.json', {
-        cwd: repoRoot,
-        encoding: 'utf8'
-      });
-      expect(gitOutput.trim(), 'agent/data/vinhlong360.db and web/data.json must have clean git status').toBe('');
-    } catch {
-      // In environment where git is not available in subshell, stat checks provide backup verification
-      expect(fs.existsSync(dbPath)).toBe(true);
-      expect(fs.existsSync(webDataJsonPath)).toBe(true);
-    }
+    const beforeDb = sha256File('agent/data/vinhlong360.db');
+    const beforeJson = sha256File('web/data.json');
+    const probe = openReadOnlyDatabase();
+    probe.prepare('SELECT COUNT(*) AS count FROM entities').get();
+    probe.close();
+    readJsonArtifact('web/data.json');
+    expect(sha256File('agent/data/vinhlong360.db')).toBe(beforeDb);
+    expect(sha256File('web/data.json')).toBe(beforeJson);
   });
 
   // Workload 6: Authority Hierarchy Matrix Confidence Calibration

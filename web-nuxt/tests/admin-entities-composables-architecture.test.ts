@@ -1,3 +1,4 @@
+import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { describe, it, expect, vi } from 'vitest'
 import { ref } from 'vue'
 import {
@@ -31,6 +32,8 @@ import {
 import {
   useAdminEntityValidation,
 } from '../composables/useAdminEntityValidation'
+
+mockNuxtImport('$fetch', () => (...args: any[]) => (globalThis as any).$fetch(...args))
 
 describe('Moc 165: Admin Entities Composables Architecture', () => {
   describe('useAdminEntityAttributes', () => {

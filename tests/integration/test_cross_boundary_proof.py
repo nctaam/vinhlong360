@@ -979,6 +979,23 @@ def test_working_tree_digest_ignores_generated_pytest_nested_worktrees(tmp_path)
     assert _working_tree_digest(repo) != baseline
 
 
+def test_working_tree_digest_ignores_repository_local_pytest_basetemp(tmp_path):
+    """The configured repository-local pytest workspace is runner scratch."""
+
+    repo = tmp_path / "repo"
+    run = _seed_repo(repo)
+    (repo / "seed.txt").write_text("seed\n", encoding="utf-8")
+    run("add", "-A")
+    run("commit", "-qm", "seed")
+
+    baseline = _working_tree_digest(repo)
+    generated = repo / ".tmp" / "pytest" / "test-case"
+    generated.mkdir(parents=True)
+    (generated / "temporary-output.txt").write_text("pytest scratch\n", encoding="utf-8")
+
+    assert _working_tree_digest(repo) == baseline
+
+
 def test_runner_leaves_no_scratch_directory_behind(monkeypatch, tmp_path):
     """Repeated runs must not accumulate scratch trees and exhaust the disk."""
 

@@ -155,9 +155,28 @@ def test_wrapped_postgres_adapter_uses_backend_placeholder_and_fails_closed():
 
 def test_default_registry_covers_all_cache_consumers():
     assert {
-        "l1", "l2", "redis", "review_stats", "similar", "kb_context", "place", "homepage",
+        "l1", "l2", "redis", "review_stats", "similar", "kb_context", "place", "homepage", "knowledge", "seo",
     } <= set(registry.names)
 
 
 def test_admin_sync_kb_remains_on_shared_invalidation_boundary():
     assert admin_common._sync_kb.__module__ == "admin_common"
+
+
+
+def test_sync_entity_incrementally_updates_in_memory_kb(monkeypatch):
+    import database
+    import knowledge
+
+    old_entities = knowledge._entities
+    try:
+        knowledge._entities = {"e-sync": {"id": "e-sync", "name": "Old Name"}}
+        monkeypatch.setattr(
+            database.db,
+            "get_entity",
+            lambda eid: {"id": eid, "name": "Updated Name"} if eid == "e-sync" else None,
+        )
+        invalidate_entity("e-sync", reason="test-incremental-sync")
+        assert knowledge._entities["e-sync"]["name"] == "Updated Name"
+    finally:
+        knowledge._entities = old_entities

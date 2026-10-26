@@ -102,6 +102,7 @@ mockNuxtImport('useToast', () => () => ({ show: mocks.showToast }))
 mockNuxtImport('useFeature', () => () => ({
   capabilityMode: (capability: string) => capability === 'optimizer' ? publicOptimizerMode.mode : 'deterministic',
 }))
+mockNuxtImport('$fetch', () => (...args: any[]) => (globalThis as any).$fetch(...args))
 
 beforeEach(() => {
   authState.isLoggedIn.value = false

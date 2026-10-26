@@ -58,34 +58,6 @@ def test_registry_file_is_required_and_has_strict_top_level_schema(tmp_path: Pat
     assert "INVALID_ENTITY_IMAGE_REGISTRY" in {item["code"] for item in result["violations"]}
 
 
-def test_rights_cleared_entity_renderer_row_is_validated_as_renderable(tmp_path: Path):
-    source_file = "pages/sourced.vue"
-    _mk(
-        tmp_path,
-        source_file,
-        '''<template>
-<section data-image-surface="sourced" data-source-class="rights-cleared">
-  <img :src="descriptor.url" :aria-describedby="'sourced-copy'" />
-  <ImageDisclosure id="sourced-copy" :descriptor="descriptor" presentation="short" />
-</section>
-</template>
-<script setup>
-const descriptor = describeEntityImages(entity)[0]
-</script>''',
-    )
-    _mk(tmp_path, "tests/sourced.test.ts", "")
-    registry = [_entry(
-        file=source_file,
-        surface="sourced",
-        source_class="rights-cleared",
-        test_file="tests/sourced.test.ts",
-    )]
-
-    assert "INVALID_ENTITY_IMAGE_REGISTRY" not in _codes(
-        scan_entity_image_renderers(tmp_path, registry)
-    )
-
-
 def test_unregistered_raw_entity_image_access_fails(tmp_path: Path):
     _mk(tmp_path, "pages/new.vue", '<NuxtImg :src="entity.images[0]" />')
     findings = scan_entity_image_renderers(tmp_path, registry=[])

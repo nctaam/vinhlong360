@@ -20,8 +20,9 @@ function aiEventDescriptor(url: string, name: string): ImageDescriptor {
     disclosure_key: 'entity-ai',
     short_label: aiDisclosure.entity_ai.short_label,
     full_disclosure: aiDisclosure.entity_ai.full_disclosure,
-    credit: null,
+    credit: null,
     source_url: null,
+
     width: null,
     height: null,
   }

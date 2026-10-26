@@ -125,7 +125,7 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
       ],
       script: [
-        { innerHTML: "try{var d=document.documentElement,p=JSON.parse(localStorage.getItem('vl360-accessibility-profile')||'null')||{},s=[1,1.25,1.5,2].includes(p.textScale)?p.textScale:1,t=p.theme==='parchment'?'parchment':'nocturne',m=t==='parchment'?'light':'dark',n=p.density==='compact'?'compact':'comfortable';localStorage.setItem('vl360-color-mode',m);d.classList.remove('light','dark');d.classList.add(m);d.dataset.theme=t;d.dataset.density=n;d.style.setProperty('--a11y-text-scale',String(s));d.style.setProperty('--a11y-text-scale-percent',(s*100)+'%')}catch(_){ }", tagPosition: 'head' },
+        { innerHTML: "try{var d=document.documentElement,p=JSON.parse(localStorage.getItem('vl360-accessibility-profile')||'null')||{},s=[1,1.25,1.5,2].includes(p.textScale)?p.textScale:1,t=p.theme==='parchment'?'parchment':'nocturne',m=t==='parchment'?'light':'dark',n=p.density==='compact'?'compact':'comfortable';localStorage.setItem('vl360-color-mode',m);d.classList.remove('light','dark');d.classList.add(m);d.dataset.theme=t;d.dataset.density=n;d.style.setProperty('--a11y-text-scale',String(s));d.style.setProperty('--a11y-text-scale-percent',(s*100)+'%');if(localStorage.getItem('vl360_elder_mode')==='true'){d.setAttribute('data-reading-mode','elder');d.setAttribute('data-elder-mode','true')}if(localStorage.getItem('vl360_high_glare')==='true'){d.setAttribute('data-outdoor-contrast','high')}if(localStorage.getItem('vl360_eco_mode')==='true'){d.setAttribute('data-eco-mode','true');d.dataset.ecoMode='true'}}catch(_){ }", tagPosition: 'head' },
         // Add `js` to <html> BEFORE first paint so the JS-gated .reveal rule
         // (html.js .reveal { opacity:0 }) only ever hides content when JS is
         // present — no flash-of-hidden, and full visibility when JS is off/slow.
@@ -166,9 +166,9 @@ export default defineNuxtConfig({
     apiBase,
     public: {
       // Nhánh public được serialize xuống trình duyệt trên mọi trang, nên không
-      // đặt khoá thật làm giá trị mặc định ở đây. Thiếu NDA_MAP_KEY thì bản đồ
-      // tự chạy nền OpenStreetMap (xem composables/useNDAMap.ts).
-      ndaMapKey: process.env.NDA_MAP_KEY || '',
+      // đặt khoá thật làm giá trị mặc định ở đây. Bản đồ chỉ sử dụng nền vector
+      // OpenMap.vn (xem composables/useNDAMap.ts).
+      ndaMapKey: process.env.NUXT_PUBLIC_NDA_MAP_KEY || process.env.NDA_MAP_KEY || '',
       // Legacy launch switch remains closed by default. HTML robots metadata and
       // headers are now derived from the request-local launch safety decision.
       siteNoindex,
@@ -224,7 +224,7 @@ export default defineNuxtConfig({
       // are not paid for once per lazy chunk.
       cssCodeSplit: false,
     },
-    // MapLibre ~900KB is loaded as a same-origin CSP asset by maplibre-loader;
+    // MapLibre is loaded as same-origin split ESM assets by maplibre-loader;
     // keep the package out of Nuxt's client graph (ARCH-006/D01).
     optimizeDeps: {
       exclude: ['maplibre-gl'],
@@ -248,9 +248,13 @@ export default defineNuxtConfig({
     },
     routeRules: {
       '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
-      // The worker URL is intentionally stable, so force revalidation whenever
-      // MapLibre changes instead of allowing stale main/worker version pairs.
-      '/maplibre-gl-csp-worker.js': { headers: { 'cache-control': 'no-cache, must-revalidate' } },
+      // Every URL in MapLibre's split graph is stable. Revalidate the complete
+      // graph so a deploy cannot mix main, shared, worker, loader, or CSS versions.
+      '/maplibre-gl-loader.mjs': { headers: { 'cache-control': 'no-cache, must-revalidate' } },
+      '/maplibre-gl.mjs': { headers: { 'cache-control': 'no-cache, must-revalidate' } },
+      '/maplibre-gl-shared.mjs': { headers: { 'cache-control': 'no-cache, must-revalidate' } },
+      '/maplibre-gl-worker.mjs': { headers: { 'cache-control': 'no-cache, must-revalidate' } },
+      '/maplibre-gl.css': { headers: { 'cache-control': 'no-cache, must-revalidate' } },
       '/**': {
         headers: {
           'X-Content-Type-Options': 'nosniff',

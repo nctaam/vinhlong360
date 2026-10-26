@@ -3,7 +3,7 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { defineComponent, h, nextTick } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import EntityDetailPage from '../pages/dia-diem/[id].vue'
-import { adminUnitCrumb, adminUnitLabel, withAdminUnitBreadcrumb } from '../utils/adminUnit'
+import { adminUnitCrumb, adminUnitLabel, isExternalGatewayPlaceId, withAdminUnitBreadcrumb } from '../utils/adminUnit'
 
 /**
  * §1.6 CLAUDE.md: từ 1/7/2025 chỉ còn MỘT tỉnh Vĩnh Long, hành chính 2 cấp.
@@ -407,5 +407,18 @@ describe('entity detail breadcrumb walks the administrative unit', () => {
       name: 'P. An Hội',
       item: `${SITE}/xa-phuong/p-an-hoi`,
     })
+  })
+
+  it('thực thể điểm đầu mối kết nối ngoại tỉnh (placeId: gateway-hcm) không sinh mắt xích /xa-phuong/gateway-hcm', () => {
+    expect(isExternalGatewayPlaceId('gateway-hcm')).toBe(true)
+    expect(isExternalGatewayPlaceId('p-an-hoi')).toBe(false)
+    expect(
+      adminUnitCrumb({
+        id: 'ben-xe-mien-tay-hcm',
+        type: 'directory',
+        placeId: 'gateway-hcm',
+        place_name: 'TP. Hồ Chí Minh',
+      }),
+    ).toBeNull()
   })
 })

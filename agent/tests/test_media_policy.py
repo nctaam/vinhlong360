@@ -184,11 +184,7 @@ def test_public_events_project_entity_media_before_response(monkeypatch):
             "https://cdn.example/user.webp",
             "/img/entities/event-1.webp",
         ],
-        "attributes": {
-            "date_start_iso": "2099-01-01",
-            "image_type": "ai-generated",
-            "is_verified_photo": False,
-        },
+        "attributes": {"date_start_iso": "2099-01-01"},
     }
     monkeypatch.setattr(public_api.db, "list_entities", lambda **_kwargs: [source])
 
@@ -217,10 +213,7 @@ def _scoring_entity(entity_id: str, images: list[str]) -> dict:
         "type": "attraction",
         "summary": "",
         "images": images,
-        "attributes": {
-            "image_type": "ai-generated",
-            "is_verified_photo": False,
-        },
+        "attributes": {},
         "rating_count": 0,
         "rating_avg": 0,
     }

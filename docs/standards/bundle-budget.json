@@ -1,7 +1,7 @@
 {
-  "_comment": "R30.7 bundle budget (gz kB) — RATCHET: chỉ GIẢM, không tăng. Đo 2026-07-10 từ web-nuxt/.output (790kB total, chunk lớn nhất 276kB). Baseline đặt trên hiện tại chút để margin. ĐÍCH chuẩn: entry ≤200kB gz — chunk-max 276 là nợ, hạ dần qua ratchet (giảm total_gz_kb/max_chunk_gz_kb mỗi khi build nhẹ đi). | 2026-08-05: thêm total_css_gz_kb — trước đó cổng chỉ glob(\"*.js\") nên 107 file CSS (156 kB gz) hoàn toàn ngoài ngân sách. Trần 190 đặt trên số đo thật 156 để có margin, ratchet chỉ giảm.",
-  "total_gz_kb": 800,
-  "max_chunk_gz_kb": 280,
+  "_comment": "R30.7 bundle budget (gz kB) — RATCHET: chỉ GIẢM, không tăng. Đo 2026-07-10 từ web-nuxt/.output (790kB total, chunk lớn nhất 276kB). Baseline đặt trên hiện tại chút để margin. ĐÍCH chuẩn: entry ≤200kB gz — chunk-max 276 là nợ, hạ dần qua ratchet (giảm total_gz_kb/max_chunk_gz_kb mỗi khi build nhẹ đi). | 2026-08-05: thêm total_css_gz_kb — trước đó cổng chỉ glob(\"*.js\") nên 107 file CSS (156 kB gz) hoàn toàn ngoài ngân sách. Trần 190 đặt trên số đo thật 156 để có margin, ratchet chỉ giảm. | 2026-10-22 (QW-46): đo thực tế 744kB JS total, chunk lớn nhất 46kB, CSS total 186kB — siết trần lịch sử max_chunk_gz_kb 280->60 (đạt đích <=200kB), total_gz_kb 800->760, total_css_gz_kb 190->187.",
+  "total_gz_kb": 760,
+  "max_chunk_gz_kb": 60,
   "entry_target_gz_kb": 200,
-  "total_css_gz_kb": 190
+  "total_css_gz_kb": 187
 }

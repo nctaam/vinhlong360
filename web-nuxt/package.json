@@ -11,27 +11,28 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare && node scripts/copy-maplibre-worker.mjs",
     "test": "vitest run",
+    "test:data": "vitest run --config vitest.data.config.ts",
     "smoke:e2e": "node ../scripts/smoke_e2e_chrome.mjs",
     "typecheck": "nuxt typecheck",
     "check:public-accessibility": "node scripts/check-public-accessibility.mjs",
     "smoke:launch-safety": "node ../scripts/launch_safety_browser_e2e.mjs --install-legacy-worker-first --activate-current-worker --assert-policy-cache-storage-empty --assert-offline-policy-replay-denied"
   },
   "dependencies": {
-    "maplibre-gl": "^5.24.0",
-    "nuxt": "^4.4.8",
+    "maplibre-gl": "^6.10.0",
+    "nuxt": "^4.5.2",
     "vue": "^3.5.35",
     "vue-router": "^5.1.0"
   },
   "devDependencies": {
     "@nuxt/fonts": "^0.14.0",
     "@nuxt/image": "^2.0.0",
-    "@nuxt/test-utils": "^4.0.3",
+    "@nuxt/test-utils": "4.1.0",
     "@nuxtjs/color-mode": "^4.0.1",
     "@vue/test-utils": "^2.4.11",
     "axe-core": "^4.12.1",
     "happy-dom": "^20.10.6",
     "typescript": "5.9.3",
-    "vitest": "^4.1.9",
+    "vitest": "^4.1.11",
     "vue-tsc": "^3.3.5"
   }
 }

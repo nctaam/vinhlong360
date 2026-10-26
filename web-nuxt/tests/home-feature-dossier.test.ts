@@ -25,8 +25,9 @@ const BASE_DESCRIPTOR: ImageDescriptor = {
   disclosure_key: 'entity-ai',
   short_label: 'Ảnh thực địa',
   full_disclosure: 'Ảnh chụp thực địa bởi Ban biên tập vinhlong360.',
-  credit: 'VinhLong360',
+  credit: 'VinhLong360',
   source_url: null,
+
   width: 960,
   height: 640,
 }

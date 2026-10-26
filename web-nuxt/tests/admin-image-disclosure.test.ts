@@ -29,13 +29,13 @@ mockNuxtImport('useAdminPrefs', () => () => ({
   setPref: mocks.setPref,
 }))
 mockNuxtImport('useModalA11y', () => () => undefined)
+mockNuxtImport('$fetch', () => (...args: any[]) => (globalThis as any).$fetch(...args))
 
 const safeEntityUrl = 'https://safe.example/entity.webp'
 const canonicalEntityUrl = '/img/entities/dia-diem-thu.webp'
 const canonicalMediaUrl = '/img/entities/dia-diem-thu-media.webp'
 const invalidJavascript = 'javascript:alert(1)'
 const invalidObject = { url: 'not-a-url', note: '<script>bad</script>' }
-const aiAttributes = { image_type: 'ai-generated', is_verified_photo: false }
 
 interface FetchDispatchOptions {
   entityImages?: string[]
@@ -53,7 +53,7 @@ function installFetchDispatch(options: FetchDispatchOptions = {}) {
     if (url === '/admin-api/entity-kinds') return Promise.resolve({ kinds: [], grand_total: 0 })
     if (url.startsWith('/admin-api/entities?')) {
       return Promise.resolve({
-        entities: [{ id: 'entity-1', name: 'Địa điểm thử', type: 'experience', summary: 'Tóm tắt', images: entityImages, attributes: aiAttributes }],
+        entities: [{ id: 'entity-1', name: 'Địa điểm thử', type: 'experience', summary: 'Tóm tắt', images: entityImages }],
         total: 1,
       })
     }
@@ -64,7 +64,7 @@ function installFetchDispatch(options: FetchDispatchOptions = {}) {
       return Promise.resolve({ images: options.addedImages ?? [...entityImages, canonicalMediaUrl] })
     }
     if (url === '/admin-api/entities/entity-1' && !init?.method) {
-      return Promise.resolve({ id: 'entity-1', name: 'Địa điểm thử', images: entityImages, attributes: aiAttributes })
+      return Promise.resolve({ id: 'entity-1', name: 'Địa điểm thử', images: entityImages })
     }
     if (url === '/admin-api/entities/entity-1/images/0' && init?.method === 'DELETE') {
       return Promise.resolve({ status: 'removed', images: entityImages.slice(1) })
@@ -91,7 +91,6 @@ function installFetchDispatch(options: FetchDispatchOptions = {}) {
             type: 'experience',
             summary: 'Nội dung cần duyệt',
             images: [canonicalEntityUrl, invalidJavascript, invalidObject],
-            attributes: aiAttributes,
           },
         }],
       })

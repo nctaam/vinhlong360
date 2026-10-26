@@ -30,10 +30,7 @@ def _entity(entity_id: str, **overrides) -> dict:
         "type": "attraction",
         "status": "published",
         "verified": True,
-        "attributes": {
-            "image_type": "ai-generated",
-            "is_verified_photo": False,
-        },
+        "attributes": {},
         "images": [],
     }
     entity.update(overrides)

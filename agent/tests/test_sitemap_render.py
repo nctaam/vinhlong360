@@ -326,7 +326,6 @@ def test_media_serializer_matches_utf8_fixture_with_two_disclosed_images():
     entity = _entity(
         "two-images",
         name="Two images",
-        attributes={"image_type": "ai-generated", "is_verified_photo": False},
         images=[
             "/img/entities/z-local.webp",
             "/img/entities/a-local.webp",
@@ -397,7 +396,6 @@ def test_media_sitemap_is_sorted_deduplicated_and_permutation_stable():
     first_entity = _entity(
         "z-entity",
         name="Z entity",
-        attributes={"image_type": "ai-generated", "is_verified_photo": False},
         images=[
             "/img/entities/z.webp",
             "/img/entities/a.webp",
@@ -409,7 +407,6 @@ def test_media_sitemap_is_sorted_deduplicated_and_permutation_stable():
     second_entity = _entity(
         "a-entity",
         name="A entity",
-        attributes={"image_type": "ai-generated", "is_verified_photo": False},
         images=("/img/entities/u.webp",),
     )
 
@@ -442,12 +439,7 @@ def test_media_sitemap_is_sorted_deduplicated_and_permutation_stable():
 
 def test_media_sitemap_has_exact_main_policy_parity_including_ward_paths():
     manifest = load_route_manifest()
-    rich = _entity(
-        "rich",
-        name="Rich",
-        images=["/img/entities/rich.webp"],
-        attributes={"image_type": "ai-generated", "is_verified_photo": False},
-    )
+    rich = _entity("rich", name="Rich", images=["/img/entities/rich.webp"])
     thin = _entity("thin", name="Thin", summary=_words(129), images=["/img/entities/thin.webp"])
     draft = _entity("draft", name="Draft", status="draft", images=["/img/entities/draft.webp"])
     unverified = _entity(
@@ -456,12 +448,7 @@ def test_media_sitemap_has_exact_main_policy_parity_including_ward_paths():
     private = _entity(
         "private", name="Private", is_private=True, images=["/img/entities/private.webp"]
     )
-    ward = _ward(
-        "ward",
-        name="Ward",
-        images=["/img/entities/ward.webp"],
-        attributes={"image_type": "ai-generated", "is_verified_photo": False},
-    )
+    ward = _ward("ward", name="Ward", images=["/img/entities/ward.webp"])
     child_a = _entity("child-a", name="Child A", placeId="ward")
     child_b = _entity("child-b", name="Child B", placeId="ward")
 
@@ -508,7 +495,6 @@ def test_media_sitemap_uses_only_entity_editorial_images_and_minimal_tags():
         "rich",
         name="Rich",
         images=["/img/entities/editorial.webp"],
-        attributes={"image_type": "ai-generated", "is_verified_photo": False},
         placeholder="PLACEHOLDER-SENTINEL",
         posts=[{"images": ["POST-SENTINEL"]}],
         reviews=[{"images": ["REVIEW-SENTINEL"]}],
@@ -736,12 +722,7 @@ def test_media_sitemap_empty_output_is_valid_and_contains_no_static_pages():
 def test_media_sitemap_sorts_pages_before_enforcing_shared_limit(monkeypatch):
     monkeypatch.setattr(sitemap_render, "MAX_SITEMAP_URLS", 2)
     entities = tuple(
-        _entity(
-            entity_id,
-            name=entity_id,
-            images=[f"/img/entities/{entity_id}.webp"],
-            attributes={"image_type": "ai-generated", "is_verified_photo": False},
-        )
+        _entity(entity_id, name=entity_id, images=[f"/img/entities/{entity_id}.webp"])
         for entity_id in ("z", "a", "m")
     )
 

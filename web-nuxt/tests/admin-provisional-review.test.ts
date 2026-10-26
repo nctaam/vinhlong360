@@ -20,6 +20,7 @@ mockNuxtImport('useAuth', () => () => ({
 }))
 mockNuxtImport('useConfirm', () => () => ({ confirmDialog: mocks.confirmDialog }))
 mockNuxtImport('useToast', () => () => ({ show: mocks.showToast }))
+mockNuxtImport('$fetch', () => (...args: any[]) => (globalThis as any).$fetch(...args))
 
 const page = readFileSync(resolve(process.cwd(), 'pages/admin/duyet-tu-hoc.vue'), 'utf8')
   .replaceAll('\r\n', '\n')

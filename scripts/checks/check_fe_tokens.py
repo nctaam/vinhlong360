@@ -12,11 +12,20 @@ tức 37 và 64 suất ẩn.
 """
 from __future__ import annotations
 
+import fnmatch
+import re
 from pathlib import Path
 
-from .common import RegexCheck
+from .common import RegexCheck, iter_text_files
 
 _EMOJI = r"[\U0001F300-\U0001FAFF☀-➿⭐❤]"
+_EMOJI_ENTITY = r"&#(?:12[7-9]\d{3}|9[789]\d{2}|x1[fF][0-9a-fA-F]{3}|x2[67][0-9a-fA-F]{2});"
+_CSS_COMMENT_RE = re.compile(r"/\*[\s\S]*?\*/")
+_APPROVED_FALLBACK_RE = re.compile(
+    r"var\(\s*--(?:text-on-dark|secondary-fg-strong|error-light|accent-light)\s*,\s*#[0-9a-fA-F]{3,8}\s*\)",
+    re.I,
+)
+_CUSTOM_PROP_DECL_RE = re.compile(r"^\s*--[\w-]+\s*:")
 
 # app.vue/error.vue nằm ở gốc web-nuxt nên trước đây ngoài tầm quét. Thêm vào tốn
 # 0 vi phạm (đã đo) nhưng bịt chỗ trú cho màu cứng mới.
@@ -28,11 +37,69 @@ _ROOTS = [
 # R30.8 quet CA assets/css vi thang bo goc song chu yeu o do (base.css 32,
 # components.css 26, catalog.css 24...). _ROOTS von chi nham vao .vue.
 _ROOTS_CSS = _ROOTS + ["web-nuxt/assets/css"]
+_CSS_COLOR_ROOTS = ["web-nuxt/assets/css"]
+_CSS_COLOR_EXCLUDES = ["web-nuxt/node_modules", "web-nuxt/assets/css/variables.css"]
+
+
+class FeColorsCheck(RegexCheck):
+    """Quét màu thô ngoài tokens trên cả .vue và assets/css/*.css (trừ variables.css)."""
+
+    def _css_candidates(self, files: list[str] | None) -> list[str]:
+        if files is None:
+            return iter_text_files(
+                self.root, ["*.css"], _CSS_COLOR_ROOTS, _CSS_COLOR_EXCLUDES
+            )
+        picked = []
+        for f in files:
+            rel = f.replace("\\", "/")
+            if rel in _CSS_COLOR_EXCLUDES or any(
+                rel.startswith(ex + "/") for ex in _CSS_COLOR_EXCLUDES
+            ):
+                continue
+            if rel.startswith("web-nuxt/assets/css/") and fnmatch.fnmatch(
+                Path(rel).name, "*.css"
+            ):
+                picked.append(rel)
+        return picked
+
+    def run(self, files: list[str] | None = None) -> dict:
+        result = super().run(files)
+        violations = list(result["violations"])
+        for rel in self._css_candidates(files):
+            path = self.root / rel
+            if not path.exists():
+                continue
+            try:
+                raw_text = path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            uncommented = _CSS_COMMENT_RE.sub(
+                lambda m: "\n" * m.group(0).count("\n"), raw_text
+            )
+            for line_no, line in enumerate(uncommented.splitlines(), 1):
+                if _CUSTOM_PROP_DECL_RE.match(line):
+                    continue
+                cleaned = _APPROVED_FALLBACK_RE.sub("", line)
+                for pattern in self.patterns:
+                    for _ in pattern.finditer(cleaned):
+                        violations.append({
+                            "file": rel,
+                            "line": line_no,
+                            "rule": self.rule,
+                            "msg": self.msg,
+                        })
+        return {
+            "check": self.name,
+            "level": self.level,
+            "rule": self.rule,
+            "count": len(violations),
+            "violations": violations,
+        }
 
 
 def build_checks(root: Path | None = None) -> list:
     return [
-        RegexCheck(
+        FeColorsCheck(
             name="fe_colors", level="hard-ratchet", rule="R30.3",
             # rgb/rgba LITERAL = nợ; rgba(var(--x-rgb), a) = DÙNG token (idiomatic, như
             # base.css) → KHÔNG phải nợ, lookahead loại. (Trước đây flag nhầm ~620.)
@@ -57,7 +124,7 @@ def build_checks(root: Path | None = None) -> list:
         ),
         RegexCheck(
             name="fe_emoji", level="soft-ratchet", rule="R30.2",
-            patterns=[_EMOJI],
+            patterns=[_EMOJI, _EMOJI_ENTITY],
             globs=["*.vue"], roots=_ROOTS,
             exclude_paths=["web-nuxt/node_modules"],
             neg_context=None, count_matches=True,
@@ -86,3 +153,4 @@ def build_checks(root: Path | None = None) -> list:
 
 
 CHECKS = build_checks()
+

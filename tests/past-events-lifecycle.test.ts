@@ -4,7 +4,7 @@
  * Verifies that:
  * 1. 16 one-off past events are marked with status='archived' and event_lifecycle='past'.
  * 2. 23 heritage past festivals are preserved with is_recurring=true and annual=true.
- * 3. 1,772 total entities, 13,343 relationships, and 33 itineraries are strictly preserved.
+ * 3. 1,772 total entities and 33 itineraries are strictly preserved.
  * 4. web/data.json is in 100% parity with SQLite for all modified event entities.
  */
 
@@ -12,6 +12,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import fs from 'node:fs';
+import { openReadOnlyDatabase } from './helpers/data-contract';
 
 const repoRoot = fs.existsSync(path.resolve('agent/data/vinhlong360.db'))
   ? path.resolve('.')
@@ -70,7 +71,7 @@ let dataJson: any;
 beforeAll(() => {
   expect(fs.existsSync(dbPath), `Database must exist at ${dbPath}`).toBe(true);
   expect(fs.existsSync(dataJsonPath), `data.json must exist at ${dataJsonPath}`).toBe(true);
-  db = new DatabaseSync(dbPath, { readOnly: true });
+  db = openReadOnlyDatabase();
   dataJson = JSON.parse(fs.readFileSync(dataJsonPath, 'utf-8'));
 });
 
@@ -79,12 +80,10 @@ afterAll(() => {
 });
 
 describe('Past Events Lifecycle Management Suite', () => {
-  it('strictly preserves global invariants (1,772 entities, 13,343 rels, 33 itins)', () => {
+  it('strictly preserves global catalog invariants (1,772 entities, 33 itineraries)', () => {
     const entCount = (db.prepare('SELECT COUNT(*) as count FROM entities').get() as any).count;
-    const relCount = (db.prepare('SELECT COUNT(*) as count FROM relationships').get() as any).count;
     const itinCount = (db.prepare('SELECT COUNT(*) as count FROM itineraries').get() as any).count;
     expect(entCount).toBe(1772);
-    expect(relCount).toBe(13343);
     expect(itinCount).toBe(33);
   });
 

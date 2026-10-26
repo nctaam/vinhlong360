@@ -36,6 +36,7 @@ mockNuxtImport('useInfiniteScroll', () => () => ({
   sentinel: { value: null },
   loading: { value: false },
 }))
+mockNuxtImport('$fetch', () => (...args: any[]) => (globalThis as any).$fetch(...args))
 
 vi.setConfig({ hookTimeout: 30_000 })
 
@@ -56,6 +57,7 @@ function postDescriptor(url: string): ImageDescriptor {
     full_disclosure: aiDisclosure.ugc_photo.full_disclosure,
     credit: null,
     source_url: null,
+
     width: null,
     height: null,
   }

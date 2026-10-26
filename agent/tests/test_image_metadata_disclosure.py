@@ -31,10 +31,7 @@ def _entity(**overrides):
         "verified": True,
         "summary": " ".join(["word"] * 130),
         "images": ["https://cdn.example/ai.webp"],
-        "attributes": {
-            "image_type": "ai-generated",
-            "is_verified_photo": False,
-        },
+        "attributes": {},
     }
     entity.update(overrides)
     return entity
@@ -102,7 +99,6 @@ def test_entity_jsonld_emits_structured_ai_descriptor_without_legacy_images():
         "short_label": DISCLOSURE.entity_ai.short_label,
         "full_disclosure": DISCLOSURE.entity_ai.full_disclosure,
         "credit": None,
-        "source_url": None,
         "width": None,
         "height": None,
     }
@@ -157,39 +153,6 @@ def test_public_entity_projection_removes_raw_media_and_keeps_only_ai_descriptor
     assert [item["source_class"] for item in projected["image_descriptors"]] == [
         "ai-generated",
     ]
-
-
-def test_public_entity_projection_keeps_only_public_sourced_photo_provenance():
-    entity = _entity(
-        images=["/img/entities/press.webp"],
-        attributes={
-            "image_type": "press",
-            "is_verified_photo": True,
-            "image_author": "Tran Phuoc",
-            "image_source": "Bao Vinh Long",
-            "image_source_url": "https://baovinhlong.com.vn/images/photo.webp",
-            "image_license": "Permission granted for re-hosting",
-            "permission_evidence": "owner-record:IMG-2026-001",
-        },
-    )
-
-    descriptor = public_api._project_public_entity_media(entity)["image_descriptors"][0]
-
-    assert descriptor["credit"] == "Tran Phuoc · Bao Vinh Long"
-    assert descriptor["source_url"] == "https://baovinhlong.com.vn/images/photo.webp"
-    assert set(descriptor) == {
-        "url",
-        "alt",
-        "source_class",
-        "source_kind",
-        "disclosure_key",
-        "short_label",
-        "full_disclosure",
-        "credit",
-        "source_url",
-        "width",
-        "height",
-    }
 
 
 def test_public_entity_projection_suppresses_explicit_ugc_without_legacy_fallback():

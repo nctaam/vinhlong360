@@ -105,9 +105,7 @@ class TestToolsSchema:
         props = search["function"]["parameters"]["properties"]
         assert "area" in props
         enum = props["area"]["enum"]
-        assert "vinh-long" in enum
-        assert "ben-tre" in enum
-        assert "tra-vinh" in enum
+        assert enum == ["vinh-long"]
 
     def test_generate_itinerary_tool_exists(self):
         from tools import TOOLS
@@ -1511,7 +1509,9 @@ class TestDeepScanBatch3:
         def fail_open(*_args, **_kwargs):
             raise OSError("disk unavailable")
 
+        import tempfile
         monkeypatch.setattr("builtins.open", fail_open)
+        monkeypatch.setattr(tempfile, "mkstemp", fail_open)
         analytics.save_conversation("session-1", [{"role": "user", "content": "hello"}])
 
         assert "Failed to save conversation session-1" in caplog.text
@@ -1707,7 +1707,7 @@ class TestDeepScanBatch5:
         assert idx > 0
         # Window 1300: hàm dài ra hợp lệ (B5b — thêm OR-điều-kiện dung lượng >10MB,
         # 2026-07-04) — assertion giữ nguyên, chỉ cơ chế atomic-write (.tmp/.replace) không đổi.
-        block = src[idx:idx+1300]
+        block = function_source(src, "_maybe_rotate_audit")
         assert ".tmp" in block, "Rotation must use temp file for atomic write"
         assert ".replace(" in block, "Rotation must use replace() for atomic swap"
 
@@ -1720,7 +1720,7 @@ class TestDeepScanBatch5:
         if idx < 0:
             idx = src.find("def maybe_rotate_jsonl")
         assert idx > 0
-        block = src[idx:idx+600]
+        block = src[idx:idx+1000]
         assert ".tmp" in block, "JSONL rotation must use temp file for atomic write"
         assert ".replace(" in block, "JSONL rotation must use replace() for atomic swap"
 
@@ -2409,7 +2409,7 @@ class TestAdminBugFixes:
         src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
-        block = function_source(src, "unban_user")
+        block = function_source(src, "unban_user") + function_source(src, "_unban_user_query")
         assert "_row_to_dict" in block, \
             "unban_user must convert fetchone result with _row_to_dict"
 

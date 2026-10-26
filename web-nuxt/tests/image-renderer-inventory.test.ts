@@ -8,7 +8,7 @@ type Renderer = {
   file: string
   surface: string
   access_path: string
-  source_class: 'ai-generated' | 'placeholder' | 'rights-cleared' | 'user-uploaded' | 'none'
+  source_class: 'ai-generated' | 'placeholder' | 'user-uploaded' | 'none'
   descriptor_producer: string
   render_policy: 'render' | 'suppress'
   presentation: 'short' | 'full' | 'short-and-full' | 'none'
@@ -105,12 +105,6 @@ const requiredBoundaries = [
   ['pages/index.vue', 'home-signal-lead', 'ai-generated'],
 ] as const
 
-const rightsClearedBoundaries = requiredBoundaries
-  .filter(([, surface, sourceClass]) => (
-    sourceClass === 'ai-generated'
-  ))
-  .map(([file, surface]) => [file, surface, 'rights-cleared'] as const)
-
 const key = (row: Pick<Renderer, 'file' | 'surface' | 'source_class'>) => `${row.file}|${row.surface}|${row.source_class}`
 
 describe('entity image renderer inventory', () => {
@@ -133,7 +127,7 @@ describe('entity image renderer inventory', () => {
 
   it('renders only AI/placeholder rows and suppresses public UGC with no-image invariants', () => {
     for (const row of registry.renderers) {
-      if (row.source_class === 'ai-generated' || row.source_class === 'placeholder' || row.source_class === 'rights-cleared') {
+      if (row.source_class === 'ai-generated' || row.source_class === 'placeholder') {
         expect(row.render_policy).toBe('render')
       }
       if (row.source_class === 'user-uploaded' && !row.file.includes('/admin/') && !row.surface.includes('upload-preview')) {
@@ -147,22 +141,9 @@ describe('entity image renderer inventory', () => {
     }
   })
 
-  it('registers rights-cleared rendering for every entity-media AI surface', () => {
-    const entityMediaAiRows = registry.renderers.filter(row => (
-      row.source_class === 'ai-generated'
-    ))
-
-    for (const aiRow of entityMediaAiRows) {
-      expect(registry.renderers).toContainEqual(expect.objectContaining({
-        ...aiRow,
-        source_class: 'rights-cleared',
-      }))
-    }
-  })
-
   it('contains exactly every required implementation boundary', () => {
     const actual = new Set(registry.renderers.map(key))
-    const required = new Set([...requiredBoundaries, ...rightsClearedBoundaries].map(([file, surface, source_class]) => `${file}|${surface}|${source_class}`))
+    const required = new Set(requiredBoundaries.map(([file, surface, source_class]) => `${file}|${surface}|${source_class}`))
     expect(actual).toEqual(required)
   })
 

@@ -633,3 +633,51 @@ class TestSeedDefaultsPg:
         assert ss._cache is not None
         ss.seed_defaults({"x.y": {"value": 1, "category": "x"}})
         assert ss._cache is None
+
+
+
+class TestSecretMaskingAndLlmSettings:
+    def test_get_llm_settings_and_secret_masking(self, fake_pg):
+        fake_pg.settings["llm.api_key"] = {
+            "key": "llm.api_key",
+            "value": "sk-live-1234567890abcdef",
+            "category": "llm",
+            "label": "API Key",
+            "description": "",
+            "input_type": "password",
+            "updated_at": None,
+        }
+        fake_pg.settings["llm.model"] = {
+            "key": "llm.model",
+            "value": "gpt-4o-mini",
+            "category": "llm",
+            "label": "Model",
+            "description": "",
+            "input_type": "text",
+            "updated_at": None,
+        }
+        # Runtime llm_config reader gets raw llm.* values
+        llm_cfg = ss.get_llm_settings()
+        assert llm_cfg["llm.api_key"] == "sk-live-1234567890abcdef"
+        assert llm_cfg["llm.model"] == "gpt-4o-mini"
+        assert "branding.site_name" not in llm_cfg
+
+        # Public reader never exposes llm.*
+        pub = ss.get_all_public()
+        assert "llm.api_key" not in pub
+        assert "llm.model" not in pub
+
+        # Admin category & grouped views mask sensitive keys but preserve non-sensitive keys
+        cat_rows = {r["key"]: r["value"] for r in ss.get_by_category("llm")}
+        assert cat_rows["llm.api_key"] == "sk-l***"
+        assert cat_rows["llm.model"] == "gpt-4o-mini"
+
+        grouped = ss.get_all_grouped()
+        grouped_llm = {r["key"]: r["value"] for r in grouped["llm"]}
+        assert grouped_llm["llm.api_key"] == "sk-l***"
+
+        # History masks sensitive keys on write and read
+        assert ss.upsert("llm.api_key", "sk-new-9876543210fedcba", actor="admin") is True
+        hist = ss.load_history(key="llm.api_key")["history"][0]
+        assert hist["previous_value"] == "sk-l***"
+        assert hist["next_value"] == "sk-n***"

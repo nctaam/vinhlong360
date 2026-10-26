@@ -210,7 +210,7 @@
 ### C3. Content Quality Rules
 
 - Tất cả entity phải có: name, summary (>50 chars), description (>100 chars), type, area
-- Ảnh: CHỈ AI-generated (cx/gpt-5.5-image) — KHÔNG stock/UGC/Wikimedia
+- Ảnh: AI phải ghi nhãn; ảnh báo chí/tư liệu chỉ dùng khi đủ quyền + tác giả + nguồn + giấy phép + URL — KHÔNG stock/UGC/Wikimedia
 - Phone: format 0xxx.xxx.xxx hoặc +84
 - Season: dùng month range "1-12" hoặc "all"
 - Coordinates: phải trong bounding box tỉnh Vĩnh Long mới [lat 9.0–10.6, lng 105.6–107.1] (khớp R10.4)

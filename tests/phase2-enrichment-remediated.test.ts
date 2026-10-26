@@ -6,7 +6,7 @@
  *
  * Invariant checks:
  * - 30 target entities verified in SQLite and web/data.json
- * - Canonical DB counts: 1,772 entities | 13,343 relationships | 33 itineraries
+ * - Canonical catalog counts: 1,772 entities | 33 itineraries
  * - 0 former province name violations (R10.7)
  * - 0 generic content fillers (R50.2)
  * - 100% Tier 1 / Tier 2 source citations with verifiedAt timestamps
@@ -16,6 +16,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import fs from 'node:fs';
+import { openReadOnlyDatabase } from './helpers/data-contract';
 
 const repoRoot = fs.existsSync(path.resolve('agent/data/vinhlong360.db'))
   ? path.resolve('.')
@@ -61,7 +62,7 @@ let db: DatabaseSync;
 
 beforeAll(() => {
   expect(fs.existsSync(dbPath), `Database must exist at ${dbPath}`).toBe(true);
-  db = new DatabaseSync(dbPath, { readOnly: true });
+  db = openReadOnlyDatabase();
 });
 
 afterAll(() => {
@@ -84,19 +85,15 @@ describe('Phase 2 Deep Terroir Enrichment Invariant Suite', () => {
     }
   });
 
-  it('preserves canonical database counts: 1,772 entities, 13,343 relationships, 33 itineraries', () => {
+  it('preserves canonical entity and itinerary counts; relationship parity is centralized', () => {
     const entityCountRow: any = db.prepare('SELECT COUNT(*) as count FROM entities').get();
     expect(Number(entityCountRow.count)).toBe(1772);
-
-    const relCountRow: any = db.prepare('SELECT COUNT(*) as count FROM relationships').get();
-    expect(Number(relCountRow.count)).toBe(13343);
 
     const itCountRow: any = db.prepare('SELECT COUNT(*) as count FROM itineraries').get();
     expect(Number(itCountRow.count)).toBe(33);
 
     const dataJson = JSON.parse(fs.readFileSync(dataJsonPath, 'utf-8'));
     expect(dataJson.entities.length).toBe(1772);
-    expect(dataJson.relationships.length).toBe(13343);
     expect(dataJson.itineraries.length).toBe(33);
   });
 

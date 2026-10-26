@@ -55,7 +55,7 @@ describe('CatalogAeoPlaque — Reusable Hub Answer Plaque', () => {
     })
 
     expect(wrapper.attributes('data-material-accent')).toBe('amber')
-    expect(wrapper.text()).toContain('Góc nhìn bản địa · Giải đáp nhanh AEO')
+    expect(wrapper.text()).toContain('Góc nhìn bản địa · Giải đáp nhanh')
     expect(wrapper.text()).toContain('Đặc sản OCOP theo mùa')
     expect(wrapper.find('[data-catalog-aeo-cta]').exists()).toBe(false)
   })

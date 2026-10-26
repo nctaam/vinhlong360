@@ -40,6 +40,7 @@ const heroDescriptor = {
   short_label: aiDisclosure.entity_ai.short_label,
   full_disclosure: aiDisclosure.entity_ai.full_disclosure,
   credit: null,
+  source_url: null,
   width: 800,
   height: 533,
 } as const

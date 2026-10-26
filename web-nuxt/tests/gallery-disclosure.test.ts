@@ -15,8 +15,9 @@ const aiDescriptor: ImageDescriptor = {
   disclosure_key: 'entity-ai',
   short_label: aiDisclosure.entity_ai.short_label,
   full_disclosure: aiDisclosure.entity_ai.full_disclosure,
-  credit: null,
+  credit: null,
   source_url: null,
+
   width: null,
   height: null,
 }
@@ -35,8 +36,9 @@ const reviewDescriptor: ImageDescriptor = {
   disclosure_key: 'ugc-photo',
   short_label: aiDisclosure.ugc_photo.short_label,
   full_disclosure: aiDisclosure.ugc_photo.full_disclosure,
-  credit: 'Lan',
+  credit: 'Lan',
   source_url: null,
+
   width: null,
   height: null,
 }
@@ -49,8 +51,9 @@ const placeholderDescriptor: ImageDescriptor = {
   disclosure_key: 'entity-placeholder',
   short_label: aiDisclosure.placeholder.short_label,
   full_disclosure: aiDisclosure.placeholder.full_disclosure,
-  credit: null,
+  credit: null,
   source_url: null,
+
   width: null,
   height: null,
 }

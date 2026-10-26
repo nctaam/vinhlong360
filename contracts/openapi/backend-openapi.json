@@ -2835,8 +2835,7 @@
             "enum": [
               "entity-ai",
               "entity-placeholder",
-              "ugc-photo",
-              "entity-sourced-photo"
+              "ugc-photo"
             ],
             "title": "Disclosure Key",
             "type": "string"
@@ -2871,8 +2870,7 @@
             "enum": [
               "ai-generated",
               "placeholder",
-              "user-uploaded",
-              "rights-cleared"
+              "user-uploaded"
             ],
             "title": "Source Class",
             "type": "string"
@@ -2882,25 +2880,10 @@
               "entity-editorial",
               "generated-placeholder",
               "review-ugc",
-              "post-ugc",
-              "documentary",
-              "journalistic",
-              "official",
-              "press"
+              "post-ugc"
             ],
             "title": "Source Kind",
             "type": "string"
-          },
-          "source_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Source Url"
           },
           "url": {
             "anyOf": [
@@ -4940,10 +4923,7 @@
           "descriptor_revision": {
             "anyOf": [
               {
-                "enum": [
-                  "ai-disclosure-v1",
-                  "media-disclosure-v2"
-                ],
+                "const": "ai-disclosure-v1",
                 "type": "string"
               },
               {
@@ -23725,7 +23705,7 @@
     },
     "/api/upload/image": {
       "post": {
-        "description": "User image uploads are unconditionally rejected under the AI-only media policy: every request returns 400 ai_only_media before any file is read. Site imagery is AI-generated out-of-band (scripts/gen_image.py).",
+        "description": "User image uploads are unconditionally rejected under the UGC media policy: every request returns 400 ai_only_media before any file is read. Entity imagery is curated out-of-band under CLAUDE.md §1.5.",
         "operationId": "upload_image_api_upload_image_post",
         "requestBody": {
           "content": {
@@ -23757,7 +23737,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Upload an image (rejected: AI-only media policy)",
+        "summary": "Upload an image (rejected: UGC images disabled)",
         "tags": [
           "social"
         ]

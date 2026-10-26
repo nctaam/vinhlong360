@@ -162,17 +162,19 @@ describe('HomeLocalBriefing — (b) chỉ có dữ liệu dự phòng theo mùa'
     apiFetchMock.mockResolvedValue(FALLBACK_PAYLOAD)
     const wrapper = await mountBriefing()
 
-    const text = wrapper.get('[data-weather-status]').text()
+    const estimateText = wrapper.get('.home-local-briefing__estimate').text()
+    const evidenceText = wrapper.get('.home-local-briefing__evidence').text()
+    const weatherText = `${estimateText} ${evidenceText}`
     // Đây là các hằng số cứng theo tháng ở agent/realtime.py:170-184 — render chúng
     // như số đo là vi phạm §1.7.
-    expect(text).not.toContain('28')
-    expect(text).not.toContain('°C')
-    expect(text).not.toContain('80%')
-    expect(text).not.toContain('m/s')
-    expect(text).not.toContain('mưa rào')
+    expect(weatherText).not.toContain('28')
+    expect(weatherText).not.toContain('°C')
+    expect(weatherText).not.toContain('80%')
+    expect(weatherText).not.toContain('m/s')
+    expect(weatherText).not.toContain('mưa rào')
     // Cũng không được mượn chuỗi `suggestion` của backend (chuỗi đó chứa emoji cứng).
-    expect(text).not.toContain('áo mưa')
-    expect(text).not.toMatch(/[\u{1F300}-\u{1FAFF}☀-➿]/u)
+    expect(weatherText).not.toContain('áo mưa')
+    expect(weatherText).not.toMatch(/[\u{1F300}-\u{1FAFF}☀-➿]/u)
   })
 
   it('giữ accent trung tính, không mượn màu trời mưa', async () => {

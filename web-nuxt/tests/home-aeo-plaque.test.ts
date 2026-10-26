@@ -14,7 +14,7 @@ async function mount() {
   const wrapper = await mountSuspended(CatalogAeoPlaque, {
     props: {
       title: 'Cẩm nang du lịch theo mùa',
-      kicker: 'Góc nhìn bản địa · Giải đáp nhanh AEO',
+      kicker: 'Góc nhìn bản địa · Giải đáp nhanh',
       accent: 'amber',
       icon: 'bulb',
       entries: [

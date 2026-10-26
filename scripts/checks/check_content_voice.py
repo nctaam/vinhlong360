@@ -9,14 +9,13 @@ trích dẫn là giọng của NGUỒN, không phải giọng biên tập của 
 """
 from __future__ import annotations
 
-import json
 import re
 from pathlib import Path
 
-from .common import RegexCheck, _norm, repo_root
+from .common import RegexCheck, _norm, load_json_cached, repo_root
 
 FILLERS = [
-    r"miền Tây",
+    r"(?<!Xây dựng )(?<!đờn ca tài tử )(?<!ĐCTT )(?<!3 tỉnh )miền Tây",
     r"sông nước hữu tình",
     r"thiên đường",
     r"hidden gem",
@@ -84,7 +83,7 @@ class VoiceCheck:
         # 1) FE template — raw per-match (không đổi so với bản cũ)
         fe = RegexCheck(
             name=self.name, level=self.level, rule=self.rule, patterns=self._raw_patterns,
-            globs=["*.vue", "*.ts"], roots=self.fe_roots,
+            globs=["*.vue", "*.ts", "*.py"], roots=self.fe_roots,
             exclude_paths=["web-nuxt/node_modules"], msg=self.msg,
             root=self._root, count_matches=True,
         )
@@ -95,8 +94,8 @@ class VoiceCheck:
             path = self.root / DATA_REL
             if path.exists():
                 try:
-                    data = json.loads(path.read_text(encoding="utf-8"))
-                except (OSError, json.JSONDecodeError):
+                    data = load_json_cached(path)
+                except (OSError, ValueError):
                     data = None
                 if data:
                     for txt in _authored_texts(data):
@@ -112,7 +111,7 @@ def build_checks(root: Path | None = None) -> list:
     return [
         VoiceCheck(
             name="content_fillers", level="soft-ratchet", rule="R50.2", patterns=FILLERS,
-            fe_roots=["web-nuxt/pages", "web-nuxt/components", "web-nuxt/utils", "web-nuxt/composables"],
+            fe_roots=["web-nuxt/pages", "web-nuxt/components", "web-nuxt/utils", "web-nuxt/composables", "agent/seo.py"],
             msg="filler giọng generic — thay bằng đặc-thù Vĩnh Long (R50.2, playbook)", root=root,
         ),
         VoiceCheck(

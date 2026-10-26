@@ -355,3 +355,18 @@ def test_stream_abort_never_flushes_overlong_candidate_suffix():
     redactor.abort()
 
     assert redactor.finish() == ""
+
+
+def test_privacy_blocked_message_distinguishes_history_and_input_from_safety_block():
+    from chat.api import _privacy_blocked_message
+
+    history_msg = _privacy_blocked_message("INVALID_CHAT_HISTORY")
+    input_msg = _privacy_blocked_message("INVALID_CHAT_INPUT")
+    blocked_msg = _privacy_blocked_message("INPUT_BLOCKED")
+
+    assert "lịch sử hội thoại" in history_msg
+    assert "lý do an toàn" not in history_msg
+    assert "tin nhắn đầu vào" in input_msg
+    assert "lý do an toàn" not in input_msg
+    assert "lý do an toàn" in blocked_msg
+

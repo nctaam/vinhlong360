@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Unit tests for Batch 14 historical relics & architectural monuments enrichment."""
-import pytest
 from scripts.ops.enrich_batch14_history_relics import BATCH14_DATA, apply_batch14_enrichment
 
 

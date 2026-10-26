@@ -35,6 +35,7 @@ const descriptor = {
   full_disclosure: 'Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.',
   credit: null,
   source_url: null,
+
   width: null,
   height: null,
 } satisfies ImageDescriptor

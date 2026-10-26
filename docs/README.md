@@ -16,7 +16,7 @@ Authority: config/release-authority.json
 | Bạn muốn làm gì? | Tài liệu chỉ đạo bắt buộc |
 |---|---|
 | **Hiểu Hiến pháp, Bất biến & Luật chơi** | [`../CLAUDE.md`](../CLAUDE.md) *(Định vị tỉnh mới, 8 bất biến B1–B8, điều kiện dừng)* |
-| **Nắm bắt Kiến trúc & Các quyết định chốt (ADR)** | [`architecture-decisions.md`](architecture-decisions.md) *(ADR 1–6: DB-as-SoT, Nuxt SSR, Postgres UGC, Ảnh AI)* |
+| **Nắm bắt Kiến trúc & Các quyết định chốt (ADR)** | [`architecture-decisions.md`](architecture-decisions.md) *(ADR 1–6: DB-as-SoT, Nuxt SSR, Postgres UGC, provenance ảnh)* |
 | **Quy chuẩn Thiết kế, Anti-Slop & Bảng màu Tam Vùng** | [`../web-nuxt/DESIGN.md`](../web-nuxt/DESIGN.md) + [`design-rulebook.md`](design-rulebook.md) |
 | **Bộ tiêu chuẩn kỹ thuật có chế tài ("có răng")** | [`standards/00-INDEX.md`](standards/00-INDEX.md) *(Bảng tổng 38 rules: Hard, Ratchet, Soft)* |
 | **Hợp đồng dữ liệu Backend ↔ Frontend** | [`api-contract.md`](api-contract.md) *(18 entity types, Auth, Admin, Terroir RFC 7807)* |
@@ -47,7 +47,7 @@ Nhóm tài liệu định hình toàn bộ khung pháp lý kỹ thuật, cấu t
   - *ADR-1:* SQLite `vinhlong360.db` làm cơ sở dữ liệu nền tảng Single Source of Truth (SSOT), ở chế độ read-only bit-for-bit.
   - *ADR-2:* Kiến trúc đơn giao diện Nuxt 3 (SSR + Nitro) kiêm API server nội bộ, triệt tiêu phân mảnh kiến trúc.
   - *ADR-3:* PostgreSQL dành riêng cho dữ liệu người dùng (UGC) và lưu trữ trạng thái có thể ghi.
-  - *ADR-4:* 100% hình ảnh do AI tự tạo theo prompt bản địa, nghiêm cấm cào hoặc hotlink ảnh bên thứ ba.
+  - *ADR-4:* Ảnh AI phải ghi nhãn; ảnh báo chí/tư liệu chỉ dùng khi có quyền, tác giả, nguồn, giấy phép và URL truy vết; các nguồn bị cấm và quy tắc chống cào/hotlink theo `CLAUDE.md` §1.5.
   - *ADR-5:* Định vị địa lý hành chính 2 cấp (1 tỉnh -> 124 xã/phường).
   - *ADR-6:* Quản trị phân tầng kiểm soát chất lượng (Hard / Ratchet / Soft) và quy chế ngoại lệ có thẩm quyền.
 - **[`ROADMAP.md`](ROADMAP.md)**: Sổ theo dõi tiến độ dài hạn và backlog kỹ thuật. Ghi nhận các giai đoạn thi công đã hoàn tất và các hạng mục theo dõi nợ kỹ thuật.
@@ -138,7 +138,7 @@ Hệ thống hồ sơ quyết định độc lập, có thẩm quyền xác th�
   - `research/danh_muc_chuyen_sau_dia_diem_le_hoi_van_hoa_vl_tv_bt.csv`: Danh mục tra cứu di tích và lễ hội.
   - Các bộ khảo sát 12 chiều & 6 tầng tài nguyên: `nghien_cuu_12_chieu_catalog_62_tai_nguyen.csv`, `nghien_cuu_12_chieu_canh_tranh_dbscl.csv`, `nghien_cuu_12_chieu_ma_tran_san_pham.csv`, `nghien_cuu_12_chieu_phan_khuc_khach.csv`, `nghien_cuu_12_chieu_rui_ro_bao_ton_moi_truong.csv`, `nghien_cuu_12_chieu_kpi_du_lieu_can_thu_thap.csv`, `nghien_cuu_12_chieu_thu_muc_nguon_mo_rong.csv`, `nghien_cuu_6_tang_danh_gia_tai_nguyen.csv`, `nghien_cuu_6_tang_diem_den_toa_do.csv`, `nghien_cuu_6_tang_ma_tran_tuyen_khong_gian.csv`, `nghien_cuu_6_tang_thu_muc_nguon.csv`.
   - Bộ dữ liệu truyền thông địa phương: `baovinhlong_du_lich_evidence_matrix_2025_2026.csv`, `baovinhlong_du_lich_urls_2025_2026.csv`, `thvl_du_lich_urls.csv`.
-- **[`content-creation-guide.md`](content-creation-guide.md)**: Cẩm nang hướng dẫn biên soạn nội dung di sản, tiêu chuẩn nhập liệu điểm đến và quy tắc hình ảnh AI-only.
+- **[`content-creation-guide.md`](content-creation-guide.md)**: Cẩm nang hướng dẫn biên soạn nội dung di sản, tiêu chuẩn nhập liệu điểm đến và quy tắc provenance ảnh AI/báo chí.
 - **[`toi-uu-chong-ai-va-google-spam-playbook.md`](toi-uu-chong-ai-va-google-spam-playbook.md)**: Sổ tay tối ưu hóa chất lượng bài viết, triệt tiêu văn phong sáo rỗng AI, xây dựng độ tin cậy thực địa theo chuẩn E-E-A-T.
 - **[`b2g-pitch.md`](b2g-pitch.md)**: Hồ sơ mẫu đề xuất hợp tác công - tư (B2G) với các cơ quan quản lý nhà nước (tôn chỉ văn hóa, phi thương mại hóa, bảo tồn số).
 - **Cấu hình cá nhân hóa Claude Desktop (`claude-desktop/`):**

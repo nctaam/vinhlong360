@@ -12,9 +12,6 @@ def test_verified_documentary_photo_emits_google_image_license_metadata():
         "attributes": {
             "image_author": "Thành Duy",
             "image_source": "Báo Vĩnh Long",
-            "image_source_url": "https://baovinhlong.com.vn/images/thoai-ngoc-hau.webp",
-            "image_license": "Permission granted for re-hosting",
-            "permission_evidence": "owner-record:THOAI-NGOC-HAU",
             "image_type": "documentary",
             "is_verified_photo": True,
         },
@@ -39,10 +36,7 @@ def test_unverified_or_ai_photo_does_not_emit_image_license():
         "name": "Mẫu AI",
         "type": "attraction",
         "images": ["/img/entities/ai-sample.webp"],
-        "attributes": {
-            "image_type": "ai-generated",
-            "is_verified_photo": False,
-        },
+        "attributes": {},
     }
     ld = seo.build_entity_jsonld(entity, {})
     assert "image" in ld

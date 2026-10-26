@@ -29,6 +29,7 @@ import lunar_calendar
 DB_PATH = REPO_ROOT / "agent" / "data" / "vinhlong360.db"
 LEDGER_PATH = REPO_ROOT / "outputs" / "data_remediation_ledger.json"
 SPATIAL_REMED_PATH = REPO_ROOT / "outputs" / "remediation_spatial.json"
+GRAPH_REMED_PATH = REPO_ROOT / "outputs" / "remediation_graph.json"
 TEMPORAL_REMED_PATH = REPO_ROOT / "outputs" / "remediation_temporal.json"
 SEED_PATH = REPO_ROOT / "outputs" / "curated_missing_entities_seed.json"
 ORIGINAL_REQUEST_PATH = REPO_ROOT / ".agents" / "ORIGINAL_REQUEST.md"
@@ -43,7 +44,7 @@ LNG_MIN, LNG_MAX = 105.0, 107.0
 def db_conn():
     assert DB_PATH.exists(), f"DB not found at {DB_PATH}"
     # STRICT READ-ONLY connection
-    conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+    conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro&immutable=1", uri=True)
     conn.row_factory = sqlite3.Row
     yield conn
     conn.close()
@@ -61,10 +62,26 @@ def spatial_remed():
         return json.load(f)
 
 @pytest.fixture(scope="session")
+def graph_remed():
+    assert GRAPH_REMED_PATH.exists(), f"Graph remediation not found at {GRAPH_REMED_PATH}"
+    with open(GRAPH_REMED_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+@pytest.fixture(scope="session")
 def temporal_remed():
     assert TEMPORAL_REMED_PATH.exists(), f"Temporal remediation not found at {TEMPORAL_REMED_PATH}"
     with open(TEMPORAL_REMED_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def _coordinate_pair(value):
+    try:
+        parsed = json.loads(value) if isinstance(value, str) else value
+        if isinstance(parsed, list) and len(parsed) == 2:
+            return float(parsed[0]), float(parsed[1])
+    except (json.JSONDecodeError, ValueError, TypeError):
+        pass
+    return None
 
 @pytest.fixture(scope="session")
 def seed():
@@ -86,55 +103,70 @@ class TestSpatialAdversarial:
         assert "## 2026-09-12T15:17:16Z" in content
         assert "1,747" in content
 
-    def test_database_baseline_counts(self, db_conn):
-        """Empirically verify 1,747 entities, 12,061 relationships, 33 itineraries."""
+    def test_historical_baseline_counts(self, spatial_remed, graph_remed):
+        """The tracked audit artifacts preserve the immutable pre-remediation baseline."""
+        spatial_baseline = spatial_remed["metadata"]["baseline_metrics"]
+        graph_baseline = graph_remed["metadata"]["baseline_metrics"]
+
+        assert spatial_baseline["total_entities_audited"] == 1747
+        assert spatial_baseline["valid_coordinates_count"] == 1733
+        assert spatial_baseline["missing_coordinate_entities"] == 13
+        assert spatial_baseline["white_zones_count"] == 17
+        assert graph_baseline["total_entities_audited"] == 1747
+        assert graph_baseline["total_relationships_audited"] == 12061
+        assert graph_baseline["total_itineraries_audited"] == 33
+
+    def test_current_database_does_not_regress_below_historical_baseline(
+        self, db_conn, spatial_remed, graph_remed
+    ):
+        """A remediated local DB may grow, but it must not lose audited baseline records."""
+        spatial_baseline = spatial_remed["metadata"]["baseline_metrics"]
+        graph_baseline = graph_remed["metadata"]["baseline_metrics"]
         cur = db_conn.cursor()
         cur.execute("SELECT count(*) FROM entities")
-        assert cur.fetchone()[0] == 1747
+        assert cur.fetchone()[0] >= spatial_baseline["total_entities_audited"]
 
         cur.execute("SELECT count(*) FROM relationships")
-        assert cur.fetchone()[0] == 12061
+        assert cur.fetchone()[0] >= graph_baseline["total_relationships_audited"]
 
         cur.execute("SELECT count(*) FROM itineraries")
-        assert cur.fetchone()[0] == 33
+        assert cur.fetchone()[0] >= graph_baseline["total_itineraries_audited"]
 
-    def test_existing_valid_coordinates_fall_in_bbox(self, db_conn):
-        """All 1,733 existing valid coordinates must fall strictly within Mekong BBox."""
+    def test_current_valid_coordinates_preserve_baseline_and_bbox(self, db_conn, ledger, spatial_remed):
+        """Current coordinates stay in bounds without introducing new malformed records."""
         cur = db_conn.cursor()
-        cur.execute("SELECT id, coordinates FROM entities WHERE coordinates IS NOT NULL AND coordinates != '' AND id != 'prov-1'")
+        cur.execute("SELECT id, coordinates FROM entities WHERE coordinates IS NOT NULL AND coordinates != ''")
         rows = cur.fetchall()
 
         valid_count = 0
+        malformed_ids = set()
         for r in rows:
-            coords = r["coordinates"]
-            try:
-                parsed = json.loads(coords) if isinstance(coords, str) else coords
-                if isinstance(parsed, list) and len(parsed) == 2:
-                    lat, lng = float(parsed[0]), float(parsed[1])
-                    assert LAT_MIN <= lat <= LAT_MAX, f"Entity {r['id']} lat {lat} out of bounds"
-                    assert LNG_MIN <= lng <= LNG_MAX, f"Entity {r['id']} lng {lng} out of bounds"
-                    valid_count += 1
-            except (json.JSONDecodeError, ValueError, TypeError):
-                pass
+            pair = _coordinate_pair(r["coordinates"])
+            if pair is None:
+                malformed_ids.add(r["id"])
+                continue
+            lat, lng = pair
+            assert LAT_MIN <= lat <= LAT_MAX, f"Entity {r['id']} lat {lat} out of bounds"
+            assert LNG_MIN <= lng <= LNG_MAX, f"Entity {r['id']} lng {lng} out of bounds"
+            valid_count += 1
 
-        assert valid_count == 1733
+        historical_malformed_ids = {
+            r["entity_id"] for r in ledger["remediations"] if r["error_code"] == "ERR_MALFORMED_COORDS"
+        }
+        assert malformed_ids <= historical_malformed_ids, f"New malformed coordinates: {malformed_ids - historical_malformed_ids}"
+        assert valid_count >= spatial_remed["metadata"]["baseline_metrics"]["valid_coordinates_count"]
 
     def test_prov_1_malformed_coordinates_and_remediation(self, db_conn, ledger, spatial_remed):
-        """prov-1 had JSON dict string in DB; remediation must provide [lat, lng] array and correct placeId."""
+        """prov-1 must match either the documented legacy state or the complete remediation."""
         cur = db_conn.cursor()
         cur.execute("SELECT id, coordinates, placeId, address FROM entities WHERE id = 'prov-1'")
         row = cur.fetchone()
         assert row is not None
-        # Verify original defect in DB: {"lat": 10.253, "lng": 106.012}
-        assert "{" in row["coordinates"] and "lat" in row["coordinates"]
-        assert row["placeId"] == "phuong-thanh-duc"  # Typo in DB
 
-        # Find remediation in ledger
         remeds = [r for r in ledger["remediations"] if r["entity_id"] == "prov-1" and r["error_code"] == "ERR_MALFORMED_COORDS"]
         assert len(remeds) == 1, "Must have exactly 1 remediation for prov-1 in ledger"
         rem = remeds[0]
 
-        # Coordinates in ledger proposed_value is list of floats
         coords = rem["proposed_value"]
         assert isinstance(coords, list) and len(coords) == 2
         lat, lng = float(coords[0]), float(coords[1])
@@ -142,26 +174,46 @@ class TestSpatialAdversarial:
         assert LAT_MIN <= lat <= LAT_MAX
         assert LNG_MIN <= lng <= LNG_MAX
 
-        # Check full multi-field fix in spatial remediation
         prov1_fix = spatial_remed["coordinate_remediations"]["prov_1_fix"]
+        assert rem["current_value"] == prov1_fix["current_value"]
+        assert rem["proposed_value"] == prov1_fix["proposed_value"]
         assert prov1_fix["proposed_value"] == [10.253, 106.012]
         assert prov1_fix["place_id_remediation"]["proposed_place_id"] == "p-thanh-duc"
         assert prov1_fix["address_remediation"]["proposed_address"] == "12 đường Thử Nghiệm, Phường Thanh Đức, tỉnh Vĩnh Long"
 
+        legacy_state = (
+            row["coordinates"] == prov1_fix["current_value"]
+            and row["placeId"] == prov1_fix["place_id_remediation"]["current_place_id"]
+            and row["address"] == prov1_fix["address_remediation"]["current_address"]
+        )
+        remediated_state = (
+            _coordinate_pair(row["coordinates"]) == tuple(prov1_fix["proposed_value"])
+            and row["placeId"] == prov1_fix["place_id_remediation"]["proposed_place_id"]
+            and row["address"] == prov1_fix["address_remediation"]["proposed_address"]
+        )
+        assert legacy_state or remediated_state, "prov-1 is in a partial or undocumented remediation state"
+
     def test_13_missing_coordinates_geocodes(self, db_conn, ledger, spatial_remed):
-        """Empirically verify 13 missing coordinates in DB and their remediations in ledger."""
+        """The current DB may resolve historical gaps, but it cannot introduce new ones."""
         cur = db_conn.cursor()
         cur.execute("SELECT id, type, name, coordinates FROM entities WHERE coordinates IS NULL OR coordinates = '' OR coordinates = '[]'")
         rows = cur.fetchall()
-        assert len(rows) == 13, f"Expected 13 missing coordinates in DB, found {len(rows)}"
-
-        missing_ids = {r["id"] for r in rows}
+        current_missing_ids = {r["id"] for r in rows}
 
         remeds = [r for r in ledger["remediations"] if r["error_code"] == "ERR_MISSING_COORDS"]
         assert len(remeds) == 13, f"Expected 13 remediations for ERR_MISSING_COORDS, found {len(remeds)}"
 
-        remed_ids = {r["entity_id"] for r in remeds}
-        assert missing_ids == remed_ids, "Remediated IDs must match DB missing IDs exactly"
+        historical_missing_ids = {r["entity_id"] for r in remeds}
+        baseline_count = spatial_remed["metadata"]["baseline_metrics"]["missing_coordinate_entities"]
+        assert baseline_count == len(historical_missing_ids) == 13
+
+        cur.execute("SELECT id FROM entities")
+        current_entity_ids = {r["id"] for r in cur.fetchall()}
+        assert historical_missing_ids <= current_entity_ids, "Historically audited entities must remain present"
+        assert current_missing_ids <= historical_missing_ids, (
+            f"New missing-coordinate entities: {current_missing_ids - historical_missing_ids}"
+        )
+        assert len(current_missing_ids) <= baseline_count
 
         for rem in remeds:
             coords = rem["proposed_value"]
@@ -206,8 +258,8 @@ class TestWhiteZonesAdversarial:
         'xa-thanh-tri'
     }
 
-    def test_db_has_exactly_17_white_zones(self, db_conn):
-        """Query DB for all 124 administrative units; verify exactly 17 have 0 content entities."""
+    def test_current_db_has_no_new_white_zones(self, db_conn, spatial_remed):
+        """Current remediation may fill historical white zones but cannot create new ones."""
         cur = db_conn.cursor()
         cur.execute("SELECT id, name, level FROM entities WHERE type = 'place' AND parentId = 'vinh-long'")
         units = cur.fetchall()
@@ -222,10 +274,12 @@ class TestWhiteZonesAdversarial:
             if cnt == 0:
                 zero_content_units.add(unit_id)
 
-        assert len(zero_content_units) == 17, f"Expected exactly 17 white zones, found {len(zero_content_units)}: {zero_content_units}"
-        assert zero_content_units == self.EXPECTED_17_WHITE_ZONES, (
-            f"White zones mismatch. Diff: {zero_content_units.symmetric_difference(self.EXPECTED_17_WHITE_ZONES)}"
+        baseline_count = spatial_remed["metadata"]["baseline_metrics"]["white_zones_count"]
+        assert baseline_count == len(self.EXPECTED_17_WHITE_ZONES) == 17
+        assert zero_content_units <= self.EXPECTED_17_WHITE_ZONES, (
+            f"New white zones: {zero_content_units - self.EXPECTED_17_WHITE_ZONES}"
         )
+        assert len(zero_content_units) <= baseline_count
 
     def test_seed_json_covers_all_17_white_zones(self, seed):
         """Verify curated_missing_entities_seed.json covers all 17 white zones."""

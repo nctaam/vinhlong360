@@ -200,9 +200,11 @@ CANONICAL_DB_HASH = "20ac61bf7d247d8df35bd20bfe11140cf6eebae0980de4af5720d5ed73a
 
 
 class DataStoreHashGuard:
-    """R10.hash — Bất biến mã băm mật mã của data.json và DB (CLAUDE.md §2 B1, B7).
+    """R10.hash — guard dữ liệu versioned và kiểm DB local khi được yêu cầu.
 
-    Chặn đứng mọi script ngầm sửa data.json hoặc DB mà không có cờ ALLOW_DATA_MUTATION=1.
+    `web/data.json` thuộc Git nên được quét ở cả --all và staged. DB local nằm
+    trong .gitignore và bị runtime ghi liên tục, vì vậy chỉ hash khi caller
+    truyền tường minh đường dẫn DB; nếu không, --all sẽ đỏ theo trạng thái máy.
     """
 
     name, level, rule = "data_store_hash", "hard", "R10.hash"
@@ -235,7 +237,7 @@ class DataStoreHashGuard:
                     })
 
         db_rel = "agent/data/vinhlong360.db"
-        if files is None or db_rel in [f.replace("\\", "/") for f in files]:
+        if files is not None and db_rel in [f.replace("\\", "/") for f in files]:
             db_file = self.root / db_rel
             if db_file.exists():
                 db_h = hashlib.sha256(db_file.read_bytes()).hexdigest().lower()

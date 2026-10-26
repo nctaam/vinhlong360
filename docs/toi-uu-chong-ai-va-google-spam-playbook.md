@@ -6,7 +6,7 @@
 
 ## "Độ đặc thù Vĩnh Long + trải nghiệm bản địa thật là thứ đồng thời đánh bại cả việc-bị-đọc-như-AI lẫn Google-spam"
 
-> Tài liệu chiến lược cho solo dev. Mọi khuyến nghị hợp lệ với chính sách Google (không lách), tôn trọng guardrail dự án (backup trước thao tác dữ liệu §B1, 1 task/commit §B5, không đăng nguyên văn báo §B6, ảnh chỉ AI-gen). Các phần đụng dữ liệu/noindex/gộp trang phải qua ROADMAP task + test trước khi sửa (§3, §B3/B4) — nếu ngoài roadmap thì ghi "Backlog phát sinh", KHÔNG big-bang.
+> Tài liệu chiến lược cho solo dev. Mọi khuyến nghị hợp lệ với chính sách Google (không lách), tôn trọng guardrail dự án (backup trước thao tác dữ liệu §B1, 1 task/commit §B5, không đăng nguyên văn báo §B6, ảnh phải có provenance đúng §1.5). Các phần đụng dữ liệu/noindex/gộp trang phải qua ROADMAP task + test trước khi sửa (§3, §B3/B4) — nếu ngoài roadmap thì ghi "Backlog phát sinh", KHÔNG big-bang.
 
 ---
 
@@ -220,12 +220,12 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 ---
 
 **P1-8 · Design: ảnh AI ship với alt=tên-entity, không nhãn AI** — effort M
-- **TRẠNG THÁI: ⏳ mở** (alt/caption/nhãn AI chưa làm; riêng ý "thay ảnh thật/UGC" ở bước 3 đã bị chốt ảnh AI-only override — xem ghi chú tại chỗ).
+- **TRẠNG THÁI: ⏳ mở** (alt/caption/nhãn AI chưa làm; ảnh báo chí/tư liệu nay được phép khi đủ quyền và attribution, còn UGC vẫn bị cấm).
 - **Bằng chứng:** EntityCard.vue:5-6 + dia-diem/[id].vue:24-25 `:alt="entity.name"`; entity có ảnh AI → KHÔNG có disclosure (trong khi no-photo CÓ nhãn honesty dòng 77).
 - **CÁCH SỬA (khung = trung thực + E-E-A-T + accessibility, KHÔNG "tránh phạt Google"):**
   1. Alt mô tả cảnh cụ thể-địa-phương (VD "Cù lao An Bình nhìn từ bến sông, hàng dừa nước và ghe chở trái cây") — trung thực, KHÔNG nhồi từ khoá, KHÔNG ngụ ý cảnh-thật-đã-xác-minh.
   2. Caption/credit AI trên cover: "Ảnh dựng bằng AI theo mô tả — minh hoạ, chưa phải ảnh chụp tại chỗ". Thêm nguồn `'ai_generated'` vào image_credits (types/index.ts:94), `imageCredit` render nhãn khi nguồn=AI.
-  3. **TUYỆT ĐỐI KHÔNG giả EXIF/credit/tác giả.** ~~Ưu tiên thay ảnh thật/UGC cho flagship~~ — **BỎ (override 2026-07-07, chốt ảnh AI-only):** flagship vẫn dùng ảnh AI-gen kèm nhãn minh hoạ trung thực.
+  3. **TUYỆT ĐỐI KHÔNG giả EXIF/credit/tác giả.** Có thể ưu tiên ảnh báo chí/tư liệu/chính thức cho flagship khi quyền re-host được chứng minh và trang hiển thị tác giả + nguồn; UGC vẫn không được dùng.
 
 ---
 
@@ -239,7 +239,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 - **[eeat]** Bổ sung ≥2-3 chi tiết first-hand/entity index (giá+thời điểm ghi nhận, đỗ xe, giờ đông/vắng, tên dân gian dễ đi lố) + ≥1 nhược điểm trung thực. Nhân rộng công thức tép khô Mỹ Long.
 - **[design]** Grain overlay áp cho placeholder nhưng KHÔNG cho ảnh AI thật → thêm grain/duotone nhẹ lên ảnh AI (giữ CWV nhẹ, tiled data-URI).
 - **[design]** ✅ *ship 2026-07-06 (`33e125d`/`ee23983`/`7b83948`/`cc26b1e` — IconLine.vue ~37 icon, 3 đợt)* — Emoji làm functional icon → thay bằng line-icon set khớp giọng terracotta/serif (repo đã có inline SVG); emoji chỉ giữ chỗ trang trí thưa.
-- **[design]** Gradient placeholder 96.5% → tăng hue jitter/2-3 archetype/category; gate flagship sang ảnh AI-gen trước *(bỏ "UGC" — chốt ảnh AI-only)*. Coi photo coverage là metric visual-quality chính.
+- **[design]** Gradient placeholder 96.5% → tăng hue jitter/2-3 archetype/category; gate flagship sang ảnh AI có nhãn hoặc ảnh tư liệu đủ provenance. Coi photo coverage là metric visual-quality chính.
 
 ---
 
@@ -316,7 +316,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 | **Nguồn (citation)** | Trust (quan trọng nhất) | trust card + JSON-LD `citation` | trích đoạn+link §B6; ưu tiên history/di tích/OCOP |
 | **Nhãn AI (How)** | "Is AI-generation self-evident?" | caption ảnh AI; khối AITravelTips/SmartRecommendations | "Gợi ý tạo bằng AI, chưa kiểm chứng tại chỗ" |
 | **First-hand (Experience)** | "first-hand... visiting a place" | body entity | ≥2-3 chi tiết chỉ-người-đến-mới-biết + ≥1 nhược điểm |
-| **Ảnh thật** | bằng chứng Experience mạnh nhất | hero/card flagship | **OVERRIDE 2026-07-07: KHÔNG thực thi — chốt ảnh AI-only.** Experience chứng minh bằng chi tiết first-hand dạng TEXT; caption cụ thể; KHÔNG giả EXIF |
+| **Ảnh thật có nguồn** | bằng chứng Experience mạnh nhất | hero/card flagship | chỉ dùng ảnh báo chí/tư liệu/chính thức khi có quyền re-host, tác giả, nguồn, giấy phép và URL truy vết; KHÔNG giả EXIF/credit |
 | **Trang "Về trang này" / phương pháp** | Who/How/Why | /gioi-thieu hoặc /tac-gia | mô tả quy trình biên tập THẬT |
 | **BreadcrumbList/TouristAttraction/FAQPage JSON-LD** | rich-result + AI-citation | per-entity, khớp UI on-page | chỉ markup field thật hiển thị |
 
@@ -324,7 +324,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 
 ---
 
-## 7. Ảnh AI: rủi ro & lộ trình giảm phụ thuộc
+## 7. Ảnh AI và ảnh tư liệu: rủi ro & lộ trình phối hợp
 
 **Rủi ro kép:**
 1. **Đọc-như-AI:** cx/gpt-5.5-image cho ánh sáng phẳng, "quá đẹp giả", lỗi bàn tay/chữ biển hiệu/hoạ tiết Khmer-gốm. Người bản địa NHẬN RA NGAY cảnh "không có thật ở Vĩnh Long" → mất niềm tin + phá định vị.
@@ -333,9 +333,9 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 **Khung đúng:** ảnh KHÔNG phải tín hiệu-phạt độc lập theo policy Google — nó là MỘT cách thêm Experience. Rủi ro cốt lõi vẫn là ~1.600 trang thin. Vì vậy thứ tự:
 
 1. **TRƯỚC HẾT nâng depth per-page** cho entity flagship (đòn bẩy chính).
-2. **Ảnh AI-gen** (CHỈ cx/gpt-5.5-image qua `scripts/gen_image.py` — KHÔNG stock/Wikimedia/UGC dưới MỌI hình thức, theo chốt gốc của chủ dự án) cho entity chủ lực + **caption trung thực + nhãn "minh hoạ AI"**. Đặt tên file theo địa danh cụ thể.
-3. ~~**Mở đường UGC ảnh người dùng**~~ — **BỎ (override 2026-07-07):** chốt ảnh AI-only của chủ dự án cấm ảnh UGC phạm trù, không chỉ "UGC-làm-nguồn-crawl". Vẫn GIỮ phần hợp lệ: thu chi tiết first-hand từ cộng đồng bằng **TEXT** (giá thật, chỗ gửi xe, mùa nên đi) — Experience không cần ảnh.
-4. ~~**Ảnh thật do chủ dự án/CTV chụp** cho ~20-50 flagship~~ — **BỎ (override 2026-07-07):** cùng chốt ảnh AI-only. Nếu chủ dự án muốn giữ lập luận E-E-A-T "ảnh thật = Experience mạnh nhất" thì phải re-mở chốt ảnh một cách tường minh — cho tới lúc đó, flagship dùng ảnh AI-gen + nhãn minh hoạ.
+2. **Ảnh AI-gen** qua `scripts/gen_image.py` cho entity chủ lực, luôn có **caption trung thực + nhãn "minh hoạ AI"**. Đặt tên file theo địa danh cụ thể; không đặt `is_verified_photo=true`.
+3. **Ảnh báo chí/tư liệu/chính thức** cho flagship khi quyền re-host được chứng minh. Bắt buộc lưu tác giả, cơ quan nguồn, giấy phép/phạm vi sử dụng và URL truy vết; trang phải hiển thị credit tác giả/nguồn.
+4. **UGC ảnh người dùng vẫn bị cấm.** Thu chi tiết first-hand từ cộng đồng bằng **TEXT** (giá thật, chỗ gửi xe, mùa nên đi); không dùng ảnh UGC để lách quy trình quyền và duyệt ảnh.
 5. **Entity chưa flagship + không ảnh + desc ngắn** → noindex tạm. *(✅ đã đạt qua cổng P0-1 + noindex toàn site.)*
 
 **Ưu tiên đâu trước:** entity top-traffic/OCOP (dừa sáp Cầu Kè, gốm Mang Thít, bưởi Năm Roi, chùa Khmer, cù lao An Bình) → 1 ảnh signature/entity. GIỮ nhãn honesty "chưa có ảnh thật" (dòng 77) cho phần còn lại — đó là tín hiệu Trust tốt.
@@ -366,7 +366,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 - [ ] Có byline phân loại đúng mức xác minh (KHÔNG gắn ngày "kiểm chứng" cho entity chưa đi thực tế)
 - [ ] Dữ kiện cứng (năm/dân số/OCOP) CÓ nguồn hoặc kiểm chứng được — KHÔNG bịa
 - [ ] Ngày hiển thị là ngày THẬT (kiểm chứng/import ghi rõ), KHÔNG đóng dấu freshness giả
-- [ ] Ảnh AI có caption + nhãn "minh hoạ AI"; alt mô tả cảnh trung thực; KHÔNG giả EXIF
+- [ ] Ảnh AI có caption + nhãn "minh hoạ AI"; ảnh báo chí/tư liệu có quyền + tác giả + nguồn + giấy phép + URL và credit hiển thị; KHÔNG giả EXIF
 - [ ] Định vị: nhãn thương hiệu là "Vĩnh Long", KHÔNG "miền Tây" chung
 
 **D. Technical (cứng):**

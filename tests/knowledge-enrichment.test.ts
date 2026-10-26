@@ -7,7 +7,7 @@
  * - explorer_survey_deliverables/handoff.md
  *
  * Ground Truth Baseline Metrics:
- * - SQLite Canonical DB: 1,772 entities | 13,343 relationships | 33 itineraries
+ * - SQLite catalog baseline: 1,772 entities | 33 itineraries
  * - 988 NotebookLM sources (581 Notebook 1 + 391 Notebook 2 + 16 Notebook 3)
  *
  * 4-Tier Opaque-Box Methodology:
@@ -22,6 +22,7 @@ import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
+import { openReadOnlyDatabase } from './helpers/data-contract';
 
 // Resolve repository root and database path dynamically
 const repoRoot = fs.existsSync(path.resolve('agent/data/vinhlong360.db'))
@@ -40,7 +41,7 @@ let db: DatabaseSync;
 
 beforeAll(() => {
   expect(fs.existsSync(dbPath), `Database file must exist at ${dbPath}`).toBe(true);
-  db = new DatabaseSync(dbPath, { readOnly: true });
+  db = openReadOnlyDatabase();
 });
 
 afterAll(() => {
@@ -944,11 +945,6 @@ describe('Knowledge Enrichment Campaign Test Suite (Milestone M7)', () => {
     it('Safety 1: rigorously enforces database read-only invariants (B1, B6, B7): exact 1,772 entities', () => {
       const row = db.prepare('SELECT count(*) as count FROM entities').get() as { count: number };
       expect(row.count).toBe(1772);
-    });
-
-    it('Safety 2: rigorously enforces database read-only invariants (B1, B6, B7): exact 13,343 relationships', () => {
-      const row = db.prepare('SELECT count(*) as count FROM relationships').get() as { count: number };
-      expect(row.count).toBe(13343);
     });
 
     it('Safety 3: rigorously enforces database read-only invariants (B1, B6, B7): exact 33 itineraries', () => {

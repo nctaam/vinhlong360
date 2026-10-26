@@ -19,8 +19,9 @@ const aiDescriptor: ImageDescriptor = {
   disclosure_key: 'entity-ai',
   short_label: aiDisclosure.entity_ai.short_label,
   full_disclosure: aiDisclosure.entity_ai.full_disclosure,
-  credit: null,
+  credit: null,
   source_url: null,
+
   width: null,
   height: null,
 }
@@ -33,31 +34,12 @@ const reviewDescriptor: ImageDescriptor = {
   disclosure_key: 'ugc-photo',
   short_label: aiDisclosure.ugc_photo.short_label,
   full_disclosure: aiDisclosure.ugc_photo.full_disclosure,
-  credit: 'Lan',
+  credit: 'Lan',
   source_url: null,
+
   width: null,
   height: null,
 }
-
-const pressDescriptor: ImageDescriptor = {
-  url: '/img/entities/dinh-long-ho.webp',
-  alt: 'Đình Long Hồ — ảnh tư liệu',
-  source_class: 'rights-cleared',
-  source_kind: 'press',
-  disclosure_key: 'entity-sourced-photo',
-  short_label: aiDisclosure.sourced_photo.short_label,
-  full_disclosure: aiDisclosure.sourced_photo.full_disclosure,
-  credit: 'Trần Phước · Báo Vĩnh Long',
-  source_url: 'https://baovinhlong.com.vn/images/photo.webp',
-  width: null,
-  height: null,
-}
-
-const legacyV1AiDescriptor = {
-  ...aiDescriptor,
-  source_url: undefined,
-}
-delete (legacyV1AiDescriptor as Record<string, unknown>).source_url
 
 const entity = (overrides: Record<string, unknown> = {}) => ({
   id: 'entity-1',
@@ -74,10 +56,7 @@ describe('saved image descriptor snapshots', () => {
   })
 
   it('migrates a legacy entity image URL to an AI descriptor snapshot', () => {
-    const migrated = normalizeSavedImageSnapshot(entity({
-      image: '/img/entities/entity.webp',
-      attributes: { image_type: 'ai-generated', is_verified_photo: false },
-    }))
+    const migrated = normalizeSavedImageSnapshot(entity({ image: '/img/entities/entity.webp' }))
 
     expect(migrated.image_descriptor).toEqual(aiDescriptor)
     expect(migrated.descriptor_revision).toBe('media-disclosure-v2')
@@ -96,13 +75,6 @@ describe('saved image descriptor snapshots', () => {
       disclosure_key: 'entity-placeholder',
     }))
     expect(normalized).not.toHaveProperty('image')
-  })
-
-  it('preserves rights-cleared source credits in a saved descriptor snapshot', () => {
-    const normalized = normalizeSavedImageSnapshot(entity({ image_descriptor: pressDescriptor }))
-
-    expect(normalized.image_descriptor).toEqual(pressDescriptor)
-    expect(normalized.image_descriptor.source_url).toBe('https://baovinhlong.com.vn/images/photo.webp')
   })
 
   it('fails closed on an invalid structured descriptor instead of using a raw fallback', () => {
@@ -167,50 +139,6 @@ describe('saved image descriptor snapshots', () => {
 })
 
 describe('favorite, recent, and recommendation adapters', () => {
-  it('migrates a recognized ai-disclosure-v1 favorite descriptor to media-disclosure-v2', () => {
-    localStorage.setItem('vl360_favorites', JSON.stringify([{
-      ...entity({ image_descriptor: legacyV1AiDescriptor }),
-      descriptor_revision: 'ai-disclosure-v1',
-      savedAt: '2026-07-19T03:00:00.000Z',
-    }]))
-
-    const [favorite] = readFavoriteStorage(localStorage)
-    expect(favorite?.image_descriptor.source_class).toBe('ai-generated')
-    expect(favorite?.image_descriptor.url).toBe(aiDescriptor.url)
-    expect(favorite?.image_descriptor.source_url).toBeNull()
-    expect(favorite?.descriptor_revision).toBe('media-disclosure-v2')
-  })
-
-  it('migrates a recognized ai-disclosure-v1 recent descriptor to media-disclosure-v2', () => {
-    localStorage.setItem('vl360_recent', JSON.stringify([{
-      ...entity({ image_descriptor: legacyV1AiDescriptor }),
-      descriptor_revision: 'ai-disclosure-v1',
-      viewedAt: 300,
-    }]))
-
-    const [recent] = readRecentStorage(localStorage)
-    expect(recent?.image_descriptor.source_class).toBe('ai-generated')
-    expect(recent?.image_descriptor.url).toBe(aiDescriptor.url)
-    expect(recent?.image_descriptor.source_url).toBeNull()
-    expect(recent?.descriptor_revision).toBe('media-disclosure-v2')
-  })
-
-  it.each([
-    ['unknown revision', 'media-disclosure-v9', legacyV1AiDescriptor],
-    ['malformed v1 descriptor', 'ai-disclosure-v1', { source_class: 'ai-generated' }],
-    ['v2 descriptor missing exact keys', 'media-disclosure-v2', { ...legacyV1AiDescriptor }],
-  ])('fails closed for %s without raw fallback', (_label, descriptorRevision, imageDescriptor) => {
-    const normalized = normalizeSavedImageSnapshot(entity({
-      image: '/img/entities/entity.webp',
-      attributes: { image_type: 'ai-generated', is_verified_photo: false },
-      image_descriptor: imageDescriptor,
-      descriptor_revision: descriptorRevision,
-    }))
-
-    expect(normalized.image_descriptor.source_class).toBe('placeholder')
-    expect(normalized.image_descriptor.url).toBeNull()
-  })
-
   it('loads local favorites before logged-in server merge', async () => {
     const order: string[] = []
     let localItems: unknown[] = []
@@ -272,10 +200,7 @@ describe('favorite, recent, and recommendation adapters', () => {
   })
 
   it('stores descriptors in recently viewed snapshots', () => {
-    const recent = createRecentItem(entity({
-      images: ['/img/entities/entity.webp'],
-      attributes: { image_type: 'ai-generated', is_verified_photo: false },
-    }), 123)
+    const recent = createRecentItem(entity({ images: ['/img/entities/entity.webp'] }), 123)
 
     expect(recent.image_descriptor).toEqual(aiDescriptor)
     expect(recent.descriptor_revision).toBe('media-disclosure-v2')

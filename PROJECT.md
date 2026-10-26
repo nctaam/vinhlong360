@@ -1,57 +1,59 @@
-# Project: Vinh Long 360 Visual-First Homepage Redesign
+# Project: Vinh Long 360 — Quiet Luxury & Mobile Ergonomics Overhaul
 
 ## Architecture
-Vinh Long 360 (`vinhlong360`) is an editorial travel and living heritage platform for Vĩnh Long Province in the Mekong Delta. The system architecture encompasses:
-- **Cloud Design Grounding**: Google Stitch MCP Project `5074017185594308685` bound to Design System `assets/d2b2b7344efd4dc891e671fe846db9e3` (Co Chien Blue `#006798`, Mang Thit Terracotta `#b95f38`, Alluvial Amber `#c99446`, Cu Lao Green `#1b8844`, Bến Cloud `#faf9f7`, Lora display serif, Be Vietnam Pro sans).
-- **Frontend Layer**: Nuxt 4 application (`web-nuxt/`) using Vue 3 SFCs, standard CSS variables/tokens (`variables.css`, `tri-region-color.css`, `home-nocturne.css`), and strict WCAG 2.2 AAA accessibility. Zero Tailwind, zero external stock imagery, zero audio/video autoplay.
-- **Data Layer**: Authentic local travel dataset in `web/data.json` and SQLite `agent/data/vinhlong360.db` (220 destinations, 164 homestays, 186 restaurants, 120 dishes, 91 activities, 16 itineraries) cryptographically protected with SHA-256 bit-for-bit invariants.
-- **Verification Layer**: 22 home test suites (167 tests), 78 color contract tests, zero token debt auditor, TypeScript typecheck, and Python `run_hard.py` invariant gates (30 rules).
+- **Framework**: Nuxt 4.5.2 + Nitro 2.13.4 SSR.
+- **Styling Architecture**: Native CSS tokens in `assets/css/` (`variables.css`, `base.css`, `shell.css`, `cards.css`, `home-nocturne.css`). Strict constraint: `no_tailwind` (R30.1), `fe_colors` tokenized (R30.3), `fe_radius_scale` (R30.8).
+- **Component Architecture**: Scoped Vue 3 components (`EntityCard.vue`, `FilterChips.vue`, `SaveButton.vue`, `PocketPassModal.vue`, etc.).
+- **Verification Harnesses**: Python check engine (`scripts/checks/run_hard.py`), Vitest (248 test suites in `web-nuxt`), Nitro build pipeline + launch readiness manifest.
+- **Deployment Target**: VPS `66.42.57.202`, systemd service `vl-nuxt.service`, reverse proxy Nginx serving `https://vinhlong360.vn/`.
 
 ## Feature Inventory
-Every feature identified from the authoritative request (`ORIGINAL_REQUEST.md`) and the Phase 0 survey is mapped to an assigned milestone.
-
 | # | Feature | Description | Milestone | Source |
 |---|---------|-------------|-----------|--------|
-| 1 | F1. Visual-First Ratio & Text Brevity | $\ge 75\%$ photo visual area, $\le 25\%$ text, descriptions $\le 120$ characters or 2 short lines, eliminate text-walls, concise pill badges and micro-stats | M1 | ORIGINAL_REQUEST §R1 |
-| 2 | F2. Full-Bleed Cinematic Hero & Frosted Search | Edge-to-edge widescreen river hero, floating frosted-glass multi-criteria search bar (`backdrop-blur-xl bg-white/20`), keyword input, duration pills (1D, 2D1N, 3D2N), travel style filters, quick trending tags | M1 | ORIGINAL_REQUEST §R2 |
-| 3 | F3. 5 Visual Intent Pills | 5 tactile navigation pills with circular photographic thumbnails (36-40px diameter) + category icons (*Sinh Thái*, *Làng Nghề*, *Tâm Linh*, *Ẩm Thực*, *Homestay*) | M1 | ORIGINAL_REQUEST §R2 |
-| 4 | F4. Curated Wonder Gallery Mosaic | Asymmetric magazine layout: Mang Thít lead tile (80% photo), An Bình orchard, Trà Ôn floating market, Khmer pagoda, KDL Vinh Sang; subtle zoom on hover (`scale(1.04)`), location pill badges, interactive Save Bookmark button (`useFavorites().toggle()`) | M1 | ORIGINAL_REQUEST §R2 |
-| 5 | F5. Gastro Trail (5 Full-Bleed Food Cards) | Edge-to-edge mouth-watering food photography cards for 5 signature dishes (Cá tai tượng chiên xù, Bánh xèo hến, Lẩu cua đồng, Ốc lác nướng tiêu, Khoai lang chấm mắm sống), zero dry recipe text, dish title, reputable venue pill badge, and directions action button | M1 | ORIGINAL_REQUEST §R3 |
-| 6 | F6. Riverside Retreat Lookbook | 16:9 widescreen evocative photo cards for authentic homestays (Út Trinh Homestay, Mekong Riverside, Ba Linh Homestay), peaceful riverfront verandas, direct booking/contact action buttons ($\ge 44\text{px}$) | M1 | ORIGINAL_REQUEST §R3 |
-| 7 | F7. Google Stitch MCP Cloud Sync | Update Project `5074017185594308685` with Desktop Homepage screen and Mobile Fieldwork screen adhering to Design System `assets/d2b2b7344efd4dc891e671fe846db9e3` and Visual-First standards | M1 | ORIGINAL_REQUEST §R4 |
-| 8 | F8. Strict Technical & Safety Gates | 0 audio, 0 video auto-play; WCAG 2.2 AAA (contrast $\ge 7:1$, touch target $\ge 44\times 44\text{px}$); 100% pass across all test suites (`npx vitest run tests/home`, `npx vitest run tests/tri-region-color-contract.test.ts`, `node scripts/check-tri-region-color-debt.mjs`, `npm run typecheck`, `python ../scripts/checks/run_hard.py --all`); bit-for-bit SHA-256 database integrity | M1 | ORIGINAL_REQUEST §R5 |
+| 1 | Dark Hero Scrim Fix (R3) | Fix white milk-glass wash `rgba(var(--ink-rgb), 0.72)` in `home-nocturne.css:2220` to dark gradient to restore hero text contrast. | M1 | Survey Obs-1 |
+| 2 | EntityCard Decluttering (R1) | Remove redundant "Quanh năm" badges, remove `.card-rule` decorative line, ensure "One Primary Focal Point" for imagery and title. | M1 | Survey Obs-2 |
+| 3 | FilterChips Refinement (R1) | Remove 3-color underline gradient pseudo-element on active chips, refine chip spacing and visual breathing room. | M1 | Survey Obs-4 |
+| 4 | Catalog Route Spacing & Negative Space (R1) | Tinh giản khung viền hộp lồng nhau trên `/du-lich`, `/am-thuc`, `/danh-ba`, `/ocop`, mở rộng negative space. | M1 | Survey Obs-3 |
+| 5 | Color Token Contrast Tuning (R3) | Replace/adjust low-contrast tokens like `--mangthit-500` in `danh-ba.vue` and secondary tokens to meet WCAG 2.2 AAA standards. | M1 | Survey Obs-5 |
+| 6 | 320px Header Overflow Elimination (R2) | Eliminate ~30px overflow on <=400px viewports in `shell.css` by hiding display settings button on ultra-narrow mobile. | M1 | Survey Obs-1 |
+| 7 | CSS Grid Blowout Fix (R2) | Fix `HomeRiversideStays.vue` grid template columns to `minmax(min(100%, 260px), 1fr)`. | M1 | Survey Obs-2 |
+| 8 | Double-Gutter Padding Trap Elimination (R2) | Eliminate 80px double padding trap between `.page` and `.block` on mobile viewports. | M1 | Survey Obs-3 |
+| 9 | SaveButton Touch Target 44px (R2) | Ensure `SaveButton.vue` (`.save-btn-sm`) satisfies minimum 44px x 44px touch target requirement. | M1 | Survey Obs-4 |
+| 10 | Micro-Typography & Vietnamese Word-Wrapping (R2) | In `EntityCard.vue`, replace `hyphens: auto; overflow-wrap: anywhere;` with `overflow-wrap: break-word; text-wrap: pretty;`, restore `text-wrap: balance` for section headings. | M1 | Survey Obs-5,6 |
+| 11 | Map Dock & Modal Viewport Ergonomics (R2) | Hide `.map-floating-thumb-dock` on `/ban-do` when in list panel mode; adjust `PocketPassModal.vue` close button for short mobile viewports. | M1 | Survey Obs-7,8 |
+| 12 | System Integrity Gate (Acceptance) | Run `python scripts/checks/run_hard.py --all` verifying hard=0 and zero ratchet increases. | M2 | Acceptance Criteria |
+| 13 | Vitest 248 Suites Green (Acceptance) | Run `npm test` in `web-nuxt` ensuring 100% pass across all 248 test suites (3348+ tests). | M2 | Acceptance Criteria |
+| 14 | Clean Build & Bundle Check (Acceptance) | Run `npm run build` with manifest generation and verify bundle budget check. | M2 | Acceptance Criteria |
+| 15 | VPS Deployment & Live HTTP 200 (Acceptance) | Deploy new build to VPS `66.42.57.202`, restart `vl-nuxt.service`, curl test `https://vinhlong360.vn/` returning HTTP 200 OK. | M2 | Acceptance Criteria |
+| 16 | Comprehensive Audit & Scorecard (Acceptance) | Produce detailed system review report and Quiet Luxury ergonomics scorecard. | M2 | Acceptance Criteria |
 
 ## Milestones
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| M1 | Visual-First Homepage Redesign (Stitch Cloud & Nuxt Implementation) | Full execution of Visual-First homepage redesign: (1) Generate Desktop & Mobile screens on Google Stitch MCP project `5074017185594308685` with Design System `assets/d2b2b7344efd4dc891e671fe846db9e3`; (2) Implement Nuxt components (`HomeIntentAnchors.vue`, `HomeCuratedShowcase.vue`, `HomeCulinaryTrail.vue`, `HomeRiversideStays.vue`, `pages/index.vue`, `assets/css/home-nocturne.css`) with $\ge 75\%$ photo coverage, $\le 120$ chars copy, bookmark button, full-bleed hero, frosted search island; (3) Pass 100% test suites (167+ home tests, 78 color contract tests), 0 token debt, 0 typecheck errors, 0 hard check violations, WCAG 2.2 AAA compliance, and bit-for-bit SHA-256 database integrity. | none | IN_PROGRESS |
+| 1 | M1: Frontend Craft Overhaul (Quiet Luxury, Contrast & Ergonomics) | Features #1 to #11 (R1, R2, R3) | none | IN_PROGRESS |
+| 2 | M2: Integrity Verification, VPS Deployment & Live Sign-off | Features #12 to #16 (Acceptance) | M1 | PLANNED |
 
 ## Interface Contracts
-### `HomeIntentAnchors` ↔ `pages/index.vue`
-- Emits: navigation route triggers.
-- Visual contract: 5 pill capsules with 36-40px circular photo avatars, icon, title, $\ge 44\times 44\text{px}$ tap target.
+### Styling & Token Contract (R30.1, R30.3, R30.8)
+- Absolutely NO Tailwind utility classes in `.vue` or `.css` files (`no_tailwind` hard gate).
+- Colors MUST use existing CSS custom properties defined in `variables.css` or semantic variables (`fe_colors` hard-ratchet 0).
+- Radii MUST use `--radius-*` tokens (`fe_radius_scale` hard-ratchet 0).
+- Touch targets for interactive elements MUST have minimum 44px x 44px bounds (`ui-ux-ergonomics-gate.test.ts`).
 
-### `HomeCuratedShowcase` ↔ `pages/index.vue` / `useFavorites`
-- Visual contract: Asymmetric mosaic (Lead Mang Thít 80% photo, satellites $\ge 75\%$ photo).
-- Interactive contract: Bookmark toggle calls `useFavorites().toggle(item.id)`. Descriptions strictly $\le 120$ characters.
-
-### `HomeCulinaryTrail` ↔ `pages/index.vue`
-- Visual contract: 5 full-bleed macro food cards (Cá tai tượng, Bánh xèo hến, Lẩu cua đồng, Ốc lác, Khoai lang).
-- Content contract: Zero recipe text. Title, venue name pill, map action button $\ge 44\text{px}$.
-
-### `HomeRiversideStays` ↔ `pages/index.vue`
-- Visual contract: 16:9 widescreen photo cards. Peaceful riverfront lookbook.
-- Content contract: Descriptions $\le 120$ characters. Booking phone/action button $\ge 44\text{px}$.
-
-### `pages/index.vue` Section Sequence Allowlist
-- Preserved strict order: `['context', 'editorial-lead', 'quick-decisions', 'signals', 'journey-continuation']`.
+### Component Contracts
+- `EntityCard.vue`: Props (`entity`, `variant`, `density`) and event emitters must remain unchanged. No visual regression on card links.
+- `FilterChips.vue`: Model value and change events must remain unchanged.
+- `SaveButton.vue`: Button contract and bookmark storage event handling must remain unchanged.
 
 ## Code Layout
-- `web-nuxt/pages/index.vue`: Homepage root template, full-bleed hero, floating frosted-glass search bar.
-- `web-nuxt/components/home/HomeIntentAnchors.vue`: 5 Visual Intent Pills with circular photo thumbnails.
-- `web-nuxt/components/home/HomeCuratedShowcase.vue`: Curated Wonder Gallery Asymmetric Mosaic with bookmark save.
-- `web-nuxt/components/home/HomeCulinaryTrail.vue`: 5 Macro Food Photography Full-Bleed Cards.
-- `web-nuxt/components/home/HomeRiversideStays.vue`: Riverside Retreat Lookbook.
-- `web-nuxt/assets/css/home-nocturne.css`: Homepage stylesheet and CSS variable tokens.
-- `web-nuxt/tests/home/*`: Vitest homepage test suite (167 tests).
-- `web-nuxt/tests/tri-region-color-contract.test.ts`: Color token contract tests (78 tests).
+- `web-nuxt/assets/css/variables.css`: Design tokens & theme variables (Parchment & Nocturne).
+- `web-nuxt/assets/css/base.css`: Base typography & layout classes.
+- `web-nuxt/assets/css/shell.css`: Header shell & navigation styling.
+- `web-nuxt/assets/css/cards.css`: Card layout rules.
+- `web-nuxt/assets/css/home-nocturne.css`: Homepage Nocturne theme overrides & hero scrims.
+- `web-nuxt/components/EntityCard.vue`: Primary entity showcase card.
+- `web-nuxt/components/FilterChips.vue`: Catalog filter chip row.
+- `web-nuxt/components/SaveButton.vue`: Bookmark action button.
+- `web-nuxt/components/PocketPassModal.vue`: PocketPass dialog modal.
+- `web-nuxt/components/home/HomeRiversideStays.vue`: Riverside stays section.
+- `web-nuxt/pages/`: Catalog and map routes (`du-lich.vue`, `am-thuc.vue`, `danh-ba.vue`, `ocop.vue`, `ban-do.vue`).
