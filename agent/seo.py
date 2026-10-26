@@ -306,11 +306,12 @@ def _is_valid_url(value: Any) -> bool:
 
 def _is_external_url(url: Any) -> bool:
     """Valid http(s) URL that is NOT our own site (self-citation is not a source)."""
-    if not _is_valid_url(url):
+    if not isinstance(url, str) or not url.strip():
         return False
-    parsed = urlparse(str(url).strip())
-    host = (parsed.hostname or "").lower()
-    return host not in ("vinhlong360.vn", "www.vinhlong360.vn")
+    parsed = urlparse(url.strip())
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return False
+    return (parsed.hostname or "").lower() not in ("vinhlong360.vn", "www.vinhlong360.vn")
 
 
 def _source_info(entity: dict[str, Any]) -> tuple[str | None, str | None]:
@@ -943,6 +944,9 @@ def _jsonld_ratings(ld: dict[str, Any], entity: dict[str, Any], attrs: dict[str,
     _jsonld_rating_primary(ld, entity, attrs)
 
 
+_MONTH_NAMES: dict[int, str] = {i: f"Tháng {i}" for i in range(1, 13)}
+
+
 def _jsonld_season(ld: dict[str, Any], entity: dict[str, Any]) -> None:
     """additionalProperty: mùa vụ / mùa cao điểm từ entity.season."""
     season = entity.get("season")
@@ -950,23 +954,20 @@ def _jsonld_season(ld: dict[str, Any], entity: dict[str, Any]) -> None:
         return
     months = season.get("months")
     peak = season.get("peak")
-    MONTH_NAMES = {1: "Tháng 1", 2: "Tháng 2", 3: "Tháng 3", 4: "Tháng 4",
-                   5: "Tháng 5", 6: "Tháng 6", 7: "Tháng 7", 8: "Tháng 8",
-                   9: "Tháng 9", 10: "Tháng 10", 11: "Tháng 11", 12: "Tháng 12"}
     props: list[dict[str, Any]] = []
     if isinstance(months, list) and months:
         props.append({
             "@type": "PropertyValue",
             "propertyID": "seasonMonths",
             "name": "Mùa vụ",
-            "value": ", ".join(MONTH_NAMES.get(m, str(m)) for m in sorted(months) if isinstance(m, int)),
+            "value": ", ".join(_MONTH_NAMES.get(m, str(m)) for m in sorted(months) if isinstance(m, int)),
         })
     if isinstance(peak, list) and peak:
         props.append({
             "@type": "PropertyValue",
             "propertyID": "peakSeason",
             "name": "Mùa cao điểm",
-            "value": ", ".join(MONTH_NAMES.get(m, str(m)) for m in sorted(peak) if isinstance(m, int)),
+            "value": ", ".join(_MONTH_NAMES.get(m, str(m)) for m in sorted(peak) if isinstance(m, int)),
         })
     if props:
         existing = ld.get("additionalProperty")
@@ -1011,19 +1012,19 @@ def _jsonld_sources(ld: dict[str, Any], entity: dict[str, Any],
 
 
 def _jsonld_contact(ld: dict[str, Any], attrs: dict[str, Any]) -> None:
-    if attrs.get("phone"):
-        ld["telephone"] = attrs["phone"]
-    if attrs.get("hours"):
-        ld["openingHours"] = attrs["hours"]
     phone = attrs.get("phone")
     if isinstance(phone, str) and phone.strip():
         ld["telephone"] = phone.strip()
+    elif phone:
+        ld["telephone"] = phone
     email = attrs.get("email")
     if isinstance(email, str) and email.strip():
         ld["email"] = email.strip()
     opening = attrs.get("opening_hours")
     if isinstance(opening, str) and opening.strip():
         ld["openingHours"] = opening.strip()
+    elif attrs.get("hours"):
+        ld["openingHours"] = attrs["hours"]
 
 
 def _jsonld_dates(ld: dict[str, Any], entity: dict[str, Any]) -> None:
@@ -1051,11 +1052,12 @@ def _jsonld_keywords(ld: dict[str, Any], entity: dict[str, Any], area: str | Non
 
 
 def _jsonld_meta(ld: dict[str, Any], entity: dict[str, Any],
-                 by_id: dict[str, dict[str, Any]], entity_id: str) -> None:
+                 by_id: dict[str, dict[str, Any]], entity_id: str, entity_url: str = "") -> None:
+    url = entity_url or _entity_url(entity_id)
     ld["mainEntityOfPage"] = {
         "@type": "WebPage",
-        "@id": _entity_url(entity_id),
-        "url": _entity_url(entity_id),
+        "@id": url,
+        "url": url,
     }
     ld["inLanguage"] = "vi-VN"
     ld["availableLanguage"] = "vi"
@@ -1066,6 +1068,7 @@ def _jsonld_meta(ld: dict[str, Any], entity: dict[str, Any],
 def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]], *, relationships: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     schema_type = TYPE_SCHEMA.get(str(entity.get("type")), "Thing")
     entity_id = str(entity.get("id"))
+    entity_url = _entity_url(entity_id)
     area = _entity_area(entity, by_id)
     place = by_id.get(str(entity.get("placeId"))) if entity.get("placeId") else None
     attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
@@ -1075,9 +1078,9 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     ld: dict[str, Any] = {
         "@context": "https://schema.org",
         "@type": schema_type,
-        "@id": _entity_url(entity_id),
+        "@id": entity_url,
         "name": entity.get("name") or entity_id,
-        "url": _entity_url(entity_id),
+        "url": entity_url,
     }
     _jsonld_base(ld, entity, attrs)
     _jsonld_location(ld, coordinates, area, place, attrs)
@@ -1092,7 +1095,7 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     _jsonld_dates(ld, entity)
     _jsonld_season(ld, entity)
     _jsonld_keywords(ld, entity, area)
-    _jsonld_meta(ld, entity, by_id, entity_id)
+    _jsonld_meta(ld, entity, by_id, entity_id, entity_url)
     return {key: value for key, value in ld.items() if value not in (None, "", [], {})}
 
 

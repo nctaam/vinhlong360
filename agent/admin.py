@@ -887,30 +887,7 @@ async def contact_funnel_export(days: int = Query(30, ge=1, le=365)):
 
     def _generate():
         cutoff = datetime.now(timezone.utc) - timedelta(days=days)
-        counts: dict[str, dict[str, int]] = {}
-        if CONTACT_VIEWS_FILE.exists():
-            with open(CONTACT_VIEWS_FILE, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    try:
-                        rec = json.loads(line)
-                    except (json.JSONDecodeError, ValueError):
-                        continue
-                    ts_str = rec.get("ts", "")
-                    try:
-                        ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
-                    except (ValueError, TypeError):
-                        continue
-                    if ts < cutoff:
-                        continue
-                    eid = rec.get("entity_id", "")
-                    action = rec.get("action", "other")
-                    if eid not in counts:
-                        counts[eid] = {"zalo": 0, "phone": 0, "website": 0, "map": 0, "total": 0}
-                    counts[eid][action] = counts[eid].get(action, 0) + 1
-                    counts[eid]["total"] += 1
+        counts, _ = _contact_funnel_tally(cutoff, None) if CONTACT_VIEWS_FILE.exists() else ({}, 0)
         ent_dict = knowledge._entities if getattr(knowledge, "_entities", None) else {}
         yield _csv_row(["entity_id", "name", "zalo", "phone", "website", "map", "total"])
         for eid, c in sorted(counts.items(), key=lambda x: -x[1]["total"]):
@@ -1292,6 +1269,7 @@ async def activity_feed(limit: int = Query(10, ge=1, le=50)):
 
 
 _learn_proc: Optional[subprocess.Popen] = None
+_LEARN_CATEGORY_RE = re.compile(r'^[\w\s\-À-ɏḀ-ỿ]+$')
 
 @router.post("/trigger-learn",
              summary="Trigger knowledge learning",
@@ -1301,7 +1279,7 @@ async def trigger_learn(category: Optional[str] = Query(None, max_length=50), to
     if topics < 1 or topics > 20:
         raise HTTPException(400, "Số chủ đề phải từ 1 đến 20")
     if category:
-        if len(category) > 50 or not re.match(r'^[\w\s\-À-ɏḀ-ỿ]+$', category):
+        if len(category) > 50 or not _LEARN_CATEGORY_RE.match(category):
             raise HTTPException(400, "Danh mục không hợp lệ — chỉ chấp nhận chữ, số, dấu gạch (tối đa 50 ký tự)")
     cmd = [sys.executable, str(ROOT / "agent" / "auto_learn.py"), "--apply", "--topics", str(topics)]
     if category:
@@ -1754,7 +1732,7 @@ def _orphan_entity_ids(rows, valid_ids) -> list:
     """Return entity_ids from `rows` that are not present in `valid_ids` (dict/tuple-row safe)."""
     def _eid(r):
         return r[0] if not hasattr(r, 'keys') else db._row_to_dict(r)["entity_id"]
-    return [_eid(r) for r in rows if _eid(r) not in valid_ids]
+    return [eid for r in rows if (eid := _eid(r)) not in valid_ids]
 
 
 @router.post("/cleanup-orphan-refs",

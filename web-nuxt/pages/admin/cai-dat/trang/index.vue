@@ -10,7 +10,7 @@
 
     <div class="cs-grid">
       <NuxtLink v-for="(p, i) in pages" :key="p.slug" :to="`/admin/cai-dat/trang/${p.slug}`" class="cs-card" :style="{ '--stagger': `${i * 40}ms` }">
-        <span class="cs-icon">{{ p.icon }}</span>
+        <span class="cs-icon" aria-hidden="true"><IconLine :name="p.icon" /></span>
         <div>
           <h3>{{ p.title }}</h3>
           <p>{{ p.route }}</p>
@@ -43,8 +43,8 @@ const pages = PAGE_MANIFEST_LIST
 .cs-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .cs-icon { font-size: 1.8rem; flex-shrink: 0; width: 40px; text-align: center; }
 .cs-card div { flex: 1; min-width: 0; }
-.cs-card h3 { margin: 0; font-size: .95rem; font-weight: 600; }
-.cs-card p { margin: var(--space-1) 0 0; font-size: .78rem; color: var(--muted); font-family: 'SF Mono', monospace; }
+.cs-card h3 { margin: 0; font-size: .95rem; font-weight: 600; line-height: 1.4; overflow-wrap: break-word; }
+.cs-card p { margin: var(--space-1) 0 0; font-size: .78rem; line-height: 1.4; color: var(--muted); font-family: var(--font-mono); overflow-wrap: anywhere; }
 .cs-arrow { font-size: 1.1rem; color: var(--muted); flex-shrink: 0; opacity: .4; transition: opacity .2s, transform .2s var(--ease-soft); display: inline-flex; align-items: center; justify-content: center; }
 .cs-card:hover .cs-arrow { opacity: .8; transform: translateX(3px); }
 @keyframes cs-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }

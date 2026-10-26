@@ -41,7 +41,7 @@ async function reload() {
   try {
     const r = await $fetch<any>('/admin-api/site-settings/page', { headers: authHeaders() })
     const stored = (r.settings || []).find((s: any) => s.key === 'tuyen_duong.routes')?.value
-    const value = Array.isArray(stored) && stored.length ? stored : JSON.parse(JSON.stringify(DEFAULT_ROUTES))
+    const value = Array.isArray(stored) && stored.length ? stored : structuredClone(DEFAULT_ROUTES)
     fields.value = [{
       key: 'tuyen_duong.routes',
       value,
@@ -58,16 +58,16 @@ onMounted(reload)
 </script>
 
 <style scoped>
-.cs-view { color: var(--color-action); text-decoration: none; margin-left: 6px; font-family: 'SF Mono', monospace; font-size: .78rem; }
+.cs-view { color: var(--color-action); text-decoration: none; margin-left: 6px; font-family: var(--font-mono); font-size: .78rem; line-height: 1.4; }
 .cs-view:hover { text-decoration: underline; }
 .cs-form-wrap { max-width: 760px; }
 .cs-help {
   max-width: 760px; margin-bottom: var(--space-5); padding: var(--space-4);
   background: rgba(var(--color-brand-rgb),.04); border: .5px solid var(--line); border-radius: 12px;
-  font-size: .82rem; color: var(--muted); line-height: 1.5;
+  font-size: .82rem; color: var(--muted); line-height: 1.6; overflow-wrap: break-word;
 }
 .cs-help p { margin: 0; }
-.cs-help code { font-family: 'SF Mono', monospace; font-size: .76rem; color: var(--color-brand); }
+.cs-help code { font-family: var(--font-mono); font-size: .76rem; color: var(--color-brand); }
 .cs-skeleton { max-width: 760px; }
 .cs-skel-item { height: 280px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
 .dark .cs-help { background: rgba(var(--color-brand-rgb),.08); }

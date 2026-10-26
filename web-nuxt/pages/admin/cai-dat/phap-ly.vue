@@ -70,8 +70,8 @@ async function reload() {
     const p = rows.find((s: any) => s.key === 'legal.privacy')?.value
     const t = rows.find((s: any) => s.key === 'legal.terms')?.value
     // Pre-fill the form with current content (default when no override yet).
-    privacyVal.value = nonEmpty(p) ? p : JSON.parse(JSON.stringify(LEGAL_PRIVACY))
-    termsVal.value = nonEmpty(t) ? t : JSON.parse(JSON.stringify(LEGAL_TERMS))
+    privacyVal.value = nonEmpty(p) ? p : structuredClone(LEGAL_PRIVACY)
+    termsVal.value = nonEmpty(t) ? t : structuredClone(LEGAL_TERMS)
   } catch { showToast('Không thể tải cài đặt', 'error') }
   loading.value = false
 }
@@ -85,24 +85,23 @@ onMounted(reload)
 .cs-help {
   max-width: 680px; margin-bottom: var(--space-5); padding: var(--space-4);
   background: rgba(var(--color-brand-rgb),.04); border: .5px solid var(--line); border-radius: 12px;
-  font-size: .82rem; color: var(--muted); line-height: 1.5;
+  font-size: .82rem; color: var(--muted); line-height: 1.6; overflow-wrap: break-word;
 }
 .cs-help p { margin: 0 0 var(--space-2); }
 .cs-help pre {
   margin: 0; padding: var(--space-2) var(--space-3); border-radius: 8px; white-space: pre-wrap;
   background: var(--bg); border: .5px solid var(--line);
-  font-family: 'SF Mono', 'Cascadia Code', monospace; font-size: .76rem; color: var(--ink);
+  font-family: var(--font-mono); font-size: .76rem; line-height: 1.5; color: var(--ink);
 }
 
 .legal-doc { margin-bottom: var(--space-8); padding-bottom: var(--space-8); border-bottom: .5px solid var(--line); }
 .legal-doc:last-child { border-bottom: none; }
-.legal-doc-title { font-size: 1.05rem; font-weight: 600; margin-bottom: var(--space-4); }
+.legal-doc-title { display: flex; align-items: center; gap: var(--space-2); font-size: 1.05rem; font-weight: 600; line-height: 1.35; margin-bottom: var(--space-4); overflow-wrap: break-word; }
 
 .cs-skeleton { max-width: 680px; display: flex; flex-direction: column; gap: 2px; }
 .cs-skel-item { height: 64px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
 .cs-skel-item:nth-child(even) { animation-delay: .2s; }
 .dark .cs-help { background: rgba(var(--color-brand-rgb),.08); }
-.dark .cs-help pre { background: var(--card); }
 @media (prefers-reduced-motion: reduce) {
   .cs-skel-item { animation: none; }
 }

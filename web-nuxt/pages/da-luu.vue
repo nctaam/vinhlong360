@@ -590,7 +590,7 @@ useHead(() => ({
   text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
 }
 .dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--color-brand); flex-shrink: 0; }
-.saved-title { font-size: 1.5rem; margin: 0; }
+.saved-title { font-size: 1.5rem; line-height: 1.24; margin: 0; text-wrap: balance; overflow-wrap: break-word; }
 .saved-overview {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0; margin-bottom: var(--space-5);
@@ -604,7 +604,7 @@ useHead(() => ({
 }
 .saved-overview-item:first-child { border-inline-start: 0; padding-inline-start: 0; }
 .saved-overview-item span { color: var(--muted); font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
-.saved-overview-item strong { font-family: var(--font-editorial); font-style: italic; font-size: 1.35rem; font-weight: 600; line-height: 1.1; color: var(--ink); }
+.saved-overview-item strong { font-family: var(--font-editorial); font-style: italic; font-size: 1.35rem; font-weight: 600; line-height: 1.24; color: var(--ink); text-wrap: balance; overflow-wrap: break-word; }
 .saved-tools { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .75rem; align-items: center; margin-bottom: 1rem; }
 .saved-search input {
   width: 100%; min-height: 44px; padding: .65rem .85rem; border: 1px solid var(--border-input);
@@ -739,8 +739,11 @@ useHead(() => ({
   font-family: var(--font-editorial);
   font-size: var(--text-lg);
   font-weight: 600;
+  line-height: 1.24;
   color: var(--ink);
   margin: 0;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 .saved-catalyst-desc {
   font-size: var(--text-sm);
@@ -794,7 +797,7 @@ useHead(() => ({
   letter-spacing: .04em;
 }
 .sugg-lead-title {
-  font-family: var(--font-editorial, Lora, serif);
+  font-family: var(--font-editorial);
   font-size: var(--text-sm, 14px);
   color: var(--ink);
   line-height: 1.35;
@@ -863,7 +866,6 @@ useHead(() => ({
 
 /* Dark */
 .dark .saved-search input { background: var(--bg-alt); border-color: var(--line); }
-.dark .saved-post { background: transparent; }
 
 /* Mobile */
 @media (max-width: 600px) {

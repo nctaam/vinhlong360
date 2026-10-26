@@ -184,8 +184,9 @@ _server_start_time = __import__("time").time()
 
 
 def _system_health_server(result, os, _t) -> None:
-    result["server"]["uptime_seconds"] = int(_t.time() - _server_start_time)
-    result["server"]["uptime_human"] = _format_uptime(int(_t.time() - _server_start_time))
+    uptime = int(_t.time() - _server_start_time)
+    result["server"]["uptime_seconds"] = uptime
+    result["server"]["uptime_human"] = _format_uptime(uptime)
     result["server"]["pid"] = os.getpid()
     try:
         import psutil
@@ -555,7 +556,7 @@ def _quality_trend_ops_snapshot() -> dict:
 
     latest, budget_failures, last_recorded_at = _quality_trend_process_latest(latest_rows)
 
-    baseline = {str(db._row_to_dict(row).get("metric_key")): float(db._row_to_dict(row).get("metric_value") or 0) for row in baseline_rows}
+    baseline = {str(d.get("metric_key")): float(d.get("metric_value") or 0) for row in baseline_rows if (d := db._row_to_dict(row))}
     delta_7d = {
         key: round(item["value"] - baseline[key], 2)
         for key, item in latest.items()

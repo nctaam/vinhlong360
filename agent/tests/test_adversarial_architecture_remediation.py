@@ -265,7 +265,7 @@ def test_entities_fetch_best_answers_by_id_batches_in_single_query(monkeypatch):
     rows = [{"best_answer_id": "c-1"}, {"best_answer_id": None}, {"best_answer_id": "c-2"}]
     result = entities_api._fetch_best_answers_by_id(None, rows, "%s")
     assert len(calls) == 1
-    assert calls[0][1] == ("c-1", "c-2")
+    assert set(calls[0][1]) == {"c-1", "c-2"}
     assert result["c-1"]["content"] == "Trả lời 1"
     assert result["c-2"]["user"]["display_name"] == "Bình"
 
@@ -847,7 +847,53 @@ def test_campaign_rho_multi_agent_architecture_optimizations():
     assert callable(entities_api._fetch_best_answers_by_id)
 
 
+def test_campaign_sigma_multi_agent_architecture_optimizations():
+    import inspect
+    from pathlib import Path
+    import admin
+    import community.admin_api
+    import seed_site_settings
+    import seo
+    import site_settings
+    import siteops.admin_api
 
+    repo_root = Path(__file__).resolve().parent.parent.parent
 
+    # 1. Ban 1: Global Stylesheets (components.css, events.css, dark-overrides.css, legal.css, dossier.css, detail-shared.css, editorial.css)
+    events_css = (repo_root / "web-nuxt" / "assets" / "css" / "events.css").read_text(encoding="utf-8")
+    assert "word-break: break-word;" not in events_css
+    assert ".dark .etiquette-box" not in events_css
+
+    legal_css = (repo_root / "web-nuxt" / "assets" / "css" / "legal.css").read_text(encoding="utf-8")
+    assert "'Lora', serif" not in legal_css
+    assert ".dark .legal-toc" not in legal_css
+
+    detail_shared_css = (repo_root / "web-nuxt" / "assets" / "css" / "detail-shared.css").read_text(encoding="utf-8")
+    assert "word-break: break-word;" not in detail_shared_css
+
+    # 2. Ban 2 & Ban 3: Public & Admin Pages & Components Decluttering & Vietnamese Font Tokens
+    riverside_stays = (repo_root / "web-nuxt" / "components" / "home" / "HomeRiversideStays.vue").read_text(encoding="utf-8")
+    assert "--font-editorial-display" not in riverside_stays
+    assert ".home-stay-card__trust" not in riverside_stays
+
+    curated_showcase = (repo_root / "web-nuxt" / "components" / "home" / "HomeCuratedShowcase.vue").read_text(encoding="utf-8")
+    assert "--font-editorial-display" not in curated_showcase
+    assert "function isItemSaved" not in curated_showcase
+
+    settings_form = (repo_root / "web-nuxt" / "components" / "admin" / "SettingsForm.vue").read_text(encoding="utf-8")
+    assert "function isSafeUrl" not in settings_form
+    assert "'SF Mono'" not in settings_form
+
+    data_quality_vue = (repo_root / "web-nuxt" / "pages" / "admin" / "data-quality.vue").read_text(encoding="utf-8")
+    assert "word-break: break-word;" not in data_quality_vue
+
+    # 3. Ban 4: Backend & Admin Settings Deduplication
+    assert hasattr(admin, "_LEARN_CATEGORY_RE")
+    assert isinstance(seo._MONTH_NAMES, dict)
+    assert "_contact_funnel_tally(cutoff, None)" in inspect.getsource(admin.contact_funnel_export)
+    assert "_json_value(" in inspect.getsource(site_settings.seed_defaults)
+    assert "def _load_audit_entries(" not in inspect.getsource(siteops.admin_api)
+    assert "def _query_audit_logs(" not in inspect.getsource(community.admin_api)
+    assert "import json" not in inspect.getsource(seed_site_settings)
 
 

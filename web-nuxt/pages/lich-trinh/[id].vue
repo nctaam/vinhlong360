@@ -231,18 +231,16 @@
 </template>
 
 <script setup lang="ts">
-import type { Itinerary, Entity} from '~/types'
+import type { Itinerary } from '~/types'
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
 import { fetchRoute, formatDistance, formatDuration, type TransportMode, type RouteResult, type RouteLeg } from '~/composables/useRouting'
 import MekongWaterBadge from '~/components/MekongWaterBadge.vue'
 import PlannerRiverTransitWarning from '~/components/planner/PlannerRiverTransitWarning.vue'
-import PlannerMobilePassModal from '~/components/planner/PlannerMobilePassModal.vue'
 import PocketPassModal from '~/components/PocketPassModal.vue'
 
 useReveal()
 
 const route = useRoute()
-const router = useRouter()
 const id = normalizeRouteParam(route.params.id)
 const encodedId = encodePathId(id)
 
@@ -364,7 +362,6 @@ function isNewChapter(idx: number) {
 const sunArcDots = computed(() => {
   const stops = itinerary.value?.stops || []
   const hours = stopHours.value
-  const known = hours.filter((h): h is number => h !== null)
   return stops.map((s, i) => {
     const h = hours[i]
     const pct = h != null
@@ -710,11 +707,14 @@ if (itinerary.value && !itinerary.value.error) {
 /* Section head introducing the timeline (WCAG 1.3.1: was h1→h3, this restores h2) */
 .timeline-head { margin: var(--space-5) 0 var(--space-2); }
 .timeline-head h2 {
-  font-family: var(--font-serif, var(--font-editorial));
+  font-family: var(--font-editorial);
   font-size: var(--text-xl);
   font-weight: var(--weight-bold);
+  line-height: 1.24;
   color: var(--color-text);
   letter-spacing: -0.01em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 .timeline { list-style: none; margin: 0; padding: 0 0 0 24px; position: relative; }
 /* Branded vertical journey spine */
@@ -736,7 +736,7 @@ if (itinerary.value && !itinerary.value.error) {
 .timeline-chapter:first-child { margin-top: 0; }
 .tc-label {
   position: relative; display: inline-flex; align-items: center; gap: var(--space-2);
-  font-family: var(--font-serif, var(--font-editorial)); font-size: var(--text-2xs); font-weight: 600;
+  font-family: var(--font-editorial); font-size: var(--text-2xs); font-weight: 600;
   text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--muted);
   padding-left: var(--space-3);
 }
@@ -801,9 +801,12 @@ if (itinerary.value && !itinerary.value.error) {
 .step-emoji { font-size: 1.6rem; line-height: 1; transition: transform .25s var(--ease-out-expo); }
 .step-card:hover .step-emoji { transform: scale(1.06); }
 .step-content h3 {
-  font-family: var(--font-serif, var(--font-editorial));
+  font-family: var(--font-editorial);
   font-size: var(--text-base);
   font-weight: var(--weight-semibold);
+  line-height: 1.3;
+  text-wrap: balance;
+  overflow-wrap: break-word;
   margin: 0 0 var(--space-1);
 }
 .stop-link { color: var(--ink); font-weight: var(--weight-semibold); transition: color .3s var(--ease-out); border-radius: var(--radius-control); }
@@ -923,13 +926,9 @@ if (itinerary.value && !itinerary.value.error) {
   font-weight: var(--weight-semibold);
 }
 .route-total[role="status"] .chip { font-weight: var(--weight-semibold); }
-.dark .route-total { background: transparent; border-inline-start-color: var(--color-brand); }
 
 /* Dark mode */
-.dark .step-card { border-color: var(--line); }
-.dark .step-card:hover { border-color: var(--color-brand); }
 .dark .route-leg-line { background: rgba(var(--white-rgb),.1); }
-.dark .route-map { border-color: var(--line); }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

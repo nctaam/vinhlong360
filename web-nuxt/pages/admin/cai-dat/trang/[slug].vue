@@ -81,8 +81,8 @@ onMounted(reload)
 </script>
 
 <style scoped>
-.cs-view { color: var(--color-action); text-decoration: none; margin-left: 6px; font-family: 'SF Mono', monospace; font-size: .78rem; }
+.cs-view { color: var(--color-action); text-decoration: none; margin-left: 6px; font-family: var(--font-mono); font-size: .78rem; line-height: 1.4; }
 .cs-view:hover { text-decoration: underline; }
-.cs-missing { padding: var(--space-6); color: var(--muted); }
-.cs-missing code { font-family: 'SF Mono', monospace; color: var(--color-brand); }
+.cs-missing { padding: var(--space-6); color: var(--muted); line-height: 1.6; overflow-wrap: break-word; }
+.cs-missing code { font-family: var(--font-mono); color: var(--color-brand); }
 </style>

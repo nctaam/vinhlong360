@@ -190,7 +190,6 @@
   min-width: 0;
   font-size: var(--text-sm);
   overflow-wrap: break-word;
-  word-break: break-word;
   text-wrap: pretty;
 }
 .now-banner-text strong { font-family: var(--font-editorial); font-weight: 600; }
@@ -266,7 +265,6 @@
   font-size: var(--text-base);
   line-height: var(--leading-snug);
   overflow-wrap: break-word;
-  word-break: break-word;
   text-wrap: pretty;
 }
 .ledger-place {
@@ -332,7 +330,6 @@
 }
 .etiquette-box p { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); color: var(--ink-secondary); }
 .etiquette-box strong { font-family: var(--font-editorial); color: var(--ink); }
-.dark .etiquette-box { background: transparent; border-inline-start-color: var(--color-success); }
 
 /* ── ical bulk-subscribe button ── */
 .ical-bulk-btn {
@@ -386,8 +383,6 @@
   color: var(--color-success);
 }
 .register-su-kien .lunar-label { color: var(--color-material-amber); }
-.dark .lunar-label { color: var(--color-success); }
-.dark .register-su-kien .lunar-label { color: var(--color-material-amber); }
 
 /* ── Event list ── */
 .event-list {
@@ -481,7 +476,6 @@
   margin: 0 0 var(--space-1);
   line-height: var(--leading-snug);
   overflow-wrap: break-word;
-  word-break: break-word;
   text-wrap: pretty;
 }
 .event-summary {
@@ -490,7 +484,6 @@
   margin: 0 0 var(--space-2);
   line-height: var(--leading-normal);
   overflow-wrap: break-word;
-  word-break: break-word;
   text-wrap: pretty;
 }
 .event-meta {
@@ -518,7 +511,8 @@
 .event-disclosure {
   display: block;
   max-width: 80px;
-  line-height: 1.1;
+  line-height: 1.25;
+  overflow-wrap: break-word;
 }
 .event-thumb img {
   width: 100%;
@@ -613,6 +607,9 @@
 .cal-header h2 {
   font-size: var(--text-lg);
   font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+  text-wrap: balance;
+  overflow-wrap: break-word;
   margin: 0;
 }
 .cal-nav {
@@ -732,7 +729,6 @@
 .cal-lunar.lunar-mid::before { content: '◯'; margin-inline-end: 1px; font-size: var(--text-2xs); }
 
 /* ── Dark mode (events) ── */
-.dark .event-row { border-block-end-color: var(--line); }
 .dark .toggle-btn { background: var(--bg-alt); border-color: var(--line); }
 .dark .toggle-btn:focus-visible { outline-color: var(--color-focus); }
 .dark .calendar { border-color: var(--border-liquid-glass, var(--line)); box-shadow: var(--shadow-card-ambient); }
@@ -748,7 +744,6 @@
   box-shadow: 0 0 0 1px var(--date-badge-ring), inset 0 1px 0 rgba(var(--white-rgb), .12), inset 0 -2px 4px rgba(var(--black-rgb), .28), var(--shadow-xs);
 }
 .dark .lunar-ribbon { background: var(--card); border-color: var(--border-liquid-glass, var(--line)); }
-.dark .ledger-row { border-block-end-color: var(--line); }
 
 /* ── Responsive: tablet ── */
 @media (min-width: 769px) and (max-width: 1024px) {

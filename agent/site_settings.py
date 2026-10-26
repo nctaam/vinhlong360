@@ -397,7 +397,7 @@ def rollback_history(history_id: str, *, actor: str | None = None) -> bool:
             conn,
             key=rec["setting_key"],
             value=prev,
-            val_json=json.dumps(prev, ensure_ascii=False),
+            val_json=_json_value(prev),
             action="rollback",
             actor=actor,
             category_override=rec.get("category"),
@@ -415,7 +415,7 @@ def seed_defaults(defaults: dict[str, dict]) -> int:
     count = 0
     with db._conn() as conn:
         for key, meta in defaults.items():
-            val_json = json.dumps(meta["value"], ensure_ascii=False)
+            val_json = _json_value(meta["value"])
             cur = db._execute(conn, f"""
                 INSERT INTO site_settings (key, value, category, label, description, input_type)
                 VALUES ({ph}, {ph}::jsonb, {ph}, {ph}, {ph}, {ph})

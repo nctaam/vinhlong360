@@ -52,12 +52,7 @@
         </div>
 
         <!-- Overlaid Bottom Content (<= 25% card height) -->
-        <div class="home-stay-card__overlay home-stay-card__body">
-          <div class="home-stay-card__trust sr-only">
-            <SourceMark tier="official" source-title="Chuẩn Homestay ASEAN" compact />
-            <FreshnessLine status="fresh" updated-label="Thực địa 2026" />
-          </div>
-
+        <div class="home-stay-card__overlay">
           <div class="home-stay-card__meta">
             <span class="home-stay-card__area">
               <IconLine name="pin" aria-hidden="true" />
@@ -124,8 +119,6 @@
 
 <script setup lang="ts">
 import IconLine from '~/components/IconLine.vue'
-import SourceMark from '~/components/SourceMark.vue'
-import FreshnessLine from '~/components/FreshnessLine.vue'
 
 interface CuratedHomestay {
   readonly id: string
@@ -135,7 +128,6 @@ interface CuratedHomestay {
   readonly ecoBadge: string
   readonly price: string
   readonly area: string
-  readonly typeLabel: string
   readonly desc: string
   readonly perks: readonly string[]
   readonly coverSrc: string
@@ -158,7 +150,6 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
     ecoBadge: 'Chứng nhận Sinh Thái ASEAN',
     price: 'Từ 650.000đ/đêm',
     area: 'Xã Hòa Ninh, Cù Lao An Bình',
-    typeLabel: 'Nhà Rường Nam Bộ',
     desc: 'Nhà rường gỗ quý cổ kính dưới bóng nhãn cù lao An Bình, trải nghiệm nấu bánh xèo và nghe đờn ca bến sông.',
     perks: ['Cơm gia đình cù lao', 'Chèo xuồng mương rạch', 'Xe đạp làng quê'],
     coverSrc: '/img/spread/cu-lao-an-binh.webp',
@@ -173,7 +164,6 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
     ecoBadge: 'Vườn sinh thái không rác thải',
     price: 'Từ 450.000đ/đêm',
     area: 'Thị xã Bình Minh, Vĩnh Long',
-    typeLabel: 'Eco-Lodge Ven Sông',
     desc: 'Eco-lodge ven sông Hậu lộng gió, đón khách bằng cano riêng và ngắm hoàng hôn rực rỡ bên bến đò Bình Minh.',
     perks: ['Bến đón cano riêng', 'Câu cá bờ sông', 'Ngắm hoàng hôn sông Hậu'],
     coverSrc: '/img/spread/song-nuoc.webp',
@@ -188,7 +178,6 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
     ecoBadge: 'Nông nghiệp hữu cơ tuần hoàn',
     price: 'Từ 380.000đ/đêm',
     area: 'Xã An Bình, Long Hồ',
-    typeLabel: 'Vườn Trái Cây Gia Đình',
     desc: 'Nhà vườn truyền thống rợp bóng dừa nước, mâm cơm miệt vườn mẹ nấu và những đêm trăng thanh bình cù lao.',
     perks: ['Vườn trái cây tự hái', 'Võng ngắm mương liếp', 'Đờn ca tài tử'],
     coverSrc: '/img/entities/nha-vuon-tu-hien.webp',
@@ -345,44 +334,11 @@ function onImgFallback(e: Event) {
   flex-wrap: wrap;
 }
 
-.home-stay-card__terroir {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  background: rgba(var(--black-rgb), 0.86);
-  color: var(--alluvial-gold);
-  border: 1px solid var(--border-liquid-glass);
-  border-radius: var(--radius-pill, 9999px);
-  box-shadow: var(--shadow-card-ambient);
-  font-size: var(--text-2xs);
-  font-weight: var(--weight-bold);
-}
-
-.home-stay-card__trust {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1h);
-  margin-bottom: var(--space-1);
-}
-
-.home-stay-card__badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  background: rgba(var(--black-rgb), 0.86);
-  color: var(--surface-white); /* WCAG 2.2 AAA >= 11:1 compliant */
-  border: 1px solid var(--border-liquid-glass);
-  border-radius: var(--radius-pill, 9999px);
-  box-shadow: var(--shadow-card-ambient);
-  font-size: var(--text-2xs);
-  font-weight: var(--weight-bold);
-}
-
+.home-stay-card__terroir,
+.home-stay-card__badge,
 .home-stay-card__eco-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
   padding: 3px 10px;
   background: rgba(var(--black-rgb), 0.86);
   color: var(--alluvial-gold);
@@ -391,6 +347,15 @@ function onImgFallback(e: Event) {
   box-shadow: var(--shadow-card-ambient);
   font-size: var(--text-2xs);
   font-weight: var(--weight-bold);
+  line-height: 1.35;
+}
+
+.home-stay-card__badge {
+  color: var(--surface-white); /* WCAG 2.2 AAA >= 11:1 compliant */
+}
+
+.home-stay-card__eco-badge {
+  gap: 4px;
 }
 
 .home-stay-card__eco-badge .line-icon {
@@ -438,10 +403,6 @@ function onImgFallback(e: Event) {
   display: none !important;
 }
 
-.home-stay-card__coords-sep {
-  display: none !important;
-}
-
 .home-stay-card__price {
   font-variant-numeric: tabular-nums;
   font-size: var(--text-xs);
@@ -453,10 +414,11 @@ function onImgFallback(e: Event) {
 
 .home-stay-card__title {
   margin: 0;
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: var(--text-base);
   line-height: 1.35;
   text-wrap: pretty;
+  overflow-wrap: break-word;
   min-width: 0;
 }
 
@@ -486,31 +448,6 @@ function onImgFallback(e: Event) {
   overflow: hidden;
   text-wrap: pretty;
   min-width: 0;
-}
-
-.home-stay-card__perks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-top: var(--space-1);
-}
-
-.home-stay-card__perk {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  background: rgba(var(--black-rgb), 0.80);
-  border: 1px solid var(--border-liquid-glass);
-  border-radius: var(--radius-pill, 9999px);
-  box-shadow: var(--shadow-card-ambient);
-  font-size: var(--text-2xs);
-  color: var(--surface-white);
-}
-
-.home-stay-card__perk .line-icon {
-  color: var(--surface-white);
-  font-size: var(--text-2xs);
 }
 
 .home-stay-card__action {
@@ -573,8 +510,10 @@ function onImgFallback(e: Event) {
   align-items: center;
   gap: var(--space-2);
   margin: 0;
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: var(--text-base);
+  line-height: 1.3;
+  text-wrap: balance;
   color: var(--color-brand);
 }
 
@@ -601,7 +540,7 @@ function onImgFallback(e: Event) {
 
 .home-exp-card::before {
   content: counter(folk-exp, decimal-leading-zero);
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-style: italic;
   font-size: 1.45rem;
   font-weight: var(--weight-semibold);
@@ -647,11 +586,13 @@ function onImgFallback(e: Event) {
 
 .home-exp-card__title {
   margin: 0;
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: clamp(1.04rem, 1.3vw, 1.18rem);
   font-weight: var(--weight-semibold);
   color: var(--color-text);
   line-height: 1.3;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .home-exp-card__desc {
@@ -659,5 +600,7 @@ function onImgFallback(e: Event) {
   font-size: var(--text-xs);
   color: var(--color-text-muted);
   line-height: 1.5;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
 }
 </style>

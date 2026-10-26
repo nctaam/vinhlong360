@@ -267,12 +267,16 @@ function dismissModal() {
 .status-title {
   font-size: var(--font-size-body);
   font-weight: var(--weight-bold);
+  line-height: 1.3;
+  text-wrap: balance;
   color: var(--color-material-clay);
 }
 
 .status-desc {
   margin: 2px 0 0;
   font-size: var(--font-size-label);
+  line-height: 1.45;
+  text-wrap: pretty;
   color: var(--color-text-muted);
 }
 
@@ -360,6 +364,7 @@ function dismissModal() {
 
 .tide-flow-badge {
   font-size: var(--font-size-caption);
+  line-height: 1.35;
   font-variant-numeric: tabular-nums;
   font-weight: var(--weight-bold);
   color: var(--color-action);
@@ -368,13 +373,17 @@ function dismissModal() {
 .tide-wisdom {
   margin: 0;
   font-size: var(--font-size-caption);
-  font-family: var(--font-editorial, 'Lora', serif);
+  font-family: var(--font-editorial);
+  line-height: 1.5;
+  text-wrap: pretty;
   color: var(--color-material-clay);
 }
 
 .tide-desc {
   margin: 0;
   font-size: var(--font-size-label);
+  line-height: 1.5;
+  text-wrap: pretty;
   color: var(--color-text-muted);
 }
 
@@ -387,7 +396,8 @@ function dismissModal() {
 }
 
 .coords-value {
-  font-family: monospace;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   color: var(--color-action);
 }
 
@@ -422,7 +432,6 @@ function dismissModal() {
 }
 
 .emergency-contact-btn:hover {
-  background: transparent;
   border-block-end-color: var(--alluvial-gold);
 }
 
@@ -434,11 +443,15 @@ function dismissModal() {
 .contact-name {
   font-size: var(--font-size-caption);
   font-weight: var(--weight-title-sm);
+  line-height: 1.35;
+  overflow-wrap: break-word;
   color: var(--color-text);
 }
 
 .contact-role {
   font-size: var(--font-size-label);
+  line-height: 1.4;
+  text-wrap: pretty;
   color: var(--color-text-muted);
 }
 
@@ -452,6 +465,7 @@ function dismissModal() {
   color: var(--sand-50);
   font-size: var(--font-size-label);
   font-weight: var(--weight-bold);
+  line-height: 1.35;
   white-space: nowrap;
 }
 

@@ -262,7 +262,7 @@ async def user_engagement_stats(days: int = Query(30, ge=1, le=365)):
             "new_users": db._row_to_dict(new_users)["c"] if new_users else 0,
             "retained_users": db._row_to_dict(retained)["c"] if retained else 0,
             "engagement_rate": round(ap / tu * 100, 1) if tu else 0,
-            "daily_active": [{"day": str(db._row_to_dict(r)["day"]), "users": db._row_to_dict(r)["active_users"]} for r in daily],
+            "daily_active": [{"day": str(d["day"]), "users": d["active_users"]} for r in daily if (d := db._row_to_dict(r))],
         }
     return await asyncio.to_thread(_query)
 
@@ -304,7 +304,7 @@ async def user_growth(days: int = Query(30, ge=7, le=365)):
             "signups_this_week": w,
             "signups_prev_week": pw,
             "growth_rate_pct": growth_rate,
-            "daily_signups": [{"day": str(db._row_to_dict(r)["day"]), "signups": db._row_to_dict(r)["signups"]} for r in daily_reg],
+            "daily_signups": [{"day": str(d["day"]), "signups": d["signups"]} for r in daily_reg if (d := db._row_to_dict(r))],
         }
     return await asyncio.to_thread(_query)
 
@@ -805,7 +805,7 @@ async def moderation_stats():
                 SELECT COUNT(*) as c FROM posts WHERE created_at > NOW() - INTERVAL '7 days'
             """, ())
         return {
-            "counts": {db._row_to_dict(row)["moderation_status"]: db._row_to_dict(row)["c"] for row in rows},
+            "counts": {d["moderation_status"]: d["c"] for row in rows if (d := db._row_to_dict(row))},
             "today": db._row_to_dict(today)["c"] if today else 0,
             "week": db._row_to_dict(week)["c"] if week else 0,
         }
@@ -1165,12 +1165,12 @@ async def content_stats(days: int = Query(30, ge=1, le=365)):
         ar = db._row_to_dict(avg_rating) if avg_rating else {}
         return {
             "period_days": days,
-            "posts_by_type": {db._row_to_dict(r)["post_type"]: db._row_to_dict(r)["cnt"] for r in by_type},
-            "posts_by_status": {db._row_to_dict(r)["moderation_status"]: db._row_to_dict(r)["cnt"] for r in by_status},
+            "posts_by_type": {d["post_type"]: d["cnt"] for r in by_type if (d := db._row_to_dict(r))},
+            "posts_by_status": {d["moderation_status"]: d["cnt"] for r in by_status if (d := db._row_to_dict(r))},
             "avg_review_rating": round(float(ar["avg_r"]), 2) if ar.get("avg_r") else None,
             "total_reviews_with_rating": ar.get("cnt", 0),
             "total_comments": db._row_to_dict(total_comments)["c"] if total_comments else 0,
-            "daily_posts": [{"day": str(db._row_to_dict(r)["day"]), "count": db._row_to_dict(r)["cnt"]} for r in daily_posts],
+            "daily_posts": [{"day": str(d["day"]), "count": d["cnt"]} for r in daily_posts if (d := db._row_to_dict(r))],
         }
     return await asyncio.to_thread(_query)
 
@@ -1819,7 +1819,7 @@ async def admin_user_reactions(user_id: str, limit: int = Query(100, ge=1, le=50
                 FROM post_reactions r WHERE r.user_id = {ph}::uuid
                 GROUP BY r.reaction_type
             """, (user_id,))
-            summary = {db._row_to_dict(r)["reaction_type"]: int(db._row_to_dict(r)["count"]) for r in rows}
+            summary = {d["reaction_type"]: int(d["count"]) for r in rows if (d := db._row_to_dict(r))}
             recent = db._fetchall(conn, f"""
                 SELECT r.post_id, r.reaction_type, r.created_at, p.content
                 FROM post_reactions r LEFT JOIN posts p ON p.id = r.post_id

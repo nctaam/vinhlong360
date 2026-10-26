@@ -466,27 +466,26 @@ useHead(() => {
 .stay-tile-title {
   position: relative; z-index: 1; margin: 0 0 var(--space-3);
   font-family: var(--font-editorial); font-weight: 600;
-  font-size: var(--text-xl); line-height: var(--leading-tight);
+  font-size: var(--text-xl); line-height: 1.24;
   color: var(--ink);
-  overflow-wrap: break-word; word-break: break-word; text-wrap: pretty;
+  overflow-wrap: break-word; text-wrap: pretty;
 }
 .stay-tile-body {
   position: relative; z-index: 1; margin: 0 0 var(--space-3);
   color: var(--ink); font-size: var(--text-sm); line-height: var(--leading-relaxed);
-  overflow-wrap: break-word; word-break: break-word;
+  overflow-wrap: break-word;
 }
 .stay-tile-persona {
   position: relative; z-index: 1; margin: 0 0 var(--space-3);
   padding-top: var(--space-3); border-top: .5px solid var(--line);
   color: var(--muted); font-size: var(--text-sm); font-style: italic;
-  overflow-wrap: break-word; word-break: break-word;
+  overflow-wrap: break-word;
 }
 .stay-tile-price {
   position: relative; z-index: 1; margin: 0;
   color: var(--muted); font-size: var(--text-xs); font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.dark .stay-tile { background: transparent; border-color: var(--line); }
 .dark .stay-tile:hover { background: rgba(var(--white-rgb), .02); }
 
 @media (max-width: 900px) and (min-width: 601px) {
@@ -548,8 +547,8 @@ useHead(() => {
 .region-window:hover .rw-motif { transform: scale(1.12); }
 .rw-name {
   font-family: var(--font-editorial); font-weight: 600;
-  font-size: var(--text-lg); color: var(--ink);
-  overflow-wrap: break-word; word-break: break-word;
+  font-size: var(--text-lg); line-height: 1.25; color: var(--ink);
+  overflow-wrap: break-word;
 }
 .rw-count {
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
@@ -560,7 +559,7 @@ useHead(() => {
 .rw-blurb {
   margin-top: var(--space-2);
   font-size: var(--text-xs); color: var(--muted); line-height: var(--leading-relaxed);
-  overflow-wrap: break-word; word-break: break-word;
+  overflow-wrap: break-word;
 }
 .dark .region-window { background: var(--card); border-color: var(--line); }
 .dark .region-window.active { background: rgba(var(--color-action-rgb), .12); }

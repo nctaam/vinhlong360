@@ -224,9 +224,6 @@ function validateJson(key: string): boolean {
   }
 }
 
-function isSafeUrl(url: string): boolean {
-  try { return /^https?:$/i.test(new URL(url).protocol) } catch { return false }
-}
 function isImageUrl(url: string): boolean {
   try {
     const u = new URL(url)
@@ -385,15 +382,15 @@ const formatDate = formatDateVN
 }
 .sf-input::placeholder, .sf-textarea::placeholder { color: var(--muted); opacity: .6; }
 .sf-textarea { resize: vertical; min-height: 88px; font-family: inherit; line-height: 1.5; }
-.sf-json { font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; font-size: .8rem; min-height: 160px; line-height: 1.5; tab-size: 2; }
+.sf-json { font-family: var(--font-mono); font-size: .8rem; min-height: 160px; line-height: 1.5; tab-size: 2; }
 .sf-json-invalid { border-color: var(--danger) !important; box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.08) !important; }
 .sf-json-error { color: var(--danger); font-size: .75rem; margin-top: var(--space-1); }
 
 /* ── Repeater (A3) ── */
-.sf-rep-label { font-size: .88rem; font-weight: 500; }
+.sf-rep-label { font-size: .88rem; font-weight: 500; line-height: 1.35; overflow-wrap: break-word; }
 .sf-rep-sub { display: block; font-size: .75rem; color: var(--muted); margin-top: 2px; }
 .sf-rep-field { display: flex; flex-direction: column; gap: var(--space-1); }
-.sf-rep-flabel { font-size: .72rem; font-weight: 500; color: var(--muted); }
+.sf-rep-flabel { font-size: .72rem; font-weight: 500; line-height: 1.35; color: var(--muted); }
 .sf-rep-input {
   padding: var(--space-2) var(--space-3); border: .5px solid var(--line); border-radius: 10px;
   font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 38px;
@@ -415,7 +412,7 @@ const formatDate = formatDateVN
 .sf-color-picker:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .sf-color-hex {
   width: 110px; padding: 10px var(--space-3); border: .5px solid var(--line); border-radius: 10px;
-  font-size: .85rem; font-family: 'SF Mono', 'Cascadia Code', monospace;
+  font-size: .85rem; font-family: var(--font-mono);
   min-height: 44px; box-sizing: border-box; background: var(--bg); color: var(--ink);
   transition: border-color .2s, box-shadow .2s;
 }
@@ -443,12 +440,12 @@ const formatDate = formatDateVN
 .sf-toggle-thumb {
   position: absolute; top: 2px; left: 2px;
   width: 27px; height: 27px; border-radius: 50%;
-  background: var(--white, var(--white)); box-shadow: 0 1px 4px rgba(var(--black-rgb),.18), 0 0 1px rgba(var(--black-rgb),.04);
+  background: var(--white); box-shadow: 0 1px 4px rgba(var(--black-rgb),.18), 0 0 1px rgba(var(--black-rgb),.04);
   transition: transform .3s var(--ease-soft);
 }
 .sf-toggle input:checked + .sf-toggle-track .sf-toggle-thumb { transform: translateX(20px); }
 .sf-toggle:active .sf-toggle-thumb { width: 31px; }
-.sf-toggle input:checked + .sf-toggle-track .sf-toggle:active .sf-toggle-thumb { transform: translateX(16px); }
+.sf-toggle:active input:checked + .sf-toggle-track .sf-toggle-thumb { transform: translateX(16px); }
 .sf-toggle-label { font-size: .85rem; color: var(--muted); font-weight: 500; }
 
 /* ── URL preview ── */
@@ -464,6 +461,7 @@ const formatDate = formatDateVN
   margin-top: var(--space-2); border-top: .5px solid var(--line);
 }
 .sf-save {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
   padding: var(--space-3) 28px; border-radius: 12px; font-weight: 600; font-size: .88rem;
   background: var(--color-action); color: var(--color-on-action); border: none; cursor: pointer;
   min-height: 44px;
@@ -484,7 +482,6 @@ const formatDate = formatDateVN
 .sf-reset:focus-visible { outline: 2px solid var(--danger); outline-offset: 2px; }
 
 /* ── Save spinner ── */
-.sf-save { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); }
 .sf-spinner {
   width: 16px; height: 16px; flex-shrink: 0;
   border: 2px solid rgba(var(--white-rgb),.4); border-top-color: var(--text-on-dark, var(--white)); border-radius: 50%;
@@ -497,7 +494,7 @@ const formatDate = formatDateVN
 .sf-dirty-badge {
   display: inline-flex; align-items: center; align-self: center;
   padding: var(--space-1) 10px; border-radius: 999px;
-  font-size: .72rem; font-weight: 600; color: var(--color-action);
+  font-size: .72rem; font-weight: 600; line-height: 1.35; color: var(--color-action);
   background: rgba(var(--color-action-rgb), .1); border: .5px solid rgba(var(--color-action-rgb), .25);
 }
 .sf-history {
@@ -515,7 +512,7 @@ const formatDate = formatDateVN
   gap: var(--space-3); align-items: center;
   padding: var(--space-2) 0; border-top: .5px solid var(--line);
 }
-.sf-history-main { min-width: 0; font-size: .8rem; font-weight: 600; color: var(--ink); word-break: break-word; }
+.sf-history-main { min-width: 0; font-size: .8rem; font-weight: 600; line-height: 1.4; color: var(--ink); overflow-wrap: break-word; }
 .sf-history-time { font-size: .74rem; color: var(--muted); white-space: nowrap; }
 .sf-history-rollback { min-height: 34px; padding: 6px 10px; border-radius: 8px; font-size: .76rem; }
 

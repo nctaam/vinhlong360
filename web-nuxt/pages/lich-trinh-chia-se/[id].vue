@@ -239,11 +239,13 @@ useHead({
 }
 .sp-title {
   margin: 0 0 var(--space-2);
-  font-family: var(--font-serif, var(--font-editorial));
+  font-family: var(--font-editorial);
   font-size: clamp(1.4rem, 4vw, 1.85rem);
   font-weight: var(--weight-bold);
   color: var(--ink);
-  line-height: var(--leading-tight);
+  line-height: 1.24;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 .sp-meta {
   color: var(--muted);
@@ -297,7 +299,7 @@ useHead({
   font-weight: var(--weight-semibold);
   font-size: var(--text-2xl);
   font-variant-numeric: tabular-nums;
-  line-height: 1.1;
+  line-height: 1.22;
   box-shadow: none;
   border-inline-end: 1px solid var(--line);
   padding-inline-end: var(--space-3);
@@ -317,9 +319,11 @@ useHead({
   gap: var(--space-2);
 }
 .sp-stop-name {
-  font-family: var(--font-serif, var(--font-editorial));
+  font-family: var(--font-editorial);
   font-size: var(--text-base);
   font-weight: var(--weight-semibold);
+  line-height: 1.35;
+  overflow-wrap: break-word;
   color: var(--ink);
   text-decoration: none;
   transition: color .2s var(--ease-out);
@@ -332,8 +336,7 @@ useHead({
   outline-offset: 2px;
   border-radius: var(--radius-control, 8px);
 }
-.sp-mangthit-badge,
-.stop-mangthit-badge {
+.sp-mangthit-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -345,8 +348,7 @@ useHead({
   border-radius: var(--radius-pill, 999px);
   padding: 1px var(--space-2);
 }
-.dark .sp-mangthit-badge,
-.dark .stop-mangthit-badge {
+.dark .sp-mangthit-badge {
   background: color-mix(in srgb, var(--mangthit-600) 16%, transparent);
   border-color: color-mix(in srgb, var(--mangthit-600) 35%, transparent);
 }

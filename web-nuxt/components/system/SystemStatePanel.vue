@@ -119,6 +119,7 @@ const iconName = computed(() => STATE_META[props.kind].icon)
   color: var(--muted);
   font-size: var(--text-xs);
   font-weight: 600;
+  line-height: 1.35;
   letter-spacing: .08em;
   text-transform: uppercase;
 }
@@ -126,9 +127,11 @@ const iconName = computed(() => STATE_META[props.kind].icon)
 .system-state h1 {
   margin: 0;
   color: var(--ink);
-  font-family: var(--font-editorial, var(--font-sans));
+  font-family: var(--font-editorial);
   font-size: clamp(1.5rem, 4vw, 2.25rem);
-  line-height: 1.2;
+  line-height: 1.28;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .system-state-description,
@@ -138,6 +141,8 @@ const iconName = computed(() => STATE_META[props.kind].icon)
   margin: var(--space-3) 0 0;
   color: var(--muted);
   line-height: 1.65;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
 }
 
 .system-state-details,

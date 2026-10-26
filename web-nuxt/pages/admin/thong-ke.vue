@@ -266,7 +266,7 @@ onMounted(fetchData)
 
 /* ── Metric hierarchy (page-local override of shared .stat-card) ── */
 .stat-card .stat-value {
-  font-size: 2rem; line-height: 1.1; font-weight: 800;
+  font-size: 2rem; line-height: 1.22; font-weight: 800;
   display: flex; align-items: baseline; gap: 6px;
 }
 .stat-card .stat-label {
@@ -317,14 +317,14 @@ onMounted(fetchData)
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: var(--space-4);
 }
-.tk-panel-head h2 { font-size: .95rem; font-weight: 600; margin: 0; }
+.tk-panel-head h3 { font-size: .95rem; font-weight: 600; line-height: 1.3; margin: 0; }
 
 .tk-count-badge {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 24px; height: 24px; padding: 0 8px;
   border-radius: 100px; font-size: .72rem; font-weight: 700;
   background: rgba(var(--blue-rgb),.1); color: var(--info);
-  font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   transition: background .2s, color .2s;
 }
@@ -346,6 +346,7 @@ onMounted(fetchData)
 .tk-list li:last-child { border-bottom: none; }
 .tk-list li:hover { background: rgba(var(--black-rgb),.015); margin: 0 calc(var(--space-2) * -1); padding-left: var(--space-2); padding-right: var(--space-2); border-radius: 6px; }
 .tk-rank {
+  position: relative;
   width: 24px; height: 24px; border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
   font-size: .72rem; font-weight: 700; flex-shrink: 0;
@@ -357,12 +358,12 @@ onMounted(fetchData)
 .tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank {
   background: transparent; border: 1px solid rgba(var(--color-brand-rgb),.3); color: var(--color-brand);
 }
-.tk-query { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tk-query { position: relative; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tk-hits {
   flex: 0 0 auto; text-align: right;
   font-weight: 700; color: var(--color-action); font-size: .82rem;
   position: relative;
-  font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -378,9 +379,6 @@ onMounted(fetchData)
 .tk-bar-green { background: var(--color-success); }
 @keyframes tk-bar-grow { from { width: 0 !important; } }
 
-.tk-rank { position: relative; }
-.tk-query { position: relative; }
-
 /* ── Empty states ── */
 .tk-empty {
   display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
@@ -393,7 +391,7 @@ onMounted(fetchData)
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .tk-panel:hover { transform: none; }
-  .tk-bar-bg { animation: none; }
+  .tk-bar-bg, .tk-sk-card, .tk-sk-panel { animation: none; }
 }
 
 /* ── Dark mode ── */
@@ -421,9 +419,6 @@ onMounted(fetchData)
   height: 80px; border-radius: 14px; background: var(--line);
   opacity: .4; animation: tk-skeleton-pulse 1.4s var(--ease-in-out) infinite;
 }
-.tk-skeleton .tk-panels {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-4);
-}
 .tk-sk-panel {
   height: 256px; border-radius: 14px; background: var(--line);
   opacity: .3; animation: tk-skeleton-pulse 1.4s var(--ease-in-out) infinite;
@@ -444,10 +439,6 @@ onMounted(fetchData)
   .tk-panels { grid-template-columns: 1fr; }
 }
 
-/* ── Reduced motion: skeleton ── */
-@media (prefers-reduced-motion: reduce) {
-  .tk-sk-card, .tk-sk-panel { animation: none; }
-}
 /* ── Sparkline ── */
 .tk-spark {
   width: 80px; height: 24px; flex-shrink: 0; opacity: .5;
@@ -465,7 +456,6 @@ onMounted(fetchData)
 .tk-chip:hover { border-color: var(--color-action); color: var(--ink); }
 .tk-chip.active { background: var(--color-action); color: var(--text-on-dark); border-color: var(--color-action); }
 .tk-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.dark .tk-chip.active { background: var(--color-action); border-color: var(--color-action); }
 
 .tk-gap-action { text-decoration: none; font-size: .8rem; opacity: .4; transition: opacity .15s; margin-left: 2px; }
 .tk-gap-action:hover { opacity: 1; }

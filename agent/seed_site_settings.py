@@ -19,7 +19,7 @@ DEFAULTS: dict[str, dict] = {
         "description": "Tên hiển thị trên logo và tiêu đề",
     },
     "branding.tagline": {
-        "value": "Khám phá Vĩnh Long, Bến Tre, Trà Vinh theo cách của người bản địa.",
+        "value": "Khám phá tỉnh Vĩnh Long theo cách của người bản địa.",
         "category": "branding", "label": "Slogan", "input_type": "textarea",
         "description": "Dòng mô tả ngắn dưới logo ở footer",
     },
@@ -60,6 +60,7 @@ DEFAULTS: dict[str, dict] = {
     "navigation.nav_groups": {
         "value": [
             {"label": "Khám phá", "children": [
+                {"to": "/dia-diem", "label": "Tất cả địa điểm"},
                 {"to": "/du-lich", "label": "Du lịch & trải nghiệm"},
                 {"to": "/luu-tru", "label": "Lưu trú"},
                 {"to": "/theo-mua", "label": "Đặc sản theo mùa"},
@@ -77,9 +78,13 @@ DEFAULTS: dict[str, dict] = {
             {"label": "Lịch trình", "children": [
                 {"to": "/lich-trinh", "label": "Lịch trình gợi ý"},
                 {"to": "/tao-lich-trinh", "label": "Tạo lịch trình"},
-                {"to": "/lich-trinh", "label": "Đã lưu ❤️"},
+                {"to": "/da-luu", "label": "Đã lưu"},
             ]},
-            {"label": "Cộng đồng", "to": "/cong-dong"},
+            {"label": "Cộng đồng", "children": [
+                {"to": "/cong-dong", "label": "Bảng tin cộng đồng"},
+                {"to": "/bang-xep-hang", "label": "Bảng xếp hạng"},
+                {"to": "/huong-dan", "label": "Hướng dẫn sử dụng"},
+            ]},
         ],
         "category": "navigation", "label": "Menu điều hướng", "input_type": "json",
         "description": "Cấu trúc menu chính (mảng JSON gồm label, to, children)",
@@ -87,14 +92,13 @@ DEFAULTS: dict[str, dict] = {
 
     # ── Footer ──
     "footer.tagline": {
-        "value": "Khám phá Vĩnh Long, Bến Tre, Trà Vinh\ntheo cách của người bản địa.",
+        "value": "Khám phá tỉnh Vĩnh Long\ntheo cách của người bản địa.",
         "category": "footer", "label": "Slogan footer", "input_type": "textarea",
         "description": "Dòng mô tả dưới logo footer",
     },
     "footer.columns": {
         "value": [
-            # declutter-2 A3b: 7 link -> 4 curated (đồng bộ DEFAULT_FOOTER_COLUMNS FE;
-            # DB prod đã seed thì cập nhật qua AdminCP lúc deploy — ghi chú vận hành).
+            # declutter-2 A3b: 7 link -> 4 curated (đồng bộ DEFAULT_FOOTER_COLUMNS FE).
             {"title": "Gợi ý nhanh", "links": [
                 {"to": "/du-lich", "label": "Du lịch & trải nghiệm"},
                 {"to": "/san-pham", "label": "Sản phẩm địa phương"},
@@ -108,15 +112,16 @@ DEFAULTS: dict[str, dict] = {
                 {"to": "/danh-ba", "label": "Danh bạ hành chính"},
                 {"to": "/lich-van-nien", "label": "Lịch vạn niên"},
                 {"to": "/cong-dong", "label": "Cộng đồng"},
+                {"to": "/huong-dan", "label": "Hướng dẫn sử dụng"},
             ]},
-            {"title": "3 vùng", "links": [
-                {"to": "/khu-vuc/vinh-long", "label": "🍊 Vĩnh Long"},
-                {"to": "/khu-vuc/ben-tre", "label": "🥥 Bến Tre"},
-                {"to": "/khu-vuc/tra-vinh", "label": "🛕 Trà Vinh"},
+            {"title": "Khu vực", "links": [
+                {"to": "/khu-vuc/vinh-long", "label": "Vĩnh Long"},
+                {"to": "/khu-vuc/ben-tre", "label": "Bến Tre"},
+                {"to": "/khu-vuc/tra-vinh", "label": "Trà Vinh"},
             ]},
             {"title": "Dành cho cơ sở", "links": [
-                {"to": "/lien-he?ref=claim", "label": "🏷️ Đăng ký quản lý trang"},
-                {"to": "/lien-he", "label": "🤝 Hợp tác quảng bá"},
+                {"to": "/lien-he?ref=claim", "label": "Đăng ký quản lý trang"},
+                {"to": "/lien-he", "label": "Hợp tác quảng bá"},
             ]},
         ],
         "category": "footer", "label": "Cột footer", "input_type": "json",
@@ -134,6 +139,7 @@ DEFAULTS: dict[str, dict] = {
     },
     "footer.legal_links": {
         "value": [
+            {"to": "/gioi-thieu", "label": "Về chúng tôi"},
             {"to": "/chinh-sach-bao-mat", "label": "Bảo mật"},
             {"to": "/dieu-khoan-su-dung", "label": "Điều khoản"},
             {"to": "/lien-he", "label": "Liên hệ"},
@@ -146,7 +152,7 @@ DEFAULTS: dict[str, dict] = {
     "social.links": {
         "value": [],
         "category": "footer", "label": "Mạng xã hội", "input_type": "json",
-        "description": 'Liên kết MXH ở footer (mảng JSON gồm icon emoji, label, url). VD: [{"icon":"📘","label":"Facebook","url":"https://facebook.com/..."}]',
+        "description": 'Liên kết MXH ở footer (mảng JSON gồm icon, label, url). VD: [{"icon":"globe","label":"Facebook","url":"https://facebook.com/..."}]',
     },
 
     # ── Homepage ──
@@ -162,26 +168,26 @@ DEFAULTS: dict[str, dict] = {
     },
     "homepage.hero_pills": {
         "value": [
-            {"emoji": "📍", "label": "Gần tôi", "to": "/ban-do?near=1"},
-            {"emoji": "🍲", "label": "Ăn gì hôm nay", "to": "/kham-pha/am-thuc"},
-            {"emoji": "🗓️", "label": "Đi 2N1Đ", "to": "/lich-trinh"},
-            {"emoji": "🌿", "label": "Miệt vườn", "to": "/du-lich"},
-            {"emoji": "🗺️", "label": "Bản đồ", "to": "/ban-do"},
-            {"emoji": "🎁", "label": "Đặc sản làm quà", "to": "/ocop"},
+            {"emoji": "map-pin", "label": "Gần tôi", "to": "/ban-do?near=1"},
+            {"emoji": "utensils", "label": "Ăn gì hôm nay", "to": "/kham-pha/am-thuc"},
+            {"emoji": "calendar", "label": "Đi 2N1Đ", "to": "/lich-trinh"},
+            {"emoji": "leaf", "label": "Miệt vườn", "to": "/du-lich"},
+            {"emoji": "map", "label": "Bản đồ", "to": "/ban-do"},
+            {"emoji": "gift", "label": "Đặc sản làm quà", "to": "/ocop"},
         ],
         "category": "homepage", "label": "Quick pills", "input_type": "json",
-        "description": "Các nút nhanh dưới hero (mảng JSON gồm emoji, label, to)",
+        "description": "Các nút nhanh dưới hero (mảng JSON gồm icon, label, to)",
     },
     "homepage.quick_links": {
         "value": [
-            {"emoji": "🍊", "label": "Trái cây", "to": "/kham-pha/trai-cay"},
-            {"emoji": "🏡", "label": "Homestay", "to": "/kham-pha/homestay"},
-            {"emoji": "🛶", "label": "Sông nước", "to": "/kham-pha/song-nuoc"},
-            {"emoji": "🧁", "label": "Đặc sản", "to": "/san-pham"},
-            {"emoji": "🎭", "label": "Lễ hội", "to": "/le-hoi"},
-            {"emoji": "🗺️", "label": "Bản đồ", "to": "/ban-do"},
-            {"emoji": "📋", "label": "Lịch trình", "to": "/lich-trinh"},
-            {"emoji": "⭐", "label": "OCOP", "to": "/ocop"},
+            {"emoji": "leaf", "label": "Trái cây", "to": "/kham-pha/trai-cay"},
+            {"emoji": "home", "label": "Homestay", "to": "/kham-pha/homestay"},
+            {"emoji": "waves", "label": "Sông nước", "to": "/kham-pha/song-nuoc"},
+            {"emoji": "shopping-bag", "label": "Đặc sản", "to": "/san-pham"},
+            {"emoji": "calendar", "label": "Lễ hội", "to": "/le-hoi"},
+            {"emoji": "map", "label": "Bản đồ", "to": "/ban-do"},
+            {"emoji": "clipboard", "label": "Lịch trình", "to": "/lich-trinh"},
+            {"emoji": "star", "label": "OCOP", "to": "/ocop"},
         ],
         "category": "homepage", "label": "Quick links", "input_type": "json",
         "description": "Các liên kết nhanh giữa trang chủ (mảng JSON)",
@@ -192,7 +198,7 @@ DEFAULTS: dict[str, dict] = {
         "description": "Tiêu đề khối kêu gọi dùng chatbot",
     },
     "homepage.chatbot_cta_text": {
-        "value": "Trợ lý AI sẵn sàng gợi ý địa điểm, đặc sản, lịch trình phù hợp với bạn.",
+        "value": "Sổ tay thực địa sẵn sàng gợi ý địa điểm, đặc sản, lịch trình phù hợp với bạn.",
         "category": "homepage", "label": "CTA chatbot nội dung", "input_type": "textarea",
         "description": "Nội dung mô tả chatbot",
     },
@@ -228,9 +234,9 @@ DEFAULTS: dict[str, dict] = {
         "description": "Bật/tắt banner thông báo trên đầu trang",
     },
     "announcements.icon": {
-        "value": "🚧",
+        "value": "info",
         "category": "announcements", "label": "Icon", "input_type": "text",
-        "description": "Emoji/icon đầu thông báo",
+        "description": "Tên icon đầu thông báo",
     },
     "announcements.text": {
         "value": "Trang đang trong giai đoạn xây dựng.",
@@ -256,9 +262,9 @@ DEFAULTS: dict[str, dict] = {
     },
     # B6: chat/AI config (frontend reads with inline fallback; empty = dùng mặc định).
     "chat.disclaimer": {
-        "value": "Nội dung do AI tạo, có thể chưa chính xác — vui lòng kiểm chứng.",
+        "value": "Thông tin thực địa mang tính tham khảo — vui lòng kiểm chứng trước khi khởi hành.",
         "category": "chat", "label": "Dòng minh bạch AI (chat)", "input_type": "text",
-        "description": "Dòng nhỏ dưới ô chat nhắc nội dung do AI tạo. Để trống = ẩn.",
+        "description": "Dòng nhỏ dưới ô chat nhắc nội dung mang tính tham khảo. Để trống = ẩn.",
     },
     "chat.suggestions_by_route": {
         "value": {},
@@ -266,9 +272,9 @@ DEFAULTS: dict[str, dict] = {
         "description": 'JSON {"/du-lich": ["..."], "default": ["..."]} — câu hỏi gợi ý theo route. Để trống {} = dùng bộ mặc định.',
     },
     "ai.disclaimer_text": {
-        "value": "Gợi ý do AI tạo — mang tính tham khảo.",
+        "value": "Kinh nghiệm thực địa mang tính tham khảo.",
         "category": "ai", "label": "Dòng minh bạch AI (khối gợi ý)", "input_type": "text",
-        "description": "Hiển thị dưới các khối gợi ý AI (mẹo, thời điểm, tìm kiếm). Để trống = ẩn.",
+        "description": "Hiển thị dưới các khối gợi ý thực địa (mẹo, thời điểm, tìm kiếm). Để trống = ẩn.",
     },
 
     # ── Theme ──
@@ -374,5 +380,4 @@ if __name__ == "__main__":
     from site_settings import seed_defaults
     count = seed_defaults(DEFAULTS)
     print(f"Seeded {count} settings (skipped existing).")
-    total = len(DEFAULTS)
-    print(f"Total defined: {total}")
+    print(f"Total defined: {len(DEFAULTS)}")

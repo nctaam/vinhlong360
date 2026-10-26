@@ -10,7 +10,7 @@
 
     <div class="cs-help">
       <p>Chỉ điền những mục muốn đổi. Bỏ trống = giữ mặc định. Ví dụ ghi đè emoji món ăn:</p>
-      <pre>{ "dish": { "emoji": "🍜" } }</pre>
+      <pre>{ "dish": { "icon": "bowl", "label": "Ẩm thực" } }</pre>
       <p class="cs-help-keys"><strong>Loại entity:</strong> experience, product, dish, craft_village, attraction, accommodation, nature, history, event, drink — mỗi loại có <code>emoji</code>, <code>label</code>.</p>
       <p class="cs-help-keys"><strong>Khu vực:</strong> vinh-long, ben-tre, tra-vinh — mỗi vùng có <code>name</code>, <code>emoji</code>, <code>blurb</code>.</p>
       <p class="cs-help-keys"><strong>Loại cơ quan (danh bạ):</strong> ubnd, cong_an, y_te, truong_hoc, buu_dien, tu_phap, khac — mỗi loại có <code>emoji</code>, <code>label</code>.</p>
@@ -51,18 +51,18 @@ onMounted(reload)
 .cs-help {
   max-width: 640px; margin-bottom: var(--space-5); padding: var(--space-4);
   background: rgba(var(--color-brand-rgb),.04); border: .5px solid var(--line); border-radius: 12px;
-  font-size: .82rem; color: var(--muted); line-height: 1.5;
+  font-size: .82rem; color: var(--muted); line-height: 1.6; overflow-wrap: break-word;
 }
 .cs-help p { margin: 0 0 var(--space-2); }
 .cs-help p:last-child { margin-bottom: 0; }
 .cs-help pre {
   margin: 0 0 var(--space-2); padding: var(--space-2) var(--space-3); border-radius: 8px;
   background: var(--bg); border: .5px solid var(--line);
-  font-family: 'SF Mono', 'Cascadia Code', monospace; font-size: .78rem; color: var(--ink);
+  font-family: var(--font-mono); font-size: .78rem; line-height: 1.5; color: var(--ink);
   overflow-x: auto;
 }
-.cs-help-keys code { font-family: 'SF Mono', monospace; font-size: .75rem; color: var(--color-brand); }
+.cs-help-keys { overflow-wrap: break-word; }
+.cs-help-keys code { font-family: var(--font-mono); font-size: .75rem; color: var(--color-brand); }
 .cs-skel-tall { height: 120px; }
 .dark .cs-help { background: rgba(var(--color-brand-rgb),.08); }
-.dark .cs-help pre { background: var(--card); }
 </style>

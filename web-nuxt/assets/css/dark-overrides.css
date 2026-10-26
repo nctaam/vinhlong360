@@ -75,7 +75,6 @@
 .dark .route-card { border-color: rgba(var(--white-rgb), .08); box-shadow: none; }
 .dark .route-card:hover { border-block-start-color: var(--color-brand); box-shadow: none; }
 .dark .route-tips { background: transparent; }
-.dark .route-stops li:hover { background: rgba(var(--white-rgb), .03); }
 
 /* ── Search (tim-kiem) ── */
 .dark .quick-pick { border-color: rgba(var(--white-rgb), .08); }
@@ -127,20 +126,6 @@
 .dark .event-mini:hover { border-color: var(--color-action); }
 .dark .event-mini h3 { color: var(--ink); }
 .dark .ec-countdown { color: var(--accent-text); background: rgba(var(--accent-rgb), .12); }
-
-/* Spotlight */
-/* Bỏ nền M3 --surface-container-high (#424248, hue 285.9° — xám tím lạc giữa
-   ramp Nocturne hue 181–184°). Rơi về .spotlight { background: var(--card) }
-   = --night-surface #111D1B, đúng pattern card-tối-hơn-band của cả site
-   (cards.css:138) và khớp .cspot vốn không có override dark.
-   .spot-kicker 3.35 → 5.79; .spot-sum vốn sát mép 4.50 → 7.80. */
-.dark .spotlight { border-color: rgba(var(--white-rgb), .16); }
-.dark .spot-body { color: var(--ink); }
-
-/* Quán ngon list */
-.dark .top-place { border-color: rgba(var(--white-rgb), .10); }
-.dark .top-place:hover { background: transparent; border-color: var(--color-action); }
-.dark .top-place h3 { color: var(--ink); }
 
 /* Section subtitle */
 .dark .section-head p { color: var(--muted); }

@@ -299,7 +299,7 @@ import { TYPE_META } from '~/composables/useConstants'
 
 useReveal()
 const { f: pc } = usePageContent('theo_mua')
-const { relevanceScore, seasonText } = useSeason()
+const { relevanceScore } = useSeason()
 const route = useRoute()
 const router = useRouter()
 
@@ -326,7 +326,6 @@ watch(month, (m) => {
 })
 
 const seasonIcon = computed(() => SEASON_ICONS[month.value - 1] || 'calendar')
-const seasonEmoji = seasonIcon
 
 /* Mekong quarters → mood label + note (evocative, not factual claims).
    Extracted to a pure fn so both the hero ring (current month) and the
@@ -486,7 +485,6 @@ useHead(() => {
 }
 .quick-pick-count { color: var(--muted); font-size: var(--text-xs); }
 
-.season-item { position: relative; display: flex; flex-direction: column; }
 /* Peak items in the honor row read a touch more premium */
 .season-item.is-peak :deep(.card) { box-shadow: 0 0 0 1px rgba(var(--color-action-rgb), .18), var(--shadow-sm); }
 .season-item.is-peak:hover :deep(.card) { box-shadow: 0 0 0 1px rgba(var(--color-action-rgb), .3), 0 14px 32px -16px rgba(var(--color-action-rgb), .4); }
@@ -518,7 +516,6 @@ useHead(() => {
 .season-ring.q-bloom   { background: conic-gradient(var(--color-material-amber), var(--color-material-leaf), var(--color-material-amber)); }
 .season-ring.q-summer  { background: conic-gradient(var(--color-material-amber), color-mix(in srgb, var(--color-material-amber) 35%, transparent), var(--color-material-amber)); }
 .season-ring.q-harvest { background: conic-gradient(var(--color-material-amber), var(--color-material-river), var(--color-material-amber)); }
-.season-ring.q-flood   { background: conic-gradient(var(--color-material-river), color-mix(in srgb, var(--color-material-river) 35%, transparent), var(--color-material-river)); }
 /* Water quarter reads as water, not a flat gradient: a faint wave-line
    texture rides on top of the flood conic-gradient (§1.8 cultural cue). */
 .season-ring.q-flood {
@@ -587,7 +584,6 @@ useHead(() => {
   font-weight: var(--weight-semibold);
   color: var(--ink);
   overflow-wrap: break-word;
-  word-break: break-word;
   text-wrap: pretty;
 }
 .season-moment-text strong em { font-family: var(--font-editorial); font-style: italic; font-weight: 500; color: var(--color-brand); }
@@ -597,7 +593,6 @@ useHead(() => {
   color: var(--muted);
   line-height: var(--leading-relaxed);
   overflow-wrap: break-word;
-  word-break: break-word;
   text-wrap: pretty;
 }
 
@@ -650,15 +645,9 @@ useHead(() => {
    Layers on top of catalog.css's base .cat-season gradient (not replacing
    the shared component — additive override scoped to this page). */
 .catalog-hero.cat-season {
+  --sediment-teal-rgb: 51, 100, 110;
   transition: background 550ms var(--ease-out-expo);
 }
-/* --sediment-teal-rgb: rgb-triplet of --river-600 (var(--color-material-river)) — the sediment/water
-   teal used site-wide for the "nước" register (EntityHeroPlaceholder wash,
-   sediment-tick top stop). NOT --river-rgb (that token is the unrelated
-   indigo used for .cat-accommodation elsewhere — a pre-existing naming
-   collision in variables.css; using it here would send the wrong cultural
-   signal for "mùa nước nổi"). */
-.catalog-hero.cat-season { --sediment-teal-rgb: 51, 100, 110; }
 .catalog-hero.cat-season.q-spring  { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, var(--bg-warm) 100%); }
 .catalog-hero.cat-season.q-bloom   { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, rgba(var(--color-action-rgb), .05) 100%); }
 .catalog-hero.cat-season.q-summer  { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .12) 0%, var(--bg-warm) 100%); }
@@ -711,13 +700,6 @@ useHead(() => {
   transition: transform .25s var(--ease-out);
 }
 .season-item:hover .season-badge.peak { transform: translateY(-1px); }
-
-.season-when {
-  color: var(--muted); margin-top: var(--space-1); font-size: var(--text-xs);
-  display: inline-flex; align-items: center; gap: var(--space-1);
-  font-weight: var(--weight-medium); letter-spacing: .01em;
-  white-space: nowrap;
-}
 
 /* Per-type empty states — Open Architectural Hairline Ledger */
 .empty-type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); }
@@ -851,8 +833,6 @@ useHead(() => {
   color: var(--color-on-action);
   box-shadow: 0 1px 3px rgba(var(--color-action-rgb), .6), 0 0 12px rgba(var(--color-action-rgb), .25);
 }
-.dark .empty-type-card { background: transparent; border-color: var(--line); }
-.dark .b2b-callout { background: transparent; border-block-color: var(--line); border-inline-start-color: var(--color-brand); }
 .dark .month-grid .quick-pick { background: var(--bg-alt); border-color: var(--line); }
 .dark .month-grid .quick-pick:hover { border-color: rgba(var(--white-rgb), .15); }
 .dark .ring-notch-tick { background: rgba(var(--white-rgb), .4); }

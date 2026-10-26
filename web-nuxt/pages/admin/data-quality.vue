@@ -741,20 +741,20 @@ onMounted(() => refreshAll())
 .dq-table-wrap { margin-top: var(--space-3); }
 .dq-table td { vertical-align: top; }
 .dq-table td small { display: block; color: var(--muted); margin-top: 3px; }
-.dq-table code { white-space: pre-wrap; word-break: break-word; font-size: .78rem; }
-.dq-table a { display: block; color: var(--color-action); font-weight: 600; word-break: break-word; }
+.dq-table code { white-space: pre-wrap; overflow-wrap: break-word; font-size: .78rem; }
+.dq-table a { display: block; color: var(--color-action); font-weight: 600; overflow-wrap: break-word; }
 .dq-empty-cell { padding: 0 !important; }
 .admin-pagination span { display: inline-flex; align-items: center; color: var(--muted); font-size: .88rem; }
 .dq-page-info { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
 .dq-history { margin-top: var(--space-8); }
 .dq-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-3); }
-.dq-section-head h2 { margin: 0; font-size: 1.1rem; }
+.dq-section-head h2 { margin: 0; font-size: 1.1rem; line-height: 1.3; }
 .dq-section-head p { margin: var(--space-1) 0 0; color: var(--muted); }
 .dq-history-empty { padding: var(--space-4); border: .5px dashed var(--line); border-radius: var(--radius-control); color: var(--muted); }
 .dq-history-list { display: grid; gap: var(--space-3); }
 .dq-decision-history { display: grid; gap: var(--space-2); margin-top: var(--space-5); }
 .dq-subsection-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
-.dq-subsection-head h3 { margin: 0; font-size: .95rem; }
+.dq-subsection-head h3 { margin: 0; font-size: .95rem; line-height: 1.3; }
 .dq-subsection-head small { color: var(--muted); }
 .dq-decision-card { padding: var(--space-3); border: .5px solid var(--line); border-radius: 10px; background: var(--bg-alt); }
 .dq-decision-card-head { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
@@ -771,19 +771,19 @@ onMounted(() => refreshAll())
 .dq-history-card--apply { border-color: color-mix(in srgb, var(--color-brand) 32%, var(--line)); }
 .dq-history-card--rollback { border-color: color-mix(in srgb, var(--warning) 36%, var(--line)); }
 .dq-history-card-head { display: flex; justify-content: space-between; gap: var(--space-3); align-items: flex-start; }
-.dq-history-card-head strong { display: block; word-break: break-word; margin-top: var(--space-1); }
+.dq-history-card-head strong { display: block; overflow-wrap: break-word; margin-top: var(--space-1); }
 .dq-status-badge { margin-bottom: 2px; }
 .dq-history-card-head small, .dq-diff-item small, .dq-more { color: var(--muted); }
-.dq-history-meta { margin: var(--space-2) 0; color: var(--muted); font-size: .86rem; word-break: break-word; }
+.dq-history-meta { margin: var(--space-2) 0; color: var(--muted); font-size: .86rem; overflow-wrap: break-word; }
 .dq-diff-list { display: grid; gap: var(--space-2); margin-top: var(--space-3); }
 .dq-diff-item { display: grid; grid-template-columns: minmax(160px, 240px) 1fr; gap: var(--space-3); align-items: start; padding: var(--space-2); background: var(--bg-alt); border-radius: 8px; transition: background .15s; }
 .dq-diff-item:hover { background: rgba(var(--blue-rgb),.04); }
-.dq-diff-item code { white-space: pre-wrap; word-break: break-word; font-size: .76rem; }
+.dq-diff-item code { white-space: pre-wrap; overflow-wrap: break-word; font-size: .76rem; }
 .dq-skipped-list { display: grid; gap: var(--space-2); margin-top: var(--space-3); padding: var(--space-3); border: .5px solid var(--warning); border-radius: var(--radius-control); background: var(--warning-bg); }
 .dq-skipped-list > strong { font-size: .86rem; color: var(--warning); }
 .dq-skipped-item { display: grid; gap: 2px; }
-.dq-skipped-item .dq-skipped-entity { font-weight: 700; word-break: break-word; color: var(--color-brand); }
-.dq-skipped-item small { color: var(--muted); word-break: break-word; }
+.dq-skipped-item .dq-skipped-entity { font-weight: 700; overflow-wrap: break-word; color: var(--color-brand); }
+.dq-skipped-item small { color: var(--muted); overflow-wrap: break-word; }
 .dq-skipped-reason { display: inline-block; font-size: var(--text-2xs); font-weight: 600; padding: 1px 6px; border-radius: 999px; }
 .btn.danger { color: var(--error); border-color: var(--error); }
 
@@ -795,16 +795,12 @@ onMounted(() => refreshAll())
 .dark .dq-diff-item { background: rgba(var(--white-rgb),.03); }
 .dark .dq-diff-item:hover { background: rgba(var(--blue-rgb),.08); }
 .dark .dq-decision-card { background: rgba(var(--white-rgb),.03); border-color: rgba(var(--white-rgb),.08); }
-.dark .dq-select-all { color: var(--ink); }
 .dark .dq-apply-result { background: rgba(var(--color-brand-rgb),.1); color: var(--ink); }
 .dark .dq-apply-result--warn { background: rgba(var(--warning-rgb),.12); }
-.dark .dq-apply-result-stat b { color: var(--ink); }
-.dark .dq-page-info { color: var(--ink); }
 .dark .dq-sev-warning { color: var(--color-warning); }
 .dark .dq-copy-btn { border-color: rgba(var(--white-rgb),.12); }
 
 @media (max-width: 780px) {
-  .admin-page-head { flex-direction: column; }
   .dq-toolbar .input { flex: 1 1 150px; }
   .dq-section-head, .dq-history-card-head { flex-direction: column; }
   .dq-decision-card-head time { margin-left: 0; width: 100%; }

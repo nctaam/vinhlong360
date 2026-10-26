@@ -415,7 +415,6 @@
 </template>
 
 <script setup lang="ts">
-import { TYPE_META } from '~/composables/useConstants'
 import { useUserProfileCollections } from '~/composables/useUserProfileCollections'
 import { useUserProfileActivity } from '~/composables/useUserProfileActivity'
 import { useUserProfileSocial } from '~/composables/useUserProfileSocial'
@@ -484,9 +483,9 @@ const {
 } = useUserProfileCollections({ confirmDialog })
 
 const {
-  isFollowing, followLoading, followerCount, displayFollowerCount, checkFollowing, toggleFollow,
-  followModalOpen, followModalTab, followLists, followLoadingList, followModalList, followDialogEl,
-  loadFollowList, closeFollowModal, openFollowModal, onFollowModalTabKeydown,
+  isFollowing, followLoading, displayFollowerCount, checkFollowing, toggleFollow,
+  followModalOpen, followModalTab, followLoadingList, followModalList, followDialogEl,
+  openFollowModal, onFollowModalTabKeydown,
   isBlocked, syncViewerRelationship, checkBlocked, toggleBlock,
   showMoreMenu, onClickOutsideMore, reportUser, shareProfile, resetSocial,
 } = useUserProfileSocial({
@@ -496,8 +495,8 @@ const {
 
 const {
   xpProgress, isStreakMilestone,
-  timelineItems, timelineLoading, timelinePage, timelineHasMore, timelineIcon, loadTimeline, timelineSentinel,
-  heatmap, heatmapMax, heatmapTotal, loadHeatmap, heatmapWeeks,
+  timelineItems, timelineLoading, timelineIcon, loadTimeline, timelineSentinel,
+  heatmap, heatmapTotal, loadHeatmap, heatmapWeeks,
   achievements, achievementsEarned, loadAchievements, achievementCategories, resetActivity,
 } = useUserProfileActivity({
   profile, encodedProfileId, isSelf, tab, authHeaders, handleSessionExpired,
@@ -505,7 +504,7 @@ const {
 
 const {
   profileHandle, totalContributions, activitySummary,
-  initial, joinDate, profileCompletion, displayName, emptyHint,
+  initial, joinDate, profileCompletion, emptyHint,
 } = useUserProfilePresentation({ profile, isSelf })
 
 const isVerifiedContributor = computed(() => Boolean(profile.value && (profile.value.is_verified || (profile.value.reputation?.level && profile.value.reputation.level >= 2) || totalContributions.value >= 10)))
@@ -772,10 +771,10 @@ useHead(() => {
 .pm-item:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .pm-danger { color: var(--danger); }
 .pm-danger:hover { background: rgba(var(--danger-rgb), .06); }
-.profile-info h1 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); letter-spacing: var(--tracking-tight); margin: 0; text-wrap: balance; overflow-wrap: break-word; }
+.profile-info h1 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); line-height: 1.24; letter-spacing: var(--tracking-tight); margin: 0; text-wrap: balance; overflow-wrap: break-word; }
 /* Tên riêng — serif (Fraunces), xứng đáng được "xưng danh" như tiêu đề địa điểm. */
 .profile-name { font-family: var(--font-editorial); font-weight: 600; }
-.profile-bio { color: var(--ink-secondary); font-size: var(--text-sm); line-height: var(--leading-relaxed); margin-top: var(--space-2); max-width: 640px; overflow-wrap: break-word; word-break: break-word; }
+.profile-bio { color: var(--ink-secondary); font-size: var(--text-sm); line-height: var(--leading-relaxed); margin-top: var(--space-2); max-width: 640px; overflow-wrap: break-word; }
 /* Hairline phù-sa — river→amber→clay, thon 2 đầu. Ngăn khối "định danh" (tên,
    bio, cấp bậc, XP) khỏi khối "bằng chứng" (stats), đúng công thức đã chuẩn
    hoá (sediment-head/tc-label), không tự chế biến thể mới. */
@@ -793,7 +792,7 @@ useHead(() => {
 .stat-item:hover { background: transparent; transform: translateY(-1px); }
 .stat-item:active { transform: scale(.95); transition-duration: .08s; }
 .stat-item:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.stat-item strong { font-family: var(--font-editorial, serif); font-size: var(--text-lg); font-weight: var(--weight-bold); user-select: all; }
+.stat-item strong { font-family: var(--font-editorial); font-size: var(--text-lg); font-weight: var(--weight-bold); user-select: all; }
 .stat-item span { font-size: var(--text-xs); color: var(--muted); }
 .stat-clickable { cursor: pointer; font: inherit; min-height: 44px; }
 .stat-clickable:hover strong { color: var(--color-action); }
@@ -944,12 +943,11 @@ useHead(() => {
 @keyframes savedEnter { from { opacity: 0; transform: translateY(8px); } }
 .saved-cta { text-align: center; margin-top: var(--space-5); }
 .saved-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
-.dark .tab-count { background: var(--color-action-surface); color: var(--color-action); }
 
 /* Danh sách (collections) tab */
 .collections-header { display: flex; justify-content: flex-end; margin-bottom: var(--space-4); }
 .collections-loading { display: flex; align-items: center; gap: var(--space-2); justify-content: center; padding: var(--space-8) 0; color: var(--muted); font-size: var(--text-sm); }
-.saved-card .card-b .place { overflow-wrap: break-word; word-break: break-word; }
+.saved-card .card-b .place { overflow-wrap: break-word; }
 .btn-danger-text { align-self: flex-start; min-height: 44px; display: inline-flex; align-items: center; margin: 0 var(--space-4) var(--space-4); color: var(--danger); }
 .btn-danger-text:hover:not(:disabled) { background: rgba(var(--danger-rgb), .08); color: var(--danger); }
 .btn-danger-text:active:not(:disabled) { transform: scale(.97); }
@@ -975,7 +973,6 @@ useHead(() => {
 /* Dark mode */
 .dark .profile-cover { border-color: var(--line); }
 .dark .profile-avatar-wrap .avatar { border-color: var(--bg-warm); }
-.dark .stat-item:hover { background: transparent; box-shadow: none; }
 .dark .profile-tabs { border-bottom-color: var(--line); }
 
 /* Mobile: stack follow/edit button below name */
@@ -985,10 +982,6 @@ useHead(() => {
   .profile-stats { gap: var(--space-3); flex-wrap: wrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .profile-insight { align-items: flex-start; flex-direction: column; }
   .profile-insight-link { width: 100%; }
-}
-
-@media (pointer: coarse) {
-  .rep-level { min-height: 44px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -43,22 +43,17 @@
             <button
               type="button"
               class="home-bookmark-btn"
-              :class="{ 'is-saved': isItemSaved(leadItem.id) }"
-              :aria-label="isItemSaved(leadItem.id) ? `Bỏ lưu ${leadItem.title}` : `Lưu ${leadItem.title}`"
-              :aria-pressed="isItemSaved(leadItem.id)"
+              :class="{ 'is-saved': isSaved(leadItem.id) }"
+              :aria-label="isSaved(leadItem.id) ? `Bỏ lưu ${leadItem.title}` : `Lưu ${leadItem.title}`"
+              :aria-pressed="isSaved(leadItem.id)"
               @click.prevent.stop="toggleBookmark(leadItem)"
             >
-              <IconLine :name="isItemSaved(leadItem.id) ? 'heart' : 'bookmark'" aria-hidden="true" />
-              <span class="sr-only">{{ isItemSaved(leadItem.id) ? 'Đã lưu' : 'Lưu điểm đến' }}</span>
+              <IconLine :name="isSaved(leadItem.id) ? 'heart' : 'bookmark'" aria-hidden="true" />
+              <span class="sr-only">{{ isSaved(leadItem.id) ? 'Đã lưu' : 'Lưu điểm đến' }}</span>
             </button>
           </div>
 
           <div class="home-curated-lead__overlay">
-            <div class="home-curated-lead__trust sr-only">
-              <SourceMark tier="official" source-title="Sở VHTTDL Vĩnh Long" verified-at="2026-09-01" compact />
-              <FreshnessLine status="fresh" updated-label="Mùa vụ 2026" />
-            </div>
-
             <div class="home-curated-lead__meta">
               <span class="home-curated-lead__location">
                 <IconLine name="pin" aria-hidden="true" />
@@ -116,7 +111,6 @@
           <!-- Floating Top Bar -->
           <div class="home-curated-satellite__top">
             <div class="home-curated-satellite__top-badges">
-              <span class="home-curated-satellite__tag sr-only">{{ item.tag }}</span>
               <span class="home-curated-satellite__terroir-badge">{{ item.terroir }}</span>
             </div>
 
@@ -124,22 +118,18 @@
             <button
               type="button"
               class="home-bookmark-btn home-bookmark-btn--sm"
-              :class="{ 'is-saved': isItemSaved(item.id) }"
-              :aria-label="isItemSaved(item.id) ? `Bỏ lưu ${item.title}` : `Lưu ${item.title}`"
-              :aria-pressed="isItemSaved(item.id)"
+              :class="{ 'is-saved': isSaved(item.id) }"
+              :aria-label="isSaved(item.id) ? `Bỏ lưu ${item.title}` : `Lưu ${item.title}`"
+              :aria-pressed="isSaved(item.id)"
               @click.prevent.stop="toggleBookmark(item)"
             >
-              <IconLine :name="isItemSaved(item.id) ? 'heart' : 'bookmark'" aria-hidden="true" />
-              <span class="sr-only">{{ isItemSaved(item.id) ? 'Đã lưu' : 'Lưu điểm đến' }}</span>
+              <IconLine :name="isSaved(item.id) ? 'heart' : 'bookmark'" aria-hidden="true" />
+              <span class="sr-only">{{ isSaved(item.id) ? 'Đã lưu' : 'Lưu điểm đến' }}</span>
             </button>
           </div>
 
           <!-- Overlaid Bottom Content (<= 25% card height) -->
-          <div class="home-curated-satellite__overlay home-curated-satellite__content">
-            <div class="home-curated-satellite__trust sr-only">
-              <SourceMark tier="official" compact />
-              <FreshnessLine status="fresh" updated-label="2026" />
-            </div>
+          <div class="home-curated-satellite__overlay">
             <div class="home-curated-satellite__meta">
               <span class="home-curated-satellite__area">
                 <IconLine name="pin" aria-hidden="true" />
@@ -167,8 +157,6 @@
 
 <script setup lang="ts">
 import IconLine from '~/components/IconLine.vue'
-import SourceMark from '~/components/SourceMark.vue'
-import FreshnessLine from '~/components/FreshnessLine.vue'
 import { useFavorites } from '~/composables/useFavorites'
 
 interface CuratedLead {
@@ -188,7 +176,6 @@ interface CuratedSatellite {
   readonly id: string
   readonly title: string
   readonly terroir: string
-  readonly tag: string
   readonly area: string
   readonly coordinates?: string
   readonly summary: string
@@ -197,10 +184,6 @@ interface CuratedSatellite {
 }
 
 const { isSaved, toggle } = useFavorites()
-
-function isItemSaved(id: string): boolean {
-  return isSaved(id)
-}
 
 function toggleBookmark(target: { id: string; title: string; coverSrc?: string }) {
   toggle({
@@ -230,7 +213,6 @@ const satelliteItems: readonly CuratedSatellite[] = [
     id: 'cu-lao-an-binh',
     title: 'Cù Lao An Bình & Vườn Trái Cây',
     terroir: 'Xanh Cù Lao',
-    tag: 'Sinh thái Miệt vườn',
     area: 'Long Hồ',
     coordinates: "10°16'N · 105°59'E",
     summary: 'Miệt vườn trái cây ngút ngàn, sầu riêng Ri6 chín bùi và rạch dừa nước thanh bình giữa sông Tiền.',
@@ -241,7 +223,6 @@ const satelliteItems: readonly CuratedSatellite[] = [
     id: 'khu-du-lich-cho-noi-tra-on',
     title: 'Chợ Nổi Trà Ôn Sông Hậu',
     terroir: 'Phù Sa Cổ Chiên',
-    tag: 'Thương hồ Sông nước',
     area: 'Trà Ôn',
     coordinates: "9°58'N · 105°55'E",
     summary: 'Thương hồ sông Hậu họp chợ theo con nước sớm, rộn ràng tiếng cười nói và cây bẹo mời chào sản vật.',
@@ -252,7 +233,6 @@ const satelliteItems: readonly CuratedSatellite[] = [
     id: 'chua-shanghamangala-khmer-vung-liem',
     title: 'Chùa Hạnh Phúc Tăng (Sanghamangala)',
     terroir: 'Phù Sa Cổ Chiên',
-    tag: 'Tâm linh Di sản',
     area: 'Vũng Liêm',
     coordinates: "10°07'N · 106°11'E",
     summary: 'Ngôi chùa Khmer cổ kính từ năm 632, kiến trúc tháp nhọn trầm mặc dưới bóng sao dầu nghìn năm.',
@@ -263,7 +243,6 @@ const satelliteItems: readonly CuratedSatellite[] = [
     id: 'khu-du-lich-sinh-thai-miet-vuon-vinh-sang',
     title: 'KDL Sinh Thái Miệt Vườn Vinh Sang',
     terroir: 'Xanh Cù Lao',
-    tag: 'Điền dã Dân gian',
     area: 'An Bình, Long Hồ',
     coordinates: "10°16'N · 105°59'E",
     summary: 'Trải nghiệm tát mương bắt cá, chèo xuồng mương liếp và nghe đờn ca tài tử bên vườn dừa trĩu quả.',
@@ -496,9 +475,11 @@ function onImgFallback(e: Event) {
 
 .home-curated-lead__title {
   margin: 0;
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: clamp(var(--text-xl), 3vw, var(--text-2xl));
   line-height: 1.25;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .home-curated-lead__title a {
@@ -515,6 +496,8 @@ function onImgFallback(e: Event) {
   margin: 0;
   font-size: var(--text-sm);
   line-height: 1.55;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
   color: rgba(var(--white-rgb), 0.92);
 }
 
@@ -657,39 +640,13 @@ function onImgFallback(e: Event) {
   border-radius: var(--radius-pill, 9999px);
   font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
+  line-height: 1.35;
   box-shadow: var(--shadow-card-ambient);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
 }
 
 .home-curated-satellite:hover .home-curated-satellite__terroir-badge {
   transform: translateY(-1px);
-}
-
-.home-curated-satellite__tag {
-  padding: 3px 10px;
-  background: rgba(var(--black-rgb), 0.86);
-  color: var(--surface-white);
-  border: 1px solid var(--border-liquid-glass);
-  border-radius: var(--radius-pill, 9999px);
-  font-size: var(--text-2xs);
-  font-weight: var(--weight-bold);
-  box-shadow: var(--shadow-card-ambient);
-}
-
-.home-curated-lead__trust {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-1);
-}
-
-.home-curated-satellite__trust {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1h);
-  margin-bottom: 2px;
 }
 
 /* Bottom Content Overlay (<= 25% card height) */
@@ -719,6 +676,7 @@ function onImgFallback(e: Event) {
   align-items: center;
   gap: 4px;
   font-size: var(--text-2xs);
+  line-height: 1.35;
   color: var(--surface-white);
   font-weight: var(--weight-bold);
 }
@@ -729,9 +687,11 @@ function onImgFallback(e: Event) {
 
 .home-curated-satellite__title {
   margin: 0;
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: var(--text-sm);
   line-height: 1.35;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .home-curated-satellite__title a {
@@ -751,6 +711,8 @@ function onImgFallback(e: Event) {
   color: var(--surface-white);
   opacity: 0.9;
   line-height: 1.45;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
   text-shadow: 0 1px 2px rgba(var(--black-rgb), 0.4);
   display: -webkit-box;
   -webkit-line-clamp: 2;

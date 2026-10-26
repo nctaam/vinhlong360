@@ -58,12 +58,12 @@
   color: var(--color-text);
 }
 
-.why-this-control__reason,
-.why-this-control__signals {
+.why-this-control__reason {
   margin: 0;
 }
 
 .why-this-control__signals {
+  margin: 0;
   display: grid;
   gap: var(--space-1);
   padding-inline-start: var(--space-5);
@@ -89,15 +89,18 @@
   color: var(--color-text-muted);
 }
 
-.page-state__title,
 .page-state__copy {
   margin: 0;
 }
 
 .page-state__title {
+  margin: 0;
   color: var(--color-text);
   font-size: var(--text-lg);
   font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .page-state__available {
@@ -240,7 +243,7 @@
   padding: var(--space-5) var(--space-6) 0; display: flex; align-items: center; justify-content: space-between;
   flex-shrink: 0;
 }
-.modal-head h2 { margin: 0; font-size: var(--text-lg); }
+.modal-head h2 { margin: 0; font-size: var(--text-lg); line-height: var(--leading-snug); text-wrap: balance; overflow-wrap: break-word; }
 .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); padding: var(--space-1); min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background .3s var(--ease-out), transform .3s; }
 .modal-close:hover { background: var(--bg-warm); }
 .modal-close:active { transform: scale(.9); transition-duration: .08s; }
@@ -283,8 +286,6 @@
 .star-rating .star:hover { transform: scale(1.2); }
 .star-rating .star:active { transform: scale(.9); transition-duration: .08s; }
 .star-rating .star:focus-visible { outline: 2px solid var(--color-material-amber); outline-offset: 2px; }
-.star-rating.readonly .star { cursor: default; }
-.star-rating.readonly .star:hover { transform: none; }
 
 .star-rating-inline { display: inline-flex; gap: 1px; font-size: .85rem; }
 .star-rating-inline .star { color: var(--line); font-size: inherit; }
@@ -490,12 +491,11 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .notif-item:active { background: var(--line); transform: scale(.98); transition-duration: .08s; }
 .notif-item:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .notif-item.unread { background: rgba(var(--color-action-rgb), .06); }
-.notif-item-title { font-size: var(--text-sm); font-weight: 600; }
-.notif-item-body { font-size: var(--text-xs); color: var(--muted); margin-top: 2px; }
+.notif-item-title { font-size: var(--text-sm); font-weight: 600; overflow-wrap: anywhere; }
+.notif-item-body { font-size: var(--text-xs); color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
 .notif-item-time { font-size: var(--text-xs); color: var(--muted); margin-top: 3px; display: block; }
 .notif-item-icon { flex: 0 0 auto; font-size: 1.15rem; line-height: 1.4; }
 .notif-item-content { flex: 1 1 auto; min-width: 0; }
-.notif-item-title, .notif-item-body { overflow-wrap: anywhere; }
 .notif-unread-dot { flex: 0 0 auto; align-self: center; width: 8px; height: 8px; border-radius: 50%; background: var(--color-brand); margin-inline-start: var(--space-2); }
 .notif-empty { text-align: center; padding: var(--space-5); color: var(--muted); font-size: var(--text-sm); }
 .notif-loading { display: flex; justify-content: center; padding: var(--space-5); }
@@ -704,7 +704,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .sheet-close:focus-visible { outline: 2px solid var(--focus-ring-outer, var(--color-focus)); outline-offset: 2px; box-shadow: 0 0 0 2px var(--focus-ring-inner, var(--surface-white)); }
 .sheet-header { text-align: center; margin-bottom: var(--space-4); flex-shrink: 0; }
 .sheet-emoji { font-size: 1.6rem; display: block; margin-bottom: 0; line-height: 1; }
-.sheet-header h2 { margin: 0 0 var(--space-1h); font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); line-height: var(--leading-snug); }
+.sheet-header h2 { margin: 0 0 var(--space-1h); font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); line-height: var(--leading-snug); text-wrap: balance; overflow-wrap: break-word; }
 .sheet-header p { margin: 0; color: var(--muted); font-size: var(--text-xs); line-height: var(--leading-normal); }
 .sheet-features { display: flex; flex-direction: column; gap: var(--space-2h); margin-bottom: var(--space-5); overflow-y: auto; flex: 1; min-height: 0; overscroll-behavior-y: contain; padding-right: var(--space-1); }
 .sheet-feature { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-2) var(--space-2h); margin: 0; border-radius: var(--radius-surface); transition: background .25s var(--ease-out); }
@@ -740,7 +740,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .empty-state > * { position: relative; z-index: 1; }
 .empty-icon { font-size: 3rem; display: block; margin-bottom: var(--space-4); line-height: 1; }
 .empty-illust { width: 160px; height: auto; margin: 0 auto var(--space-4); display: block; }
-.empty-title { font-size: var(--text-xl); color: var(--ink); margin: 0 0 var(--space-2); font-weight: var(--weight-semibold); }
+.empty-title { font-size: var(--text-xl); color: var(--ink); margin: 0 0 var(--space-2); font-weight: var(--weight-semibold); line-height: var(--leading-snug); text-wrap: balance; overflow-wrap: break-word; }
 .empty-text { color: var(--muted); font-size: var(--text-base); margin: 0 auto; line-height: var(--leading-relaxed); max-width: 400px; }
 .empty-actions { display: flex; gap: var(--space-3); justify-content: center; margin-top: var(--space-5); flex-wrap: wrap; }
 
@@ -802,7 +802,8 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 
 /* ── Shared phù-sa section head (Wave 1 foundation; pages opt in with .sediment-head) ── */
 .sediment-head h2, h2.sediment-head {
-  font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em;
+  font-family: var(--font-editorial); font-weight: 600; line-height: var(--leading-snug); letter-spacing: -.01em;
+  text-wrap: balance; overflow-wrap: break-word;
   position: relative; padding-left: var(--space-4);
 }
 .sediment-head h2::before, h2.sediment-head::before {

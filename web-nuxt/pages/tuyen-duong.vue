@@ -511,7 +511,7 @@ useHead(() => {
 .route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-card-hover, var(--shadow-lg)); border-color: color-mix(in srgb, var(--alluvial-gold) 45%, var(--border-liquid-glass)); }
 .route-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-5) var(--space-6); background: color-mix(in srgb, var(--bg-warm) 65%, transparent); color: var(--ink); border-block-start: 3px solid var(--color-action); border-block-end: 1px solid var(--line); transition: background-color .3s var(--ease-out); }
 .route-header::after { content: "TUYẾN " counter(route-dossier, decimal-leading-zero); margin-inline-start: auto; font-family: var(--font-editorial); font-style: italic; font-weight: 400; font-size: var(--text-sm); letter-spacing: 0.08em; color: var(--muted); white-space: nowrap; }
-.route-header h3 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); color: var(--ink); overflow-wrap: break-word; word-break: break-word; }
+.route-header h3 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); line-height: 1.24; letter-spacing: var(--tracking-tight); color: var(--ink); text-wrap: balance; overflow-wrap: break-word; }
 .route-meta { font-size: var(--text-sm); color: var(--muted); }
 .route-emoji { font-size: var(--text-2xl); display: inline-flex; align-items: center; justify-content: center; color: var(--color-action); }
 .chip-area-icon { margin-right: .25rem; font-size: .95em; }
@@ -592,7 +592,7 @@ useHead(() => {
   box-shadow: 0 0 0 2px var(--rail-tone, var(--color-action)) inset, var(--shadow-xs);
   transition: transform .3s var(--ease-out-expo), background .25s var(--ease-out), color .25s var(--ease-out);
 }
-.rail-text { min-width: 0; flex: 1; overflow-wrap: break-word; word-break: break-word; }
+.rail-text { min-width: 0; flex: 1; overflow-wrap: break-word; }
 .rail-text strong { color: var(--ink); transition: color .25s var(--ease-out); }
 .rail-text span { color: var(--muted); font-size: var(--text-sm); }
 .rail-stop:hover { transform: translateX(2px); background: var(--overlay-subtle); }
@@ -620,7 +620,6 @@ useHead(() => {
 .route-grid > .route-card:nth-child(4) { animation-delay: .14s; }
 .route-grid > .route-card:nth-child(5) { animation-delay: .18s; }
 .route-grid > .route-card:nth-child(n+6) { animation-delay: .22s; }
-.cross-sub { margin: calc(var(--space-3) * -1) 0 var(--space-4); color: var(--muted); font-size: var(--text-sm); }
 .route-links { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .route-links .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
 .route-links .btn:active { transform: scale(.95); transition-duration: .08s; }
@@ -776,6 +775,9 @@ useHead(() => {
   font-family: var(--font-editorial);
   font-style: italic;
   font-weight: var(--weight-bold);
+  line-height: 1.24;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 .route-preview-close {
   display: inline-flex;
@@ -1025,9 +1027,6 @@ useHead(() => {
 .dark .route-preview-dialog {
   background: var(--card);
   border-color: var(--line);
-}
-.dark .waypoint-num {
-  fill: var(--ink);
 }
 .dark .preview-rail-item:hover {
   background: var(--overlay-light);

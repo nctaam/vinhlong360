@@ -259,7 +259,7 @@ const HOTLINES: readonly EmergencyContact[] = [
 
 .home-travel-companion__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   gap: var(--space-5);
   margin-block-start: var(--space-6);
 }
@@ -323,6 +323,7 @@ const HOTLINES: readonly EmergencyContact[] = [
   border-radius: var(--radius-pill, 9999px);
   font-size: 11px;
   font-weight: var(--weight-bold);
+  line-height: 1.35;
   margin-block-end: 4px;
 }
 
@@ -348,10 +349,12 @@ const HOTLINES: readonly EmergencyContact[] = [
 
 .home-companion-card__title {
   margin: 0;
-  font-family: var(--font-editorial-display);
+  font-family: var(--font-editorial);
   font-size: var(--text-base);
   color: var(--color-text);
   line-height: 1.3;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .home-companion-card__desc {
@@ -359,6 +362,8 @@ const HOTLINES: readonly EmergencyContact[] = [
   font-size: var(--text-xs);
   color: var(--color-text);
   line-height: 1.55;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
   opacity: 0.9;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -430,7 +435,7 @@ const HOTLINES: readonly EmergencyContact[] = [
   border-radius: var(--radius-control);
   text-decoration: none;
   color: var(--color-text);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .home-hotline-btn:hover {
@@ -462,11 +467,13 @@ const HOTLINES: readonly EmergencyContact[] = [
 .home-hotline-btn__name {
   font-size: var(--text-xs);
   color: var(--color-text);
-  line-height: 1.2;
+  line-height: 1.35;
+  overflow-wrap: break-word;
 }
 
 .home-hotline-btn__scope {
   font-size: 11px;
+  line-height: 1.35;
   color: var(--color-text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -483,6 +490,7 @@ const HOTLINES: readonly EmergencyContact[] = [
   border-radius: var(--radius-pill, 9999px);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
+  line-height: 1.35;
   flex-shrink: 0;
 }
 
@@ -503,8 +511,7 @@ const HOTLINES: readonly EmergencyContact[] = [
   -webkit-backdrop-filter: blur(16px);
   border-radius: var(--radius-surface);
   box-shadow: var(--shadow-card-ambient);
-  margin-block-start: 0;
-  margin-block-end: 0;
+  margin-block: 0;
 }
 
 @media (min-width: 768px) {
@@ -520,6 +527,8 @@ const HOTLINES: readonly EmergencyContact[] = [
   align-items: center;
   gap: var(--space-2);
   font-size: var(--text-xs);
+  line-height: 1.45;
+  text-wrap: pretty;
   color: var(--color-text);
 }
 

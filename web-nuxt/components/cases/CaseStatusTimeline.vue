@@ -126,23 +126,36 @@ const publicationByItem = computed(() => new Map(
   border-block-end: 1px solid var(--color-border, var(--line));
   counter-increment: case-step;
 }
+.case-timeline h2,
+#items-heading {
+  line-height: 1.28;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
 .timeline-steps li::before {
   content: "BƯỚC " counter(case-step, decimal-leading-zero);
   display: block;
   margin-bottom: 0.2rem;
-  font-family: var(--font-editorial, serif);
+  font-family: var(--font-editorial);
   font-style: italic;
   font-size: 0.78rem;
+  line-height: 1.35;
   color: var(--color-material-amber, var(--color-brand));
   font-variant-numeric: tabular-nums;
 }
 .timeline-steps h3 {
   margin: 0 0 0.2rem;
-  font-family: var(--font-editorial, serif);
+  font-family: var(--font-editorial);
   font-size: 1rem;
+  line-height: 1.3;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 .timeline-steps p {
   margin: 0;
+  line-height: 1.55;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
 }
 .timeline-promise {
   color: var(--color-warning);
