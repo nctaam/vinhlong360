@@ -128,7 +128,7 @@ onUnmounted(() => stopPolling())
 .notif-error p { margin: 0; }
 .notif-retry {
   min-height: 44px; padding: var(--space-2) var(--space-4);
-  border: .5px solid var(--line); border-radius: var(--radius-full);
+  border: .5px solid var(--line); border-radius: var(--radius-pill, 999px);
   background: var(--card); color: var(--ink); cursor: pointer;
   font-size: var(--text-sm); font-weight: var(--weight-semibold);
   transition: background .25s var(--ease-out), transform .25s var(--ease-out-expo), border-color .25s var(--ease-out);

@@ -32,7 +32,7 @@
 
         <div class="cs-save-row">
           <button type="button" class="sf-save" :disabled="saving" @click="onSave">
-            {{ saving ? 'Đang lưu...' : 'Lưu thay đổi' }}
+            {{ saving ? 'Đang lưu…' : 'Lưu thay đổi' }}
           </button>
           <button type="button" class="sf-reset" :disabled="saving" @click="onReset">
             Bật lại tất cả

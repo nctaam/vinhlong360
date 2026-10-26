@@ -16,7 +16,7 @@
     </div>
 
     <div class="admin-toolbar">
-      <input v-model="search" class="input" placeholder="Tìm user (SĐT, tên)..." aria-label="Tìm user" @input="debounceFetch" />
+      <input v-model="search" class="input" placeholder="Tìm user (SĐT, tên)…" aria-label="Tìm user" @input="debounceFetch" />
       <select v-model="roleFilter" class="usr-filter-select" aria-label="Lọc theo role">
         <option value="all">Tất cả role</option>
         <option value="user">user</option>

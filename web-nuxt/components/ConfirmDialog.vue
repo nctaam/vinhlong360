@@ -65,8 +65,8 @@ watch(() => state.value.open, async (open) => {
   border-color: rgba(var(--white-rgb), .12);
   box-shadow: 0 18px 48px rgba(var(--black-rgb), .6);
 }
-.confirm-title { margin: 0 0 .5rem; font-size: 1.15rem; font-family: var(--font-editorial, inherit); font-weight: var(--weight-bold, 700); letter-spacing: -.01em; }
-.confirm-message { margin: 0 0 1.25rem; color: var(--ink-700); line-height: 1.5; }
+.confirm-title { margin: 0 0 .5rem; font-size: 1.15rem; font-family: var(--font-editorial); font-weight: var(--weight-bold, 700); line-height: var(--leading-snug, 1.3); letter-spacing: -.01em; text-wrap: balance; }
+.confirm-message { margin: 0 0 1.25rem; color: var(--ink-700); line-height: 1.5; overflow-wrap: break-word; }
 .confirm-actions { display: flex; gap: .75rem; justify-content: flex-end; }
 .btn-danger { background: var(--danger); color: var(--text-on-dark, var(--white)); }
 .confirm-fade-enter-active, .confirm-fade-leave-active { transition: opacity .2s var(--ease-out); }

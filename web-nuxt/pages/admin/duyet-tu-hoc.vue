@@ -122,7 +122,7 @@
 
             <footer class="dth-review-actions">
               <button type="button" class="btn-success" :disabled="acting === e.id" @click="approve(e)">
-                {{ acting === e.id ? '...' : 'Duyệt' }}
+                {{ acting === e.id ? '…' : 'Duyệt' }}
               </button>
               <button type="button" class="btn-danger" :disabled="acting === e.id" @click="reject(e)">Từ chối</button>
             </footer>
@@ -138,13 +138,13 @@
         <button type="button" class="dth-tool-card" :disabled="exporting" @click="exportJson">
           <span v-if="exporting" class="dth-tool-spinner" aria-hidden="true"></span>
           <span v-else class="dth-tool-icon"><IconLine name="archive" /></span>
-          <span class="dth-tool-label">{{ exporting ? 'Đang xuất...' : 'Export JSON (DB)' }}</span>
+          <span class="dth-tool-label">{{ exporting ? 'Đang xuất…' : 'Export JSON (DB)' }}</span>
           <small>Tải data.json từ DB</small>
         </button>
         <button type="button" class="dth-tool-card" :disabled="loadingSources" @click="loadSources">
           <span v-if="loadingSources" class="dth-tool-spinner" aria-hidden="true"></span>
           <span v-else class="dth-tool-icon"><IconLine name="book" /></span>
-          <span class="dth-tool-label">{{ loadingSources ? 'Đang tải...' : 'Xem nguồn dữ liệu' }}</span>
+          <span class="dth-tool-label">{{ loadingSources ? 'Đang tải…' : 'Xem nguồn dữ liệu' }}</span>
           <small>Thống kê theo nguồn</small>
         </button>
       </div>

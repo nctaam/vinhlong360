@@ -270,10 +270,6 @@ const tideCue = computed(() => {
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.dark .detail-aeo-summary__card {
-  background: transparent;
-}
-
 .detail-aeo-summary__card-head {
   display: flex;
   align-items: center;

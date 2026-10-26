@@ -17,12 +17,9 @@ from pydantic import BaseModel, Field
 
 from api_schemas import GalleryImageDescriptor
 
-from auth_middleware import require_user, require_csrf, validate_path_id
+from auth_middleware import require_csrf, require_pg as _require_pg, require_user, validate_path_id
 from database import db
 from ratelimit import check_rate
-
-
-from auth_middleware import require_pg as _require_pg
 
 logger = logging.getLogger(__name__)
 

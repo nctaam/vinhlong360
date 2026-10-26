@@ -87,7 +87,7 @@
             v-model="q"
             type="search"
             class="search-input"
-            placeholder="Tìm bún nước lèo, bánh xèo, cá linh, đặc sản..."
+            placeholder="Tìm bún nước lèo, bánh xèo, cá linh, đặc sản…"
             aria-label="Tìm kiếm món ăn"
           />
           <button

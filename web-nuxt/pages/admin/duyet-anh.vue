@@ -97,7 +97,7 @@
 
           <div v-if="s.status === 'pending'" class="img-actions">
             <button type="button" class="btn-success" :disabled="acting === s.id" @click="approve(s.id)">
-              {{ acting === s.id ? '...' : 'Duyệt & gắn ảnh' }}
+              {{ acting === s.id ? '…' : 'Duyệt & gắn ảnh' }}
             </button>
             <button type="button" class="btn-danger" :disabled="acting === s.id" @click="startReject(s.id)">
               Từ chối
@@ -115,7 +115,7 @@
             />
             <div class="img-reject-btns">
               <button type="button" class="btn-danger" :disabled="acting === s.id" @click="confirmReject(s.id)">
-                {{ acting === s.id ? '...' : 'Xác nhận' }}
+                {{ acting === s.id ? '…' : 'Xác nhận' }}
               </button>
               <button type="button" class="btn-ghost-sm" @click="cancelReject">Huỷ</button>
             </div>

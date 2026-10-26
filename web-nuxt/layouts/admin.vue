@@ -594,14 +594,13 @@ useSeoMeta({
 .dark .admin-nav a { color: rgba(var(--white-rgb),.65); }
 .dark .admin-nav a:hover { color: var(--ink); background: rgba(var(--white-rgb),.12); }
 .dark .admin-nav a.active { background: rgba(var(--white-rgb),.14); color: var(--ink); border: 1px solid color-mix(in srgb, var(--color-brand) 40%, transparent); }
-.dark .admin-table th { box-shadow: 0 2px 4px rgba(var(--black-rgb),.03); }
+.dark .admin-table th { background: rgba(var(--white-rgb),.03); box-shadow: 0 2px 4px rgba(var(--black-rgb),.03); }
 .dark .admin-empty-state-hint { color: rgba(var(--white-rgb),.3); }
 .dark .admin-topbar { background: color-mix(in oklab, var(--bg) 85%, transparent); border-bottom-color: rgba(var(--white-rgb),.08); }
 .dark .admin-main { background: var(--bg); }
 .dark .stat-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .stat-card:hover { box-shadow: 0 4px 16px rgba(var(--black-rgb),.3); }
 .dark .admin-table { background: var(--card); }
-.dark .admin-table th { background: rgba(var(--white-rgb),.03); }
 .dark .admin-table tbody tr:hover td { background: rgba(var(--white-rgb),.03); }
 .dark .admin-table tbody tr.row-selected td { background: rgba(var(--color-action-rgb), .1); }
 .dark .admin-table-wrap { border-color: rgba(var(--white-rgb),.06); }

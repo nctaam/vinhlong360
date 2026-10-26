@@ -73,10 +73,10 @@ const meta = computed(() => SOURCE_META[effectiveTier.value])
   color: var(--color-source-community);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
-  line-height: var(--lh-xs);
+  line-height: var(--leading-snug, 1.3);
   background: var(--color-source-community-surface);
   border: 1px solid color-mix(in srgb, var(--color-source-community) 48%, transparent);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
 }
 
 .source-mark[data-source-tier='official'] {

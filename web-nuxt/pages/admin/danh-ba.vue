@@ -41,7 +41,7 @@
         </label>
         <label class="db-field">
           <span class="db-field-label">Địa chỉ</span>
-          <input v-model="f.address" class="input" placeholder="Ấp ..., xã ..." aria-label="Địa chỉ" />
+          <input v-model="f.address" class="input" placeholder="Ấp …, xã …" aria-label="Địa chỉ" />
         </label>
         <label class="db-field">
           <span class="db-field-label">Giờ làm việc</span>
@@ -57,7 +57,7 @@
       <div class="db-form-actions">
         <button type="submit" class="btn btn-primary" :disabled="busy" title="Lưu (Ctrl+Enter)">
           <span v-if="busy" class="db-save-spinner" aria-hidden="true"></span>
-          {{ busy ? 'Đang lưu...' : 'Thêm cơ quan' }}
+          {{ busy ? 'Đang lưu…' : 'Thêm cơ quan' }}
         </button>
         <span v-if="isDirty && !busy" class="sf-dirty-badge" role="status">Chưa lưu</span>
       </div>
@@ -72,7 +72,7 @@
 
       <div v-if="loadingList" class="admin-loading" role="status" aria-live="polite">
         <div class="spinner"></div>
-        <span class="db-sr-only">Đang tải danh sách cơ quan...</span>
+        <span class="db-sr-only">Đang tải danh sách cơ quan…</span>
       </div>
       <template v-else>
         <div v-if="facilities.length" class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng danh bạ cơ quan">
@@ -90,7 +90,7 @@
                 </td>
                 <td class="admin-td-muted"><small>{{ sourceLabel(e) }}</small></td>
                 <td>
-                  <button type="button" class="btn-danger btn-sm db-del-btn" :disabled="deleting === e.id" :aria-label="`Xóa ${e.name}`" @click="del(e)">{{ deleting === e.id ? 'Đang xóa...' : 'Xóa' }}</button>
+                  <button type="button" class="btn-danger btn-sm db-del-btn" :disabled="deleting === e.id" :aria-label="`Xóa ${e.name}`" @click="del(e)">{{ deleting === e.id ? 'Đang xóa…' : 'Xóa' }}</button>
                 </td>
               </tr>
             </tbody>

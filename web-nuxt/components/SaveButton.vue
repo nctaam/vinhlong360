@@ -54,7 +54,7 @@ function onToggle() {
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
   border: .5px solid var(--line);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: var(--card);
   color: var(--muted);
   cursor: pointer;

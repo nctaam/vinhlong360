@@ -409,7 +409,7 @@ if (import.meta.client) {
   flex-shrink: 0;
   width: 3px;
   height: .85em;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
 }
 .dark .ac-hint-tick {
@@ -424,7 +424,7 @@ if (import.meta.client) {
   display: inline-flex; align-items: center; gap: var(--space-1);
   min-height: 44px; padding: var(--space-2) var(--space-3);
   background: var(--bg-alt); border: .5px solid var(--line);
-  border-radius: var(--radius-full); color: var(--ink);
+  border-radius: var(--radius-pill, 999px); color: var(--ink);
   font-size: var(--text-sm); font-weight: var(--weight-medium);
   text-decoration: none; cursor: pointer;
   transition: background .25s var(--ease-out), border-color .25s var(--ease-out), transform .25s var(--ease-out-expo);

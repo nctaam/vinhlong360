@@ -14,7 +14,7 @@
     </div>
 
     <div class="cpl-toolbar">
-      <input v-model="q" class="input" placeholder="Tìm theo tên..." aria-label="Tìm theo tên" @keyup.enter="load" />
+      <input v-model="q" class="input" placeholder="Tìm theo tên…" aria-label="Tìm theo tên" @keyup.enter="load" />
       <button type="button" class="btn btn-secondary btn-sm" @click="load">Tìm</button>
       <select v-model="typeFilter" class="cpl-type-filter input" aria-label="Lọc theo loại">
         <option value="">Tất cả loại ({{ items.length }})</option>
@@ -36,7 +36,7 @@
           </optgroup>
         </select>
         <button type="button" class="btn btn-primary btn-sm cpl-bulk-apply" :disabled="!bulkPick || bulkBusy" @click="assignBulk">
-          {{ bulkBusy ? `Đang gán ${bulkProgress.done}/${bulkProgress.total}...` : `Gán ${selectedIds.length} entity` }}
+          {{ bulkBusy ? `Đang gán ${bulkProgress.done}/${bulkProgress.total}…` : `Gán ${selectedIds.length} entity` }}
           <span v-if="bulkBusy && bulkProgress.total" class="cpl-bulk-progress" :style="{ width: (bulkProgress.done / bulkProgress.total * 100) + '%' }" aria-hidden="true"></span>
         </button>
         <button type="button" class="btn btn-secondary btn-sm cpl-bulk-clear" :disabled="bulkBusy" @click="clearSelection">Bỏ chọn</button>
@@ -89,7 +89,7 @@
               </td>
               <td>
                 <button type="button" class="btn btn-primary btn-sm" :disabled="!pick[e.id] || busy[e.id] || bulkBusy" @click="assign(e)">
-                  {{ busy[e.id] ? '...' : 'Gán' }}
+                  {{ busy[e.id] ? '…' : 'Gán' }}
                 </button>
               </td>
             </tr>

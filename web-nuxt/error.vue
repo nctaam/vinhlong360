@@ -221,7 +221,7 @@ useSeoMeta({
 
 .error-heading {
   margin: 0;
-  font-family: var(--font-editorial, 'Lora', serif);
+  font-family: var(--font-editorial);
   font-size: var(--font-size-headline);
   font-weight: var(--weight-title);
   color: var(--color-text);
@@ -357,7 +357,7 @@ useSeoMeta({
 
 .safe-haven-card strong {
   display: block;
-  font-family: var(--font-editorial, 'Lora', serif);
+  font-family: var(--font-editorial);
   font-size: var(--font-size-body);
 }
 

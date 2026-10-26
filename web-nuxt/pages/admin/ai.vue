@@ -194,12 +194,12 @@
         <button type="button" class="ai-action-btn ai-action-primary" :disabled="triggerLoading" @click="triggerLearn">
           <span v-if="triggerLoading" class="ai-action-spinner" aria-hidden="true"></span>
           <span v-else class="ai-action-icon"><IconLine name="cpu" /></span>
-          <span>{{ triggerLoading ? 'Đang chạy...' : 'Trigger Learn' }}</span>
+          <span>{{ triggerLoading ? 'Đang chạy…' : 'Trigger Learn' }}</span>
         </button>
         <button type="button" class="ai-action-btn ai-action-primary" :disabled="triageLoading" @click="triage">
           <span v-if="triageLoading" class="ai-action-spinner" aria-hidden="true"></span>
           <span v-else class="ai-action-icon"><IconLine name="bot" /></span>
-          <span>{{ triageLoading ? 'Đang phân tích...' : 'Gợi ý ưu tiên' }}</span>
+          <span>{{ triageLoading ? 'Đang phân tích…' : 'Gợi ý ưu tiên' }}</span>
         </button>
         <button type="button" class="ai-action-btn ai-action-secondary" @click="reload">
           <span class="ai-action-icon"><IconLine name="repeat" /></span>

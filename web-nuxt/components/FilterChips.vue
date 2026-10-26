@@ -154,7 +154,7 @@ function resolveIcon(f: FilterOption): string | null {
   height: 18px;
   line-height: 18px;
   text-align: center;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: var(--bg-alt);
   display: inline-flex;
   align-items: center;
@@ -170,7 +170,7 @@ function resolveIcon(f: FilterOption): string | null {
 .fc-sublabel {
   font-size: var(--text-2xs, 10px);
   padding: 1px 6px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: var(--color-action-surface);
   color: var(--color-action);
   font-weight: var(--weight-semibold);

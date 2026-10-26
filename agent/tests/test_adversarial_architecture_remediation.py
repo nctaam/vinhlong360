@@ -1053,6 +1053,77 @@ def test_campaign_upsilon_multi_agent_architecture_optimizations():
     admin_ent = (repo_root / "web-nuxt" / "pages" / "admin" / "entities.vue").read_text(encoding="utf-8")
     assert "import { ADMIN_KINDS } from '~/utils/adminKinds'" not in admin_ent
 
+def test_campaign_phi_multi_agent_architecture_optimizations():
+    """Test #38: Chiến dịch Phi (Mục 24) - Tối ưu token & font tokens, chuẩn hóa --radius-pill,
+    chuẩn hóa dấu chấm lửng (ellipsis U+2026), loại bỏ duplicate styles,
+    và gia tốc module text_utils (NFD combining marks regex C-level + LRU cache).
+    """
+    from plans import router as plans_router
+    from saved import router as saved_router
+    import text_utils
 
+    repo_root = ROOT
 
+    # 1. Ban 4: Backend Text Utilities & Router Import Cleanups
+    assert hasattr(text_utils, "_COMBINING_MARKS_RE")
+    assert hasattr(text_utils, "_VIETNAMESE_D_RE")
+    assert hasattr(text_utils, "_SLUG_INVALID_RE")
+    assert hasattr(text_utils, "_SLUG_HYPHENS_RE")
+    assert text_utils.strip_diacritics("Vĩnh Long Đất Sét") == "Vinh Long dat Set"
+    assert text_utils.slugify("Chợ Nổi Cái Bè & Trà Ôn 2026") == "cho-noi-cai-be-tra-on-2026"
+    assert text_utils.normalize_name("  Vĩnh Long  ") == "vinh long"
+    assert hasattr(text_utils.strip_diacritics, "cache_info")
+
+    assert saved_router is not None
+    assert plans_router is not None
+
+    saved_py = (repo_root / "agent" / "saved.py").read_text(encoding="utf-8")
+    assert saved_py.count("from auth_middleware import") == 1
+
+    plans_py = (repo_root / "agent" / "plans.py").read_text(encoding="utf-8")
+    assert plans_py.count("from auth_middleware import") == 1
+
+    # 2. Ban 1: Token & Typography Harmonization
+    error_vue = (repo_root / "web-nuxt" / "error.vue").read_text(encoding="utf-8")
+    assert "var(--font-editorial, 'Lora', serif)" not in error_vue
+    assert "font-family: var(--font-editorial);" in error_vue
+
+    source_mark = (repo_root / "web-nuxt" / "components" / "SourceMark.vue").read_text(encoding="utf-8")
+    assert "line-height: var(--leading-snug, 1.3);" in source_mark
+    assert "border-radius: var(--radius-pill, 999px);" in source_mark
+    assert "border-radius: var(--radius-full);" not in source_mark
+
+    filter_chips = (repo_root / "web-nuxt" / "components" / "FilterChips.vue").read_text(encoding="utf-8")
+    assert "var(--radius-full)" not in filter_chips
+
+    notification_bell = (repo_root / "web-nuxt" / "components" / "NotificationBell.vue").read_text(encoding="utf-8")
+    assert "var(--radius-full)" not in notification_bell
+
+    save_btn = (repo_root / "web-nuxt" / "components" / "SaveButton.vue").read_text(encoding="utf-8")
+    assert "var(--radius-full)" not in save_btn
+
+    cat_spotlight = (repo_root / "web-nuxt" / "components" / "CatalogSpotlight.vue").read_text(encoding="utf-8")
+    assert "var(--radius-full)" not in cat_spotlight
+
+    search_ac = (repo_root / "web-nuxt" / "components" / "SearchAutocomplete.vue").read_text(encoding="utf-8")
+    assert "var(--radius-full)" not in search_ac
+
+    # 3. Ban 2: Admin Layout, Forms & Ellipsis Standardization
+    admin_layout = (repo_root / "web-nuxt" / "layouts" / "admin.vue").read_text(encoding="utf-8")
+    assert admin_layout.count(".dark .admin-table th") == 1
+
+    admin_ai = (repo_root / "web-nuxt" / "pages" / "admin" / "ai.vue").read_text(encoding="utf-8")
+    assert "Đang chạy…" in admin_ai
+    assert "Đang chạy..." not in admin_ai
+
+    # 4. Ban 3: Component Micro-Typography & Redundancy Cleanups
+    confirm_dlg = (repo_root / "web-nuxt" / "components" / "ConfirmDialog.vue").read_text(encoding="utf-8")
+    assert "text-wrap: balance;" in confirm_dlg
+    assert "overflow-wrap: break-word;" in confirm_dlg
+
+    detail_aeo = (repo_root / "web-nuxt" / "components" / "DetailAeoSummary.vue").read_text(encoding="utf-8")
+    assert ".dark .detail-aeo-summary__card" not in detail_aeo
+
+    am_thuc = (repo_root / "web-nuxt" / "pages" / "am-thuc.vue").read_text(encoding="utf-8")
+    assert "đặc sản…" in am_thuc
 

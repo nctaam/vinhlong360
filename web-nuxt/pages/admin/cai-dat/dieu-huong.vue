@@ -26,7 +26,7 @@
 
         <div class="cs-save-row">
           <button type="button" class="btn-primary sf-save" :disabled="saving" @click="onSave">
-            {{ saving ? 'Đang lưu...' : 'Lưu điều hướng' }}
+            {{ saving ? 'Đang lưu…' : 'Lưu điều hướng' }}
           </button>
           <button type="button" class="btn-outline sf-reset" :disabled="saving" @click="onReset">
             Đặt lại mặc định

@@ -122,7 +122,7 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 .cspot-badges { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 /* hairline outline badges (spec-tag idiom) instead of solid-fill pills — quieter, reads as
    editorial metadata rather than app-notification chips */
-.cspot-badge { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); background: transparent; border: 1px solid currentColor; }
+.cspot-badge { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill, 999px); background: transparent; border: 1px solid currentColor; }
 .cspot-badge-peak { color: var(--color-material-clay); }
 .cspot-badge-year { color: var(--color-material-river); }
 .cspot-badge-pop { color: var(--color-material-amber); }

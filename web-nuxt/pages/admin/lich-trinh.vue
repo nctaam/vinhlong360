@@ -135,7 +135,7 @@
           <span v-if="isDirty && !saving" class="lt-dirty-badge" role="status">Chưa lưu</span>
           <button type="button" class="btn btn-outline" @click="showModal = false">Hủy</button>
           <button type="button" class="btn btn-primary" :disabled="saving || (!!editing && !isDirty)" @click="save">
-            {{ saving ? 'Đang lưu...' : (editing ? (isDirty ? 'Cập nhật' : 'Không có thay đổi') : 'Tạo') }}
+            {{ saving ? 'Đang lưu…' : (editing ? (isDirty ? 'Cập nhật' : 'Không có thay đổi') : 'Tạo') }}
           </button>
         </div>
       </div>

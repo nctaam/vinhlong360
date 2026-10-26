@@ -36,7 +36,7 @@
 
           <div class="cs-save-row">
             <button type="button" class="btn-primary sf-save" :disabled="saving" @click="saveColumns">
-              {{ saving ? 'Đang lưu...' : 'Lưu cột footer' }}
+              {{ saving ? 'Đang lưu…' : 'Lưu cột footer' }}
             </button>
           </div>
         </div>
@@ -59,7 +59,7 @@
           </AdminSortableList>
           <div class="cs-save-row">
             <button type="button" class="btn-primary sf-save" :disabled="saving" @click="saveLegalLinks">
-              {{ saving ? 'Đang lưu...' : 'Lưu liên kết pháp lý' }}
+              {{ saving ? 'Đang lưu…' : 'Lưu liên kết pháp lý' }}
             </button>
           </div>
         </div>
@@ -82,7 +82,7 @@
           </AdminSortableList>
           <div class="cs-save-row">
             <button type="button" class="btn-primary sf-save" :disabled="saving" @click="saveSocial">
-              {{ saving ? 'Đang lưu...' : 'Lưu mạng xã hội' }}
+              {{ saving ? 'Đang lưu…' : 'Lưu mạng xã hội' }}
             </button>
           </div>
         </div>
