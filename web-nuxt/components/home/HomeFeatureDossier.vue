@@ -20,7 +20,7 @@
         height="640"
         sizes="375px sm:540px md:640px"
         loading="eager"
-        fetchpriority="high"
+        fetchpriority="high" decoding="async"
       />
       <img
         v-else
@@ -30,7 +30,7 @@
         width="960"
         height="640"
         loading="eager"
-        fetchpriority="high"
+        fetchpriority="high" decoding="async"
       >
       <ImageDisclosure :id="disclosureId" :descriptor="descriptor" presentation="short" />
     </NuxtLink>

@@ -1,5 +1,7 @@
 import { ref, computed, type Ref } from 'vue'
 
+const VI_COLLATOR = new Intl.Collator('vi', { sensitivity: 'base', numeric: true })
+
 export function useAdminEntitySorting<T extends Record<string, any>>(items: Ref<T[]>) {
   const sortKey = ref<string>('')
   const sortDir = ref<'asc' | 'desc'>('asc')
@@ -26,11 +28,9 @@ export function useAdminEntitySorting<T extends Record<string, any>>(items: Ref<
     if (!sortKey.value) return items.value
     const k = sortKey.value
     const dir = sortDir.value === 'asc' ? 1 : -1
-    return [...items.value].sort((a, b) => {
-      const va = String(a[k] || '').toLowerCase()
-      const vb = String(b[k] || '').toLowerCase()
-      return va < vb ? -dir : va > vb ? dir : 0
-    })
+    return [...items.value].sort((a, b) =>
+      VI_COLLATOR.compare(String(a[k] ?? ''), String(b[k] ?? '')) * dir,
+    )
   })
 
   return {

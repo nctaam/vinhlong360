@@ -1,9 +1,9 @@
 <template>
   <div class="ai-besttime">
-    <div class="ai-besttime-head sediment-head"><h3>Thời điểm tốt nhất</h3><span class="ai-label"><IconLine name="calendar" class="emoji-chip" /> AI gợi ý</span></div>
+    <div class="ai-besttime-head sediment-head"><h3>Thời điểm tốt nhất</h3><span class="ai-label"><IconLine name="calendar" class="emoji-chip" /> Thời vụ thực tế</span></div>
     <button type="button" v-if="!result && !loading && !errored" class="ai-toggle-btn" @click="load">
       <IconLine name="calendar" class="btn-sparkle" aria-hidden="true" />
-      <span>Xem gợi ý AI</span>
+      <span>Gợi ý thời vụ</span>
     </button>
     <div v-else-if="loading" class="ai-loading" role="status" aria-label="Đang tải">
       <span class="ai-dot"></span><span class="ai-dot"></span><span class="ai-dot"></span>
@@ -28,7 +28,7 @@
 const props = defineProps<{ entityId: string; entityName: string }>()
 
 const { get: ss } = useSiteSettings()
-const disclaimerText = computed(() => ss('ai.disclaimer_text', 'Gợi ý do AI tạo — mang tính tham khảo.'))
+const disclaimerText = computed(() => ss('ai.disclaimer_text', 'Kinh nghiệm thực địa mang tính tham khảo.'))
 
 const result = ref('')
 const loading = ref(false)
@@ -89,7 +89,10 @@ function retry() {
 .ai-besttime-head h3 {
   font-family: var(--font-editorial);
   font-weight: 600;
+  line-height: var(--leading-snug);
   letter-spacing: -.01em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
   position: relative;
   padding-left: var(--space-4);
   margin: 0;
@@ -97,11 +100,8 @@ function retry() {
 .ai-besttime-head h3::before {
   content: "";
   position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 4px; height: 1.05em; border-radius: var(--radius-full);
-  background: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
-}
-.dark .ai-besttime-head h3::before {
-  background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+  width: 4px; height: 1.05em; border-radius: var(--radius-pill, 999px);
+  background: var(--sediment-tick);
 }
 /* Quiet "AI-assisted" label — a hairline-bordered tag, not a decorative badge,
    so the panel reads as clearly-machine-authored without shouting about it. */
@@ -111,13 +111,14 @@ function retry() {
   gap: var(--space-1);
   font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
   color: var(--muted);
   white-space: nowrap;
 }
 .btn-sparkle { width: 14px; height: 14px; flex-shrink: 0; }
-.ai-disclaimer { margin: var(--space-1) 0 0; font-size: .75rem; color: var(--text-muted); }
+.ai-disclaimer { margin: var(--space-1) 0 0; font-size: var(--text-xs); line-height: var(--leading-normal); color: var(--text-muted); }
 .ai-error { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0; font-size: var(--text-sm); color: var(--muted); }
 .ai-error-icon { width: 16px; height: 16px; color: var(--color-material-clay); flex-shrink: 0; }
 .ai-retry-btn {
@@ -147,5 +148,4 @@ function retry() {
 .ai-dot:nth-child(3) { animation-delay: .4s; }
 @keyframes aiPulse { to { opacity: .25; transform: translateY(-3px); } }
 @media (prefers-reduced-motion: reduce) { .ai-dot { animation: none; } }
-@media (pointer: coarse) { .ai-retry-btn { min-height: 44px; } }
 </style>

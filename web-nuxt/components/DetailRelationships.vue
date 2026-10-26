@@ -3,7 +3,7 @@
     <h2 class="sediment-head">{{ ss('labels.detail.relationships_heading', 'Liên kết') }}</h2>
     <ul class="rel-list">
       <li v-for="rel in relationships" :key="`${rel.target_id}-${rel.rel_type}`">
-        <span class="rel-label">{{ rel.label }}</span>
+        <span class="rel-label"><IconLine v-if="rel.icon" :name="rel.icon" aria-hidden="true" /> {{ rel.label }}</span>
         <span class="rel-main">
           <NuxtLink :to="entityPath(rel.target_id)">{{ rel.target_name }}</NuxtLink>
           <small v-if="rel.distance_km" class="rel-distance">{{ rel.distance_km }} km</small>
@@ -17,7 +17,7 @@
       :disabled="loadingRelationships"
       @click="loadMoreRelationships"
     >
-      {{ loadingRelationships ? ss('labels.detail.relationships_loading', 'Đang tải...') : `${ss('labels.detail.relationships_more', 'Xem thêm')} ${remainingRelationshipCount}` }}
+      {{ loadingRelationships ? ss('labels.detail.relationships_loading', 'Đang tải…') : `${ss('labels.detail.relationships_more', 'Xem thêm')} ${remainingRelationshipCount}` }}
     </button>
     <p v-if="relError" class="empty" role="alert">{{ relError }}</p>
   </div>
@@ -50,7 +50,7 @@ watch(
   () => [props.initialRelationships, props.initialTotal],
   () => {
     relationshipRows.value = Array.isArray(props.initialRelationships)
-      ? props.initialRelationships.map(rel => ({ ...rel }))
+      ? [...props.initialRelationships]
       : []
     relationshipTotal.value = Number(props.initialTotal ?? relationshipRows.value.length) || relationshipRows.value.length
   },
@@ -74,9 +74,13 @@ function normalizeRelationship(r: Record<string, any>) {
   const otherName = r.other_name ?? (isFwd ? (r.target_name ?? r.name) : (r.source_name ?? r.name))
   const otherType = r.other_type ?? ''
   let label = isFwd ? (REL_FWD[relType] || relType) : (REL_BWD[relType] || relType)
+  let icon = ''
   if ((relType === 'related_to' || relType === 'associated_with') && otherType) {
     const meta = TYPE_META[otherType]
-    if (meta) label = meta.emoji + ' ' + meta.label
+    if (meta) {
+      label = meta.label
+      icon = meta.icon || ''
+    }
   }
   return {
     target_id: otherId,
@@ -84,6 +88,7 @@ function normalizeRelationship(r: Record<string, any>) {
     rel_type: relType,
     distance_km: distance,
     label,
+    icon,
   }
 }
 
@@ -125,3 +130,15 @@ async function loadMoreRelationships() {
   }
 }
 </script>
+
+<style scoped>
+.rel-label,
+.rel-distance {
+  line-height: var(--leading-snug);
+  border-radius: var(--radius-pill, 999px);
+}
+.rel-main a {
+  line-height: var(--leading-snug);
+  overflow-wrap: break-word;
+}
+</style>

@@ -1,15 +1,18 @@
 import type { HomePresentationEntity } from '~/utils/homeNocturnePresentation'
 import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
 
+const VI_FRESHNESS_DATE_FORMATTER = new Intl.DateTimeFormat('vi-VN', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  timeZone: 'Asia/Ho_Chi_Minh',
+})
 
 export function formatFreshnessLabel(value?: string | null): string {
-  if (!value || !Number.isFinite(Date.parse(value))) return ''
-  return `Cập nhật ${new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'Asia/Ho_Chi_Minh',
-  }).format(new Date(value))}`
+  if (!value) return ''
+  const timestamp = Date.parse(value)
+  if (!Number.isFinite(timestamp)) return ''
+  return `Cập nhật ${VI_FRESHNESS_DATE_FORMATTER.format(new Date(timestamp))}`
 }
 
 export function metadataRecord(value: unknown): Record<string, unknown> {
@@ -42,17 +45,17 @@ export function eventSourceUrl(event: HomePresentationEntity): string {
   return metadataText(source.source_url) || metadataText(quality.source_url)
 }
 
-export function eventVerifiedAt(event: HomePresentationEntity): string {
+export function eventVerifiedAt(event: HomePresentationEntity) {
   const { source, quality } = eventMetadata(event)
   return metadataText(source.verified_at) || metadataText(quality.verified_at)
 }
 
 export function eventFreshnessStatus(event: HomePresentationEntity) {
-  return resolveFreshnessStatus(eventMetadata(event).source.freshness_status)
+  return resolveFreshnessStatus(metadataRecord(event?.source_freshness).freshness_status)
 }
 
 export function eventFreshnessLabel(event: HomePresentationEntity): string {
-  const sourceUpdatedAt = metadataText(eventMetadata(event).source.updated_at)
+  const sourceUpdatedAt = metadataText(metadataRecord(event?.source_freshness).updated_at)
   const entityUpdatedAt = metadataText(event?.updatedAt)
   return formatFreshnessLabel(sourceUpdatedAt || entityUpdatedAt)
 }

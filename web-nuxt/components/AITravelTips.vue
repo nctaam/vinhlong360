@@ -1,9 +1,9 @@
 <template>
   <div class="ai-tips">
     <button type="button" class="ai-tips-header sediment-head" @click="toggle" :aria-expanded="expanded">
-      <h3>Gợi ý cho bạn</h3>
+      <h3>Mẹo đi thực địa</h3>
       <span class="ai-tips-header-right">
-        <span class="ai-label"><IconLine name="bulb" class="emoji-chip" /> AI gợi ý</span>
+        <span class="ai-label"><IconLine name="bulb" class="emoji-chip" /> Kinh nghiệm bản địa</span>
         <span class="ai-toggle"><IconLine :name="expanded ? 'chevron-up' : 'chevron-down'" aria-hidden="true" /></span>
       </span>
     </button>
@@ -31,7 +31,7 @@
 const props = defineProps<{ entityId: string; entityName: string }>()
 
 const { get: ss } = useSiteSettings()
-const disclaimerText = computed(() => ss('ai.disclaimer_text', 'Gợi ý do AI tạo — mang tính tham khảo.'))
+const disclaimerText = computed(() => ss('ai.disclaimer_text', 'Kinh nghiệm thực địa mang tính tham khảo.'))
 
 const tips = ref('')
 const loading = ref(false)
@@ -45,7 +45,9 @@ function sanitize(text: string) {
 
 function formatTips(text: string) {
   const s = sanitize(text)
-  return s.replace(/\n/g, '<br>').replace(/•\s*/g, '<span class="tip-bullet">•</span> ').replace(/- /g, '<span class="tip-bullet">•</span> ')
+  return s
+    .replace(/\n/g, '<br>')
+    .replace(/(^|<br>)\s*(?:•|-|\*)\s+/g, '$1<span class="tip-bullet">•</span> ')
 }
 
 function cacheKey() {
@@ -97,7 +99,10 @@ function retryFetch() {
 .ai-tips-header h3 {
   font-family: var(--font-editorial);
   font-weight: 600;
+  line-height: var(--leading-snug);
   letter-spacing: -.01em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
   position: relative;
   padding-left: var(--space-4);
   margin: 0;
@@ -105,11 +110,8 @@ function retryFetch() {
 .ai-tips-header h3::before {
   content: "";
   position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 4px; height: 1.05em; border-radius: var(--radius-full);
-  background: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
-}
-.dark .ai-tips-header h3::before {
-  background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+  width: 4px; height: 1.05em; border-radius: var(--radius-pill, 999px);
+  background: var(--sediment-tick);
 }
 .ai-tips-header-right { display: inline-flex; align-items: center; gap: var(--space-3); }
 /* Quiet "AI-assisted" label — hairline tag, not a decorative badge. */
@@ -119,6 +121,7 @@ function retryFetch() {
   gap: var(--space-1);
   font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
   color: var(--muted);
@@ -127,7 +130,7 @@ function retryFetch() {
 .ai-toggle { display: inline-flex; align-items: center; justify-content: center; font-size: var(--text-xs); color: var(--muted); }
 .spinner-center { margin: 0 auto; }
 :deep(.tip-bullet) { color: var(--color-brand); }
-.ai-disclaimer { margin: var(--space-2) 0 0; font-size: .75rem; color: var(--text-muted); }
+.ai-disclaimer { margin: var(--space-2) 0 0; font-size: var(--text-xs); line-height: var(--leading-normal); color: var(--text-muted); }
 .ai-error { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3); font-size: var(--text-sm); color: var(--muted); }
 .ai-error-icon { width: 16px; height: 16px; color: var(--color-material-clay); flex-shrink: 0; }
 .ai-retry-btn {
@@ -154,5 +157,4 @@ function retryFetch() {
 .ai-tips-body { animation: tipsSlideIn .35s var(--ease-out-expo); }
 @keyframes tipsSlideIn { from { opacity: 0; transform: translateY(-8px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @media (prefers-reduced-motion: reduce) { .ai-tips-body { animation: none; } }
-@media (pointer: coarse) { .ai-retry-btn { min-height: 44px; } }
 </style>

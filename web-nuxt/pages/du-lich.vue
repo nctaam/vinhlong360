@@ -14,7 +14,7 @@
       data-catalog-section="orientation"
     >
       <div class="atlas-hero-inner">
-        <p class="atlas-hero-eyebrow dateline-eyebrow">Chỉ mục khám phá · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)</p>
+        <p class="atlas-hero-eyebrow dateline-eyebrow">Chỉ mục khám phá · Tỉnh Vĩnh Long thống nhất (124 xã, phường)</p>
         <h1 class="atlas-hero-title">
           <span class="atlas-hero-line1">{{ pc('hero_title', 'Khám phá Vĩnh Long') }}</span>
           <Transition name="mode-fade" mode="out-in">
@@ -33,13 +33,13 @@
     </section>
 
     <CatalogAeoPlaque
-      title="Cẩm nang 3 vùng Mekong — Khám phá Vĩnh Long theo địa hạt"
-      kicker="Định hướng thực địa · 3 tiểu vùng cốt lõi"
+      title="Cẩm nang du lịch trải nghiệm — 124 xã, phường tỉnh Vĩnh Long"
+      kicker="Định hướng thực địa · Toàn tỉnh Vĩnh Long thống nhất"
       :accent="(activeMode.accent as any) || 'clay'"
       icon="map-pin"
       :entries="catalogAeoEntries"
       cta-to="/ban-do"
-      cta-label="Khám phá 3 vùng trên bản đồ số"
+      cta-label="Khám phá toàn tỉnh trên bản đồ số"
     />
 
     <section class="catalog-filter-ledger block reveal" data-catalog-section="filters" aria-labelledby="catalog-filter-title">
@@ -65,7 +65,7 @@
       </div>
       <div class="controls">
         <div class="search-row">
-          <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm trong du lịch…" aria-label="Tìm kiếm" />
+          <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm điểm đến, trải nghiệm, món ngon…" aria-label="Tìm kiếm" />
           <select v-model="sortBy" aria-label="Sắp xếp">
             <option value="relevant">Phù hợp nhất</option>
             <option value="popular">Phổ biến</option>
@@ -110,7 +110,7 @@
       </div>
     </section>
 
-    <section ref="gridSection" class="catalog-results block reveal" data-catalog-section="results" aria-label="Duyệt tất cả du lịch">
+    <section class="catalog-results block reveal" data-catalog-section="results" aria-label="Duyệt tất cả du lịch">
       <div class="result-bar">
         <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả{{ sortBy !== 'relevant' ? ` · ${sortLabels[sortBy]}` : '' }}</p>
         <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
@@ -261,14 +261,14 @@ const heroModes: readonly DiscoveryMode[] = [
   { key: 'trai-nghiem', icon: 'compass', label: 'Trải nghiệm', line: 'Khám phá theo mùa nước, theo mùa trái, theo mùa lễ.', sub: 'Miệt vườn, cù lao và những hoạt động gắn với nhịp sống địa phương.', filterType: 'experience', accent: 'leaf' },
   { key: 'am-thuc', icon: 'bowl', label: 'Ẩm thực', line: 'Một tô bún nước lèo, một mẻ bánh xèo mới đổ.', sub: 'Chọn món ăn và địa chỉ có dữ liệu nguồn để tiếp tục khám phá.', filterType: 'dish', accent: 'amber' },
   { key: 'lang-nghe', icon: 'vase', label: 'Làng nghề', line: 'Theo dấu đất, lửa và những nghề còn được truyền lại.', sub: 'Gốm đỏ, chiếu lác và các không gian nghề có thể ghé thăm.', filterType: 'craft_village', accent: 'clay' },
-  { key: 'luu-tru', icon: 'home', label: 'Lưu trú', line: 'Tìm một điểm nghỉ phù hợp với nhịp hành trình.', sub: 'Nhà vườn và lưu trú ven sông được đưa vào cùng mặt kết quả.', filterType: 'accommodation', accent: 'river' },
+  { key: 'luu-tru', icon: 'home', label: 'Lưu trú', line: 'Tìm một điểm nghỉ phù hợp với nhịp hành trình.', sub: 'Nhà vườn, homestay và điểm nghỉ ven sông trong cùng danh mục tra cứu.', filterType: 'accommodation', accent: 'river' },
 ]
 const overviewMode: DiscoveryMode = {
   key: 'tat-ca',
   icon: 'compass',
   label: 'Tất cả loại hình',
   line: 'Đọc toàn bộ chỉ mục trước khi chọn một nhịp khám phá.',
-  sub: 'Miệt vườn, điểm tham quan, làng nghề, ẩm thực và lưu trú trong cùng một mặt kết quả.',
+  sub: 'Miệt vườn, điểm tham quan, làng nghề, ẩm thực và lưu trú trong cùng danh mục tra cứu.',
   filterType: 'all',
   accent: 'river',
 }
@@ -306,32 +306,31 @@ function selectDiscoveryMode(mode: DiscoveryMode) {
 
 const catalogAeoEntries = [
   {
-    heading: 'Cù Lao An Bình & Nhịp Sông Tiền',
+    heading: 'Cù lao An Bình & nhịp sông Tiền',
     text: 'Miệt vườn sinh thái bốn mùa, chôm chôm và sầu riêng chín cây. Di chuyển bằng phà An Bình, trải nghiệm đạp xe đường làng và nghỉ đêm homestay miệt vườn.',
   },
   {
-    heading: 'Vương Quốc Gốm Đỏ Mang Thít — Long Hồ',
-    text: 'Quần thể hơn 1.000 lò gạch gốm đỏ rực rỡ dọc kênh Thầy Cai. Di sản công nghiệp bản địa trăm năm độc nhất vô nhị vùng Đồng bằng sông Cửu Long.',
+    heading: 'Vương quốc gốm đỏ Mang Thít — Long Hồ',
+    text: 'Quần thể hơn 1.000 lò gạch gốm đỏ rực rỡ dọc kênh Thầy Cai. Di sản công nghiệp bản địa trăm năm quy mô hiếm có vùng Đồng bằng sông Cửu Long.',
   },
   {
-    heading: 'Vùng Trái Cây & Sắc Tộc Tam Bình — Trà Ôn',
+    heading: 'Vùng trái cây & sắc tộc Tam Bình — Trà Ôn',
     text: 'Thủ phủ cam sành Tam Bình mọng nước, chợ nổi Trà Ôn sông Hậu cùng nhịp sống giao thoa văn hóa ba dân tộc Kinh, Khmer, Hoa.',
   },
 ]
 
-const typeFilterOptions = computed(() => [
+const typeFilterOptions = [
   { key: 'all', label: 'Tất cả' },
-  ...typeChips.map(t => ({ key: t.value, label: t.label })),
-])
-const seasonFilterOptions = computed(() => [
+  ...TYPES.map(t => ({ key: t, label: typeMeta(t).label })),
+]
+const seasonFilterOptions = [
   { key: 'all', label: 'Tất cả' },
-  ...Array.from({ length: 12 }, (_, i) => ({ key: String(i + 1), label: MONTH_ABBR[i] || String(i + 1) })),
+  ...Array.from({ length: 12 }, (_, i) => ({ key: String(i + 1), label: `T${i + 1}` })),
   { key: 'flood', label: 'Mùa nước nổi' },
-])
+]
 const sortBy = ref('relevant')
 const sortLabels: Record<string, string> = { popular: 'Phổ biến', newest: 'Mới nhất', name: 'Tên A-Z' }
 const viewMode = ref('grid')
-const gridSection = ref<HTMLElement | null>(null)
 const currentMonthNumber = new Date().getMonth() + 1
 
 useFilterUrl({ q, type: typeFilter, mua: seasonFilter, sort: sortBy }, { q: '', type: 'all', mua: 'all', sort: 'relevant' })
@@ -435,7 +434,7 @@ const filtered = computed(() => {
       list.sort((a: Entity, b: Entity) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))
       break
     case 'name':
-      list.sort((a: Entity, b: Entity) => (a.name || '').localeCompare(b.name || '', 'vi'))
+      list.sort((a: Entity, b: Entity) => VI_COLLATOR.compare(a.name || '', b.name || ''))
       break
     default:
       if (seasonFilter.value !== 'all') {
@@ -498,12 +497,7 @@ function entityFreshnessStatus(entity: Entity) {
 function catalogUpdatedLabel(entity: Entity): string {
   const value = firstText(entity.source_freshness?.updated_at, entity.updatedAt)
   if (!value || !Number.isFinite(Date.parse(value))) return ''
-  return `Cập nhật ${new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'Asia/Ho_Chi_Minh',
-  }).format(new Date(value))}`
+  return `Cập nhật ${VI_DATE_FORMATTER.format(new Date(value))}`
 }
 
 useSeoMeta({

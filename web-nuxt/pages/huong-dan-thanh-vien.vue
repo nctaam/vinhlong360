@@ -184,14 +184,14 @@ useHead(() => ({
 <style scoped>
 .guide-page { max-width: 760px; margin: 0 auto; padding: var(--space-6) var(--space-4) var(--space-10); }
 
-/* Hero */
+/* Hero — Open Architectural Editorial Masthead */
 .guide-hero {
-  display: flex; align-items: center; gap: var(--space-4);
-  padding: var(--space-6); margin-bottom: var(--space-8);
-  background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, var(--bg-warm) 100%);
-  border-radius: var(--radius-sheet); border: .5px solid var(--line);
+  display: flex; align-items: flex-start; gap: var(--space-4);
+  padding: var(--space-4) 0 var(--space-6); margin-bottom: var(--space-8);
+  background: transparent;
+  border-radius: 0; border: 0; border-block-end: 1.5px solid var(--ink);
 }
-.guide-hero-icon { font-size: 2.5rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--color-brand); }
+.guide-hero-icon { font-size: 2rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--color-brand); margin-top: var(--space-1); }
 /* Local page masthead eyebrow — small-caps dateline, matches the site's
    area/ward eyebrow pattern but scoped here (not promoted global). */
 .dateline-eyebrow {
@@ -212,26 +212,37 @@ useHead(() => ({
 .guide-section h2 { font-size: var(--text-xl); font-weight: var(--weight-bold); margin: 0 0 var(--space-2); padding-bottom: var(--space-2); border-bottom: .5px solid var(--line); }
 .guide-intro { color: var(--muted); font-size: var(--text-sm); margin: 0 0 var(--space-5); line-height: var(--leading-relaxed); }
 
-/* Levels */
-.level-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-3); }
-.level-card {
-  display: flex; align-items: center; gap: var(--space-3);
-  padding: var(--space-4); border-radius: var(--radius-sheet);
-  border: .5px solid var(--line); background: var(--card);
-  transition: transform .25s var(--ease-out-expo), border-color .25s var(--ease-out);
+/* Levels — Open Architectural 4-Tier Honor Strip */
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0;
+  border-block: 1px solid var(--line);
 }
-.level-card:hover { transform: translateY(-2px); border-color: var(--color-action); }
-.level-card:active { transform: scale(.985); }
-.lv-icon { font-size: 1.75rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--level-color, var(--color-brand)); }
+.level-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2);
+  padding: var(--space-4) var(--space-3); border-radius: 0;
+  border: 0; border-block-start: 2px solid var(--level-color, var(--color-brand));
+  border-inline-start: 1px solid var(--line); background: transparent;
+  transition: background-color .25s var(--ease-out);
+}
+.level-card:first-child { border-inline-start: 0; }
+.level-card:hover { background: color-mix(in srgb, var(--bg-warm) 55%, transparent); }
+.lv-icon { font-size: 1.35rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--level-color, var(--color-brand)); }
 .lv-info { flex: 1; min-width: 0; }
-.lv-name { display: block; font-weight: var(--weight-semibold); }
-.lv-req { font-size: var(--text-xs); color: var(--muted); }
-.lv-tag { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--color-action); background: rgba(var(--color-action-rgb), .1); padding: .15rem .5rem; border-radius: var(--radius-full); white-space: nowrap; }
+.lv-name { display: block; font-family: var(--font-editorial); font-weight: var(--weight-semibold); color: var(--ink); }
+.lv-req { font-size: var(--text-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
+.lv-tag {
+  font-family: var(--font-editorial); font-style: italic;
+  font-size: var(--text-xs); font-weight: var(--weight-semibold);
+  color: var(--level-color, var(--color-action));
+  background: transparent; padding: 0; border-radius: 0; white-space: nowrap;
+}
 
-.level-1 { --level-color: var(--color-material-leaf); border-color: color-mix(in srgb, var(--level-color) 40%, var(--line)); }
-.level-2 { --level-color: var(--color-material-river); border-color: color-mix(in srgb, var(--level-color) 40%, var(--line)); }
-.level-3 { --level-color: var(--amber-500); border-color: color-mix(in srgb, var(--level-color) 40%, var(--line)); }
-.level-4 { --level-color: var(--amber-700); border-color: color-mix(in srgb, var(--level-color) 40%, var(--line)); }
+.level-1 { --level-color: var(--color-material-leaf); }
+.level-2 { --level-color: var(--color-material-river); }
+.level-3 { --level-color: var(--amber-500); }
+.level-4 { --level-color: var(--amber-700); }
 
 /* Points table */
 .points-table-wrap { overflow-x: auto; margin-bottom: var(--space-4); }
@@ -246,49 +257,68 @@ useHead(() => ({
 .points-table tfoot td { border-bottom: none; padding-top: var(--space-3); }
 
 .guide-note {
-  background: var(--bg-warm); border-radius: var(--radius-sheet); padding: var(--space-4);
+  background: transparent; border-radius: 0; padding: var(--space-3) 0 var(--space-3) var(--space-4);
   font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); line-height: var(--leading-relaxed);
-  border: .5px solid var(--line);
+  border: 0; border-inline-start: 2px solid var(--color-material-amber);
 }
 
-/* Badges */
-.badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-3); }
-.badge-card {
-  display: flex; align-items: center; gap: var(--space-3);
-  padding: var(--space-3) var(--space-4); border-radius: var(--radius-sheet);
-  border: .5px solid var(--line); background: var(--card);
-  transition: transform .2s var(--ease-out-expo);
+/* Badges — Open Architectural Merit Ledger */
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0 var(--space-6);
+  counter-reset: badge-ledger;
+  border-block-start: 1px solid var(--line);
 }
-.badge-card:hover { transform: translateY(-1px); }
-.badge-card:active { transform: scale(.985); }
-.badge-icon { font-size: 1.5rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--color-brand); }
+.badge-card {
+  display: flex; align-items: baseline; gap: var(--space-3);
+  padding: var(--space-3h, 0.875rem) 0; border-radius: 0;
+  border: 0; border-block-end: 1px solid var(--line); background: transparent;
+  counter-increment: badge-ledger;
+  transition: background-color .2s var(--ease-out);
+}
+.badge-card::before {
+  content: counter(badge-ledger, decimal-leading-zero);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: var(--text-sm);
+  color: var(--color-material-amber);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.badge-icon { font-size: 1.15rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--color-brand); transform: translateY(2px); }
 .badge-info { flex: 1; min-width: 0; }
-.badge-info strong { display: block; font-size: var(--text-sm); }
+.badge-info strong { display: block; font-size: var(--text-sm); color: var(--ink); }
 .badge-req { font-size: var(--text-xs); color: var(--muted); }
 
-/* Tips */
-.tips-list { display: flex; flex-direction: column; gap: var(--space-3); }
+/* Tips — Open 4-Chapter Editorial Notes Ledger */
+.tips-list {
+  display: flex; flex-direction: column; gap: 0;
+  border-block-start: 1px solid var(--line);
+}
 .tip-item {
-  display: flex; gap: var(--space-4); align-items: flex-start;
-  padding: var(--space-4); border-radius: var(--radius-sheet);
-  background: var(--card); border: .5px solid var(--line);
+  display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); gap: var(--space-3); align-items: baseline;
+  padding: var(--space-4) 0; border-radius: 0;
+  background: transparent; border: 0; border-block-end: 1px solid var(--line);
 }
 .tip-num {
-  flex-shrink: 0; width: 28px; height: 28px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; background: var(--color-brand); color: var(--color-on-action, var(--white));
-  font-size: var(--text-xs); font-weight: var(--weight-bold);
+  width: auto; height: auto;
+  display: inline-block;
+  border-radius: 0; background: transparent; color: var(--color-brand);
+  font-family: var(--font-editorial); font-style: italic;
+  font-size: var(--text-xl); font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums; line-height: 1;
 }
-.tip-item strong { display: block; margin-bottom: var(--space-1); }
+.tip-item strong { display: block; margin-bottom: var(--space-1); font-family: var(--font-editorial); color: var(--ink); }
 .tip-item p { margin: 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 
 /* Dark */
-.dark .guide-hero { background: linear-gradient(135deg, rgba(var(--white-rgb),.03) 0%, rgba(var(--white-rgb),.01) 100%); }
-.dark .guide-note { background: var(--bg-alt); }
-.dark .level-1 { --level-color: var(--color-material-leaf); border-left-color: var(--level-color); }
-.dark .level-2 { --level-color: var(--color-material-amber); border-left-color: var(--level-color); }
-.dark .level-3 { --level-color: var(--color-material-river); border-left-color: var(--level-color); }
-.dark .level-4 { --level-color: color-mix(in oklab, var(--amber-700) 70%, white); border-left-color: var(--level-color); }
+.dark .guide-hero { background: transparent; border-block-end-color: var(--line); }
+.dark .guide-note { background: transparent; }
+.dark .level-1 { --level-color: var(--color-material-leaf); }
+.dark .level-2 { --level-color: var(--color-material-amber); }
+.dark .level-3 { --level-color: var(--color-material-river); }
+.dark .level-4 { --level-color: color-mix(in oklab, var(--amber-700) 70%, white); }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

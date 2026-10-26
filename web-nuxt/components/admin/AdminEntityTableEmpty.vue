@@ -2,7 +2,7 @@
   <tr v-if="!hasEntities">
     <td :colspan="colspan" class="admin-empty-row">
       <div class="ent-empty">
-        <span class="ent-empty-icon">&#128269;</span>
+        <span class="ent-empty-icon" aria-hidden="true"><IconLine name="search" /></span>
         <template v-if="search">
           <span>Không có kết quả cho “{{ search }}”.</span>
           <button type="button" class="btn btn-outline btn-sm" @click="$emit('clear-search')">Xóa tìm kiếm</button>

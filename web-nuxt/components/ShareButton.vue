@@ -1,5 +1,5 @@
 <template>
-  <button type="button" class="share-btn" @click="share" :title="copied ? 'Đã sao chép!' : 'Chia sẻ'" :aria-label="copied ? 'Đã sao chép link' : 'Chia sẻ link'">
+  <button type="button" class="share-btn" @click="share" :title="copied ? 'Đã sao chép!' : 'Chia sẻ'" :aria-label="copied ? 'Đã sao chép liên kết' : 'Chia sẻ liên kết'">
     <IconLine v-if="!copied" name="share" class="share-icon" aria-hidden="true" />
     <IconLine v-else name="check" class="share-icon" aria-hidden="true" />
     <span>{{ copied ? 'Đã sao chép' : 'Chia sẻ' }}</span>
@@ -31,7 +31,7 @@ async function share() {
     setTimeout(() => { copied.value = false }, 2000)
   } catch {
     const { show } = useToast()
-    show('Không thể sao chép link', 'error')
+    show('Không thể sao chép liên kết', 'error')
   }
 }
 </script>
@@ -43,7 +43,7 @@ async function share() {
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
   border: .5px solid var(--line);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: var(--card);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);

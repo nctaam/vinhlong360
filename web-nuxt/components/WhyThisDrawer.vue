@@ -138,7 +138,7 @@ useModalA11y(openState, drawerEl, { onClose: () => emit('close') })
   width: 44px;
   height: 44px;
   border: 0;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   color: var(--muted);
   background: var(--bg-warm);
   cursor: pointer;
@@ -166,21 +166,22 @@ useModalA11y(openState, drawerEl, { onClose: () => emit('close') })
   letter-spacing: -.025em;
 }
 .disclosure-header p { margin: 0; color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-relaxed); }
-.why-signal-stack { display: grid; gap: var(--space-2); margin: var(--space-6) 0 var(--space-4); }
+.why-signal-stack { display: grid; gap: 0; margin: var(--space-6) 0 var(--space-4); border-block-start: 1px solid var(--line); }
 .why-signal {
   display: grid;
   grid-template-columns: 36px minmax(0, 1fr);
   align-items: center;
   gap: var(--space-3);
-  min-height: 56px;
-  padding: var(--space-3);
-  border: .5px solid var(--line);
-  border-radius: var(--radius-surface);
-  background: var(--bg-warm);
+  min-height: 52px;
+  padding: var(--space-3) 0;
+  border: 0;
+  border-block-end: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
   font-size: var(--text-sm);
   line-height: var(--leading-snug);
 }
-.why-signal.primary { border-color: var(--color-action-border); background: var(--color-action-surface); }
+.why-signal.primary { border-inline-start: 2px solid var(--color-action); padding-inline-start: var(--space-3); background: transparent; }
 .why-signal-icon { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius-control); color: var(--color-action); background: var(--surface); }
 .disclosure-privacy { display: flex; align-items: flex-start; gap: var(--space-2); margin: 0; color: var(--muted); font-size: var(--text-xs); line-height: var(--leading-relaxed); }
 .disclosure-privacy .line-icon { margin-top: .15rem; color: var(--color-action); }

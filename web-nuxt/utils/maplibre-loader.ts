@@ -2,7 +2,7 @@ export type MapLibreModule = typeof import('maplibre-gl') & {
   setWorkerUrl?: (url: string) => void
 }
 
-const MAPLIBRE_SCRIPT_URL = '/maplibre-gl-csp.js'
+const MAPLIBRE_SCRIPT_URL = '/maplibre-gl-loader.mjs'
 const MAPLIBRE_STYLESHEET_URL = '/maplibre-gl.css'
 const MAPLIBRE_SCRIPT_MARKER = 'data-vl360-maplibre'
 
@@ -17,20 +17,32 @@ export async function loadMapLibre(): Promise<MapLibreModule> {
   if (typeof globalObject.maplibregl?.Map === 'function') return globalObject.maplibregl
   if (typeof document === 'undefined') throw new Error('MapLibre can only load in a browser')
 
-  // The CSP build is UMD: it registers `globalThis.maplibregl` instead of
-  // exporting an ES module namespace, so native dynamic import is incorrect.
+  // The wrapper imports MapLibre's split ESM graph from same-origin static
+  // assets and exposes one stable global for lazy consumers.
   mapLibrePromise ??= new Promise<MapLibreModule>((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>(`script[${MAPLIBRE_SCRIPT_MARKER}]`)
     const script = existing ?? document.createElement('script')
+    const cleanupListeners = () => {
+      script.removeEventListener('load', finish)
+      script.removeEventListener('error', fail)
+    }
+    const fail = () => {
+      cleanupListeners()
+      script.remove()
+      reject(new Error('Failed to load MapLibre ESM asset'))
+    }
     const finish = () => {
       const loaded = (globalThis as MapLibreWindow).maplibregl
-      if (typeof loaded?.Map === 'function') resolve(loaded)
-      else reject(new Error('MapLibre CSP asset loaded without a global API'))
+      if (typeof loaded?.Map === 'function') {
+        cleanupListeners()
+        resolve(loaded)
+      } else fail()
     }
-    script.addEventListener('load', finish, { once: true })
-    script.addEventListener('error', () => reject(new Error('Failed to load MapLibre CSP asset')), { once: true })
+    script.addEventListener('load', finish)
+    script.addEventListener('error', fail)
     if (!existing) {
       script.async = true
+      script.type = 'module'
       script.src = MAPLIBRE_SCRIPT_URL
       script.setAttribute(MAPLIBRE_SCRIPT_MARKER, 'true')
       document.head.appendChild(script)

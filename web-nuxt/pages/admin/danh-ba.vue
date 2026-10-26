@@ -21,7 +21,7 @@
           <span class="db-field-label">Loại cơ quan *</span>
           <select v-model="f.office_kind" class="input" :class="{ 'db-input-error': formErrors.office_kind }" required :aria-invalid="!!formErrors.office_kind" :aria-describedby="formErrors.office_kind ? 'db-err-kind' : undefined">
             <option value="">— Chọn —</option>
-            <option v-for="(m, k) in OFFICE_KIND" :key="k" :value="k">{{ m.emoji }} {{ m.label }}</option>
+            <option v-for="(m, k) in OFFICE_KIND" :key="k" :value="k">{{ m.label }}</option>
           </select>
           <span v-if="formErrors.office_kind" id="db-err-kind" class="db-field-error" role="alert">{{ formErrors.office_kind }}</span>
         </label>
@@ -108,7 +108,7 @@
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
-import { AREA_META, OFFICE_KIND } from '~/composables/useConstants'
+import { AREA_META, CURRENT_AREA_META, OFFICE_KIND } from '~/composables/useConstants'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Danh bạ — Admin' })
 
@@ -152,12 +152,12 @@ const { data: places } = placesAsyncData
 const placeById = computed<Record<string, Entity>>(() => Object.fromEntries((places.value || []).map(p => [p.id, p])))
 const wardGroups = computed(() => {
   const wards = (places.value || []).filter(p => ADMIN_LEVELS.includes(p.level || ''))
-  return Object.keys(AREA_META).map(area => {
+  return Object.keys(CURRENT_AREA_META).map(area => {
     const meta = AREA_META[area]
     return {
       area,
       label: meta?.name || area,
-      wards: wards.filter(w => w.area === area).sort((a, b) => a.name.localeCompare(b.name, 'vi')),
+      wards: wards.filter(w => entityMatchesAreaScope(w, area)).sort((a, b) => a.name.localeCompare(b.name, 'vi')),
     }
   }).filter(g => g.wards.length)
 })

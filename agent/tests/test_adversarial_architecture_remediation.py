@@ -8,6 +8,7 @@ from types import SimpleNamespace
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "agent"))
 
+import autocorrect  # noqa: E402
 import config  # noqa: E402
 import contextual_retrieval  # noqa: E402
 import database  # noqa: E402
@@ -21,6 +22,7 @@ import middleware  # noqa: E402
 import orchestrator  # noqa: E402
 import privacy_boundary  # noqa: E402
 import pytest  # noqa: E402
+import search_contract  # noqa: E402
 import semantic_cache  # noqa: E402
 import seo  # noqa: E402
 import server  # noqa: E402
@@ -969,6 +971,88 @@ def test_campaign_tau_multi_agent_architecture_optimizations() -> None:
 
     detail_exp_ts = (repo_root / "web-nuxt" / "utils" / "detailExperience.ts").read_text(encoding="utf-8")
     assert "const VALID_PHONE_RE =" in detail_exp_ts
+
+
+def test_campaign_upsilon_multi_agent_architecture_optimizations():
+    """Chiến dịch Upsilon (Mục 23): Tối ưu kiến trúc hệ thống, decluttering mã thừa/CSS lặp,
+
+    tối ưu font tiếng Việt (diacritic clearance, line-height >= 1.25, var(--font-editorial))
+    và tối ưu ngôn ngữ tiếng Việt (NFD/regex đ/Đ, Intl.Collator('vi'), vector_search/autocorrect).
+    """
+    repo_root = ROOT
+
+    # 1. Ban 4: Backend Vietnamese NLP & Search Enhancements
+    assert not hasattr(autocorrect, "_VN_DIACRITICS_MAP")
+    assert not hasattr(autocorrect, "_build_diacritics_map")
+    assert autocorrect.autocorrect("dua xiem xanh")["corrected"] == "dừa xiêm xanh"
+
+    assert hasattr(vector_search, "_COMBINING_MARKS_RE")
+    assert isinstance(vector_search._STOP_WORDS_FOLDED, frozenset)
+    assert vector_search._strip_vietnamese_diacritics("Vĩnh Long") == "Vinh Long"
+
+    assert hasattr(search_contract, "_COMBINING_MARKS_RE")
+
+    assert hasattr(chat_api, "_TOOL_DESCRIPTION_FORMATTERS")
+    assert hasattr(chat_api, "_JSON_FENCE_START_RE")
+    assert hasattr(chat_api, "_JSON_FENCE_END_RE")
+
+    sorting_ts = (repo_root / "web-nuxt" / "composables" / "useAdminEntitySorting.ts").read_text(encoding="utf-8")
+    assert "VI_COLLATOR = new Intl.Collator('vi'" in sorting_ts
+
+    legal_ts = (repo_root / "web-nuxt" / "utils" / "legalContent.ts").read_text(encoding="utf-8")
+    assert "VIETNAMESE_D_RE" in legal_ts
+
+    # 2. Ban 3: Detail, Modal & AI Components Decluttering & Micro-Typography
+    chat_widget = (repo_root / "web-nuxt" / "components" / "ChatWidget.vue").read_text(encoding="utf-8")
+    assert "const LIFECYCLE_CLEAR_VERSION" not in chat_widget
+    assert "overflow-wrap: break-word;" in chat_widget
+
+    cmd_palette = (repo_root / "web-nuxt" / "components" / "CommandPalette.vue").read_text(encoding="utf-8")
+    assert "const inputEl = ref" not in cmd_palette
+    assert 'placeholder="Tìm trang, mục nội dung, thao tác…"' in cmd_palette
+
+    auth_modal = (repo_root / "web-nuxt" / "components" / "AuthModal.vue").read_text(encoding="utf-8")
+    assert "Nhập SĐT để đăng nhập" not in auth_modal
+    assert 'aria-label="Tên người dùng (username)"' in auth_modal
+
+    review_stats = (repo_root / "web-nuxt" / "components" / "ReviewStats.vue").read_text(encoding="utf-8")
+    assert ".er-categories" not in review_stats
+
+    review_card = (repo_root / "web-nuxt" / "components" / "ReviewCard.vue").read_text(encoding="utf-8")
+    assert "/* Wave 10: Open Left-Rule Editorial Testimony — unboxed from 4-sided amber box */" in review_card
+
+    food_specialties = (repo_root / "web-nuxt" / "components" / "DetailFoodSpecialties.vue").read_text(encoding="utf-8")
+    assert "const SPECIALTY_FIELDS" in food_specialties
+
+    # 3. Ban 1: Public & Catalog Pages Decluttering & Diacritic Clearance
+    du_lich = (repo_root / "web-nuxt" / "pages" / "du-lich.vue").read_text(encoding="utf-8")
+    assert 'ref="gridSection"' not in du_lich
+    assert "const gridSection = ref" not in du_lich
+
+    danh_ba = (repo_root / "web-nuxt" / "pages" / "danh-ba.vue").read_text(encoding="utf-8")
+    assert ".muted { color: var(--muted); }" not in danh_ba
+    assert ".fac-verified" in danh_ba
+
+    san_pham = (repo_root / "web-nuxt" / "pages" / "san-pham.vue").read_text(encoding="utf-8")
+    assert "function scrollToGrid()" not in san_pham
+
+    dia_diem_idx = (repo_root / "web-nuxt" / "pages" / "dia-diem" / "index.vue").read_text(encoding="utf-8")
+    assert ".dark .almanac-gloss { color: var(--color-brand); }" not in dia_diem_idx
+
+    bai_viet = (repo_root / "web-nuxt" / "pages" / "bai-viet" / "[id].vue").read_text(encoding="utf-8")
+    assert "handleSessionExpired" not in bai_viet
+
+    # 4. Ban 2: Planner, Legal & Admin Pages Decluttering & Font Optimization
+    lt_idx = (repo_root / "web-nuxt" / "pages" / "lich-trinh" / "index.vue").read_text(encoding="utf-8")
+    assert "import { TYPE_META, AREA_META" not in lt_idx
+    assert ".dark .pace-chip { background: var(--card)" not in lt_idx
+
+    cai_dat = (repo_root / "web-nuxt" / "pages" / "cai-dat.vue").read_text(encoding="utf-8")
+    assert "extractErrorMessage" not in cai_dat
+
+    admin_ent = (repo_root / "web-nuxt" / "pages" / "admin" / "entities.vue").read_text(encoding="utf-8")
+    assert "import { ADMIN_KINDS } from '~/utils/adminKinds'" not in admin_ent
+
 
 
 

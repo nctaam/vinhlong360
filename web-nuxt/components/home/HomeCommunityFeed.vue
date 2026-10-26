@@ -15,7 +15,7 @@
           <div class="home-community-banner__author">
             <span class="home-community-banner__avatar" aria-hidden="true">Đ</span>
             <div class="home-community-banner__meta">
-              <strong class="home-community-banner__name">Đoàn Lữ Khách Phương Nam</strong>
+              <strong class="home-community-banner__name">Nhật ký lữ khách phương Nam</strong>
               <span class="cm-author-badge"><IconLine name="shield-check" aria-hidden="true" /> Tác giả thực địa</span>
             </div>
           </div>

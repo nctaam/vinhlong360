@@ -12,20 +12,32 @@ export interface UseAdminEntityDuplicateCheckOptions {
   authHeaders: () => Record<string, string>
 }
 
+const WHITESPACE_RE = /\s+/g
+const MIN_DUPLICATE_NAME_LEN = 3
+const DUPLICATE_DEBOUNCE_MS = 400
+
 export function useAdminEntityDuplicateCheck(options: UseAdminEntityDuplicateCheckOptions) {
   const { formName, editingEntity, authHeaders } = options
   const duplicates = ref<DuplicateEntityItem[]>([])
   let dupTimer: ReturnType<typeof setTimeout> | null = null
 
+  function clearTimer() {
+    if (dupTimer !== null) {
+      clearTimeout(dupTimer)
+      dupTimer = null
+    }
+  }
+
   function checkDuplicate() {
     if (editingEntity.value) return
-    if (dupTimer) clearTimeout(dupTimer)
-    const name = String(formName.value || '').trim()
-    if (name.length < 3) {
+    clearTimer()
+    const name = String(formName.value || '').replace(WHITESPACE_RE, ' ').trim()
+    if (name.length < MIN_DUPLICATE_NAME_LEN) {
       duplicates.value = []
       return
     }
     dupTimer = setTimeout(async () => {
+      dupTimer = null
       try {
         const res = await $fetch<{ duplicates: DuplicateEntityItem[] }>(
           '/admin-api/entities/check-duplicate?name=' + encodeURIComponent(name),
@@ -36,18 +48,16 @@ export function useAdminEntityDuplicateCheck(options: UseAdminEntityDuplicateChe
         console.error('[entities] duplicate check failed', err)
         duplicates.value = []
       }
-    }, 400)
+    }, DUPLICATE_DEBOUNCE_MS)
   }
 
   function clearDuplicates() {
-    if (dupTimer) clearTimeout(dupTimer)
+    clearTimer()
     duplicates.value = []
   }
 
   if (getCurrentInstance()) {
-    onUnmounted(() => {
-      if (dupTimer) clearTimeout(dupTimer)
-    })
+    onUnmounted(clearTimer)
   }
 
   return {

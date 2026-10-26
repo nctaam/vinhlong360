@@ -17,7 +17,6 @@ type SavedImageInput = {
   images?: unknown
   image_descriptor?: unknown
   image_descriptors?: unknown
-  descriptor_revision?: unknown
 }
 
 export type SavedImageSnapshot = {
@@ -48,13 +47,6 @@ function hasStructuredDescriptor(item: SavedImageInput): boolean {
     || Object.prototype.hasOwnProperty.call(item, 'image_descriptors')
 }
 
-function migrateLegacyV1Descriptor(value: unknown): unknown {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
-  const descriptor = value as Record<string, unknown>
-  if (Object.prototype.hasOwnProperty.call(descriptor, 'source_url')) return descriptor
-  return { ...descriptor, source_url: null }
-}
-
 /** Normalize thin saved/recent snapshots without guessing provenance for raw UGC. */
 export function normalizeSavedImageSnapshot<T extends object>(item: T & SavedImageInput): Omit<T, 'image' | 'images' | 'image_descriptors'> & SavedImageSnapshot {
   const normalized = { ...item } as Record<string, unknown>
@@ -62,24 +54,11 @@ export function normalizeSavedImageSnapshot<T extends object>(item: T & SavedIma
   delete normalized.image
   delete normalized.images
   delete normalized.image_descriptors
-  const descriptorRevision = descriptorSource.descriptor_revision
   delete normalized.descriptor_revision
 
-  let supplied: Readonly<ImageDescriptor> | null = null
-  if (hasStructuredDescriptor(descriptorSource)) {
-    if (descriptorRevision === undefined || descriptorRevision === SAVED_DESCRIPTOR_REVISION) {
-      supplied = describeEntityImages(descriptorSource)[0] ?? null
-    } else if (descriptorRevision === 'ai-disclosure-v1') {
-      const migrated: Record<string, unknown> = { ...descriptorSource }
-      if (Object.prototype.hasOwnProperty.call(descriptorSource, 'image_descriptor')) {
-        migrated.image_descriptor = migrateLegacyV1Descriptor(descriptorSource.image_descriptor)
-      }
-      if (Array.isArray(descriptorSource.image_descriptors)) {
-        migrated.image_descriptors = descriptorSource.image_descriptors.map(migrateLegacyV1Descriptor)
-      }
-      supplied = describeEntityImages(migrated)[0] ?? null
-    }
-  }
+  const supplied = hasStructuredDescriptor(descriptorSource)
+    ? describeEntityImages(descriptorSource)[0]
+    : null
   const rawLegacy = descriptorSource.image
   const legacy = !hasStructuredDescriptor(descriptorSource) && isKnownEditorialItem(descriptorSource)
     && !isGeneratedPlaceholderUrl(rawLegacy)

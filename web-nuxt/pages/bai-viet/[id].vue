@@ -20,7 +20,7 @@
         <textarea v-model="editContent" class="textarea" maxlength="5000" rows="6" aria-label="Nội dung bài viết"></textarea>
         <div class="pef-actions">
           <span class="pef-count">{{ editContent.length }}/5000</span>
-          <button type="button" class="btn btn-ghost btn-sm" @click="cancelEdit">Huỷ</button>
+          <button type="button" class="btn btn-ghost btn-sm" @click="cancelEdit">Hủy</button>
           <button type="button" class="btn btn-primary btn-sm" :disabled="editSaving || editContent.trim().length < 10" @click="saveEdit">{{ editSaving ? 'Đang lưu…' : 'Lưu' }}</button>
         </div>
       </div>
@@ -41,7 +41,7 @@
           <div class="compose-right">
             <div v-if="replyingTo" class="reply-context">
               <span>Đang trả lời <strong>@{{ replyingTo.author?.display_name || 'Người dùng' }}</strong></span>
-              <button type="button" class="reply-context-x" aria-label="Huỷ trả lời" @click="cancelReply"><IconLine name="x" /></button>
+              <button type="button" class="reply-context-x" aria-label="Hủy trả lời" @click="cancelReply"><IconLine name="x" /></button>
             </div>
             <div class="comment-mention-wrap">
               <input
@@ -177,7 +177,7 @@
           <button type="button" class="btn btn-outline btn-sm" @click="refreshPost()">Thử lại</button>
         </template>
       </EmptyState>
-      <EmptyState v-else icon-name="search" title="Không tìm thấy bài viết" message="Bài viết có thể đã bị xoá hoặc đường dẫn không đúng.">
+      <EmptyState v-else icon-name="search" title="Không tìm thấy bài viết" message="Bài viết có thể đã bị xóa hoặc đường dẫn không đúng.">
         <template #actions>
           <NuxtLink to="/cong-dong" class="btn btn-outline btn-sm">Về Cộng đồng</NuxtLink>
         </template>
@@ -195,7 +195,7 @@ useReveal()
 const route = useRoute()
 const postId = computed(() => normalizeRouteParam(route.params.id))
 const encodedPostId = computed(() => encodePathId(postId.value))
-const { isLoggedIn, authHeaders, user, handleSessionExpired, authFetch } = useAuth()
+const { isLoggedIn, authHeaders, user, authFetch } = useAuth()
 const { openAuth } = useAuthModal()
 
 const { repost, quote } = useRepost()
@@ -418,15 +418,8 @@ watch(
   { immediate: true },
 )
 
-watch(
-  postId,
-  async (newId) => {
-    if (!newId) return
-    await fetchComments()
-    fetchRelated()
-  },
-  { immediate: true },
-)
+// (Xoá watcher trùng lặp — onMounted ở dòng 368-369 đã gọi fetchComments()/fetchRelated() khi mount,
+// và watch(postId) ở dòng 566-579 đã xử lý đầy đủ khi chuyển bài viết)
 
 if (import.meta.server && !post.value && !postFetchFailed.value) {
   throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy bài viết' })
@@ -640,19 +633,18 @@ useHead({
 </script>
 
 <style scoped>
-.post-edit-form { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-4); margin-bottom: var(--space-3); }
-.pef-title { font-size: var(--text-base); margin: 0 0 var(--space-3); }
+.post-edit-form { background: transparent; border: 0; border-block: 1px solid var(--line); border-radius: 0; padding: var(--space-4) 0; margin-bottom: var(--space-3); }
+.pef-title { font-family: var(--font-editorial); font-size: var(--text-base); line-height: 1.3; margin: 0 0 var(--space-3); text-wrap: balance; overflow-wrap: break-word; }
 .post-edit-form .textarea { width: 100%; resize: vertical; }
 .pef-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-3); }
 .pef-count { margin-right: auto; font-size: var(--text-xs); color: var(--muted); }
-.qa-badge { display: inline-flex; align-items: center; gap: .25rem; font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .2rem .55rem; border-radius: 999px; background: color-mix(in srgb, var(--color-success) 12%, transparent); color: var(--color-success); border: 1px solid color-mix(in srgb, var(--color-success) 24%, transparent); }
-.qa-pick { font-size: var(--text-xs); padding: .2rem .55rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; transition: border-color .2s, color .2s, transform .2s var(--ease-out-expo); }
+.qa-badge { display: inline-flex; align-items: center; gap: .25rem; font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .2rem .55rem; border-radius: var(--radius-pill, 999px); background: color-mix(in srgb, var(--color-success) 12%, transparent); color: var(--color-success); border: 1px solid color-mix(in srgb, var(--color-success) 24%, transparent); }
+.qa-pick { font-size: var(--text-xs); padding: .2rem .55rem; border: 1px solid var(--border); border-radius: var(--radius-pill, 999px); background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; transition: border-color .2s, color .2s, transform .2s var(--ease-out-expo); }
 .qa-pick:hover { border-color: var(--color-action); color: var(--color-action); }
 .qa-pick:active { transform: scale(.95); transition-duration: .08s; }
 .qa-pick:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Comment actions + threaded replies ── */
-.comment-actions { display: flex; align-items: center; gap: var(--space-3); margin-top: .35rem; flex-wrap: wrap; }
 .comment-reply-btn { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .15rem .1rem; border: none; background: none; color: var(--muted); cursor: pointer; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; transition: color .2s, transform .2s var(--ease-out-expo); }
 .comment-reply-btn:hover { color: var(--color-action); }
 .comment-reply-btn:active { transform: scale(.92); transition-duration: .08s; }
@@ -670,7 +662,7 @@ useHead({
 .thread-detail { display: flex; flex-direction: column; }
 
 /* ── Section rhythm: clear break between post & comments ── */
-.thread-comments { margin-top: var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); }
+.thread-comments { display: flex; flex-direction: column; margin-top: var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); }
 
 /* ── Replies header ── */
 .replies-header {
@@ -681,7 +673,7 @@ useHead({
 .replies-label { font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); letter-spacing: .01em; }
 .replies-count {
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
-  background: var(--bg-alt); color: var(--muted); border-radius: var(--radius-full);
+  background: var(--bg-alt); color: var(--muted); border-radius: var(--radius-pill, 999px);
   padding: 2px 9px; min-width: 22px; text-align: center; line-height: 1.6;
 }
 .replies-count--active {
@@ -699,8 +691,8 @@ useHead({
 .thread-comment-compose .compose-right { flex: 1; display: flex; gap: var(--space-2); align-items: center; }
 .compose-input-sm {
   flex: 1; border: none; border-bottom: 2px solid transparent; background: transparent; color: var(--ink);
-  font-size: var(--text-sm); line-height: var(--leading-relaxed);
-  outline: none; font-family: inherit; min-height: 44px; padding: 0;
+  font-family: var(--font-sans); font-size: var(--text-sm); line-height: var(--leading-relaxed);
+  outline: none; min-height: 44px; padding: 0;
   transition: border-color .2s var(--ease-out);
 }
 .compose-input-sm::placeholder { color: var(--ink-tertiary, var(--muted)); }
@@ -714,7 +706,7 @@ useHead({
 }
 .compose-send {
   width: 44px; height: 44px; min-height: 44px; padding: 0;
-  display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-full);
+  display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-pill, 999px);
   transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out), background .2s var(--ease-out);
 }
 .compose-send:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
@@ -728,8 +720,6 @@ useHead({
 .guest-reply-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Thread replies ── */
-.thread-comments { display: flex; flex-direction: column; }
-/* (section rhythm spacing for .thread-comments defined above) */
 
 .thread-reply {
   display: flex; gap: var(--space-3); padding: var(--space-3) var(--space-2);
@@ -746,25 +736,22 @@ useHead({
 .thread-reply:hover .thread-line { background: var(--color-action); }
 .thread-reply .thread-right { flex: 1; min-width: 0; }
 
-.reply-text { margin: var(--space-1) 0 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); color: var(--ink); }
-
 @keyframes replyIn { from { opacity: 0; transform: translateY(4px); } }
 
 .comment-empty {
   display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
   padding: var(--space-8) var(--space-4); text-align: center;
-  background: var(--bg-warm); border-radius: var(--radius-sheet);
+  background: transparent; border: 0; border-block-end: 1px solid var(--line); border-radius: 0;
 }
 .comment-empty-halo {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 64px; height: 64px; border-radius: var(--radius-full);
+  width: 64px; height: 64px; border-radius: var(--radius-pill, 999px);
   background: var(--color-action-surface); margin-bottom: var(--space-1);
 }
 .comment-empty-icon { font-size: var(--text-2xl); opacity: .8; }
 .comment-empty p { margin: 0; color: var(--ink); font-size: var(--text-sm); font-weight: var(--weight-medium); }
 .comment-empty-hint { color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-normal); }
 .empty-state-wrap { padding: var(--space-8) 0; text-align: center; }
-.dark .comment-empty { background: rgba(var(--white-rgb),.03); }
 
 .feed-loading { text-align: center; padding: var(--space-5); }
 .feed-loading .spinner { margin: 0 auto; }
@@ -788,21 +775,24 @@ useHead({
   outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control);
 }
 
-/* ── Related posts ── */
+/* ── Related posts — open editorial dispatch pair ── */
 .related-section { margin-top: var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); }
-.related-title { font-size: var(--text-lg); font-weight: var(--weight-bold); margin: 0 0 var(--space-3); }
-.related-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+.related-title { font-family: var(--font-editorial); font-size: var(--text-lg); font-weight: 600; line-height: 1.3; margin: 0 0 var(--space-3); text-wrap: balance; overflow-wrap: break-word; }
+.related-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; border-block: 1px solid var(--line); }
 .related-card {
-  display: flex; flex-direction: column; background: var(--card); border: .5px solid var(--line);
-  border-radius: var(--radius-sheet); overflow: hidden; text-decoration: none; color: var(--ink);
-  transition: border-color .2s, transform .2s var(--ease-out-expo);
+  display: flex; flex-direction: column; background: transparent; border: 0;
+  border-inline-start: 1px solid var(--line);
+  border-radius: 0; overflow: hidden; text-decoration: none; color: var(--ink);
+  transition: background-color .2s var(--ease-out);
 }
-.related-card:hover { border-color: var(--color-action); transform: translateY(-1px); }
+.related-card:first-child { border-inline-start: 0; }
+.related-card:hover { background: color-mix(in srgb, var(--bg-warm) 55%, transparent); }
 .related-card:active { transform: scale(.99); }
-.related-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.related-body { padding: var(--space-2) var(--space-3); display: flex; flex-direction: column; gap: .2rem; }
+.related-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
+.related-body { padding: var(--space-3) var(--space-4); display: flex; flex-direction: column; gap: .2rem; }
+.related-card:first-child .related-body { padding-inline-start: 0; }
 .related-author { font-size: var(--text-xs); font-weight: var(--weight-semibold); }
-.related-text { margin: 0; font-size: var(--text-xs); color: var(--ink-secondary, var(--ink)); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.related-text { margin: 0; font-size: var(--text-xs); color: var(--ink-secondary, var(--ink)); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: break-word; }
 .related-meta { font-size: var(--text-xs); color: var(--muted); }
 @media (max-width: 480px) { .related-grid { grid-template-columns: 1fr; } }
 

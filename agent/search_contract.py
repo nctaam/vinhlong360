@@ -10,11 +10,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from collections.abc import Mapping
 from functools import lru_cache
+import re
 import unicodedata
 from typing import Any
 
 
 RANKING_VERSION = "search-v1"
+_COMBINING_MARKS_RE = re.compile(r"[\u0300-\u036f]")
 
 
 def coerce_query_int(value: Any, default: int) -> int:
@@ -32,10 +34,8 @@ def coerce_query_int(value: Any, default: int) -> int:
 
 @lru_cache(maxsize=8192)
 def _normalize_str(raw: str) -> str:
-    text = unicodedata.normalize("NFKD", raw).casefold()
-    text = "".join(char for char in text if not unicodedata.combining(char))
-    text = text.replace("đ", "d")
-    return " ".join(text.split())
+    text = _COMBINING_MARKS_RE.sub("", unicodedata.normalize("NFKD", raw).casefold())
+    return " ".join(text.replace("đ", "d").split())
 
 
 def normalize_search_text(value: str | Any) -> str:

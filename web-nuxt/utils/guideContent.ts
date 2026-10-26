@@ -53,7 +53,7 @@ export const guideSections: GuideSection[] = [
     id: 'tim-kiem',
     icon: 'search',
     title: 'Tìm kiếm & Khám phá',
-    intro: 'Hệ thống tìm kiếm thông minh giúp bạn tìm địa điểm, sản phẩm, bài viết và người dùng chỉ trong vài giây. Hỗ trợ gợi ý khi gõ, tìm không dấu, và lọc theo nhiều tiêu chí.',
+    intro: 'Hệ thống tìm kiếm thực địa giúp bạn tìm địa điểm, sản phẩm, bài viết và người dùng nhanh chóng. Hỗ trợ gợi ý trực tiếp khi gõ, tìm không dấu, và lọc linh hoạt theo nhiều tiêu chí.',
     topics: [
       {
         icon: 'search',
@@ -82,8 +82,8 @@ export const guideSections: GuideSection[] = [
             desc: 'Trang chủ có các pill nhanh (Cuối tuần, Ẩm thực, OCOP, Thiên nhiên...) — nhấn vào để tìm ngay theo chủ đề mà không cần gõ.',
           },
           {
-            title: 'Trợ lý tìm kiếm AI',
-            desc: 'Khi kết quả tìm kiếm không đủ rõ, hệ thống hiện gợi ý "Hỏi trợ lý AI". Nhấn vào để chuyển sang chat AI với câu hỏi đã điền sẵn.',
+            title: 'Sổ tay tra cứu mở rộng',
+            desc: 'Khi kết quả tìm kiếm cần thêm gợi ý chi tiết, hệ thống cung cấp mục "Gợi ý mở rộng". Bạn có thể mở để nhận thêm thông tin thực địa liên quan.',
           },
         ],
         tips: [
@@ -93,7 +93,7 @@ export const guideSections: GuideSection[] = [
         ],
         didYouKnow: 'Hệ thống tìm kiếm tổng hợp từ 3 nguồn cùng lúc: cơ sở dữ liệu địa điểm, bài viết cộng đồng, và hồ sơ người dùng — chỉ trong 1 truy vấn.',
         seeAlso: [
-          { href: '#cong-cu', label: 'Chat AI' },
+          { href: '#cong-cu', label: 'Hỏi đáp thực địa' },
           { href: '#ban-do', label: 'Bản đồ' },
         ],
         link: '/tim-kiem',
@@ -514,12 +514,12 @@ export const guideSections: GuideSection[] = [
     id: 'cong-cu',
     icon: 'settings',
     title: 'Công cụ tiện ích',
-    intro: 'Các tính năng bổ trợ giúp trải nghiệm mượt mà hơn: chat AI, chế độ tối, lưu yêu thích, chia sẻ, tuyến đường gợi ý.',
+    intro: 'Các tính năng bổ trợ giúp trải nghiệm mượt mà hơn: sổ tay hỏi đáp, chế độ tối, lưu yêu thích, chia sẻ, tuyến đường gợi ý.',
     topics: [
       {
-        icon: 'message', title: 'Chat với trợ lý AI',
-        desc: 'Trợ lý AI hiểu về du lịch, ẩm thực, văn hóa tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025). Hỏi bất cứ điều gì.',
-        steps: ['Nhấn nút Trợ lý AI ở góc phải dưới màn hình (hiện trên mọi trang)', 'Cửa sổ chat mở ra với gợi ý câu hỏi (thay đổi theo trang bạn đang xem)', 'Gõ câu hỏi và nhấn Enter hoặc nút gửi', 'Trợ lý trả lời dạng streaming (từng chữ hiện ra)', 'Nhấn nút dừng nếu muốn ngắt giữa chừng', 'Nhấn nút đóng hoặc Esc để đóng'],
+        icon: 'message', title: 'Hỏi đáp thực địa trực tiếp',
+        desc: 'Hệ thống tra cứu tương tác hiểu về du lịch, ẩm thực, văn hóa tỉnh Vĩnh Long. Tra cứu thông tin mọi lúc.',
+        steps: ['Nhấn nút Hỏi đáp ở góc phải dưới màn hình (hiện trên mọi trang)', 'Cửa sổ hội thoại mở ra với gợi ý câu hỏi (thay đổi theo trang bạn đang xem)', 'Gõ câu hỏi và nhấn Enter hoặc nút gửi', 'Câu trả lời hiển thị trực tiếp', 'Nhấn nút dừng nếu muốn ngắt giữa chừng', 'Nhấn nút đóng hoặc Esc để đóng'],
         subtopics: [
           { title: 'Gợi ý theo ngữ cảnh', desc: 'Khi đang ở trang "Chợ nổi Trà Ôn", gợi ý sẽ là: "Nên đi chợ nổi lúc mấy giờ?", "Có gì ăn ở đây?". Ở trang khác sẽ có gợi ý khác. Nhấn vào gợi ý để hỏi nhanh mà không cần gõ.' },
           { title: 'Ví dụ câu hỏi hay', desc: '"Đi Vĩnh Long 2 ngày nên đi đâu?", "Món gì ngon ở vùng Bến Tre (cũ)?", "Mùa nước nổi có gì thú vị?", "So sánh homestay ở Cù lao An Bình", "Quà mang về từ vùng Trà Vinh (cũ)".' },
@@ -553,7 +553,7 @@ export const guideSections: GuideSection[] = [
       },
       {
         icon: 'arrow-up', title: 'Cuộn lên đầu trang',
-        desc: 'Khi cuộn xuống xa, nút mũi tên ⬆️ hiện ở góc phải dưới. Nhấn để cuộn mượt về đầu trang. Nút tự ẩn khi bạn ở đầu trang.',
+        desc: 'Khi cuộn xuống xa, nút mũi tên lên hiện ở góc phải dưới. Nhấn để cuộn mượt về đầu trang. Nút tự ẩn khi bạn ở đầu trang.',
       },
       {
         icon: 'award', title: 'Onboarding cho thành viên mới',
@@ -561,9 +561,9 @@ export const guideSections: GuideSection[] = [
       },
     ],
     faqs: [
-      { q: 'Chat AI có lưu lịch sử không?', a: 'Lịch sử chat giữ trong phiên trình duyệt. Khi đóng tab hoặc tải lại trang, lịch sử mất. Không có lưu trữ vĩnh viễn.' },
+      { q: 'Hội thoại hỏi đáp có lưu lịch sử không?', a: 'Lịch sử hỏi đáp giữ trong phiên trình duyệt hiện tại. Khi đóng tab hoặc tải lại trang, phiên làm việc sẽ tự làm mới.' },
       { q: 'Có ứng dụng di động không?', a: 'Không có app riêng. vinhlong360 là web app — truy cập trên trình duyệt di động. "Thêm vào màn hình chính" để dùng như app.' },
-      { q: 'Chat AI có trả lời sai không?', a: 'Có thể. AI trả lời dựa trên dữ liệu hệ thống, không phải nguồn sống. Luôn xác nhận thông tin quan trọng (giá, giờ mở cửa) trực tiếp với cơ sở.' },
+      { q: 'Thông tin hỏi đáp có đảm bảo chính xác tuyệt đối không?', a: 'Thông tin được đối soát từ cơ sở dữ liệu thực địa. Tuy nhiên các yếu tố thời giá hoặc giờ mở cửa ngày lễ có thể thay đổi — bạn nên xác nhận trực tiếp với cơ sở trước khi đến.' },
     ],
   },
 
@@ -612,14 +612,14 @@ export const guideTroubleshooting: TroubleshootCategory[] = [
       { symptom: 'Không nhận được mã OTP', cause: 'SMS bị chặn bởi nhà mạng hoặc SĐT nhập sai.', fix: ['Kiểm tra lại SĐT (10 số, bắt đầu 0)', 'Chờ 60 giây rồi nhấn "Gửi lại mã"', 'Kiểm tra tin nhắn SMS (không phải tin rác)', 'Nếu vẫn không nhận được, thử SĐT khác hoặc liên hệ hỗ trợ'] },
       { symptom: 'Đăng nhập bằng mật khẩu bị sai', cause: 'Nhập sai mật khẩu hoặc chưa từng đặt mật khẩu.', fix: ['Dùng OTP để đăng nhập thay thế', 'Sau khi vào, đặt lại mật khẩu trong Cài đặt → Bảo mật'] },
       { symptom: 'Bị đăng xuất bất ngờ', cause: 'Phiên hết hạn hoặc bị thu hồi từ thiết bị khác.', fix: ['Đăng nhập lại bằng OTP hoặc mật khẩu', 'Kiểm tra mục "Phiên đăng nhập" trong Cài đặt để phát hiện truy cập lạ'] },
-    ] as TroubleshootItem[],
+    ],
   },
   {
     icon: 'map', title: 'Bản đồ & Hiển thị',
     items: [
       { symptom: 'Bản đồ trắng hoặc không tải', cause: 'Kết nối internet yếu hoặc trình duyệt cũ không hỗ trợ WebGL.', fix: ['Kiểm tra kết nối internet', 'Tải lại trang (Ctrl+R hoặc kéo xuống trên di động)', 'Dùng trình duyệt mới (Chrome, Firefox, Safari, Edge phiên bản mới nhất)', 'Tắt VPN nếu đang bật — một số VPN chặn tile bản đồ'] },
       { symptom: 'Không thấy địa điểm trên bản đồ', cause: 'Địa điểm chưa có tọa độ GPS hoặc bị ẩn bởi bộ lọc.', fix: ['Kiểm tra chip lọc phía trên bản đồ — đảm bảo loại hình đang bật', 'Zoom vào khu vực — điểm có thể nằm trong cụm (cluster)', 'Địa điểm không có tọa độ chỉ hiện trong danh sách, không trên bản đồ'] },
-    ] as TroubleshootItem[],
+    ],
   },
   {
     icon: 'pencil', title: 'Cộng đồng & Bài viết',
@@ -627,7 +627,7 @@ export const guideTroubleshooting: TroubleshootCategory[] = [
       { symptom: 'Không đăng được bài', cause: 'Chưa đăng nhập, bài trống, hoặc vượt 500 ký tự.', fix: ['Đảm bảo đã đăng nhập (nút "Đăng nhập" biến mất khi đã đăng)', 'Kiểm tra bộ đếm ký tự — tối đa 500', 'Nếu đăng ảnh, đợi ảnh upload xong rồi mới nhấn "Đăng"'] },
       { symptom: 'Bài viết bị ẩn sau khi đăng', cause: 'Hệ thống kiểm duyệt phát hiện nội dung vi phạm.', fix: ['Kiểm tra nội dung có từ ngữ không phù hợp', 'Bài quảng cáo thương mại có thể bị ẩn', 'Liên hệ quản trị nếu cho rằng bài bị ẩn nhầm'] },
       { symptom: 'Ảnh không upload được', cause: 'File quá lớn hoặc định dạng không hỗ trợ.', fix: ['Dùng ảnh JPEG, PNG hoặc WebP', 'Ảnh tự động nén — nếu vẫn lỗi, thử ảnh nhỏ hơn 10MB', 'Kiểm tra kết nối internet — upload cần kết nối ổn định'] },
-    ] as TroubleshootItem[],
+    ],
   },
   {
     icon: 'sliders', title: 'Hiển thị & Trình duyệt',
@@ -635,17 +635,13 @@ export const guideTroubleshooting: TroubleshootCategory[] = [
       { symptom: 'Trang hiển thị lỗi hoặc vỡ layout', cause: 'Trình duyệt cũ hoặc cache bị lỗi.', fix: ['Tải lại trang cứng: Ctrl+Shift+R (PC) hoặc kéo xuống giữ (di động)', 'Xóa cache trình duyệt cho vinhlong360.vn', 'Cập nhật trình duyệt lên phiên bản mới nhất'] },
       { symptom: 'Dark mode không lưu', cause: 'Trình duyệt chặn localStorage hoặc duyệt ẩn danh.', fix: ['Kiểm tra không ở chế độ duyệt ẩn danh (Incognito)', 'Cho phép cookie và localStorage cho vinhlong360.vn'] },
       { symptom: 'Yêu thích biến mất', cause: 'Xóa lịch sử trình duyệt hoặc dùng thiết bị khác khi chưa đăng nhập.', fix: ['Đăng nhập tài khoản để đồng bộ yêu thích lên server', 'Yêu thích trên server không mất khi xóa lịch sử trình duyệt'] },
-    ] as TroubleshootItem[],
+    ],
   },
 ]
 
 
+const CORE_GUIDE_FAQS: GuideFAQ[] = guideSections.flatMap(s => s.faqs ?? [])
+
 export function getCoreGuideFaqs(): Array<{ q: string; a: string }> {
-  const result: Array<{ q: string; a: string }> = []
-  for (const s of guideSections) {
-    if (s.faqs) {
-      result.push(...s.faqs)
-    }
-  }
-  return result
+  return [...CORE_GUIDE_FAQS]
 }

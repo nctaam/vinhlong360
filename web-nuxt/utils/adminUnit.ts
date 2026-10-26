@@ -80,11 +80,18 @@ export function adminUnitLabel(placeName?: string | null, level?: AdminUnitLevel
  * số đó trỏ nhầm `p-long-chau`; 2 bỏ trống)
  * — không có guard thì trang "Xã An Bình" sẽ đội mắt xích "P. Long Châu".
  */
+export const EXTERNAL_GATEWAY_PLACE_IDS: ReadonlySet<string> = new Set(['gateway-hcm'])
+
+export function isExternalGatewayPlaceId(placeId?: string | null): boolean {
+  return EXTERNAL_GATEWAY_PLACE_IDS.has(String(placeId ?? '').trim())
+}
+
 export function adminUnitCrumb(entity?: AdminUnitCarrier | null): AdminUnitCrumb | null {
   if (String(entity?.type ?? '').trim() === 'place') return null
+  const placeId = String(entity?.placeId ?? '').trim()
+  if (isExternalGatewayPlaceId(placeId)) return null
   const label = adminUnitLabel(entity?.place_name, entity?.place_level)
   if (!label) return null
-  const placeId = String(entity?.placeId ?? '').trim()
   const selfId = String(entity?.id ?? '').trim()
   if (placeId && selfId && placeId === selfId) return null
   return { label, to: placeId ? `/xa-phuong/${encodePathId(placeId)}` : '' }

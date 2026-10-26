@@ -81,7 +81,7 @@ function onToggle() {
   background: color-mix(in srgb, var(--save-red) 6%, var(--card));
 }
 
-.save-btn-sm { padding: var(--space-1) var(--space-2); min-height: 44px; font-size: var(--text-xs); }
+.save-btn-sm { padding: var(--space-1) var(--space-2); min-height: 44px; min-width: 44px; font-size: var(--text-xs); }
 
 .save-icon {
   width: 18px; height: 18px; flex-shrink: 0;

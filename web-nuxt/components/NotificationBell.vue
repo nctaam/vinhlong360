@@ -75,11 +75,17 @@ function doMarkRead() {
 }
 
 function notifIcon(n: Notification): string {
-  if (n.type === 'like') return 'heart'
-  if (n.type === 'comment') return 'message'
+  if (n.type === 'like' || n.type === 'reaction') return 'heart'
+  if (n.type === 'comment' || n.type === 'comment_reply' || n.type === 'question_answer') return 'message'
   if (n.type === 'follow') return 'user'
   if (n.type === 'mention') return 'megaphone'
   if (n.type === 'repost') return 'repeat'
+  if (n.type === 'achievement') return 'award'
+  if (n.type === 'security_alert') return 'shield-check'
+  if (n.type === 'moderation') return 'flag'
+  if (n.type === 'claim_approved' || n.type === 'claim_rejected') return 'clipboard-check'
+  if (n.type === 'event_reminder') return 'calendar'
+  if (n.type === 'digest') return 'file-text'
   return 'bell'
 }
 

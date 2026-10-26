@@ -4,7 +4,7 @@
       <h2 class="sediment-head">Đánh giá</h2>
       <div v-if="rating.count" class="reviews-summary">
         <span class="star-rating-inline" role="img" :aria-label="`${rating.avg} trên 5 sao`">
-          <span v-for="s in 5" :key="s" class="star" :class="{ active: s <= Math.round(rating.avg) }" aria-hidden="true">★</span>
+          <span v-for="s in 5" :key="s" class="star" :class="{ active: s <= Math.round(rating.avg) }" aria-hidden="true"><IconLine name="star" /></span>
         </span>
         <strong class="rs-avg">{{ rating.avg }}</strong>
         <span class="review-count">({{ rating.count }} đánh giá)</span>
@@ -21,15 +21,6 @@
       </div>
     </div>
 
-    <div v-if="rating.count" class="er-categories">
-      <div v-for="cat in REVIEW_CATEGORIES" :key="cat.key" class="er-cat-item">
-        <span class="er-cat-label">{{ cat.label }}</span>
-        <div class="er-cat-track"><div class="er-cat-fill er-cat-placeholder" /></div>
-        <span class="er-cat-score">—</span>
-      </div>
-      <p class="er-cat-hint">Sắp có đánh giá chi tiết theo từng chiều</p>
-    </div>
-
     <div v-if="mentionChips.length" class="er-mentions">
       <h3 class="er-mentions-title">Mọi người hay nhắc đến</h3>
       <FilterChips :filters="mentionChips" v-model="selectedMentions" />
@@ -40,13 +31,6 @@
 
 <script setup lang="ts">
 import type { Review } from '~/types'
-
-const REVIEW_CATEGORIES = [
-  { key: 'atmosphere', label: 'Không khí' },
-  { key: 'quality', label: 'Chất lượng' },
-  { key: 'value', label: 'Giá trị' },
-  { key: 'service', label: 'Phục vụ' },
-]
 
 const props = defineProps<{
   rating: { avg: number; count: number }
@@ -71,12 +55,18 @@ const maxDistCount = computed(() => Math.max(1, ...ratingDistribution.value))
 function distCount(star: number) { return ratingDistribution.value[star - 1] || 0 }
 function distPercent(star: number) { return (distCount(star) / maxDistCount.value) * 100 }
 
-const STOP_WORDS = new Set(['và', 'là', 'của', 'cho', 'với', 'được', 'này', 'đã', 'có', 'không', 'rất', 'các', 'một', 'những', 'trong', 'ở', 'tại', 'cũng', 'nhưng', 'nên', 'thì', 'mà'])
+const WORD_SPLIT_RE = /[\s,.!?;:()"“”'’\-–—/]+/
+const STOP_WORDS = new Set([
+  'và', 'là', 'của', 'cho', 'với', 'được', 'này', 'đã', 'có', 'không', 'rất',
+  'các', 'một', 'những', 'trong', 'ở', 'tại', 'cũng', 'nhưng', 'nên', 'thì', 'mà',
+  'khi', 'đến', 'từ', 'ra', 'vào', 'lại', 'đi', 'về', 'nhiều', 'hơn', 'nhất',
+  'quá', 'lắm', 'đây', 'đó', 'mình', 'bạn', 'nơi', 'chỗ',
+])
 const mentionChips = computed(() => {
   const freq = new Map<string, number>()
   for (const r of props.reviews) {
     const text = (r.content || '').toLowerCase()
-    const words = text.split(/[\s,.!?;:()]+/).filter((w: string) => w.length >= 2 && !STOP_WORDS.has(w))
+    const words = text.split(WORD_SPLIT_RE).filter((w: string) => w.length >= 2 && !/^\d+$/.test(w) && !STOP_WORDS.has(w))
     const seen = new Set<string>()
     for (const w of words) {
       if (!seen.has(w)) { seen.add(w); freq.set(w, (freq.get(w) || 0) + 1) }
@@ -99,29 +89,22 @@ const mentionChips = computed(() => {
   gap: var(--space-1h); margin-bottom: var(--space-5); max-width: 320px;
 }
 .er-dist-row { display: grid; grid-template-columns: 28px 1fr 28px; align-items: center; gap: var(--space-2); }
-.er-dist-label { font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
-.er-dist-track { height: 6px; border-radius: var(--radius-full); background: var(--bg-warm, var(--bg-alt)); overflow: hidden; }
+.er-dist-label { font-size: var(--text-xs); font-weight: var(--weight-medium); line-height: var(--leading-snug); color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.er-dist-track { height: 6px; border-radius: var(--radius-pill, 999px); background: var(--bg-warm, var(--bg-alt)); overflow: hidden; }
 /* sediment fill: river→amber→clay wash instead of generic --secondary, echoes the tri-province tick at bar scale */
 .er-dist-fill {
-  height: 100%; border-radius: var(--radius-full);
+  height: 100%; border-radius: var(--radius-pill, 999px);
   background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 55%, var(--color-material-clay) 100%);
   min-width: 2px;
 }
-.dark .er-dist-fill { background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 55%, var(--color-material-clay) 100%); }
 .er-dist-count { font-size: var(--text-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
 
-.er-categories { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-5); max-width: 400px; }
-.er-cat-item { display: flex; flex-direction: column; gap: var(--space-1); }
-.er-cat-label { font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--ink); }
-.er-cat-track { height: 4px; border-radius: var(--radius-full); background: var(--bg-warm, var(--bg-alt)); overflow: hidden; }
-.er-cat-fill { height: 100%; border-radius: var(--radius-full); background: var(--color-action); }
-.dark .er-cat-fill { background: var(--color-action); }
-.er-cat-placeholder { width: 0%; }
-.er-cat-score { font-size: var(--text-xs); color: var(--muted); }
-.er-cat-hint { grid-column: 1 / -1; font-size: var(--text-xs); color: var(--muted); font-style: italic; margin: 0; }
-
 .er-mentions { margin-bottom: var(--space-5); }
-.er-mentions-title { font-family: var(--font-editorial); font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); margin: 0 0 var(--space-2); }
+.er-mentions-title {
+  font-family: var(--font-editorial); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug); text-wrap: balance; overflow-wrap: break-word;
+  color: var(--ink); margin: 0 0 var(--space-2);
+}
 
 /* Quiet hairline close — a settled sediment thread under the whole stats block, echoing the section tick without repeating it */
 .er-sediment-rule {
@@ -129,9 +112,5 @@ const mentionChips = computed(() => {
   background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 50%, var(--color-material-clay) 100%);
   opacity: .18;
 }
-.dark .er-sediment-rule { background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 50%, var(--color-material-clay) 100%); opacity: .22; }
-
-@media (prefers-reduced-motion: reduce) {
-  .er-dist-fill { transition: none; }
-}
+.dark .er-sediment-rule { opacity: .22; }
 </style>

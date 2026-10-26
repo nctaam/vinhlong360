@@ -134,12 +134,12 @@
 
           <SourceTrustDrawer
             :open="trustDrawerOpen"
-            :source-tier="trustSourceTier"
+            :source-tier="trustTier"
             :source-title="trustSourceTitle"
             :source-url="trustSourceUrl"
             :verified-at="trustVerifiedAt"
             :updated-at="trustUpdatedAt"
-            :freshness-status="trustStatus"
+            :freshness-status="trustFreshnessStatus"
             :community-context="trustCommunityContext"
             :conflicts="trustConflicts"
             @close="trustDrawerOpen = false"
@@ -782,8 +782,8 @@ if (import.meta.server && detailFetchResolution.value?.kind === 'not_found') {
 watch(() => entity.value?.id, () => trackCurrentEntity())
 
 const typeMeta = computed(() => {
-  if (!entity.value) return { emoji: '•', icon: 'pin', label: '', cat: 'place' }
-  return TYPE_META[entity.value.type] || { emoji: '•', icon: 'pin', label: entity.value.type, cat: 'place' }
+  if (!entity.value) return { icon: 'pin', label: '', cat: 'place' }
+  return TYPE_META[entity.value.type] || { icon: 'pin', label: entity.value.type, cat: 'place' }
 })
 
 const detailMaterialAccent = computed(() => resolveRegionalAccent(entity.value?.type))
@@ -972,8 +972,6 @@ const trustUpdatedAt = computed(() => sourceFreshness.value?.updated_at || entit
 const trustVerifiedAt = computed(() => sourceFreshness.value?.verified_at || entity.value?.quality?.verified_at || '')
 const trustUpdatedLabel = computed(() => trustUpdatedAt.value ? formatDateVN(trustUpdatedAt.value) : 'Chưa rõ')
 const trustFreshnessStatus = computed(() => resolveFreshnessStatus(sourceFreshness.value?.freshness_status))
-const trustSourceTier = computed(() => trustTier.value)
-const trustStatus = computed(() => trustFreshnessStatus.value)
 const trustNote = computed(() => {
   if (trustFreshnessStatus.value === 'fresh') return 'Thông tin này có tín hiệu cập nhật gần đây.'
   if (trustFreshnessStatus.value === 'aging') return 'Thông tin vẫn dùng được nhưng nên kiểm tra lại nếu bạn sắp đi.'
@@ -998,7 +996,7 @@ const trustConflicts = computed(() => {
     }]
   })
 })
-const trustCommunityContext = computed(() => trustSourceTier.value === 'community'
+const trustCommunityContext = computed(() => trustTier.value === 'community'
   ? 'Nguồn cộng đồng đã qua bước kiểm duyệt nội dung; không phải thông tin chính thức.'
   : false)
 // P0-7: chỉ hiện trust-card khi CÓ nguồn công khai thật (đừng quảng cáo "chưa có nguồn").
@@ -1013,9 +1011,8 @@ async function reportTrustIssue() {
 // P0-5: byline biên tập (Who) — LUÔN hiện, mọi trang. Trung thực theo
 // attributes.verifiedAt (người đặt tay); hiện chưa entity nào có → mặc định
 // "chưa kiểm chứng thực địa".
-const entityVerifiedAt = computed(() => sourceFreshness.value?.verified_at || '')
-const bylineText = computed(() => entityVerifiedAt.value
-  ? `Biên tập & kiểm chứng thực địa · ${formatDateVN(entityVerifiedAt.value)}`
+const bylineText = computed(() => sourceFreshness.value?.verified_at
+  ? `Biên tập & kiểm chứng thực địa · ${formatDateVN(sourceFreshness.value.verified_at)}`
   : 'Tổng hợp & biên tập từ nguồn công khai — chưa kiểm chứng thực địa')
 
 // GĐ10.4: normalizeCoords gom vào composables/useCoords.ts (Nuxt auto-import).
@@ -1122,13 +1119,16 @@ useHead({
   font-family: var(--font-editorial);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
+  line-height: 1.3;
   letter-spacing: .01em;
   color: var(--ink);
+  overflow-wrap: break-word;
 }
 .green-tourism-badge .gt-sub {
   margin: 0;
   font-size: var(--text-2xs);
   color: var(--muted);
   line-height: var(--leading-normal);
+  overflow-wrap: break-word;
 }
 </style>

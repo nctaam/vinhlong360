@@ -1,7 +1,13 @@
-import type { Ref } from 'vue'
 import type { Post } from '~/types'
 
 type PostListResponse = import('~/composables/useCommunityPostFilters').PostListResponse<Post>
+
+const WHITESPACE_RE = /\s+/g
+const MIN_SEARCH_QUERY_LEN = 2
+
+function normalizeSearchQuery(raw: string): string {
+  return raw.replace(WHITESPACE_RE, ' ').trim()
+}
 
 export interface CommunitySearchOptions {
   authHeaders: () => Record<string, string>
@@ -27,7 +33,7 @@ export function useCommunitySearch(options: CommunitySearchOptions) {
   const searchUsers = ref<Array<{ id: string; display_name: string; avatar_url: string; username: string; post_count: number }>>([])
 
   async function fetchSearchUsers(query: string) {
-    if (!query || query.length < 2) { searchUsers.value = []; return }
+    if (!query || query.length < MIN_SEARCH_QUERY_LEN) { searchUsers.value = []; return }
     try {
       const res = await $fetch<{ users: typeof searchUsers.value }>('/api/search/users', {
         params: { q: query, page: 1 },
@@ -59,9 +65,16 @@ export function useCommunitySearch(options: CommunitySearchOptions) {
     }
   }
 
+  function resetLocalSearchState() {
+    searchInput.value = ''
+    searchQuery.value = ''
+    searchResults.value = []
+    searchUsers.value = []
+  }
+
   function runSearch() {
-    const q = searchInput.value.trim()
-    if (q.length < 2) { options.showToast('Nhập ít nhất 2 ký tự để tìm kiếm', 'info'); return }
+    const q = normalizeSearchQuery(searchInput.value)
+    if (q.length < MIN_SEARCH_QUERY_LEN) { options.showToast('Nhập ít nhất 2 ký tự để tìm kiếm', 'info'); return }
     searchQuery.value = q
     options.syncSearchQuery(q)
     fetchSearchUsers(q)
@@ -69,21 +82,16 @@ export function useCommunitySearch(options: CommunitySearchOptions) {
   }
 
   function clearSearch() {
-    searchInput.value = ''
-    searchQuery.value = ''
-    searchResults.value = []
-    searchUsers.value = []
+    resetLocalSearchState()
     options.syncSearchQuery('')
   }
 
   function applyRouteSearchQuery(rawQ?: unknown) {
     const source = rawQ !== undefined ? rawQ : options.getRouteQueryQ?.()
-    const q = options.firstQueryValue(source).trim()
-    if (q.length < 2) {
+    const q = normalizeSearchQuery(options.firstQueryValue(source))
+    if (q.length < MIN_SEARCH_QUERY_LEN) {
       if (searchQuery.value) {
-        searchInput.value = ''
-        searchQuery.value = ''
-        searchResults.value = []
+        resetLocalSearchState()
       }
       return
     }

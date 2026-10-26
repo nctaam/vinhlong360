@@ -3,12 +3,11 @@
   <div v-if="open" class="cmd-overlay" @click.self="open = false">
     <div ref="paletteRef" class="cmd-palette" role="dialog" aria-modal="true" aria-label="Tìm nhanh">
       <input
-        ref="inputEl"
         v-model="query"
         class="cmd-input"
         enterkeyhint="search"
-        placeholder="Tìm trang, entity, thao tác…"
-        aria-label="Tìm trang, entity, thao tác"
+        placeholder="Tìm trang, mục nội dung, thao tác…"
+        aria-label="Tìm trang, mục nội dung, thao tác"
         role="combobox"
         aria-autocomplete="list"
         aria-controls="cmd-listbox"
@@ -73,13 +72,13 @@ interface PaletteItem {
 const open = ref(false)
 const query = ref('')
 const active = ref(0)
-const inputEl = ref<HTMLInputElement>()
 const paletteRef = ref<HTMLElement | null>(null)
 const { user } = useAuth()
 useModalA11y(open, paletteRef, { onClose: () => { open.value = false } })
 
+const DIACRITICS_RE = /[\u0300-\u036f]/g
 function removeDiacritics(s: string): string {
-  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D')
+  return s.normalize('NFD').replace(DIACRITICS_RE, '').replace(/[đĐ]/g, 'd').toLowerCase()
 }
 
 function targetToUrl(target: AdminNavItem['to']): string {
@@ -94,7 +93,7 @@ function toPaletteItem(item: AdminNavItem, hint: string): PaletteItem {
     label: item.label,
     to: targetToUrl(item.to),
     hint,
-    search: removeDiacritics(`${item.label} ${hint}`).toLowerCase(),
+    search: removeDiacritics(`${item.label} ${hint}`),
   }
 }
 
@@ -114,9 +113,10 @@ const pages = computed<PaletteItem[]>(() => {
 })
 
 const results = computed(() => {
-  if (!query.value) return pages.value
-  const q = removeDiacritics(query.value).toLowerCase()
-  return pages.value.filter(p => p.search.includes(q))
+  const raw = query.value.trim()
+  if (!raw) return pages.value
+  const tokens = removeDiacritics(raw).split(/\s+/).filter(Boolean)
+  return pages.value.filter(p => tokens.every(t => p.search.includes(t)))
 })
 const emptySuggestions = computed(() => pages.value.slice(0, 4).map(page => page.label).join(', '))
 
@@ -178,22 +178,21 @@ defineExpose({ open })
 .cmd-item.active { background: rgba(var(--blue-rgb),.06); }
 .cmd-item.active::before {
   content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px; border-radius: 2px;
-  background: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
+  background: var(--sediment-tick);
 }
-.dark .cmd-item.active::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .cmd-item:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .cmd-icon-chip {
-  flex-shrink: 0; width: 26px; height: 26px; border-radius: var(--radius-full);
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: var(--radius-pill, 999px);
   display: flex; align-items: center; justify-content: center;
   background: var(--surface-container, rgba(var(--black-rgb),.04));
 }
 .dark .cmd-icon-chip { background: rgba(var(--white-rgb),.06); }
 .cmd-icon { font-size: .95rem; line-height: 1; }
-.cmd-label { font-weight: 500; flex: 1; }
-.cmd-hint { font-size: .72rem; text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--muted); }
+.cmd-label { font-weight: 500; line-height: var(--leading-snug); overflow-wrap: break-word; flex: 1; }
+.cmd-hint { font-size: .72rem; line-height: var(--leading-snug); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--muted); }
 .cmd-empty { padding: var(--space-5); text-align: center; color: var(--muted); font-size: .9rem; display: flex; flex-direction: column; gap: 6px; }
-.cmd-empty-query { font-family: var(--font-editorial); }
-.cmd-empty-hint { font-size: .75rem; opacity: .6; }
+.cmd-empty-query { font-family: var(--font-editorial); line-height: var(--leading-snug); text-wrap: balance; overflow-wrap: break-word; }
+.cmd-empty-hint { font-size: .75rem; line-height: var(--leading-snug); opacity: .6; }
 .cmd-footer { padding: var(--space-2) var(--space-5); border-top: .5px solid var(--line); font-size: .8rem; color: var(--muted); }
 .cmd-footer kbd { background: rgba(var(--black-rgb),.06); padding: 2px 6px; border-radius: 4px; font-family: inherit; font-size: .75rem; }
 .dark .cmd-footer kbd { background: rgba(var(--white-rgb),.08); }

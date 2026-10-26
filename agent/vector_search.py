@@ -59,14 +59,17 @@ STOP_WORDS = {
 #  VIETNAMESE TEXT PROCESSING
 # ══════════════════════════════════════════════════
 
+_COMBINING_MARKS_RE = re.compile(r"[\u0300-\u036f]")
+
+
 @lru_cache(maxsize=8192)
 def _strip_vietnamese_diacritics(text: str) -> str:
     """Fold Vietnamese diacritics (including đ/Đ) to ASCII base characters."""
     nfkd = unicodedata.normalize("NFKD", text.replace("đ", "d").replace("Đ", "D"))
-    return "".join(c for c in nfkd if not unicodedata.combining(c))
+    return _COMBINING_MARKS_RE.sub("", nfkd)
 
 
-_STOP_WORDS_FOLDED = {_strip_vietnamese_diacritics(w) for w in STOP_WORDS}
+_STOP_WORDS_FOLDED = frozenset(_strip_vietnamese_diacritics(w) for w in STOP_WORDS)
 _NON_VN_WORD_RE = re.compile(
     r"[^\w\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]"
 )

@@ -53,7 +53,7 @@ export const ADMIN_KINDS: KindDef[] = [
       { key: 'heritage_level', label: 'Xếp hạng DT', widget: 'select', options: HERITAGE_LEVELS },
     ],
     chips: [
-      { key: 'di-tich-qg', label: '🏛️ Di tích quốc gia', test: e => String(attr(e, 'heritage_level') || '').includes('quốc gia') },
+      { key: 'di-tich-qg', label: 'Di tích quốc gia', test: e => String(attr(e, 'heritage_level') || '').includes('quốc gia') },
       { key: 'thieu-dia-chi', label: 'Thiếu địa chỉ', test: noAttr('address') },
       { key: 'thieu-mua', label: 'Thiếu mùa', test: noSeason },
     ],
@@ -80,7 +80,7 @@ export const ADMIN_KINDS: KindDef[] = [
       { key: 'price_range', label: 'Giá', widget: 'text' },
     ],
     chips: [
-      { key: 'ocop-4-5', label: '⭐ OCOP 4–5 sao', test: e => Number(attr(e, 'ocop_star') || 0) >= 4 },
+      { key: 'ocop-4-5', label: 'OCOP 4–5 sao', test: e => Number(attr(e, 'ocop_star') || 0) >= 4 },
       { key: 'thieu-producer', label: 'Thiếu nhà SX', test: noAttr('producer') },
       { key: 'thieu-gia', label: 'Thiếu giá', test: noAttr('price_range') },
     ],
@@ -94,7 +94,7 @@ export const ADMIN_KINDS: KindDef[] = [
       { key: 'specialty', label: 'Đặc trưng', widget: 'text' },
     ],
     chips: [
-      { key: 'co-rating', label: '⭐ Có đánh giá', test: e => Number(attr(e, 'rating') || 0) > 0 },
+      { key: 'co-rating', label: 'Có đánh giá', test: e => Number(attr(e, 'rating') || 0) > 0 },
       { key: 'thieu-gia', label: 'Thiếu giá', test: noAttr('price_range') },
       { key: 'thieu-dia-chi', label: 'Thiếu địa chỉ', test: noAttr('address') },
     ],
@@ -121,7 +121,7 @@ export const ADMIN_KINDS: KindDef[] = [
       { key: 'organizer', label: 'BTC', widget: 'text' },
     ],
     chips: [
-      { key: 'le-hoi-am-lich', label: '🌙 Lễ hội âm lịch', test: e => !!attr(e, 'lunar_date') },
+      { key: 'le-hoi-am-lich', label: 'Lễ hội âm lịch', test: e => !!attr(e, 'lunar_date') },
       { key: 'thieu-ngay', label: 'Thiếu ngày', test: e => !attr(e, 'date_start') && !attr(e, 'lunar_date') },
     ],
   },

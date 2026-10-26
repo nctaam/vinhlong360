@@ -14,7 +14,7 @@
         <!-- Step 1: Phone -->
         <div v-if="step === 'phone'" class="otp-step">
           <h3 tabindex="-1" class="step-label">Nhập số điện thoại</h3>
-          <p>Nhập SĐT để đăng nhập hoặc tạo tài khoản mới.</p>
+          <p>Nhập số điện thoại để đăng nhập hoặc tạo tài khoản mới.</p>
           <div class="form-group">
             <input
               v-model="phone"
@@ -74,7 +74,7 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label" for="reg-username">Username <span class="required">*</span></label>
+            <label class="form-label" for="reg-username">Tên người dùng <span class="required">*</span></label>
             <input
               id="reg-username"
               v-model="regUsername"
@@ -86,9 +86,9 @@
               maxlength="30"
               @blur="checkUsernameAvail"
             />
-            <p v-if="usernameStatus === 'taken'" class="form-error">Username đã được sử dụng</p>
-            <p v-else-if="usernameStatus === 'invalid'" class="form-error">Username 3–30 ký tự, bắt đầu bằng chữ, chỉ gồm chữ/số/dấu chấm/gạch ngang</p>
-            <p v-else-if="usernameStatus === 'available'" class="form-success">Username khả dụng</p>
+            <p v-if="usernameStatus === 'taken'" class="form-error">Tên người dùng đã được sử dụng</p>
+            <p v-else-if="usernameStatus === 'invalid'" class="form-error">Tên người dùng 3–30 ký tự, bắt đầu bằng chữ, chỉ gồm chữ/số/dấu chấm/gạch ngang</p>
+            <p v-else-if="usernameStatus === 'available'" class="form-success">Tên người dùng khả dụng</p>
           </div>
           <div class="form-group">
             <label class="form-label" for="reg-password">Mật khẩu <span class="required">*</span></label>
@@ -425,11 +425,11 @@ async function handleRegister() {
   }
   const uname = regUsername.value.trim().toLowerCase()
   if (!uname || uname.length < 3 || !/^[a-z][a-z0-9._-]*$/.test(uname)) {
-    error.value = 'Username phải từ 3 ký tự, bắt đầu bằng chữ, chỉ gồm chữ/số/dấu chấm/gạch ngang'
+    error.value = 'Tên người dùng phải từ 3 ký tự, bắt đầu bằng chữ, chỉ gồm chữ/số/dấu chấm/gạch ngang'
     return
   }
   if (usernameStatus.value === 'taken') {
-    error.value = 'Username đã được sử dụng, vui lòng chọn tên khác'
+    error.value = 'Tên người dùng đã được sử dụng, vui lòng chọn tên khác'
     return
   }
   if (!regPassword.value || regPassword.value.length < 8) {
@@ -622,12 +622,12 @@ function onOtpPaste(e: ClipboardEvent) {
 .modal-head-text { min-width: 0; }
 .modal-eyebrow {
   display: block; margin-bottom: var(--space-1);
-  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
+  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700; line-height: var(--leading-snug);
   letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
 }
 .modal-head-editorial #auth-modal-title {
-  font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em;
-  margin: 0;
+  font-family: var(--font-editorial); font-weight: 600; line-height: var(--leading-snug); letter-spacing: -.01em;
+  text-wrap: balance; overflow-wrap: break-word; margin: 0;
 }
 /* tri-province hairline — quiet rule beneath the masthead, echoes card-rule/sediment-tick */
 .modal-rule {
@@ -638,7 +638,8 @@ function onOtpPaste(e: ClipboardEvent) {
 .dark .modal-rule { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 /* step eyebrow — small-caps label above each step's own heading, restrained */
 .step-label {
-  font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.005em;
+  font-family: var(--font-editorial); font-weight: 600; line-height: var(--leading-snug); letter-spacing: -.005em;
+  text-wrap: balance; overflow-wrap: break-word;
 }
 .consent-row { display: flex; gap: var(--space-3); align-items: flex-start; margin: var(--space-3) 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); cursor: pointer; padding: var(--space-3); border-radius: var(--radius-surface); transition: background .3s var(--ease-out); }
 .consent-row:hover { background: var(--bg-alt); }
@@ -649,7 +650,7 @@ function onOtpPaste(e: ClipboardEvent) {
 @keyframes successPop { from { transform: scale(.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .otp-step { animation: stepSlideIn .35s var(--ease-out-expo); }
 @keyframes stepSlideIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: translateX(0); } }
-.form-label { display: block; font-size: var(--text-sm); font-weight: 600; margin-bottom: var(--space-1); color: var(--ink-secondary); }
+.form-label { display: block; font-size: var(--text-sm); font-weight: 600; line-height: var(--leading-snug); margin-bottom: var(--space-1); color: var(--ink-secondary); }
 .form-label .required { color: var(--error); }
 .form-group { margin-bottom: var(--space-3); }
 .form-success { font-size: var(--text-sm); color: var(--success); margin-top: var(--space-1); }

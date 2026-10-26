@@ -102,10 +102,10 @@
     </div>
 
     <!-- Full filterable grid -->
-    <section ref="gridSection" class="block reveal" aria-label="Duyệt tất cả sản phẩm">
+    <section class="block reveal" aria-label="Duyệt tất cả sản phẩm">
       <div class="controls">
         <div class="search-row">
-          <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm trong sản phẩm…" aria-label="Tìm sản phẩm" />
+          <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm đặc sản, trái cây, quà quê…" aria-label="Tìm sản phẩm" />
           <select v-model="sortBy" aria-label="Sắp xếp">
             <option value="relevant">Phù hợp nhất</option>
             <option value="popular">Phổ biến</option>
@@ -205,6 +205,8 @@ import type { Entity } from '~/types'
 import { inSeason, relevanceScore } from '~/composables/useSeason'
 import { PRODUCT_CATALOG_FAQS } from '~/composables/useSeoHelpers'
 
+const VI_COLLATOR = new Intl.Collator('vi')
+
 useReveal()
 const { f: pc } = usePageContent('san_pham')
 const currentMonth = new Date().getMonth() + 1
@@ -213,15 +215,14 @@ const q = ref('')
 const seasonFilter = ref(String(currentMonth))
 const ocopOnly = ref(false)
 
-const seasonFilterOptions = computed(() => [
+const seasonFilterOptions = [
   { key: 'all', label: 'Tất cả' },
   ...Array.from({ length: 12 }, (_, i) => ({ key: String(i + 1), label: `T${i + 1}` })),
   { key: 'flood', label: 'Mùa nước nổi', iconName: 'droplet' },
-])
+]
 const sortBy = ref('relevant')
 const sortLabels: Record<string, string> = { popular: 'Phổ biến', newest: 'Mới nhất', name: 'Tên A-Z' }
 const viewMode = ref('grid')
-const gridSection = ref<HTMLElement | null>(null)
 
 useFilterUrl({ q, mua: seasonFilter, sort: sortBy }, { q: '', mua: String(currentMonth), sort: 'relevant' })
 const { sortByRegion } = useRegionPref()
@@ -276,9 +277,7 @@ const seasonalHighlights = computed(() => {
     .slice(0, 4)
 })
 
-function scrollToGrid() {
-  nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
-}
+// (Xoá hàm scrollToGrid mồ côi)
 
 const activeFilterCount = computed(() => {
   let n = 0
@@ -323,7 +322,7 @@ const filtered = computed(() => {
       list.sort((a: Entity, b: Entity) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))
       break
     case 'name':
-      list.sort((a: Entity, b: Entity) => (a.name || '').localeCompare(b.name || '', 'vi'))
+      list.sort((a: Entity, b: Entity) => VI_COLLATOR.compare(a.name || '', b.name || ''))
       break
     default:
       if (seasonFilter.value !== 'all') {
@@ -445,7 +444,6 @@ useHead(() => {
   color: var(--color-brand);
   margin: 0 0 var(--space-2);
 }
-.dark .catalog-hero-inner p.market-kicker { color: var(--color-brand); }
 .catalog-hero-inner p.market-dek {
   font-family: var(--font-editorial);
   font-size: clamp(1rem, .94rem + .3vw, 1.1rem);
@@ -463,8 +461,10 @@ useHead(() => {
   margin: 0;
   font-size: var(--text-base);
   font-weight: var(--weight-bold);
-  line-height: inherit;
+  line-height: var(--leading-snug, 1.3);
   color: inherit;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 .market-stats { position: relative; padding-left: var(--space-4); }
 .market-stats::before {
@@ -552,7 +552,6 @@ useHead(() => {
   font-size: var(--text-sm);
   color: var(--muted);
   overflow-wrap: break-word;
-  word-break: break-word;
 }
 .ocop-teaser-copy strong { font-family: var(--font-editorial); color: var(--ink); font-weight: var(--weight-semibold); }
 .ocop-teaser-arrow {
@@ -565,7 +564,6 @@ useHead(() => {
 .ocop-teaser-link:hover .ocop-teaser-arrow {
   transform: translateX(3px);
 }
-.dark .ocop-teaser-link { background: transparent; border-block-color: var(--line); }
 
 @media (prefers-reduced-motion: reduce) {
   .seasonal-banner-live .seasonal-banner-icon { animation: none; }

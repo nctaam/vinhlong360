@@ -137,16 +137,8 @@ function resolveIcon(f: FilterOption): string | null {
   background: var(--chip-active-bg);
   color: var(--chip-active-text);
   border-color: transparent;
-  position: relative;
-}
-.fc-chip.active::after {
-  content: "";
-  position: absolute; left: var(--space-3); right: var(--space-3); bottom: 3px;
-  height: 2px; border-radius: 2px;
-  background: linear-gradient(90deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
-}
-.dark .fc-chip.active::after {
-  background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+  font-weight: 500;
+  box-shadow: var(--shadow-xs);
 }
 
 .fc-icon { font-size: 1.1em; }

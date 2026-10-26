@@ -137,7 +137,7 @@
         <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
           <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
           <button type="button"
-            v-for="(meta, key) in AREA_META" :key="key"
+            v-for="(meta, key) in CURRENT_AREA_META" :key="key"
             :class="['chip', { active: areaFilter === key }]"
             :aria-pressed="areaFilter === key"
             @click="areaFilter = key as string"
@@ -175,12 +175,12 @@
         <div v-if="paceFilter === 'all'" class="pace-shelves">
           <div v-for="shelf in paceShelves" :key="shelf.key" class="pace-shelf">
             <p class="pace-shelf-kicker"><IconLine :name="shelf.icon" aria-hidden="true" /> {{ shelf.label }}</p>
-            <div class="grid itin">
+            <div class="grid itin grid--asymmetric">
               <ItineraryCard v-for="it in shelf.items" :key="it.id" :itinerary="it" />
             </div>
           </div>
         </div>
-        <div v-else class="grid itin">
+        <div v-else class="grid itin grid--asymmetric">
           <ItineraryCard v-for="it in filtered" :key="it.id" :itinerary="it" />
         </div>
       </template>
@@ -205,7 +205,7 @@
 
 <script setup lang="ts">
 import type { Itinerary } from '~/types'
-import { TYPE_META, AREA_META } from '~/composables/useConstants'
+import { AREA_META, CURRENT_AREA_META } from '~/composables/useConstants'
 
 useReveal()
 
@@ -274,15 +274,15 @@ const { data: itineraries, error: fetchError } = await useAsyncData('itineraries
 )
 
 const areaCounts = computed(() => {
-  return Object.entries(AREA_META)
+  return Object.entries(CURRENT_AREA_META)
     .map(([key, meta]) => ({ key, name: meta.name, count: countByArea(key) }))
     .filter(item => item.count > 0)
 })
 
 function itineraryMatchesArea(it: Itinerary, key: string) {
-  if (it.area === key) return true
+  if (areaMatchesScope(it.area, key)) return true
   const areas = Array.isArray(it.areas) ? it.areas : []
-  return areas.includes(key)
+  return areas.includes(key) || areas.some(area => areaMatchesScope(area, key))
 }
 
 function countByArea(key: string) {
@@ -394,28 +394,29 @@ useHead(() => ({
   background: var(--card); border-radius: 50%; box-shadow: var(--shadow-xs);
 }
 .day-arc-label { font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps); font-weight: var(--weight-semibold); white-space: nowrap; }
-.dark .day-arc-glyph { background: var(--card); box-shadow: 0 1px 3px rgba(var(--black-rgb),.4); }
+.dark .day-arc-glyph { box-shadow: 0 1px 3px rgba(var(--black-rgb),.4); }
 
 /* ── Pace chips — "how much time do you have," the first filter axis ── */
 .pace-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .pace-chip {
   display: inline-flex; align-items: center; gap: var(--space-2);
   padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill, 999px);
-  border: .5px solid var(--line); background: var(--card); color: var(--ink);
+  border: 1px solid var(--border-liquid-glass, var(--line)); background: var(--card); color: var(--ink);
   font-size: var(--text-sm); font-weight: var(--weight-medium); cursor: pointer;
   min-height: 44px;
+  white-space: nowrap;
+  box-shadow: var(--shadow-xs);
   transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1), background .25s var(--ease-out), border-color .25s var(--ease-out), box-shadow .25s var(--ease-out);
 }
 .pace-chip-glyph { font-size: var(--text-base); line-height: 1; }
-.pace-chip-count { font-size: var(--text-2xs); color: var(--muted); font-variant-numeric: tabular-nums; }
-.pace-chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); border-color: var(--border); }
+.pace-chip-count { font-size: var(--text-2xs); color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pace-chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); border-color: color-mix(in srgb, var(--alluvial-gold) 40%, var(--border-liquid-glass)); }
 .pace-chip:active { transform: scale(.96); transition-duration: .08s; }
 .pace-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 /* --color-on-action thay cho chữ trắng cứng: hợp đồng mà tri-region-color.css áp cho mọi control
    nền-đặc; .pace-chip đặt tên khác nên đã lọt khỏi rule đó. */
-.pace-chip.active { background: var(--color-action); border-color: var(--color-action); color: var(--color-on-action); }
+.pace-chip.active { background: var(--color-action); border-color: var(--color-action); color: var(--color-on-action); box-shadow: 0 2px 10px rgba(var(--color-action-rgb), 0.28); }
 .pace-chip.active .pace-chip-count { color: inherit; opacity: .8; }
-.dark .pace-chip { background: var(--card); border-color: var(--line); }
 .dark .pace-chip.active { background: var(--color-action); border-color: var(--color-action); }
 
 /* ── Pace shelves — "shelves of days" grouping when browsing all paces ── */
@@ -440,11 +441,10 @@ useHead(() => ({
 .saved-row .card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
 .saved-row .card:active { transform: translateY(-1px) scale(.98); transition-duration: .08s; }
 
-.journey-stats { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-3); }
-.js-item { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-alt); border-radius: var(--radius-surface); font-size: var(--text-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out); }
-.js-item:hover { background: var(--card); transform: translateY(-2px); box-shadow: var(--shadow-xs); }
-.js-item:active { transform: scale(.97); transition-duration: .08s; }
-.js-emoji { font-size: var(--text-lg); }
+.journey-stats { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-3); padding-block: var(--space-2); border-block: 1px solid var(--line); }
+.js-item { display: inline-flex; align-items: center; gap: var(--space-1); padding-inline-start: var(--space-3); border-inline-start: 1px solid var(--line); font-size: var(--text-sm); }
+.js-item:first-child { padding-inline-start: 0; border-inline-start: 0; }
+.js-emoji { font-size: var(--text-base); color: var(--color-brand); }
 
 /* Editorial hero stat-items: brand-tinted surface + accent border */
 .catalog-hero .stat-item {
@@ -470,8 +470,6 @@ useHead(() => ({
 
 /* Dark mode */
 .dark .saved-section { border-bottom-color: var(--line); }
-.dark .js-item { background: rgba(var(--white-rgb),.04); }
-.dark .js-item:hover { background: rgba(var(--white-rgb),.07); }
 .dark .saved-row .card { background: var(--bg-alt); border-color: var(--line); }
 .dark .saved-row .card:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb),.1); }
 

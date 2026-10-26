@@ -13,15 +13,15 @@
         <strong class="ri-byline">{{ review.display_name || 'Ẩn danh' }}</strong>
       </NuxtLink>
       <span v-if="review.rating" class="star-rating-inline">
-        <span v-for="s in 5" :key="s" class="star" :class="{ active: s <= review.rating }" aria-hidden="true">★</span>
+        <span v-for="s in 5" :key="s" class="star" :class="{ active: s <= review.rating }" aria-hidden="true"><IconLine name="star" /></span>
       </span>
       <time v-if="review.created_at" class="ri-date" :datetime="review.created_at">{{ timeAgo(review.created_at) }}</time>
       <div v-if="owned" class="ri-actions">
         <button
           type="button"
-          class="ri-action-btn ri-delete"
+          class="ri-action-btn"
           :disabled="deleting"
-          :aria-label="`Xóa đánh giá của bạn`"
+          aria-label="Xóa đánh giá của bạn"
           @click="$emit('delete', review)"
         >{{ deleting ? 'Đang xóa…' : 'Xóa' }}</button>
         <span v-if="deleteError" class="rf-error" role="alert">{{ deleteError }}</span>
@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import type { Review } from '~/types'
 
-const props = defineProps<{
+defineProps<{
   review: Review
   owned: boolean
   deleting: boolean
@@ -54,11 +54,11 @@ const { timeAgo } = useTimeAgo()
 </script>
 
 <style scoped>
-.ri-avatar { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0; display: block; }
+.ri-avatar { width: 32px; height: 32px; border-radius: var(--radius-pill, 999px); overflow: hidden; flex-shrink: 0; display: block; }
 /* Byline reads like a masthead credit line, not a UI label — small-caps-ish tracking, no font swap (avatar row stays compact). */
-.ri-byline { letter-spacing: .01em; }
+.ri-byline { letter-spacing: .01em; line-height: var(--leading-snug); overflow-wrap: break-word; }
 
-.ri-content { text-wrap: pretty; }
+.ri-content { text-wrap: pretty; overflow-wrap: break-word; }
 /* Testimony treatment for the one most-helpful review per list (featured prop) — a light editorial quote frame, not a full pull-quote.
    Restraint: only the single featured review gets this so the list doesn't perform. */
 .ri-content-testimony {
@@ -80,9 +80,8 @@ const { timeAgo } = useTimeAgo()
   color: var(--color-action);
   opacity: .5;
 }
-.dark .ri-content-testimony::before { color: var(--color-action); opacity: .55; }
 
-.ri-helpful { margin-top: var(--space-2); display: inline-flex; align-items: center; gap: .3rem; font-size: var(--text-sm); padding: .3rem .7rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 44px; }
+.ri-helpful { margin-top: var(--space-2); display: inline-flex; align-items: center; gap: .3rem; font-size: var(--text-sm); line-height: var(--leading-snug); padding: .3rem .7rem; border: 1px solid var(--border); border-radius: var(--radius-pill, 999px); background: var(--bg); color: var(--ink-secondary, var(--ink)); cursor: pointer; min-height: 44px; }
 .ri-helpful.active { background: var(--color-action-surface); border-color: var(--color-action); color: var(--color-action); }
 .ri-helpful-count { font-weight: var(--weight-medium); font-variant-numeric: tabular-nums; }
 .ri-actions { margin-inline-start: auto; display: inline-flex; gap: var(--space-2); }
@@ -96,14 +95,12 @@ const { timeAgo } = useTimeAgo()
 .ri-action-btn:focus-visible { outline: 2px solid var(--error); outline-offset: 1px; }
 .ri-action-btn:disabled { opacity: .55; cursor: not-allowed; }
 .rf-error { font-size: var(--text-sm); color: var(--error); margin-top: var(--space-1); }
-/* Sediment accent: warm amber-tinted surface and balanced hairline border. */
+/* Wave 10: Open Left-Rule Editorial Testimony — unboxed from 4-sided amber box */
 .review-featured {
-  border: 1px solid color-mix(in srgb, var(--color-material-amber) 35%, var(--line));
-  background: color-mix(in srgb, var(--color-material-amber) 5%, var(--card));
-  border-radius: var(--radius-surface);
+  border: 0;
+  border-inline-start: 2px solid var(--color-material-amber);
+  background: transparent;
+  border-radius: 0;
+  padding-inline-start: var(--space-4);
 }
-.dark .review-featured {
-  border-color: color-mix(in srgb, var(--color-material-amber) 30%, var(--line));
-}
-/* background tint for .review-featured in dark stays in dark-overrides.css */
 </style>

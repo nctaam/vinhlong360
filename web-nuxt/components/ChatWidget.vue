@@ -60,10 +60,10 @@
 </template>
 
 <script setup lang="ts">
-const LIFECYCLE_CLEAR_VERSION = 'v1'
-const CHAT_STORAGE_KEY = 'chat_sid'
 import { consumeJsonSseStream } from '~/utils/sse'
 import { consumeLifecycleClearInstruction } from '~/composables/useLifecycleClear'
+
+const CHAT_STORAGE_KEY = 'chat_sid'
 
 const route = useRoute()
 // declutter-2 A4: ẩn FAB trên trang chi tiết entity — nơi đã có AITravelTips +
@@ -74,7 +74,7 @@ const { enabled: ff } = useFeature()
 const { authHeaders } = useAuth()
 const chatTitle = computed(() => ss('chat.title', 'Hỏi về Vĩnh Long'))
 const chatPlaceholder = computed(() => ss('chat.placeholder', 'Hỏi gì đó về Vĩnh Long…'))
-const chatDisclaimer = computed(() => ss('chat.disclaimer', 'Nội dung do AI tạo, có thể chưa chính xác — vui lòng kiểm chứng.'))
+const chatDisclaimer = computed(() => ss('chat.disclaimer', 'Thông tin thực địa mang tính tham khảo — vui lòng kiểm chứng trước khi khởi hành.'))
 const open = ref(false)
 const inputText = ref('')
 interface ChatMessage {
@@ -347,7 +347,7 @@ async function sendMessage(text: string, retryOf?: string) {
         if (data.failed === true && !streamError) streamError = data
         if (typeof data.session_id === 'string' && data.session_id) {
           sessionId.value = data.session_id
-          try { sessionStorage.setItem('chat_sid', data.session_id) } catch { /* */ }
+          try { sessionStorage.setItem(CHAT_STORAGE_KEY, data.session_id) } catch { /* */ }
         }
         if (Array.isArray(data.suggestions) && data.suggestions.length) {
           suggestions.value = data.suggestions.filter((value): value is string => typeof value === 'string')
@@ -415,6 +415,7 @@ onBeforeUnmount(() => {
   color: var(--text-muted, var(--muted));
   text-align: center;
 }
+.cmsg-body { overflow-wrap: break-word; }
 .cmsg-failed { opacity: .85; border: 1px solid var(--error-border, color-mix(in srgb, var(--error) 40%, transparent)); background: color-mix(in srgb, var(--error) 6%, transparent); border-radius: var(--radius-control); padding: var(--space-2); }
 .cmsg-retry {
   display: inline-flex;
@@ -422,6 +423,7 @@ onBeforeUnmount(() => {
   gap: var(--space-1);
   margin-top: var(--space-1);
   font-size: var(--text-2xs);
+  line-height: var(--leading-snug);
   color: var(--color-action);
   background: none;
   border: none;
@@ -441,7 +443,7 @@ onBeforeUnmount(() => {
   transform: rotate(180deg);
 }
 .cmsg-retry:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.csuggestions button { min-height: 44px; }
+.csuggestions button { min-height: 44px; line-height: var(--leading-snug); overflow-wrap: break-word; }
 .chat-panel-input button {
   display: inline-flex;
   align-items: center;

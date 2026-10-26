@@ -42,7 +42,6 @@
           <path class="moon-lit" :d="todayMoonPath" />
         </svg>
         <span class="lunar-ribbon-label">Trăng <strong>{{ todayLunar.day }}/30</strong></span>
-        <MekongWaterBadge :lunar-day="todayLunar.day" compact />
         <div class="lunar-ribbon-track">
           <button
             v-for="tick in ribbonTicks" :key="tick.id"
@@ -59,7 +58,7 @@
     </section>
 
     <!-- Spotlight -->
-    <CatalogSpotlight :items="allEvents" />
+    <CatalogSpotlight :items="allEvents" color-recipe="tri-region-v1" />
 
     <!-- AEO Plaque & Contemporary Event Ledger Digest -->
     <CatalogAeoPlaque
@@ -78,7 +77,7 @@
         },
         {
           heading: 'Hội chợ Nông nghiệp &amp; Triển lãm OCOP',
-          text: 'Điểm hẹn giao thương và quảng bá hơn 100 nông đặc sản OCOP tiêu biểu của 8 huyện thị thành tỉnh Vĩnh Long và ĐBSCL.',
+          text: 'Điểm giao thương và giới thiệu hơn 100 nông đặc sản OCOP tiêu biểu của 124 xã/phường toàn tỉnh Vĩnh Long và ĐBSCL.',
         },
       ]"
       cta-to="/le-hoi"
@@ -165,7 +164,7 @@
       <div class="sediment-head sediment-head-first"><h2>Sự kiện tại Vĩnh Long</h2></div>
       <p>Ngoài các lễ hội truyền thống, các vùng của tỉnh Vĩnh Long hợp nhất (gồm khu vực Bến Tre và Trà Vinh trước 7-2025) ngày càng có nhiều sự kiện văn hoá, thể thao và du lịch hiện đại. Hội chợ nông sản, festival ẩm thực, giải chạy marathon, triển lãm nghệ thuật và các chương trình xúc tiến du lịch được tổ chức thường xuyên, đặc biệt vào dịp cuối tuần và các ngày lễ lớn.</p>
       <blockquote class="pull-quote">
-        Thưởng thức ẩm thực đường phố, xem trình diễn nghề truyền thống, mua sản phẩm OCOP trực tiếp từ nhà sản xuất, hoặc tham gia hoạt động cộng đồng cùng người dân bản địa — cùng một vùng đất, cách hiện đại để gặp nó.
+        Thưởng thức ẩm thực đường phố, xem trình diễn nghề truyền thống, mua sản phẩm OCOP trực tiếp từ nhà sản xuất, hoặc tham gia hoạt động cộng đồng cùng người dân bản địa — cùng một vùng đất, nhưng qua nhịp sống đương đại gần gũi.
         <cite>— Ban biên tập vinhlong360 · Ký sự sự kiện</cite>
       </blockquote>
     </section>
@@ -225,7 +224,6 @@
               <span v-if="e.place_name" class="event-place"><IconLine name="pin" /> {{ e.place_name }}</span>
               <span v-if="getArea(e)" class="event-area"><IconLine :name="AREA_META[getArea(e)]?.icon || 'pin'" /> {{ AREA_META[getArea(e)]?.name }}</span>
               <span v-if="dateRange(e)" class="event-dates"><IconLine name="calendar" /> {{ dateRange(e) }}</span>
-              <MekongWaterBadge v-if="eventStart(e)" :date="eventStart(e)" compact />
             </div>
           </div>
           <div v-if="eventImageUrl(e)" class="event-media">
@@ -321,10 +319,11 @@ const statusFilterOptions = [
 ]
 
 const todayStr = new Date().toISOString().slice(0, 10)
+// (Xoá 6 dòng trên vì đã hoist lên dòng 322)
 function eventStatus(e: Entity): 'upcoming' | 'past' | '' {
-  const ds = e.attributes?.date_start_iso || e.attributes?.date_start
+  const ds = eventStart(e)
   if (!ds) return ''
-  const de = e.attributes?.date_end_iso || e.attributes?.date_end || ds
+  const de = eventEnd(e) || ds
   if (todayStr > de) return 'past'
   if (ds >= todayStr) return 'upcoming'
   return ''
@@ -376,16 +375,15 @@ function countByArea(key: string) {
 }
 
 const upcoming = computed(() => {
-  const now = new Date().toISOString().slice(0, 10)
   return allEvents.value
     .filter((e: Entity) => {
-      const ds = e.attributes?.date_start_iso || e.attributes?.date_start
-      return ds && ds >= now
+      const ds = eventStart(e)
+      return ds && ds >= todayStr
     })
     // A6 declutter-2: ledger tôn trọng filter đang chọn (đồng bộ với grid).
     .filter((e: Entity) => areaFilter.value === 'all' || getArea(e) === areaFilter.value)
     .filter((e: Entity) => statusFilter.value === 'all' || eventStatus(e) === statusFilter.value)
-    .sort((a: Entity, b: Entity) => (a.attributes?.date_start_iso || a.attributes?.date_start || '').localeCompare(b.attributes?.date_start_iso || b.attributes?.date_start || ''))
+    .sort((a: Entity, b: Entity) => eventStart(a).localeCompare(eventStart(b)))
     .slice(0, 6)
 })
 

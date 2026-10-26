@@ -22,10 +22,10 @@
         <div class="stat-item almanac-stat" tabindex="0">
           <CountUp :value="CARD_TYPES.length" class="stat-num" />
           <span class="stat-label">loại hình</span>
-          <span class="almanac-gloss" aria-hidden="true">đủ mọi cách sống ở đây</span>
+          <span class="almanac-gloss" aria-hidden="true">nhịp sống miệt vườn bản địa</span>
         </div>
         <div class="stat-item almanac-stat" tabindex="0">
-          <CountUp :value="Object.keys(AREA_META).length" class="stat-num" />
+          <CountUp :value="Object.keys(CURRENT_AREA_META).length" class="stat-num" />
           <span class="stat-label">khu vực</span>
           <span class="almanac-gloss" aria-hidden="true">một dải sông chung dòng</span>
         </div>
@@ -33,7 +33,7 @@
     </section>
 
     <!-- Spotlight -->
-    <CatalogSpotlight :items="firstPage" />
+    <CatalogSpotlight :items="firstPage" color-recipe="tri-region-v1" />
 
     <!-- AEO Plaque & AI Search Digest -->
     <CatalogAeoPlaque
@@ -56,7 +56,7 @@
         },
       ]"
       cta-to="/tim-kiem"
-      cta-label="Mở cổng tìm kiếm địa điểm thông minh"
+      cta-label="Tra cứu toàn diện địa điểm thực địa"
     />
 
     <!-- Region discovery — SIGNATURE MOMENT: province stamps -->
@@ -66,7 +66,7 @@
       </div>
       <div class="province-stamps">
         <button type="button"
-          v-for="(meta, key) in AREA_META" :key="key"
+          v-for="(meta, key) in CURRENT_AREA_META" :key="key"
           :class="['province-stamp', { active: areaFilter === key }]"
           :style="{ '--stamp-rgb': STAMP_RGB[key as string] || 'var(--color-brand-rgb)' }"
           :aria-pressed="areaFilter === key"
@@ -123,7 +123,7 @@
       <div class="dd-search">
         <svg class="dd-search-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
         <input v-model="qInput" type="search" enterkeyhint="search" class="dd-search-input" placeholder="Tìm địa điểm, đặc sản, làng nghề…" aria-label="Tìm địa điểm" @keyup.enter="applyQuery" />
-        <button v-if="qApplied" type="button" class="dd-search-clear" aria-label="Xoá tìm" @click="clearQuery"><IconLine name="x" /></button>
+        <button v-if="qApplied" type="button" class="dd-search-clear" aria-label="Xóa tìm kiếm" @click="clearQuery"><IconLine name="x" /></button>
         <button type="button" class="btn btn-primary btn-sm" @click="applyQuery">Tìm</button>
       </div>
 
@@ -171,7 +171,7 @@
         <div v-if="emptyRecovery.length" class="dd-empty-recovery">
           <button v-for="r in emptyRecovery" :key="r.label" type="button" class="chip" @click="r.apply">{{ r.label }}</button>
         </div>
-        <button type="button" class="btn btn-outline btn-sm" @click="resetAll">Xoá bộ lọc</button>
+        <button type="button" class="btn btn-outline btn-sm" @click="resetAll">Xóa bộ lọc</button>
       </template>
     </EmptyState>
 
@@ -194,11 +194,11 @@
 </template>
 
 <script setup lang="ts">
-import { TYPE_META, CARD_TYPES, AREA_META } from '~/composables/useConstants'
+import { TYPE_META, CARD_TYPES, AREA_META, CURRENT_AREA_META } from '~/composables/useConstants'
 useReveal()
 
 // Almanac hero glyph — a compass rose (editorial, single-colour) replacing the
-// bare 📍 emoji app-icon. Static markup only, no data dependency.
+// bare pin emoji app-icon. Static markup only, no data dependency.
 const COMPASS_SVG = `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="24" cy="24" r="19"/><circle cx="24" cy="24" r="1.6" fill="currentColor" stroke="none"/><path d="M24 8 L28 22 L24 26 L20 22Z" fill="currentColor" stroke="none"/><path d="M24 40 L20 26 L24 22 L28 26Z" fill="none"/><path d="M24 6 L24 11" stroke-linecap="round"/><path d="M24 37 L24 42" stroke-linecap="round"/><path d="M6 24 L11 24" stroke-linecap="round"/><path d="M37 24 L42 24" stroke-linecap="round"/></svg>`
 
 // Province-stamp tint per area — reuses existing brand RGB tokens (no new colours).
@@ -230,7 +230,6 @@ const qInput = ref<string>(qApplied.value)
 
 const typeChips = CARD_TYPES.map(t => ({
   value: t,
-  emoji: TYPE_META[t]?.emoji || '📍',
   icon: TYPE_META[t]?.icon || 'pin',
   label: TYPE_META[t]?.label || t,
 }))
@@ -304,14 +303,14 @@ const hasActiveFilters = computed(() => typeFilter.value !== 'all' || areaFilter
 const emptyTitle = 'Chưa có trong danh bạ'
 const emptyMessage = computed(() => {
   if (activeTypeLabel.value && activeAreaName.value) {
-    return `Chưa có “${activeTypeLabel.value.toLowerCase()}” ở ${activeAreaName.value} trong danh bạ.`
+    return `Chưa có “${activeTypeLabel.value.toLocaleLowerCase('vi-VN')}” ở ${activeAreaName.value} trong danh bạ.`
   }
   if (qApplied.value) return `Không tìm thấy kết quả cho “${qApplied.value}”.`
-  return 'Thử bỏ bớt bộ lọc hoặc đổi từ khoá tìm kiếm.'
+  return 'Thử bỏ bớt bộ lọc hoặc đổi từ khóa tìm kiếm.'
 })
 const emptyRecovery = computed(() => {
   if (!activeTypeLabel.value || !activeAreaName.value) return []
-  const otherAreas = Object.entries(AREA_META).filter(([k]) => k !== areaFilter.value).slice(0, 2)
+  const otherAreas = Object.entries(CURRENT_AREA_META).filter(([k]) => k !== areaFilter.value).slice(0, 2)
   return otherAreas.map(([key, meta]) => ({
     label: `Thử ${meta.name}?`,
     apply: () => { areaFilter.value = key; syncUrlAndRefresh() },
@@ -377,21 +376,38 @@ useHead(() => ({
 <style scoped>
 .dd-page { max-width: 1100px; margin: 0 auto; }
 
-.dd-type-card {
-  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
-  padding: var(--space-4) var(--space-5);
-  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sheet);
-  cursor: pointer; transition: border-color .2s, box-shadow .2s;
-  min-width: 100px; flex-shrink: 0;
+/* Wave 7: Open Architectural Indexed Filmstrip — unboxed from 8 rounded cards */
+.scroll-row {
+  counter-reset: type-filmstrip;
+  border-block: 1px solid var(--line);
+  gap: 0;
 }
-.dd-type-card:hover { border-color: var(--color-action); box-shadow: 0 2px 8px rgba(var(--black-rgb),.06); }
-.dd-type-card:active { transform: scale(.96); transition-duration: .08s; }
-.dd-type-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.dd-type-card.active { border-color: var(--color-action); background: rgba(var(--color-action-rgb), .06); }
-.dd-type-icon { font-size: 1.6rem; }
+.dd-type-card {
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1h, 0.375rem);
+  padding: var(--space-3h, 0.875rem) var(--space-4);
+  background: transparent; border: 0; border-inline-end: 1px solid var(--line); border-radius: 0;
+  cursor: pointer; transition: background-color .2s var(--ease-out), color .2s var(--ease-out);
+  min-width: 112px; flex-shrink: 0;
+  counter-increment: type-filmstrip;
+}
+.dd-type-card::before {
+  content: counter(type-filmstrip, decimal-leading-zero);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: var(--text-xs);
+  color: var(--color-material-amber);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+}
+.dd-type-card:hover { background: color-mix(in srgb, var(--bg-alt) 55%, transparent); }
+.dd-type-card:active { transform: scale(.97); transition-duration: .08s; }
+.dd-type-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+.dd-type-card.active { background: rgba(var(--color-action-rgb), .06); }
+.dd-type-icon { font-size: 1.35rem; color: var(--color-brand); }
 .dd-type-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); white-space: nowrap; }
 
-.dd-search { display: flex; align-items: center; gap: var(--space-2); padding: .35rem .5rem .35rem .75rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-full); margin-bottom: var(--space-3); }
+.dd-search { display: flex; align-items: center; gap: var(--space-2); padding: .35rem .5rem .35rem .75rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-pill, 999px); margin-bottom: var(--space-3); }
 .dd-search:focus-within { border-color: var(--color-action); }
 .dd-search-ic { color: var(--muted); flex-shrink: 0; }
 .dd-search-input { flex: 1; min-width: 0; border: none; background: none; outline: none; color: var(--ink); font-size: var(--text-sm); padding: .4rem 0; }
@@ -446,7 +462,6 @@ useHead(() => ({
 }
 .almanac-stat:hover .almanac-gloss,
 .almanac-stat:focus-visible .almanac-gloss { opacity: 1; transform: translateY(0); }
-.dark .almanac-gloss { color: var(--color-brand); }
 @media (prefers-reduced-motion: reduce) {
   .almanac-gloss { transition: opacity .01s linear; transform: none; }
 }
@@ -510,15 +525,17 @@ useHead(() => ({
   flex-wrap: wrap;
 }
 .stamp-name {
-  font-family: var(--font-editorial); font-weight: 600; font-size: var(--text-lg);
+  font-family: var(--font-editorial); font-weight: 600; font-size: var(--text-lg); line-height: 1.3;
   color: var(--ink); letter-spacing: var(--tracking-tight);
+  text-wrap: balance; overflow-wrap: break-word;
 }
 .stamp-distance {
   font-family: var(--font-sans);
   font-size: var(--text-2xs, 10px);
   font-weight: var(--weight-bold);
+  line-height: 1.3;
   padding: 1px 6px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: rgba(var(--stamp-rgb), 0.14);
   color: var(--ink);
   letter-spacing: .02em;
@@ -542,7 +559,6 @@ useHead(() => ({
    TYPE FILMSTRIP — thin category-color underline draws in on
    hover/focus, evoking flipping through indexed photo negatives.
    ============================================================ */
-.dd-type-card { position: relative; overflow: hidden; }
 .dd-type-card::after {
   content: ""; position: absolute; left: var(--space-4); right: var(--space-4); bottom: 6px;
   height: 2px; border-radius: 2px;
@@ -563,14 +579,14 @@ useHead(() => ({
    ============================================================ */
 .dd-refine {
   position: sticky; top: 78px; z-index: var(--z-sticky);
-  background: var(--surface-translucent); backdrop-filter: var(--glass);
-  -webkit-backdrop-filter: var(--glass);
-  border: .5px solid var(--line); border-top: 1px solid var(--line);
-  border-radius: var(--radius-sheet); box-shadow: var(--shadow-sm);
-  padding: var(--space-3); margin-bottom: var(--space-4);
+  background: color-mix(in srgb, var(--color-surface) 86%, transparent); backdrop-filter: var(--glass-frosted-nav, saturate(1.8) blur(20px));
+  -webkit-backdrop-filter: var(--glass-frosted-nav, saturate(1.8) blur(20px));
+  border: 1px solid var(--border-liquid-glass, var(--line));
+  border-radius: var(--radius-sheet); box-shadow: var(--shadow-card-ambient, var(--shadow-sm));
+  padding: var(--space-3) var(--space-4); margin-bottom: var(--space-6);
 }
 .dd-refine .dd-search { margin-bottom: 0; }
-.dark .dd-refine { background: var(--surface-translucent); border-color: var(--line); }
+.dark .dd-refine { background: color-mix(in srgb, var(--color-surface) 80%, transparent); border-color: var(--border-liquid-glass, var(--line)); }
 
 .dd-active-filters {
   display: flex;
@@ -594,7 +610,7 @@ useHead(() => ({
   min-height: 44px;
   min-width: 44px;
   padding: var(--space-1) var(--space-2h);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   border: 1px solid var(--color-action-border);
   background: var(--color-action-surface);
   color: var(--color-action);
@@ -675,7 +691,7 @@ useHead(() => ({
    ============================================================ */
 .almanac-progress {
   position: fixed; left: var(--space-2); top: 15vh; bottom: 15vh; width: 3px;
-  border-radius: var(--radius-full); background: var(--line);
+  border-radius: var(--radius-pill, 999px); background: var(--line);
   z-index: var(--z-floating); overflow: hidden; display: none;
 }
 .almanac-progress-fill {

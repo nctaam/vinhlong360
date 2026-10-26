@@ -20,7 +20,7 @@ export const DEFAULT_ROUTES: RouteDef[] = [
   {
     id: 'vong-trai-cay-vinh-long',
     name: 'Vòng trái cây Vĩnh Long',
-    emoji: '🍊',
+    emoji: 'fruit',
     area: 'vinh-long',
     duration: '1 ngày',
     distance: '~40 km',
@@ -38,7 +38,7 @@ export const DEFAULT_ROUTES: RouteDef[] = [
   {
     id: 'vong-dua-ben-tre',
     name: 'Vòng dừa Bến Tre (trước 7-2025)',
-    emoji: '🥥',
+    emoji: 'leaf',
     area: 'ben-tre',
     duration: '1 ngày',
     distance: '~35 km',
@@ -55,7 +55,7 @@ export const DEFAULT_ROUTES: RouteDef[] = [
   {
     id: 'vong-chua-khmer-tra-vinh',
     name: 'Vòng chùa Khmer Trà Vinh (trước 7-2025)',
-    emoji: '🛕',
+    emoji: 'landmark',
     area: 'tra-vinh',
     duration: '1–2 ngày',
     distance: '~60 km',
@@ -73,7 +73,7 @@ export const DEFAULT_ROUTES: RouteDef[] = [
   {
     id: 'vong-lang-nghe-mang-thit',
     name: 'Vòng làng nghề Mang Thít',
-    emoji: '🏺',
+    emoji: 'craft',
     area: 'vinh-long',
     duration: 'Nửa ngày',
     distance: '~20 km',
@@ -89,7 +89,7 @@ export const DEFAULT_ROUTES: RouteDef[] = [
   {
     id: 'vong-am-thuc-mien-tay',
     name: 'Vòng ẩm thực bản địa',
-    emoji: '🍲',
+    emoji: 'food',
     area: 'vinh-long',
     duration: '1–2 ngày',
     distance: '~50 km',
@@ -99,14 +99,14 @@ export const DEFAULT_ROUTES: RouteDef[] = [
       { name: 'Bánh xèo miệt vườn', note: 'Cuốn rau vườn, chấm nước mắm' },
       { name: 'Chợ Vĩnh Long', note: 'Ăn vặt: hủ tiếu, bánh tầm' },
       { name: 'Kẹo dừa Bến Tre (cũ)', note: 'Nếm + mua về làm quà' },
-      { name: 'Bún nước lèo Trà Vinh (cũ)', note: 'Món Khmer không thể bỏ qua' },
+      { name: 'Bún nước lèo Trà Vinh (cũ)', note: 'Hương vị nước lèo Khmer đặc trưng' },
     ],
     tips: 'Đi vào cuối tuần để trải nghiệm chợ phiên. Mang dạ dày trống!',
   },
   {
     id: 'vong-mua-nuoc-noi',
     name: 'Vòng mùa nước nổi',
-    emoji: '🌊',
+    emoji: 'compass',
     area: 'vinh-long',
     duration: '1 ngày',
     distance: '~30 km',

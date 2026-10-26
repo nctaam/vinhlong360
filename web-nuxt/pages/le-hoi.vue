@@ -431,12 +431,13 @@ function countByArea(key: string) {
   return allEvents.value.filter((e: Entity) => getArea(e) === key).length
 }
 
+const todayStr = new Date().toISOString().slice(0, 10)
+
 const upcoming = computed(() => {
-  const now = new Date().toISOString().slice(0, 10)
   return allEvents.value
     .filter((e: Entity) => {
       const ds = eventStart(e)
-      return ds && ds >= now
+      return ds && ds >= todayStr
     })
     // A6 declutter-2: ledger tôn trọng filter đang chọn (trước đây tĩnh trong khi
     // grid động — friction). Khi cả hai = 'all' hành vi y hệt cũ.
@@ -473,10 +474,7 @@ function hideImageError(ev: Event | string) {
   if (target) target.style.display = 'none'
 }
 
-const todayStr = new Date().toISOString().slice(0, 10)
-
 function eventStatus(e: Entity): '' | 'now' | 'soon' | 'concluded' {
-  const attrs = e.attributes || {}
   const ds = eventStart(e)
   if (!ds) return ''
   const de = eventEnd(e) || ds
@@ -702,10 +700,12 @@ useHead(() => {
   display: inline-block;
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
+  line-height: 1.3;
   letter-spacing: .02em;
   padding: 1px var(--space-2);
   border-radius: var(--radius-pill, 999px);
   margin-bottom: var(--space-1);
+  overflow-wrap: break-word;
 }
 .lehoi-status.status-soon {
   background: var(--color-action-surface);
@@ -723,9 +723,6 @@ useHead(() => {
   background: var(--bg-alt);
   color: var(--text-muted);
 }
-.dark .lehoi-status.status-soon { background: var(--color-action-surface); color: var(--color-action); }
-.dark .lehoi-status.status-now { background: var(--color-action); color: var(--color-on-action); }
-.dark .lehoi-status.status-concluded { background: var(--bg-alt); color: var(--text-muted); }
 @keyframes lehoi-status-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(var(--color-action-rgb), .0); }
   50% { box-shadow: 0 0 0 4px rgba(var(--color-action-rgb), .12); }
@@ -742,8 +739,6 @@ useHead(() => {
   border: 0;
   border-block: 1px solid var(--color-border);
 }
-
-.dark .lehoi-offseason { background: transparent; border-color: var(--color-border); }
 
 /* Thumbnail placeholder colour if image fails / while loading */
 .event-thumb { background: var(--bg-alt); border-radius: var(--radius-surface, 12px); }

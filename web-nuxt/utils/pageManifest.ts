@@ -48,7 +48,7 @@ function heroSeoFields(o: {
 
 export const PAGE_MANIFESTS: Record<string, PageManifest> = {
   du_lich: {
-    slug: 'du_lich', title: 'Du lịch & trải nghiệm', icon: '🌿', route: '/du-lich',
+    slug: 'du_lich', title: 'Du lịch & trải nghiệm', icon: 'leaf', route: '/du-lich',
     fields: heroSeoFields({
       heroTitle: 'Du lịch & trải nghiệm',
       heroSubtitle: 'Miệt vườn sông nước, cù lao xanh mát, làng nghề trăm năm — khám phá Vĩnh Long theo cách của người bản địa.',
@@ -59,7 +59,7 @@ export const PAGE_MANIFESTS: Record<string, PageManifest> = {
     }),
   },
   ocop: {
-    slug: 'ocop', title: 'Sản phẩm OCOP', icon: '⭐', route: '/ocop',
+    slug: 'ocop', title: 'Sản phẩm OCOP', icon: 'star', route: '/ocop',
     fields: heroSeoFields({
       heroTitle: 'Sản phẩm OCOP',
       heroSubtitle: 'Mỗi xã một sản phẩm — sản phẩm đạt chuẩn OCOP từ tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025), chất lượng được chứng nhận.',
@@ -70,7 +70,7 @@ export const PAGE_MANIFESTS: Record<string, PageManifest> = {
     }),
   },
   san_pham: {
-    slug: 'san_pham', title: 'Đặc sản địa phương', icon: '🧺', route: '/san-pham',
+    slug: 'san_pham', title: 'Đặc sản địa phương', icon: 'shopping-bag', route: '/san-pham',
     fields: heroSeoFields({
       heroTitle: 'Đặc sản địa phương',
       heroSubtitle: 'Trái cây theo mùa, đặc sản làm quà, sản phẩm OCOP — biết mùa nào ngon, mua ở đâu, ai sản xuất.',
@@ -81,7 +81,7 @@ export const PAGE_MANIFESTS: Record<string, PageManifest> = {
     }),
   },
   luu_tru: {
-    slug: 'luu_tru', title: 'Lưu trú', icon: '🏡', route: '/luu-tru',
+    slug: 'luu_tru', title: 'Lưu trú', icon: 'home', route: '/luu-tru',
     fields: heroSeoFields({
       heroTitle: 'Lưu trú',
       heroSubtitle: 'Homestay miệt vườn, nhà nghỉ ven sông, khách sạn phố — chọn nơi nghỉ phù hợp cho chuyến đi Vĩnh Long.',
@@ -92,7 +92,7 @@ export const PAGE_MANIFESTS: Record<string, PageManifest> = {
     }),
   },
   le_hoi: {
-    slug: 'le_hoi', title: 'Lễ hội truyền thống', icon: '🎭', route: '/le-hoi',
+    slug: 'le_hoi', title: 'Lễ hội truyền thống', icon: 'calendar', route: '/le-hoi',
     fields: heroSeoFields({
       heroTitle: 'Lễ hội truyền thống',
       heroSubtitle: 'Lễ hội đình miếu, lễ Khmer, Nghinh Ông, giỗ danh nhân — truyền thống văn hóa 3 vùng tỉnh Vĩnh Long hợp nhất (trước 7-2025).',
@@ -103,7 +103,7 @@ export const PAGE_MANIFESTS: Record<string, PageManifest> = {
     }),
   },
   su_kien: {
-    slug: 'su_kien', title: 'Sự kiện', icon: '📅', route: '/su-kien',
+    slug: 'su_kien', title: 'Sự kiện', icon: 'calendar', route: '/su-kien',
     fields: heroSeoFields({
       heroTitle: 'Sự kiện',
       heroSubtitle: 'Sự kiện văn hóa, hội chợ, festival và hoạt động sắp diễn ra tại tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
@@ -114,7 +114,7 @@ export const PAGE_MANIFESTS: Record<string, PageManifest> = {
     }),
   },
   theo_mua: {
-    slug: 'theo_mua', title: 'Theo mùa', icon: '🗓️', route: '/theo-mua',
+    slug: 'theo_mua', title: 'Theo mùa', icon: 'calendar', route: '/theo-mua',
     fields: [
       { field: 'hero_title', label: 'Tiêu đề hero (H1)', input_type: 'text', default: 'Tháng {month} — đi đâu, ăn gì?', description: 'Để trống = tự điền tháng hiện tại. Nhập text = cố định (mất số tháng động).' },
       { field: 'hero_subtitle', label: 'Mô tả hero', input_type: 'textarea', default: 'Trải nghiệm, đặc sản & món ăn đang vào mùa ở tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).' },
@@ -125,7 +125,7 @@ export const PAGE_MANIFESTS: Record<string, PageManifest> = {
     ],
   },
   danh_ba: {
-    slug: 'danh_ba', title: 'Danh bạ hành chính', icon: '🏛️', route: '/danh-ba',
+    slug: 'danh_ba', title: 'Danh bạ hành chính', icon: 'building', route: '/danh-ba',
     fields: heroSeoFields({
       heroTitle: 'Danh bạ hành chính',
       heroSubtitle: 'Địa chỉ & liên hệ UBND, công an và cơ quan công vụ theo từng xã/phường của tỉnh Vĩnh Long (sau hợp nhất: Vĩnh Long · Bến Tre · Trà Vinh trước 7-2025).',
@@ -136,7 +136,7 @@ export const PAGE_MANIFESTS: Record<string, PageManifest> = {
     }),
   },
   tuyen_duong: {
-    slug: 'tuyen_duong', title: 'Tuyến đường gợi ý', icon: '🛣️', route: '/tuyen-duong',
+    slug: 'tuyen_duong', title: 'Tuyến đường gợi ý', icon: 'compass', route: '/tuyen-duong',
     fields: heroSeoFields({
       heroTitle: 'Tuyến đường gợi ý',
       heroSubtitle: 'Các vòng khám phá tự lái / xe máy qua miệt vườn, làng nghề và văn hóa bản địa — chọn vòng, lên xe và đi.',
@@ -147,7 +147,7 @@ export const PAGE_MANIFESTS: Record<string, PageManifest> = {
     }),
   },
   cong_dong: {
-    slug: 'cong_dong', title: 'Cộng đồng', icon: '💬', route: '/cong-dong',
+    slug: 'cong_dong', title: 'Cộng đồng', icon: 'message', route: '/cong-dong',
     fields: [
       { field: 'hero_title', label: 'Tiêu đề (ẩn, cho screen-reader & SEO)', input_type: 'text', default: 'Cộng đồng vinhlong360' },
       { field: 'seo_title', label: 'SEO title', input_type: 'text', default: 'Cộng đồng du lịch Vĩnh Long — vinhlong360' },
@@ -157,7 +157,7 @@ export const PAGE_MANIFESTS: Record<string, PageManifest> = {
     ],
   },
   tim_kiem: {
-    slug: 'tim_kiem', title: 'Tìm kiếm', icon: '🔍', route: '/tim-kiem',
+    slug: 'tim_kiem', title: 'Tìm kiếm', icon: 'search', route: '/tim-kiem',
     fields: heroSeoFields({
       heroTitle: 'Tìm kiếm',
       heroSubtitle: 'Tìm đặc sản, trải nghiệm, lưu trú, lễ hội — mọi thứ về tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
@@ -168,7 +168,7 @@ export const PAGE_MANIFESTS: Record<string, PageManifest> = {
     }),
   },
   lich_van_nien: {
-    slug: 'lich_van_nien', title: 'Lịch vạn niên', icon: '🌙', route: '/lich-van-nien',
+    slug: 'lich_van_nien', title: 'Lịch vạn niên', icon: 'moon', route: '/lich-van-nien',
     fields: heroSeoFields({
       heroTitle: 'Lịch vạn niên',
       heroSubtitle: 'Đối chiếu dương lịch và âm lịch Việt Nam (múi giờ UTC+7), can chi và tiết khí. Toàn bộ con số trên trang được tính tại chỗ theo thuật toán thiên văn, không tra bảng chép sẵn.',
@@ -179,7 +179,7 @@ export const PAGE_MANIFESTS: Record<string, PageManifest> = {
     }),
   },
   lien_he: {
-    slug: 'lien_he', title: 'Liên hệ', icon: '📬', route: '/lien-he',
+    slug: 'lien_he', title: 'Liên hệ', icon: 'mail', route: '/lien-he',
     fields: heroSeoFields({
       heroTitle: 'Liên hệ',
       heroSubtitle: 'vinhlong360.vn — Nền tảng du lịch & đặc sản tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)',

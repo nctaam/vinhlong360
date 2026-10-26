@@ -26,20 +26,7 @@ _COMBINING_MARKS_RE = re.compile(r"[\u0300-\u036f]")
 #  VIETNAMESE NORMALIZATION
 # ══════════════════════════════════════════════════
 
-# Map Vietnamese characters with diacritics to base ASCII.
-# Pre-computed for performance — covers all common Vietnamese vowels + đ.
-_VN_DIACRITICS_MAP: dict[str, str] = {}
-
-
-def _build_diacritics_map():
-    """Build a lookup table mapping accented Vietnamese chars to ASCII."""
-    global _VN_DIACRITICS_MAP
-    # We rely on Unicode NFD decomposition for vowels, plus manual đ→d.
-    # This is built once at import time.
-    _VN_DIACRITICS_MAP = {"đ": "d", "Đ": "D"}
-
-
-_build_diacritics_map()
+# Unicode NFD decomposition + manual đ→d replacement handles all Vietnamese diacritics.
 
 
 @lru_cache(maxsize=4096)
@@ -207,6 +194,7 @@ _TOURISM_CORRECTIONS: dict[str, str] = {
     "keo dua mo cay": "kẹo dừa Mỏ Cày",
     "mat hoa dua": "mật hoa dừa",
     "dua xieng xanh": "dừa xiêm xanh",
+    "dua xiem xanh": "dừa xiêm xanh",
     "dua xiêm xanh": "dừa xiêm xanh",
     "dua sap": "dừa sáp",
     "dua sap cau ke": "dừa sáp Cầu Kè",
@@ -809,25 +797,33 @@ def _collect_fuzzy_spans(
 
     max_window = min(len(words), 5)
     replaced_spans: list[tuple[int, int, str, str]] = []  # (start_char, end_char, from, to)
+    orig_words = text.split()
+    word_offsets: list[int] = []
+    running_offset = 0
+    for w in words:
+        word_offsets.append(running_offset)
+        running_offset += len(w) + 1
 
     for window_size in range(max_window, 1, -1):
         for start in range(len(words) - window_size + 1):
             _collect_fuzzy_span_at(
-                text, words, start, window_size,
+                orig_words, words, start, window_size,
                 already_replaced, replaced_spans, max_distance,
+                word_offsets[start],
             )
 
     return replaced_spans
 
 
 def _collect_fuzzy_span_at(
-    text: str,
+    orig_words: list[str],
     words: list[str],
     start: int,
     window_size: int,
     already_replaced: set[str],
     replaced_spans: list[tuple[int, int, str, str]],
     max_distance: int,
+    char_start: int | None = None,
 ) -> None:
     """
     Evaluate one window and append its span to *replaced_spans* if matched.
@@ -844,7 +840,8 @@ def _collect_fuzzy_span_at(
 
     # Skip if this window overlaps with an already-found fuzzy match
     # (Calculate char positions in text_norm)
-    char_start = _word_char_offset(words, start)
+    if char_start is None:
+        char_start = _word_char_offset(words, start)
     char_end = char_start + len(window_text)
     if any(
         _spans_overlap(char_start, char_end, rs, re_)
@@ -857,7 +854,7 @@ def _collect_fuzzy_span_at(
     )
     if match and normalize_vietnamese(match) != window_text:
         # Find the original text span
-        original_span = " ".join(text.split()[start:start + window_size])
+        original_span = " ".join(orig_words[start:start + window_size])
         adjusted = _apply_capitalization(original_span, match)
 
         if original_span != adjusted:

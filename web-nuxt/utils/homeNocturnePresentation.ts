@@ -89,7 +89,10 @@ function firstAvailable(
   entities: readonly HomePresentationEntity[],
   consumed: ReadonlySet<string>,
 ): HomePresentationEntity | undefined {
-  return entities.find(entity => entityId(entity) && entityLabel(entity) && !consumed.has(entityId(entity)))
+  return entities.find((entity) => {
+    const id = entityId(entity)
+    return Boolean(id && entityLabel(entity) && !consumed.has(id))
+  })
 }
 
 function eventEyebrow(entity: HomePresentationEntity): string {
@@ -164,7 +167,10 @@ export function createHomeNocturnePresentation(
   }))
 
   const remaining = (entities: readonly HomePresentationEntity[]) =>
-    entities.filter(entity => entityId(entity) && !consumed.has(entityId(entity)))
+    entities.filter((entity) => {
+      const id = entityId(entity)
+      return Boolean(id) && !consumed.has(id)
+    })
 
   const groups: { primary: HomeCategoryLink[]; utility: HomeCategoryLink[] } = {
     primary: [],

@@ -16,7 +16,7 @@
         <div v-show="mapState !== 'error'" ref="routeMapEl" class="route-map" :data-map-state="mapState"></div>
         <div v-if="mapState === 'error'" class="planner-map-fallback" data-map-fallback role="status">
           <strong>Bản đồ chưa khả dụng</strong>
-          <p>Timeline vẫn giữ nguyên thứ tự và chỉnh sửa thủ công được.</p>
+          <p>Lịch trình vẫn giữ nguyên thứ tự và chỉnh sửa thủ công được.</p>
           <button type="button" class="btn btn-sm btn-outline" @click="retryMap">Thử lại bản đồ</button>
         </div>
       </div>

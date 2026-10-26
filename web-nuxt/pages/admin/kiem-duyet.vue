@@ -222,7 +222,7 @@ const STATUS_TABS = [
 ] as const
 const BADGES: Record<string, { label: string; cls: string }> = {
   pending: { label: 'Chờ duyệt', cls: 'mb-pending' },
-  flagged: { label: '⚑ Gắn cờ', cls: 'mb-flagged' },
+  flagged: { label: 'Gắn cờ', cls: 'mb-flagged' },
   approved: { label: 'Đã duyệt', cls: 'mb-approved' },
   rejected: { label: 'Từ chối', cls: 'mb-rejected' },
 }

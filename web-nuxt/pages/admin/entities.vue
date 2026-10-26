@@ -18,7 +18,7 @@
       </div>
       <select v-model="typeFilter" class="input admin-select-filter" aria-label="Lọc theo loại entity" @change="fetchEntities(true)">
         <option value="">{{ currentKind ? `Cả nhóm ${currentKind.label}` : 'Tất cả loại' }}</option>
-        <option v-for="t in kindTypes" :key="t" :value="t">{{ TYPE_META[t]?.emoji || '' }} {{ TYPE_META[t]?.label || t }}</option>
+        <option v-for="t in kindTypes" :key="t" :value="t">{{ TYPE_META[t]?.label || t }}</option>
       </select>
       <button type="button" class="btn btn-outline btn-sm" :class="{ 'btn-active-warn': orphansOnly }" @click="orphansOnly = !orphansOnly; fetchEntities(true)">
         <IconLine v-if="orphansOnly" name="check" /> Mồ côi
@@ -235,7 +235,7 @@
           <div class="ent-field">
             <label class="form-label" for="ent-type">Loại</label>
             <select id="ent-type" v-model="form.type" class="input" aria-label="Loại entity" :disabled="!!editingEntity">
-              <option v-for="t in kindTypes" :key="t" :value="t">{{ TYPE_META[t]?.emoji || '' }} {{ TYPE_META[t]?.label || t }}</option>
+              <option v-for="t in kindTypes" :key="t" :value="t">{{ TYPE_META[t]?.label || t }}</option>
             </select>
             <span v-if="editingEntity" class="sf-help">Đổi loại: sửa nhanh ô "Loại" ngay trên bảng (an toàn cho thuộc tính).</span>
           </div>
@@ -376,7 +376,6 @@
 import type { Entity } from '~/types'
 import type { ImageDescriptor } from '~/types/image'
 import { TYPE_META } from '~/composables/useConstants'
-import { ADMIN_KINDS } from '~/utils/adminKinds'
 import { describeEntityImages, describeEntityPlaceholder, normalizeEntityEditorialUpload } from '~/utils/imageDescriptors'
 import { useAdminEntityDeletion } from '~/composables/useAdminEntityDeletion'
 import { useAdminEntityKinds } from '~/composables/useAdminEntityKinds'
@@ -567,11 +566,7 @@ function entityTableDisclosureId(entity: Entity): string {
 }
 
 function editorialDescriptor(name: string, value: unknown): Readonly<ImageDescriptor> | null {
-  const descriptor = describeEntityImages({
-    name,
-    images: [value],
-    attributes: { image_type: 'ai-generated', is_verified_photo: false },
-  })[0]
+  const descriptor = describeEntityImages({ name, images: [value] })[0]
   if (!descriptor) return null
   try {
     return normalizeEntityEditorialUpload(descriptor)
@@ -598,11 +593,7 @@ function formatAdminImageValue(value: unknown): string {
 
 function normalizedEntityImageUrls(name: string, values: unknown[]): string[] {
   return values.map((value) => {
-    const descriptor = describeEntityImages({
-      name,
-      images: [value],
-      attributes: { image_type: 'ai-generated', is_verified_photo: false },
-    })[0]
+    const descriptor = describeEntityImages({ name, images: [value] })[0]
     const normalized = normalizeEntityEditorialUpload(descriptor ?? value)
     return normalized.url as string
   })
@@ -619,11 +610,7 @@ async function addImage() {
   if (!candidate || !editingEntity.value) return
   try {
     const descriptor = normalizeEntityEditorialUpload(
-      describeEntityImages({
-        name: form.value.name,
-        images: [candidate],
-        attributes: { image_type: 'ai-generated', is_verified_photo: false },
-      })[0] ?? candidate,
+      describeEntityImages({ name: form.value.name, images: [candidate] })[0] ?? candidate,
     )
     const r = await $fetch<EntityImagesResponse>(`/admin-api/entities/${form.value.id}/images`, {
       method: 'POST', headers: authHeaders(), body: { url: descriptor.url } })

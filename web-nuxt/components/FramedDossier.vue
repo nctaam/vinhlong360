@@ -21,7 +21,7 @@
     </div>
 
     <figure v-if="hasMedia" class="framed-dossier__media" data-dossier-media>
-      <img :src="mediaSrc" :alt="mediaAlt || ''">
+      <img :src="mediaSrc" :alt="mediaAlt || ''" loading="lazy" decoding="async">
       <figcaption v-if="mediaDisclosure" class="framed-dossier__disclosure">
         {{ mediaDisclosure }}
       </figcaption>

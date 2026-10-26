@@ -48,10 +48,12 @@ const settled = computed(() => ['verified', 'not_required'].includes(props.publi
 </template>
 
 <style scoped>
+/* Wave 7: Open Architectural Decision Ledger Row — removes legacy 10px radius box */
 .dps-item {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 0.75rem 1rem;
+  border: 0;
+  border-block-end: 1px solid var(--border);
+  border-radius: 0;
+  padding: 0.85rem 0;
 }
 .dps-field {
   margin: 0 0 0.5rem;

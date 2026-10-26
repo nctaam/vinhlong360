@@ -123,7 +123,7 @@ function goToSlide(idx: number) {
       </button>
     </div>
     <button v-if="renderableImages.length > 1" type="button" class="pg-show-all" @click="openLightbox(0)">
-      <span class="pg-show-icon" aria-hidden="true">&#128247;</span>
+      <span class="pg-show-icon" aria-hidden="true"><IconLine name="camera" /></span>
       Xem trọn bộ {{ renderableImages.length }} ảnh
     </button>
   </div>

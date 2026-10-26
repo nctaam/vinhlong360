@@ -387,6 +387,8 @@ import { OFFICE_KIND, AREA_META, CURRENT_AREA_META } from '~/composables/useCons
 import { trackContactView } from '~/composables/useContactBeacon'
 import { telHref } from '~/utils/safe'
 
+const VI_COLLATOR = new Intl.Collator('vi')
+
 const AREA_RGB: Record<string, string> = {
   'vinh-long': 'var(--clay-rgb)',
   'ben-tre': 'var(--leaf-rgb)',
@@ -430,7 +432,7 @@ const wardGroups = computed(() => {
       return {
         area,
         label: meta?.name || area,
-        wards: (grouped[area] || []).sort((a: Entity, b: Entity) => a.name.localeCompare(b.name, 'vi')),
+        wards: (grouped[area] || []).sort((a: Entity, b: Entity) => VI_COLLATOR.compare(a.name, b.name)),
       }
     })
 })
@@ -1007,10 +1009,9 @@ useHead(() => ({
 .dir-page { max-width: 960px; margin-inline: auto; }
 .empty-hint { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-8) var(--space-4); color: var(--muted); text-align: center; background: radial-gradient(120% 100% at 50% 0%, rgba(var(--color-brand-rgb), .06), transparent 70%); border: .5px solid var(--line); border-radius: var(--radius-sheet); }
 .empty-hint-halo { display: inline-flex; align-items: center; justify-content: center; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(circle, rgba(var(--color-brand-rgb), .14), rgba(var(--color-brand-rgb), .04) 70%); margin-bottom: var(--space-1); }
-.empty-hint-icon { font-size: 2.6rem; line-height: 1; }
-.empty-hint-title { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); }
+.empty-hint-icon { font-size: 2.6rem; line-height: 1.2; }
+.empty-hint-title { margin: 0; font-family: var(--font-editorial); font-size: var(--text-lg); font-weight: var(--weight-bold); line-height: 1.3; color: var(--ink); text-wrap: balance; overflow-wrap: break-word; }
 .empty-hint p { margin: 0; font-size: var(--text-sm); max-width: 38ch; }
-.muted { color: var(--muted); }
 .ward-pick { display: flex; flex-direction: column; gap: var(--space-2); max-width: 420px; padding: var(--space-3) 0; border: 0; border-block: .5px solid var(--line); border-radius: 0; background: transparent; box-shadow: none; }
 .ward-pick .control-label { font-weight: var(--weight-semibold); }
 .ward-pick select { padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-surface); font-size: 1rem; min-height: 44px; background: var(--bg-alt); transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
@@ -1029,7 +1030,7 @@ useHead(() => ({
 .dark .fac::before { background: linear-gradient(180deg, var(--night-river) 0%, var(--night-amber) 52%, var(--night-clay) 100%); }
 .fac:hover { background: var(--overlay-subtle); }
 .fac-head { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); margin-bottom: var(--space-2); }
-.fac strong { font-family: var(--font-editorial); font-weight: 600; font-size: var(--text-base); color: var(--ink); }
+.fac strong { font-family: var(--font-editorial); font-weight: 600; font-size: var(--text-base); line-height: 1.3; color: var(--ink); overflow-wrap: break-word; }
 .fac-kind { align-self: flex-start; font-size: var(--text-xs); color: var(--color-brand); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); background: rgba(var(--color-brand-rgb), .12); border-radius: var(--radius-control); padding: 2px var(--space-2); line-height: 1.5; }
 .fac-row { font-size: var(--text-sm); margin: 2px 0; color: var(--ink-secondary); display: flex; align-items: center; gap: var(--space-2); }
 .fac-row a { transition: color .3s var(--ease-out); }
@@ -1169,9 +1170,12 @@ useHead(() => ({
 .dir-emergency-card-name {
   font-size: var(--text-base);
   font-weight: var(--weight-bold);
+  line-height: 1.3;
   color: var(--ink);
   font-family: var(--font-editorial);
   margin-block-end: var(--space-1);
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 .dir-emergency-card-desc {
   font-size: var(--text-xs);
@@ -1307,8 +1311,11 @@ useHead(() => ({
   font-family: var(--font-editorial);
   font-size: var(--text-xl);
   font-weight: 600;
+  line-height: 1.28;
   color: var(--ink);
   margin: 0 0 var(--space-1);
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 .gazetteer-panel-dek {
   font-size: var(--text-sm);
@@ -1391,6 +1398,8 @@ useHead(() => ({
   color: var(--ink);
   margin: 0 0 var(--space-2);
   line-height: 1.35;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 .entry-lead {
   font-size: var(--text-sm);
@@ -1465,17 +1474,10 @@ useHead(() => ({
   color: var(--color-action);
 }
 
-/* Dark mode */
-.dark .fac,
-.dark .gazetteer-entry-card { background: transparent; border-color: var(--line); }
-.dark .fac-src { background: transparent; border-top-color: var(--line); }
-
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .fac:hover { transform: none; }
   .fac-report:active:not(:disabled) { transform: none; }
   .ward-hub-link a:hover .danhba-arrow { transform: none; }
   .dir-emergency-card:hover { transform: none; }
-  .gazetteer-entry-card:hover { transform: none; }
 }
 </style>

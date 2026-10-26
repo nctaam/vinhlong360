@@ -10,9 +10,9 @@
         aria-label="Tìm kiếm"
         role="combobox"
         aria-autocomplete="list"
-        aria-controls="ac-listbox"
+        :aria-controls="`${instanceId}-listbox`"
         :aria-expanded="showDropdown"
-        :aria-activedescendant="highlightIndex >= 0 ? 'ac-opt-' + highlightIndex : undefined"
+        :aria-activedescendant="highlightIndex >= 0 ? `${instanceId}-opt-${highlightIndex}` : undefined"
         autocomplete="off"
         @input="onInput"
         @focus="onFocus"
@@ -29,7 +29,7 @@
     <Transition name="menu-pop">
     <div
       v-if="showDropdown"
-      id="ac-listbox"
+      :id="`${instanceId}-listbox`"
       class="ac-dropdown"
       :role="hasListboxOptions ? 'listbox' : 'region'"
       :aria-label="hasListboxOptions ? 'Gợi ý tìm kiếm' : 'Gợi ý danh mục'"
@@ -62,11 +62,12 @@
           <span class="ac-emoji" aria-hidden="true"><IconLine name="clock" /></span>
           <div
             class="ac-item ac-recent"
-            :id="'ac-opt-' + i"
+            :id="`${instanceId}-opt-${i}`"
             :class="{ highlighted: i === highlightIndex }"
             role="option"
             :aria-selected="i === highlightIndex"
             @mousedown.prevent="useRecent(term)"
+            @click="useRecent(term)"
           >
             <span class="ac-info"><span class="ac-name">{{ term }}</span></span>
           </div>
@@ -90,7 +91,7 @@
         :key="item.id"
         :to="entityPath(item.id)"
         class="ac-item"
-        :id="'ac-opt-' + (recentOffset + i)"
+        :id="`${instanceId}-opt-${recentOffset + i}`"
         :class="{ highlighted: recentOffset + i === highlightIndex }"
         role="option"
         :aria-selected="recentOffset + i === highlightIndex"
@@ -111,7 +112,7 @@
         v-if="query.trim()"
         :to="`/tim-kiem?q=${encodeURIComponent(query.trim())}`"
         class="ac-item ac-all"
-        :id="'ac-opt-' + (totalItems - 1)"
+        :id="`${instanceId}-opt-${totalItems - 1}`"
         :class="{ highlighted: highlightIndex === totalItems - 1 }"
         role="option"
         :aria-selected="highlightIndex === totalItems - 1"
@@ -271,9 +272,11 @@ function clearQuery() {
   inputEl.value?.focus()
 }
 
+const instanceId = useId()
+
 function scrollHighlightedIntoView() {
   nextTick(() => {
-    const el = document.getElementById(`ac-opt-${highlightIndex.value}`)
+    const el = document.getElementById(`${instanceId}-opt-${highlightIndex.value}`)
     el?.scrollIntoView({ block: 'nearest' })
   })
 }

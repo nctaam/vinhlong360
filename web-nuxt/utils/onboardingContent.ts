@@ -12,14 +12,40 @@ export interface OnboardingContent {
   cta_secondary_label: string
 }
 
+const LEGACY_ONBOARDING_ICON_MAP: Record<string, string> = {
+  '🌴': 'leaf',
+  '🗺️': 'map',
+  '🗺': 'map',
+  '📅': 'calendar',
+  '💬': 'message',
+  '✨': 'sparkle',
+  '🍊': 'leaf',
+  '🧭': 'compass',
+  '📍': 'pin',
+}
+
+const VALID_ONBOARDING_ICONS = new Set([
+  'leaf', 'map', 'calendar', 'message', 'sparkle', 'compass', 'pin',
+  'star', 'book', 'award', 'building', 'camera', 'check', 'clock',
+  'globe', 'heart', 'home', 'info', 'layers', 'route', 'search',
+  'shield', 'sun', 'tag', 'user', 'users', 'utensils',
+])
+
+export function resolveOnboardingIcon(raw: string | undefined, fallback = 'sparkle'): string {
+  const trimmed = (raw || '').trim()
+  if (!trimmed) return fallback
+  if (VALID_ONBOARDING_ICONS.has(trimmed)) return trimmed
+  return LEGACY_ONBOARDING_ICON_MAP[trimmed] || fallback
+}
+
 export const DEFAULT_ONBOARDING: OnboardingContent = {
-  emoji: '🌴',
+  emoji: 'leaf',
   title: 'Chào mừng đến vinhlong360',
   intro: 'Khám phá tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) — theo cách của người bản địa.',
   features: [
-    { icon: '🗺️', title: '1.400+ địa điểm & đặc sản', desc: 'Trải nghiệm miệt vườn, làng nghề, món ngon — cập nhật liên tục từ cộng đồng.' },
-    { icon: '📅', title: 'Lịch trình gợi ý theo mùa', desc: 'Lộ trình chi tiết với bản đồ, đặc sản mùa nào, lễ hội sắp diễn ra.' },
-    { icon: '💬', title: 'Hỏi đáp AI bản địa', desc: 'Chat trực tiếp để lên kế hoạch — nhanh hơn tìm kiếm thủ công.' },
+    { icon: 'map', title: '1.400+ địa điểm & đặc sản', desc: 'Trải nghiệm miệt vườn, làng nghề, món ngon — cập nhật liên tục từ cộng đồng.' },
+    { icon: 'calendar', title: 'Lịch trình gợi ý theo mùa', desc: 'Lộ trình chi tiết với bản đồ, đặc sản mùa nào, lễ hội sắp diễn ra.' },
+    { icon: 'message', title: 'Hỏi đáp AI bản địa', desc: 'Chat trực tiếp để lên kế hoạch — nhanh hơn tìm kiếm thủ công.' },
   ],
   cta_primary_label: 'Khám phá ngay',
   cta_primary_to: '/du-lich',
@@ -27,7 +53,9 @@ export const DEFAULT_ONBOARDING: OnboardingContent = {
 }
 
 export function mergeOnboarding(override: unknown): OnboardingContent {
-  const o = (override && typeof override === 'object') ? override as Partial<OnboardingContent> : {}
+  const o = (override && typeof override === 'object' && !Array.isArray(override))
+    ? override as Partial<OnboardingContent>
+    : {}
   const d = DEFAULT_ONBOARDING
   return {
     emoji: o.emoji || d.emoji,

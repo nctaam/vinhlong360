@@ -193,7 +193,7 @@ export const ABOUT_PAGE: LegalDoc = {
     },
     {
       heading: '2. Phạm vi: ba vùng đất',
-      body: 'Nội dung tập trung vào **tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)** gồm:\n- 🍊 **Khu vực Vĩnh Long (trung tâm)** — sông nước, miệt vườn, làng nghề.\n- 🥥 **Khu vực Bến Tre (cũ)** — xứ dừa, cù lao, đặc sản dừa.\n- 🛕 **Khu vực Trà Vinh (cũ)** — văn hoá Khmer, chùa cổ, ẩm thực giao thoa.\n\nMỗi vùng có bản sắc riêng, và chúng tôi cố gắng phản ánh điều đó một cách tôn trọng.',
+      body: 'Nội dung tập trung vào **tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)** gồm:\n- **Khu vực Vĩnh Long (trung tâm)** — sông nước, miệt vườn, làng nghề.\n- **Khu vực Bến Tre (cũ)** — xứ dừa, cù lao, đặc sản dừa.\n- **Khu vực Trà Vinh (cũ)** — văn hoá Khmer, chùa cổ, ẩm thực giao thoa.\n\nMỗi vùng có bản sắc riêng, và chúng tôi cố gắng phản ánh điều đó một cách tôn trọng.',
     },
     {
       heading: '3. Chỉ giới thiệu — không đặt hàng, không thanh toán',
@@ -218,36 +218,57 @@ export const ABOUT_PAGE: LegalDoc = {
   ],
 }
 
+const ZERO_WIDTH_RE = /[\u200B-\u200D\uFEFF]/g
+const FORMAT_CHAR_RE = /\p{Cf}/gu
+const CONTROL_CHAR_RE = /[\u0000-\u001F\u007F]/g
+const WHITESPACE_RE = /\s+/g
+const COMBINING_MARKS_RE = /\p{M}/gu
+const VIETNAMESE_D_RE = /[đĐ]/g
+const NON_ALNUM_COMPACT_RE = /[^\p{L}\p{N}/]+/gu
+const UNAPPROVED_CLAIM_NORMALIZED_RE = /(?:cam\s*kết|đảm\s*bảo|bảo\s*đảm|đã\s*xác\s*minh|được\s*chứng\s*nhận|tuân\s*thủ\s*hoàn\s*toàn|guarantee(?:d)?|within\s*\d+\s*(?:hours?|days?)|(?:trong\s*vòng|không\s*quá|chậm\s*nhất)\s*\d+\s*(?:giờ|ngày)|\b\d+\s*\/\s*\d+\s*(?:giờ|ngày)?)/iu
+const UNAPPROVED_CLAIM_COMPACT_RE = /(?:camket|dambao|baodam|daxacminh|duocchungnhan|tuanthuhoantoan|guarantee\w*|within\d+(?:hours?|days?)|trongvong\d+(?:gio|ngay)|khongqua\d+(?:gio|ngay)|chamnhat\d+(?:gio|ngay)|\d+\/\d+(?:gio|ngay)?)/i
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false
+  const prototype = Object.getPrototypeOf(value)
+  return prototype === Object.prototype || prototype === null
+}
+
+function editableText(value: unknown, fallback: string): string {
+  return typeof value === 'string' && value.trim() ? value : fallback
+}
+
+// Claims in legal copy require a reviewed source change; a CMS editor must
+// not be able to turn an unapproved target, deadline or guarantee into a
+// public promise by replacing the intro or an entire section set.
+function normalizeClaimText(value: string): string {
+  return value
+    .normalize('NFKC')
+    .replace(ZERO_WIDTH_RE, '')
+    .replace(FORMAT_CHAR_RE, '')
+    .replace(CONTROL_CHAR_RE, ' ')
+    .replace(WHITESPACE_RE, ' ')
+    .trim()
+}
+
+function containsUnapprovedClaim(value: unknown): boolean {
+  if (typeof value !== 'string') return false
+  const normalized = normalizeClaimText(value)
+  const folded = normalized.normalize('NFD').replace(COMBINING_MARKS_RE, '').replace(VIETNAMESE_D_RE, 'd')
+  const compact = folded.toLocaleLowerCase('vi-VN').replace(NON_ALNUM_COMPACT_RE, '')
+  return UNAPPROVED_CLAIM_NORMALIZED_RE.test(normalized)
+    || UNAPPROVED_CLAIM_COMPACT_RE.test(compact)
+}
+
+function reviewedText(value: unknown, fallback: string): string {
+  return containsUnapprovedClaim(value) ? fallback : editableText(value, fallback)
+}
+
 /** Merge an admin override (possibly empty/partial) over a default doc. */
 export function mergeLegalDoc(override: unknown, def: LegalDoc): LegalDoc {
-  const isPlainRecord = (value: unknown): value is Record<string, unknown> => {
-    if (value === null || typeof value !== 'object' || Array.isArray(value)) return false
-    const prototype = Object.getPrototypeOf(value)
-    return prototype === Object.prototype || prototype === null
-  }
   const o = isPlainRecord(override) ? override : {}
   const own = (key: string) => Object.hasOwn(o, key) ? o[key] : undefined
-  const editableText = (value: unknown, fallback: string) => typeof value === 'string' && value.trim() ? value : fallback
-  // Claims in legal copy require a reviewed source change; a CMS editor must
-  // not be able to turn an unapproved target, deadline or guarantee into a
-  // public promise by replacing the intro or an entire section set.
-  const normalizeClaimText = (value: string) => value
-    .normalize('NFKC')
-    .replace(/[\u200B-\u200D\uFEFF]/g, '')
-    .replace(/\p{Cf}/gu, '')
-    .replace(/[\u0000-\u001F\u007F]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-  const containsUnapprovedClaim = (value: unknown) => {
-    if (typeof value !== 'string') return false
-    const normalized = normalizeClaimText(value)
-    const folded = normalized.normalize('NFD').replace(/\p{M}/gu, '')
-    const compact = folded.toLocaleLowerCase('en-US').replace(/[^\p{L}\p{N}/]+/gu, '')
-    return /(?:cam\s*kết|đảm\s*bảo|bảo\s*đảm|đã\s*xác\s*minh|được\s*chứng\s*nhận|tuân\s*thủ\s*hoàn\s*toàn|guarantee(?:d)?|within\s*\d+\s*(?:hours?|days?)|(?:trong\s*vòng|không\s*quá|chậm\s*nhất)\s*\d+\s*(?:giờ|ngày)|\b\d+\s*\/\s*\d+\s*(?:giờ|ngày)?)/iu.test(normalized)
-      || /(?:camket|dambao|baodam|daxacminh|duocchungnhan|tuanthuhoantoan|guarantee\w*|within\d+(?:hours?|days?)|trongvong\d+(?:gio|ngay)|khongqua\d+(?:gio|ngay)|chamnhat\d+(?:gio|ngay)|\d+\/\d+(?:gio|ngay)?)/i.test(compact)
-  }
-  const reviewedText = (value: unknown, fallback: string) => containsUnapprovedClaim(value) ? fallback : editableText(value, fallback)
-  const overrideIntro = containsUnapprovedClaim(own('intro')) ? def.intro : editableText(own('intro'), def.intro)
+  const overrideIntro = reviewedText(own('intro'), def.intro)
   const candidateSections = own('sections')
   const sectionAddsUnapprovedClaim = (section: { heading: string, body: string }, index: number) => {
     if (containsUnapprovedClaim(section.heading)) return true

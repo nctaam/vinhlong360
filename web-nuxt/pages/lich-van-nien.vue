@@ -345,8 +345,8 @@
       </p>
       <p class="lvn-source">
         Thuật toán: Hồ Ngọc Đức (Âm lịch Việt Nam), dựa trên <em>Astronomical Algorithms</em> của Jean Meeus.
-        Bản chạy trên trang được đối chiếu từng ngày với bản Python cùng thuật toán mà nó được viết lại
-        từ đó: các năm mẫu tính từng ngày, và toàn bộ ngày âm 2020–2030 theo chiều ngược. Ngoài các năm
+        Bản chạy trên trang được đối chiếu từng ngày với bản chuẩn Python cùng thuật toán: kiểm tra từng
+        ngày trên các năm mẫu, và toàn bộ ngày âm 2020–2030 theo chiều ngược. Ngoài các năm
         mẫu đó, bộ kiểm thử chỉ kiểm bất biến cấu trúc. Phép đối chiếu này chứng minh hai bản khớp nhau,
         <strong>không</strong> chứng minh thuật toán gốc đúng — một sai sót nằm trong thuật toán sẽ xuất
         hiện y hệt ở cả hai bên.
@@ -431,7 +431,6 @@ function isRealSolarDate(d: number, m: number, y: number): boolean {
     && m >= 1 && m <= 12 && d >= 1 && d <= daysInSolarMonth(m, y)
 }
 
-/** "15 tháng 7 nhuận năm Ất Tỵ" — tháng Giêng/Chạp gọi tên vì hai tên đó không mơ hồ. */
 /** Two-hour block of chi `i`: Tý is 23–01, so it starts at (23 + 2i) mod 24. */
 function chiHourRange(i: number): string {
   const start = (23 + 2 * i) % 24
@@ -742,7 +741,7 @@ useHead(() => ({
   font-size: var(--text-xs); letter-spacing: var(--tracking-wide);
   text-transform: uppercase; color: var(--ink-tertiary);
 }
-.lvn-head h1 { margin: 0; font-size: var(--text-4xl); line-height: var(--leading-tight); }
+.lvn-head h1 { margin: 0; font-family: var(--font-editorial); font-size: var(--text-4xl); line-height: 1.24; text-wrap: balance; overflow-wrap: break-word; }
 .lvn-lede {
   max-width: var(--measure-read);
   margin: var(--space-3) 0 0;
@@ -765,8 +764,8 @@ useHead(() => ({
 .lvn-sep { color: var(--ink-tertiary); }
 
 .lvn-block { padding-block: var(--space-8); }
-.lvn-h2 { margin: 0 0 var(--space-3); font-size: var(--text-xl); }
-.lvn-h3 { margin: var(--space-6) 0 var(--space-2); font-size: var(--text-base); }
+.lvn-h2 { margin: 0 0 var(--space-3); font-family: var(--font-editorial); font-size: var(--text-xl); line-height: 1.28; text-wrap: balance; overflow-wrap: break-word; }
+.lvn-h3 { margin: var(--space-6) 0 var(--space-2); font-family: var(--font-editorial); font-size: var(--text-base); line-height: 1.32; text-wrap: balance; overflow-wrap: break-word; }
 .lvn-note-inline {
   max-width: var(--measure-read);
   margin: 0 0 var(--space-3); color: var(--ink-secondary); font-size: var(--text-sm);
@@ -797,7 +796,7 @@ useHead(() => ({
 .lvn-field input {
   min-height: 44px; padding: 0 var(--space-2);
   border: .5px solid var(--border-input, var(--line)); border-radius: var(--radius-control);
-  background: var(--bg); color: var(--ink); font: inherit; font-size: var(--text-sm);
+  background: var(--bg); color: var(--ink); font-family: var(--font-sans); font-size: var(--text-sm);
 }
 .lvn-field input[type="number"] { width: 6.5rem; }
 .lvn-field select:focus-visible,
@@ -806,7 +805,7 @@ useHead(() => ({
 .lvn-btn {
   min-height: 44px; padding: 0 var(--space-3);
   border: .5px solid var(--line); border-radius: var(--radius-control);
-  background: var(--bg-alt); color: var(--ink); font: inherit; font-size: var(--text-sm);
+  background: var(--bg-alt); color: var(--ink); font-family: var(--font-sans); font-size: var(--text-sm);
   cursor: pointer;
   transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
 }
@@ -888,14 +887,26 @@ useHead(() => ({
 .lvn-tag-first { color: var(--error); border-color: currentColor; }
 .lvn-tag-full { color: var(--color-material-amber); border-color: currentColor; }
 
+/* Wave 7: Open Astronomical Almanac Ledgers — 12 Canh Giờ & 24 Tiết Khí */
 .lvn-hours {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
   gap: 0 var(--space-4); margin: 0; padding: 0; list-style: none;
+  counter-reset: lunar-hour;
+  border-block-start: .5px solid var(--line);
 }
 .lvn-hour {
-  display: flex; justify-content: space-between; gap: var(--space-2);
+  display: grid; grid-template-columns: 1.5rem 1fr auto; align-items: baseline; gap: var(--space-2);
   padding: var(--space-1h) 0; border-block-end: .5px solid var(--line);
   font-size: var(--text-sm);
+  counter-increment: lunar-hour;
+}
+.lvn-hour::before {
+  content: counter(lunar-hour, decimal-leading-zero);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: var(--text-2xs);
+  color: var(--color-material-amber);
+  font-variant-numeric: tabular-nums;
 }
 .lvn-hour-range { color: var(--ink-tertiary); font-variant-numeric: tabular-nums; }
 .lvn-hour.is-now { font-weight: var(--weight-semibold); }
@@ -920,10 +931,21 @@ useHead(() => ({
 .lvn-terms {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
   gap: 0 var(--space-4); margin: 0; padding: 0; list-style: none;
+  counter-reset: solar-term;
+  border-block-start: .5px solid var(--line);
 }
 .lvn-term {
-  display: flex; gap: var(--space-2); padding: var(--space-1h) 0;
+  display: grid; grid-template-columns: 1.5rem auto 1fr; align-items: baseline; gap: var(--space-2); padding: var(--space-1h) 0;
   border-block-end: .5px solid var(--line); font-size: var(--text-sm);
+  counter-increment: solar-term;
+}
+.lvn-term::before {
+  content: counter(solar-term, decimal-leading-zero);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: var(--text-2xs);
+  color: var(--color-material-river);
+  font-variant-numeric: tabular-nums;
 }
 .lvn-term-date { color: var(--ink-tertiary); font-variant-numeric: tabular-nums; }
 .lvn-term.is-current { font-weight: var(--weight-semibold); }
@@ -941,10 +963,10 @@ useHead(() => ({
   line-height: var(--leading-snug);
   color: var(--ink);
   border-left: 1.5px solid var(--color-material-amber);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3) 0 var(--space-3) var(--space-4);
   margin: var(--space-6) 0;
-  background: color-mix(in srgb, var(--color-material-amber) 5%, transparent);
-  border-radius: var(--radius-control);
+  background: transparent;
+  border-radius: 0;
 }
 
 .pull-quote cite {
@@ -983,6 +1005,6 @@ useHead(() => ({
 
 @media (prefers-reduced-motion: reduce) {
   .lvn-nav, .lvn-btn, .lvn-cell, .lvn-cross-card { transition: none; transform: none; }
-  .lvn-nav:active, .lvn-btn:active, .lvn-cell:active, .lvn-cross-card:active { transform: none; }
+  .lvn-nav:active:not(:disabled), .lvn-btn:active, .lvn-cell:not(.is-blank):active, .lvn-cross-card:active { transform: none; }
 }
 </style>

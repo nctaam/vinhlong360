@@ -29,7 +29,7 @@
         <div class="kbyg-amenity-grid" role="group" aria-labelledby="kbyg-amenities-label">
           <label v-for="(meta, key) in amenityOptions" :key="key" class="kbyg-amenity-check">
             <input type="checkbox" :checked="amenities.includes(key)" @change="$emit('toggle-amenity', key)" />
-            <span>{{ meta.icon }} {{ meta.label }}</span>
+            <span><IconLine :name="meta.icon" aria-hidden="true" /> {{ meta.label }}</span>
           </label>
         </div>
       </div>

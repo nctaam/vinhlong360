@@ -122,7 +122,7 @@
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
-import { AREA_META } from '~/composables/useConstants'
+import { AREA_META, CURRENT_AREA_META } from '~/composables/useConstants'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Chưa phân loại — Admin' })
 
@@ -152,12 +152,12 @@ const placesAsyncData = useAsyncData('cpl-places', () => apiFetch<Entity[]>('/ap
 const { data: places } = placesAsyncData
 const wardGroups = computed(() => {
   const wards = (places.value || []).filter(p => ADMIN_LEVELS.includes(p.level || ''))
-  return Object.keys(AREA_META).map(area => {
+  return Object.keys(CURRENT_AREA_META).map(area => {
     const meta = AREA_META[area]
     return {
       area,
       label: meta?.name || area,
-      wards: wards.filter(w => w.area === area).sort((a, b) => a.name.localeCompare(b.name, 'vi')),
+      wards: wards.filter(w => entityMatchesAreaScope(w, area)).sort((a, b) => a.name.localeCompare(b.name, 'vi')),
     }
   }).filter(g => g.wards.length)
 })

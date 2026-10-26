@@ -53,15 +53,17 @@ function conflictText(conflict: DetailTrustConflict) {
 </script>
 
 <style scoped>
+/* Wave 10: Open Architectural Provenance Ledger — unboxed inside detail & ward sidebars */
 .entity-trust-panel {
   display: grid;
   gap: var(--space-3);
   margin: var(--space-4) 0;
-  padding: var(--space-4);
+  padding: var(--space-4) 0 0;
   color: var(--color-text);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-surface);
+  border: 0;
+  border-block-start: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
 }
 
 .entity-trust-panel__head {
@@ -77,7 +79,11 @@ function conflictText(conflict: DetailTrustConflict) {
 }
 
 .entity-trust-panel h2 {
+  font-family: var(--font-editorial);
   font-size: var(--text-base);
+  line-height: var(--leading-snug);
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .entity-trust-panel p,
@@ -108,11 +114,14 @@ function conflictText(conflict: DetailTrustConflict) {
 .entity-trust-panel__conflicts dt {
   color: var(--color-text);
   font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+  overflow-wrap: break-word;
 }
 
 .entity-trust-panel__conflicts dd {
   margin: var(--space-1) 0 0;
   color: var(--color-text-muted);
+  overflow-wrap: break-word;
 }
 
 [data-source-link],

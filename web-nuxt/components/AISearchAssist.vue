@@ -1,6 +1,6 @@
 <template>
   <div v-if="searchExpansionEnabled" class="ai-search-assist" :data-color-recipe="colorRecipe || undefined">
-    <button type="button" v-if="!aiReply && !loading && !errored" class="ai-toggle-btn ai-toggle-btn-emoji" @click="load"><IconLine name="compass" class="emoji-chip" /> Gợi ý AI cho "{{ query }}"</button>
+    <button type="button" v-if="!aiReply && !loading && !errored" class="ai-toggle-btn ai-toggle-btn-emoji" @click="load"><IconLine name="compass" class="emoji-chip" /> Gợi ý mở rộng cho "{{ query }}"</button>
     <div v-else-if="loading" class="ai-loading ai-loading-padded" role="status" aria-label="Đang tải gợi ý"><div class="spinner spinner-center"></div></div>
     <div v-else-if="errored" class="ai-error" role="status">
       <IconLine name="alert-triangle" class="ai-error-icon" aria-hidden="true" />
@@ -12,7 +12,7 @@
     </div>
     <template v-else>
       <div class="ai-search-header sediment-head">
-        <span class="ai-search-header-text"><span class="ai-search-h3">Gợi ý nhanh</span><span class="ai-label">AI gợi ý</span></span>
+        <span class="ai-search-header-text"><span class="ai-search-h3">Gợi ý nhanh</span><span class="ai-label">Sổ tay tìm kiếm</span></span>
         <button type="button" class="ai-toggle-btn" :aria-expanded="expanded" @click="expanded = !expanded">{{ expanded ? 'Thu gọn' : 'Xem thêm' }}</button>
       </div>
       <div v-if="expanded" class="ai-search-body editorial-body" v-html="formatReply(aiReply)"></div>
@@ -35,7 +35,7 @@ const { capabilityMode } = useFeature()
 const searchExpansionEnabled = computed(() => capabilityMode('searchExpansion') === 'enhanced')
 
 const { get: ss } = useSiteSettings()
-const disclaimerText = computed(() => ss('ai.disclaimer_text', 'Gợi ý do AI tạo — mang tính tham khảo.'))
+const disclaimerText = computed(() => ss('ai.disclaimer_text', 'Kinh nghiệm thực địa mang tính tham khảo.'))
 
 const aiReply = ref('')
 const suggestions = ref<string[]>([])
@@ -74,8 +74,8 @@ function writeCache(q: string, reply: string, sugg: string[]) {
 async function load() {
   if (!searchExpansionEnabled.value) return
   if (loading.value) return
-  const q = props.query
-  if (!q || q.length < 2) return
+  const q = props.query.trim()
+  if (q.length < 2) return
   const cached = readCache(q)
   if (cached) {
     aiReply.value = cached.reply
@@ -127,7 +127,10 @@ watch(() => props.query, () => {
   font-family: var(--font-editorial);
   font-weight: 600;
   font-size: var(--text-base);
+  line-height: var(--leading-snug);
   letter-spacing: -.01em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
   position: relative;
   padding-left: var(--space-4);
   color: var(--ink);
@@ -135,11 +138,8 @@ watch(() => props.query, () => {
 .ai-search-h3::before {
   content: "";
   position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 2px; height: 1.05em; border-radius: var(--radius-full);
-  background: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
-}
-.dark .ai-search-h3::before {
-  background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+  width: 2px; height: 1.05em; border-radius: var(--radius-pill, 999px);
+  background: var(--sediment-tick);
 }
 .ai-search-assist[data-color-recipe='tri-region-v1'] .ai-search-h3 {
   border-left: 2px solid var(--color-material-neutral);
@@ -150,6 +150,7 @@ watch(() => props.query, () => {
 .ai-label {
   font-weight: var(--weight-semibold);
   font-size: var(--text-2xs);
+  line-height: var(--leading-snug);
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
   color: var(--muted);
@@ -157,7 +158,7 @@ watch(() => props.query, () => {
 }
 .ai-toggle-btn-emoji { display: inline-flex; align-items: center; gap: var(--space-2); }
 .ai-loading-padded { padding: var(--space-4); }
-.ai-disclaimer { margin: var(--space-2) 0 0; font-size: .75rem; color: var(--text-muted); }
+.ai-disclaimer { margin: var(--space-2) 0 0; font-size: var(--text-xs); line-height: var(--leading-normal); color: var(--text-muted); }
 .ai-error { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3); font-size: var(--text-sm); color: var(--muted); }
 .ai-error-icon { width: 16px; height: 16px; color: var(--color-material-clay); flex-shrink: 0; }
 .ai-retry-btn {
@@ -185,5 +186,4 @@ watch(() => props.query, () => {
 .ai-search-body { animation: aiSlideIn .35s var(--ease-out-expo); }
 @keyframes aiSlideIn { from { opacity: 0; transform: translateY(-8px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @media (prefers-reduced-motion: reduce) { .ai-search-body { animation: none; } }
-@media (pointer: coarse) { .ai-retry-btn { min-height: 44px; } }
 </style>

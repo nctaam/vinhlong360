@@ -276,6 +276,7 @@ const areaAeoDigest = computed(() => {
   }
 })
 
+const VI_COLLATOR = new Intl.Collator('vi')
 const ADMIN_LEVELS = ['phuong', 'xa']
 const wards = computed(() =>
   (placesData.value || [])
@@ -284,7 +285,7 @@ const wards = computed(() =>
         ? entityMatchesAreaScope(p, areaKey) || p.parentId === 'vinh-long'
         : p.area === areaKey
     ))
-    .sort((a: Entity, b: Entity) => a.name.localeCompare(b.name, 'vi'))
+    .sort((a: Entity, b: Entity) => VI_COLLATOR.compare(a.name, b.name))
 )
 
 const entities = computed(() => {
@@ -458,7 +459,10 @@ if (areaMeta) {
 .area-hero .catalog-hero-inner h1 {
   font-family: var(--font-editorial);
   font-weight: 600;
+  line-height: 1.24;
   letter-spacing: -.015em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 /* ── CE2: editorial voice for the region guide (scoped to .ce-area / .area-hero) ── */
 /* Dateline eyebrow above the region name — wide-tracked caps + a hairline lead, like the home hero. */
@@ -474,7 +478,7 @@ if (areaMeta) {
   background: var(--color-material-amber);
 }
 /* Intro article: serif lede + a drop-cap on the opening paragraph — an editorial "cover essay". */
-.ce-area .page-article h2 { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; }
+.ce-area .page-article h2 { font-family: var(--font-editorial); font-weight: 600; line-height: 1.28; letter-spacing: -.01em; text-wrap: balance; overflow-wrap: break-word; }
 .ce-area .page-article p {
   font-family: var(--font-editorial);
   font-size: clamp(1.05rem, 1rem + .35vw, 1.2rem); line-height: var(--leading-relaxed);
@@ -486,8 +490,9 @@ if (areaMeta) {
 /* Section heads: editorial serif + the vertical "sediment core" tick (river→amber→clay) — the same
    phù-sa signature the homepage uses, so the region page speaks one voice. */
 .ce-area .section-head h2 {
-  font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em;
+  font-family: var(--font-editorial); font-weight: 600; line-height: 1.28; letter-spacing: -.01em;
   position: relative; padding-left: var(--space-4);
+  text-wrap: balance; overflow-wrap: break-word;
 }
 .ce-area .section-head h2::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
@@ -512,11 +517,9 @@ if (areaMeta) {
 .cat-area-vinh-long .area-hero-bloom, .cat-area-ben-tre .area-hero-bloom, .cat-area-tra-vinh .area-hero-bloom { display: none; }
 .cat-area-vinh-long h1, .cat-area-ben-tre h1, .cat-area-tra-vinh h1 { color: var(--white); text-shadow: var(--shadow-text-heavy); }
 .cat-area-vinh-long p, .cat-area-ben-tre p, .cat-area-tra-vinh p { color: rgba(var(--white-rgb),.92); text-shadow: var(--shadow-text); }
-.cat-area-vinh-long .catalog-hero-icon, .cat-area-ben-tre .catalog-hero-icon, .cat-area-tra-vinh .catalog-hero-icon { filter: drop-shadow(0 2px 8px rgba(var(--black-rgb),.5)); }
 .cat-area-vinh-long .area-stats .stat-num, .cat-area-ben-tre .area-stats .stat-num, .cat-area-tra-vinh .area-stats .stat-num { color: var(--white); }
 .cat-area-vinh-long .area-stats .stat-label, .cat-area-ben-tre .area-stats .stat-label, .cat-area-tra-vinh .area-stats .stat-label { color: rgba(var(--white-rgb),.82); }
 .cat-area-vinh-long .area-stats .stat-item, .cat-area-ben-tre .area-stats .stat-item, .cat-area-tra-vinh .area-stats .stat-item { background: transparent; border-color: rgba(var(--white-rgb),.28); }
-.cat-area-vinh-long .area-stats .stat-item:hover, .cat-area-ben-tre .area-stats .stat-item:hover, .cat-area-tra-vinh .area-stats .stat-item:hover { background: transparent; }
 
 .area-hero-bloom {
   position: absolute;
@@ -558,6 +561,7 @@ if (areaMeta) {
 .area-stats .stat-num {
   display: inline-block;
   font-family: var(--font-editorial);
+  line-height: 1.25;
   transition: color .3s var(--ease-out);
 }
 /* mobile: stats become a tidy 2-up grid so they never orphan on a line */
@@ -643,7 +647,6 @@ details[open] .wards-chevron {
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .area-stats .stat-item:hover .stat-num { transform: none; }
   .see-all-toggle:active { transform: none; }
   .wards-chevron { transition: none; }
 }

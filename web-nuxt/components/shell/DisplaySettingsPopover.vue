@@ -30,7 +30,7 @@
         <div class="display-settings-header">
           <div class="display-settings-titles">
             <span class="display-settings-title">Hiển thị & Trợ năng</span>
-            <span class="display-settings-subtitle">Công thái học điền dã Cửu Long</span>
+            <span class="display-settings-subtitle">Tùy chỉnh cỡ chữ và độ tương phản</span>
           </div>
           <button
             type="button"
@@ -50,17 +50,17 @@
             </div>
             <div class="display-settings-info">
               <div class="display-settings-name-row">
-                <span class="display-settings-item-name">Kính Lão Điền Dã</span>
+                <span class="display-settings-item-name">Chữ lớn dễ đọc</span>
                 <kbd class="display-settings-badge-kbd">Alt+E</kbd>
               </div>
-              <p class="display-settings-item-desc">Phóng to font 125%, giãn dòng 2.0 cho mắt lão</p>
+              <p class="display-settings-item-desc">Phóng to cỡ chữ 125%, giãn dòng 2.0 dễ đọc hơn</p>
             </div>
             <button
               type="button"
               class="display-settings-toggle-btn"
               :class="{ 'is-checked': isElderMode }"
               :aria-pressed="isElderMode"
-              aria-label="Bật hoặc tắt Kính Lão Điền Dã 125% (Alt+E)"
+              aria-label="Bật hoặc tắt chế độ chữ lớn 125% (Alt+E)"
               @click="toggleElderMode()"
             >
               <span class="toggle-rail">
@@ -76,17 +76,17 @@
             </div>
             <div class="display-settings-info">
               <div class="display-settings-name-row">
-                <span class="display-settings-item-name">Nắng Gắt Sông Nước</span>
+                <span class="display-settings-item-name">Tương phản ngoài trời</span>
                 <kbd class="display-settings-badge-kbd">Alt+S</kbd>
               </div>
-              <p class="display-settings-item-desc">Độ tương phản cao &ge; 14:1 khi đi ghe ngoài trời</p>
+              <p class="display-settings-item-desc">Tăng độ tương phản &ge; 14:1 khi xem dưới nắng gắt</p>
             </div>
             <button
               type="button"
               class="display-settings-toggle-btn"
               :class="{ 'is-checked': isHighGlare }"
               :aria-pressed="isHighGlare"
-              aria-label="Bật hoặc tắt Chế độ Nắng Gắt Ngoài Trời (Alt+S)"
+              aria-label="Bật hoặc tắt chế độ tương phản ngoài trời (Alt+S)"
               @click="toggleHighGlare()"
             >
               <span class="toggle-rail">
@@ -102,17 +102,17 @@
             </div>
             <div class="display-settings-info">
               <div class="display-settings-name-row">
-                <span class="display-settings-item-name">Sinh Thái Sông Nước</span>
-                <span class="display-settings-badge-tag">Thuận triều</span>
+                <span class="display-settings-item-name">Tiết kiệm dữ liệu</span>
+                <span class="display-settings-badge-tag">Nhẹ tải</span>
               </div>
-              <p class="display-settings-item-desc">Lộ trình thuận con nước lớn ròng sông Cổ Chiên</p>
+              <p class="display-settings-item-desc">Giảm hiệu ứng và tải dữ liệu nền khi sóng yếu</p>
             </div>
             <button
               type="button"
               class="display-settings-toggle-btn eco-mode-toggle"
               :class="{ 'is-checked': isEcoTerroir }"
               :aria-pressed="isEcoTerroir"
-              aria-label="Bật hoặc tắt Chế độ Sinh Thái Sông Nước (Eco-Mode)"
+              aria-label="Bật hoặc tắt chế độ tiết kiệm dữ liệu"
               @click="toggleEcoMode()"
             >
               <span class="toggle-rail">
@@ -163,7 +163,7 @@ const triggerTooltip = computed(() => {
   if (hasActiveMode.value) {
     return `Đang bật ${activeCount.value} chế độ hỗ trợ (Alt+E, Alt+S)`
   }
-  return 'Tùy biến hiển thị & Trợ năng (Alt+E, Alt+S)'
+  return 'Tùy chọn hiển thị và trợ năng (Alt+E, Alt+S)'
 })
 
 function toggleOpen() {

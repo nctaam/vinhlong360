@@ -241,26 +241,31 @@ def web_search(query: str, max_results: int = 5) -> list[dict]:
         return []
 
 
+_TOOL_DESCRIPTION_FORMATTERS = {
+    "search": lambda a: f"Tìm kiếm '{a.get('q', '')}'..." if a.get('q') else "Tìm kiếm knowledge base...",
+    "entity_detail": lambda a: f"Tra cứu chi tiết '{a.get('entity_id', '')}'...",
+    "seasonal_now": lambda a: f"Kiểm tra mùa vụ tháng {a.get('month', '')}...",
+    "list_itineraries": lambda a: f"Tìm lịch trình{' ' + a['area'] if a.get('area') else ''}...",
+    "itinerary_detail": lambda a: f"Xem lịch trình '{a.get('itinerary_id', '')}'...",
+    "places_in_area": lambda a: f"Liệt kê địa điểm tại {a.get('area', '')}...",
+    "stats": lambda a: "Thống kê knowledge base...",
+    "compare_areas": lambda a: f"So sánh {a.get('area_1', '')} và {a.get('area_2', '')}...",
+    "nearby_entities": lambda a: f"Tìm điểm gần '{a.get('entity_id', '')}'...",
+    "web_search": lambda a: f"Tìm trên web '{a.get('query', '')}'...",
+    "suggest_followups": lambda a: "Gợi ý câu hỏi tiếp theo...",
+    "generate_itinerary": lambda a: f"Tạo lịch trình {a.get('days', 1)} ngày...",
+    "weather": lambda a: f"Tra thời tiết {a.get('area', 'Vĩnh Long')}...",
+    "community_reviews": lambda a: f"Xem đánh giá cộng đồng về '{a.get('entity_id', '')}'...",
+    "trending_posts": lambda a: "Xem bài viết nổi bật trên cộng đồng...",
+}
+
+_JSON_FENCE_START_RE = re.compile(r"^```json\s*")
+_JSON_FENCE_END_RE = re.compile(r"\s*```$")
+
+
 def _tool_description(name: str, args: dict) -> str:
     """Human-readable description of a tool call for UI tracing."""
-    descs = {
-        "search": lambda a: f"Tìm kiếm '{a.get('q', '')}'..." if a.get('q') else "Tìm kiếm knowledge base...",
-        "entity_detail": lambda a: f"Tra cứu chi tiết '{a.get('entity_id', '')}'...",
-        "seasonal_now": lambda a: f"Kiểm tra mùa vụ tháng {a.get('month', '')}...",
-        "list_itineraries": lambda a: f"Tìm lịch trình{' ' + a['area'] if a.get('area') else ''}...",
-        "itinerary_detail": lambda a: f"Xem lịch trình '{a.get('itinerary_id', '')}'...",
-        "places_in_area": lambda a: f"Liệt kê địa điểm tại {a.get('area', '')}...",
-        "stats": lambda a: "Thống kê knowledge base...",
-        "compare_areas": lambda a: f"So sánh {a.get('area_1', '')} và {a.get('area_2', '')}...",
-        "nearby_entities": lambda a: f"Tìm điểm gần '{a.get('entity_id', '')}'...",
-        "web_search": lambda a: f"Tìm trên web '{a.get('query', '')}'...",
-        "suggest_followups": lambda a: "Gợi ý câu hỏi tiếp theo...",
-        "generate_itinerary": lambda a: f"Tạo lịch trình {a.get('days', 1)} ngày...",
-        "weather": lambda a: f"Tra thời tiết {a.get('area', 'Vĩnh Long')}...",
-        "community_reviews": lambda a: f"Xem đánh giá cộng đồng về '{a.get('entity_id', '')}'...",
-        "trending_posts": lambda a: "Xem bài viết nổi bật trên cộng đồng...",
-    }
-    fn = descs.get(name)
+    fn = _TOOL_DESCRIPTION_FORMATTERS.get(name)
     if fn:
         try:
             return fn(args)
@@ -302,8 +307,8 @@ Trả về JSON array gồm 3 string. Chỉ trả JSON, không text khác."""}]
                 messages=messages,
             )
         content = response.choices[0].message.content.strip()
-        content = re.sub(r"^```json\s*", "", content)
-        content = re.sub(r"\s*```$", "", content)
+        content = _JSON_FENCE_START_RE.sub("", content)
+        content = _JSON_FENCE_END_RE.sub("", content)
         return json.loads(content)[:3]
     except Exception:
         logger.debug("Follow-up generation failed", exc_info=True)

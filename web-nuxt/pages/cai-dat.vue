@@ -495,7 +495,7 @@ import type { AccessibilityTheme } from '~/types/accessibility'
 import { useSettingsSecurity } from '~/composables/useSettingsSecurity'
 import { useSettingsModeration } from '~/composables/useSettingsModeration'
 import { useSettingsAccountLifecycle } from '~/composables/useSettingsAccountLifecycle'
-import { getStatusCode, extractErrorMessage } from '~/composables/useFetchError'
+import { getStatusCode } from '~/composables/useFetchError'
 
 const { user, isLoggedIn, authHeaders, fetchMe, handleSessionExpired } = useAuth()
 const { enabled: ff } = useFeature()
@@ -933,7 +933,7 @@ onUnmounted(() => {
 
 /* ── Dark mode ── */
 .dark .sf-input { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
-.dark .session-item { border-color: var(--line); background: transparent; }
+.dark .session-item { border-color: var(--line); }
 .dark .session-item.current { border-color: var(--color-action); background: var(--color-action-surface); }
 .dark .settings-danger { border-color: rgba(var(--danger-rgb), .3); }
 .dark .sf-avatar-preview { border-color: var(--line); }

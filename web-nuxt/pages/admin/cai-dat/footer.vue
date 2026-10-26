@@ -72,7 +72,7 @@
             label-field="label"
             :editable-fields="['icon', 'label', 'url']"
             add-label="Thêm mạng xã hội"
-            :new-item-template="{ icon: '🔗', label: 'Mạng xã hội', url: 'https://' }"
+            :new-item-template="{ icon: 'globe', label: 'Mạng xã hội', url: 'https://' }"
             @update:items="socialLinks = $event"
           >
             <template #display="{ item }">
