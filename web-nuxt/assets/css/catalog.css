@@ -104,9 +104,13 @@
   align-items: end;
   margin-block-end: var(--space-6);
   padding: clamp(var(--space-8), 6vw, var(--space-14)) var(--space-6);
-  border-block: 1px solid var(--color-border);
-  background: var(--color-surface-subtle);
-  box-shadow: none;
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
+  border-radius: var(--radius-surface, 16px);
+  background-color: var(--color-surface);
+  background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 94%, transparent) 42%, color-mix(in srgb, var(--color-surface) 68%, transparent) 100%), url('/img/spread/cu-lao-an-binh-1024.webp');
+  background-size: cover;
+  background-position: center right;
+  box-shadow: 0 12px 36px -8px rgba(var(--black-rgb), 0.06);
 }
 
 [data-page-recipe="discovery"] .atlas-hero-inner {
@@ -159,14 +163,25 @@
   display: grid;
   gap: var(--space-5);
   margin: 0;
-  padding: 0 0 0 var(--space-6);
+  padding: var(--space-4) var(--space-5) var(--space-4) var(--space-7);
   list-style: none;
+  background: rgba(var(--white-rgb), 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(var(--white-rgb), 0.65);
+  border-radius: var(--radius-surface, 14px);
+  box-shadow: 0 8px 24px -4px rgba(var(--black-rgb), 0.06);
+}
+
+.dark [data-page-recipe="discovery"] .catalog-route-trace {
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  border-color: rgba(var(--white-rgb), 0.12);
 }
 
 [data-page-recipe="discovery"] .catalog-route-trace::before {
   position: absolute;
-  inset-block: var(--space-3);
-  inset-inline-start: var(--space-2);
+  inset-block: var(--space-4);
+  inset-inline-start: var(--space-4);
   width: 1px;
   background: var(--color-material-river);
   content: "";

@@ -18,7 +18,9 @@
     </div>
     <nav class="home-continuation__links" aria-label="Bước tiếp theo">
       <NuxtLink to="/du-lich" class="home-continuation__link home-continuation__link--featured">
-        <IconLine name="compass" aria-hidden="true" />
+        <span class="home-continuation__thumb home-continuation__thumb--dulich" aria-hidden="true">
+          <IconLine name="compass" aria-hidden="true" />
+        </span>
         <span class="home-continuation__link-text">
           <strong class="home-continuation__link-title">Khám phá 1.772 điểm đến</strong>
           <span class="home-continuation__link-sub">Di sản, danh thắng & làng nghề miệt vườn</span>
@@ -26,7 +28,9 @@
         <IconLine name="arrow-right" class="home-continuation__arrow" aria-hidden="true" />
       </NuxtLink>
       <NuxtLink to="/ban-do" class="home-continuation__link">
-        <IconLine name="map" aria-hidden="true" />
+        <span class="home-continuation__thumb home-continuation__thumb--bando" aria-hidden="true">
+          <IconLine name="map" aria-hidden="true" />
+        </span>
         <span class="home-continuation__link-text">
           <strong class="home-continuation__link-title">Mở bản đồ thực địa</strong>
           <span class="home-continuation__link-sub">Định vị bến phà, vườn trái cây & quán ngon</span>
@@ -34,7 +38,9 @@
         <IconLine name="arrow-right" class="home-continuation__arrow" aria-hidden="true" />
       </NuxtLink>
       <NuxtLink to="/lich-trinh" class="home-continuation__link">
-        <IconLine name="calendar" aria-hidden="true" />
+        <span class="home-continuation__thumb home-continuation__thumb--lichtrinh" aria-hidden="true">
+          <IconLine name="calendar" aria-hidden="true" />
+        </span>
         <span class="home-continuation__link-text">
           <strong class="home-continuation__link-title">16 lịch trình thong dong</strong>
           <span class="home-continuation__link-sub">Gợi ý 1 ngày, 2N1Đ và 3N2Đ từ người địa phương</span>

@@ -1011,6 +1011,54 @@
   flex-shrink: 0;
 }
 
+[data-home-pilot="nocturne-b1"] .home-continuation__thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-control, 10px);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(var(--black-rgb), 0.12);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-home-pilot="nocturne-b1"] .home-continuation__links a:hover .home-continuation__thumb {
+  transform: scale(1.06);
+}
+
+[data-home-pilot="nocturne-b1"] .home-continuation__thumb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(var(--black-rgb), 0.38);
+  backdrop-filter: blur(1px);
+}
+
+[data-home-pilot="nocturne-b1"] .home-continuation__thumb .line-icon {
+  position: relative;
+  z-index: 1;
+  color: var(--white) !important;
+  font-size: 18px;
+}
+
+[data-home-pilot="nocturne-b1"] .home-continuation__thumb--dulich {
+  background-image: url('/img/cat-du-lich.webp');
+}
+
+[data-home-pilot="nocturne-b1"] .home-continuation__thumb--bando {
+  background-image: url('/img/cat-ban-do.webp');
+}
+
+[data-home-pilot="nocturne-b1"] .home-continuation__thumb--lichtrinh {
+  background-image: url('/img/cat-lich-trinh.webp');
+}
+
 [data-home-pilot="nocturne-b1"] .home-continuation__link-text {
   display: flex;
   flex-direction: column;

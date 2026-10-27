@@ -80,7 +80,11 @@
 .card:active { transform: translateY(1px) scale(0.98); transition-duration: .1s; }
 .card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; transform: translateY(-4px); }
 .cover { height: 96px; display: flex; align-items: center; justify-content: center; position: relative; color: var(--text-on-dark); }
-.cover span { font-size: var(--icon-xl); filter: drop-shadow(var(--shadow-text)); }
+.cover > span:not(.cover-disclosure) { font-size: var(--icon-xl); filter: drop-shadow(var(--shadow-text)); }
+.cover-disclosure { position: absolute; bottom: var(--space-2); left: var(--space-2); z-index: 2; pointer-events: none; max-width: calc(100% - var(--space-4)); }
+.cover-disclosure .image-disclosure { font-size: var(--text-2xs); line-height: 1.25; padding: 2px 6px; background: rgba(var(--white-rgb), 0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: var(--radius-control, 6px); border: 1px solid rgba(var(--white-rgb), 0.6); color: var(--color-text-muted); box-shadow: 0 2px 4px rgba(var(--black-rgb), 0.08); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 100%; display: inline-block; }
+.cover-disclosure span { font-size: inherit; filter: none; }
+.dark .cover-disclosure .image-disclosure { background: color-mix(in srgb, var(--color-surface) 90%, transparent); border-color: rgba(var(--white-rgb), 0.15); }
 .cover-img { position: relative; height: auto; aspect-ratio: 16 / 10; overflow: hidden; background: linear-gradient(110deg, var(--bg-alt) 30%, var(--card) 50%, var(--bg-alt) 70%); background-size: 200% 100%; animation: shimmer 1.6s infinite linear; }
 .cover-img:has(img.loaded), .cover-img:has(img:not([loading="lazy"])) { animation: none; background: var(--bg-alt); }
 .cover-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease-out-expo), opacity .5s var(--ease-out-expo), filter .5s var(--ease-out-expo); }
