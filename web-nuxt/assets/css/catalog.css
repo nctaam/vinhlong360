@@ -1764,8 +1764,19 @@
   border-radius: var(--radius-surface);
   padding: clamp(var(--space-8), 4vw + var(--space-6), 3.5rem) var(--space-6) var(--space-6);
   margin-bottom: var(--space-6);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-subtle);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
+  background-color: var(--color-surface);
+  background-size: cover;
+  background-position: center right;
+  box-shadow: 0 12px 36px -8px rgba(var(--black-rgb), 0.06);
+}
+
+.wake-hero.cat-dish {
+  background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 94%, transparent) 44%, color-mix(in srgb, var(--color-surface) 68%, transparent) 100%), url('/img/cat-am-thuc.webp');
+}
+
+.wake-hero.cat-accommodation {
+  background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 94%, transparent) 44%, color-mix(in srgb, var(--color-surface) 68%, transparent) 100%), url('/img/cat-luu-tru.webp');
 }
 .wake-hero-inner { position: relative; z-index: 1; max-width: 65ch; }
 .wake-hero-eyebrow {
@@ -1786,8 +1797,18 @@
 }
 .wake-hero-stats {
   position: relative; z-index: 1;
-  display: flex; gap: var(--space-6); margin-top: var(--space-6); padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border); flex-wrap: wrap;
+  display: flex; gap: var(--space-6); margin-top: var(--space-6); padding: var(--space-3) var(--space-4);
+  border: 1px solid rgba(var(--white-rgb), 0.65); flex-wrap: wrap;
+  background: rgba(var(--white-rgb), 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: var(--radius-control, 10px);
+  width: fit-content;
+  box-shadow: 0 4px 16px -2px rgba(var(--black-rgb), 0.05);
+}
+.dark .wake-hero-stats {
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  border-color: rgba(var(--white-rgb), 0.12);
 }
 .wake-hero-stats .stat-item {
   padding: var(--space-1) 0 var(--space-1) var(--space-4); border-radius: 0;
