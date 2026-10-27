@@ -27,7 +27,20 @@
           v-for="(item, idx) in entries"
           :key="idx"
           class="catalog-aeo-plaque__item"
+          :class="{ 'has-image': Boolean(item.coverSrc) }"
         >
+          <div v-if="item.coverSrc" class="catalog-aeo-plaque__media">
+            <img
+              :src="item.coverSrc"
+              :alt="item.heading"
+              class="catalog-aeo-plaque__img"
+              width="480"
+              height="270"
+              loading="lazy"
+              decoding="async"
+            >
+            <span v-if="item.tag" class="catalog-aeo-plaque__tag">{{ item.tag }}</span>
+          </div>
           <h3 class="catalog-aeo-plaque__entry-title">{{ item.heading }}</h3>
           <p class="catalog-aeo-plaque__dek">{{ item.text }}</p>
         </article>
@@ -51,7 +64,7 @@ const props = withDefaults(defineProps<{
   kicker?: string
   accent?: 'amber' | 'clay' | 'leaf' | 'river' | 'neutral'
   icon?: string
-  entries: Array<{ heading: string; text: string }>
+  entries: Array<{ heading: string; text: string; tag?: string; coverSrc?: string }>
   ctaTo?: string
   ctaLabel?: string
 }>(), {
@@ -209,6 +222,69 @@ const titleId = `catalog-aeo-title-${instanceId}`
   border-radius: 0;
   background: transparent;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s var(--ease-out);
+}
+
+.catalog-aeo-plaque__item.has-image {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface, 12px);
+  background: var(--color-surface);
+  box-shadow: 0 4px 16px -4px rgba(var(--black-rgb), 0.04);
+}
+
+.catalog-aeo-plaque__item.has-image::before {
+  margin-bottom: var(--space-1);
+}
+
+.catalog-aeo-plaque__media {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-control, 8px);
+  aspect-ratio: 16 / 10;
+  margin-bottom: var(--space-2);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+}
+
+.catalog-aeo-plaque__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+}
+
+.catalog-aeo-plaque__tag {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--color-text);
+  background: rgba(var(--white-rgb), 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 0.15rem var(--space-2);
+  border-radius: var(--radius-control, 4px);
+  box-shadow: 0 2px 6px rgba(var(--black-rgb), 0.08);
+}
+
+:root.dark .catalog-aeo-plaque__tag {
+  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .catalog-aeo-plaque__item.has-image:hover {
+    border-color: var(--tri-region-material-accent, var(--color-brand));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -6px rgba(var(--black-rgb), 0.08);
+  }
+  .catalog-aeo-plaque__item.has-image:hover .catalog-aeo-plaque__img {
+    transform: scale(1.04);
+  }
 }
 
 .catalog-aeo-plaque__item::before {

@@ -104,13 +104,26 @@
           :key="exp.title"
           class="home-exp-card"
         >
-          <span class="home-exp-card__icon" aria-hidden="true">
-            <IconLine :name="exp.icon" />
-          </span>
-          <div class="home-exp-card__content">
-            <h4 class="home-exp-card__title">{{ exp.title }}</h4>
-            <p class="home-exp-card__desc">{{ exp.desc }}</p>
+          <div v-if="exp.coverSrc" class="home-exp-card__media">
+            <img
+              :src="exp.coverSrc"
+              :alt="exp.title"
+              class="home-exp-card__img"
+              width="400"
+              height="250"
+              loading="lazy"
+              decoding="async"
+              @error="onImgFallback"
+            >
+            <span v-if="exp.tag" class="home-exp-card__tag">{{ exp.tag }}</span>
           </div>
+          <div class="home-exp-card__header">
+            <span class="home-exp-card__icon" aria-hidden="true">
+              <IconLine :name="exp.icon" />
+            </span>
+            <h4 class="home-exp-card__title">{{ exp.title }}</h4>
+          </div>
+          <p class="home-exp-card__desc">{{ exp.desc }}</p>
         </div>
       </div>
     </div>
@@ -139,6 +152,8 @@ interface FolkExperience {
   readonly title: string
   readonly desc: string
   readonly icon: string
+  readonly coverSrc?: string
+  readonly tag?: string
 }
 
 const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
@@ -191,16 +206,22 @@ const FOLK_EXPERIENCES: readonly FolkExperience[] = [
     title: 'Chèo xuồng ba lá mương liếp',
     desc: 'Lướt nhẹ tay chèo dưới bóng mát rượi của những rặng bần chua và hàng dừa nước rạch An Bình trong lành.',
     icon: 'route',
+    tag: 'Cù lao An Bình',
+    coverSrc: '/img/entities/cheo-xuong-ba-la.webp',
   },
   {
     title: 'Dỡ chà & Tát mương bắt cá đồng',
     desc: 'Mặc bộ bà ba mộc mạc, cùng người dân be bờ tát mương bắt cá lóc, cá trê rồi nướng trui rơm ngay tại vườn.',
     icon: 'flame',
+    tag: 'KDL Vinh Sang',
+    coverSrc: '/img/entities/khu-du-lich-sinh-thai-miet-vuon-vinh-sang.webp',
   },
   {
     title: 'Đêm Đờn ca tài tử Nam Bộ',
     desc: 'Thưởng thức hòa tấu đàn kìm, đàn tranh và những bài bản ca tài tử mượt mà bên bến sông Cổ Chiên trăng thanh.',
     icon: 'moon',
+    tag: 'Di sản sông Cổ Chiên',
+    coverSrc: '/img/entities/nha-gom-tu-buoi.webp',
   },
 ]
 
@@ -527,35 +548,74 @@ function onImgFallback(e: Event) {
 .home-exp-card {
   counter-increment: folk-exp;
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-1) 0 var(--space-1) var(--space-5);
-  background: transparent;
-  border: 0;
-  border-inline-start: 1px solid color-mix(in srgb, var(--color-material-river) 38%, var(--color-border));
-  border-radius: 0;
-  box-shadow: none;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
-}
-
-.home-exp-card::before {
-  content: counter(folk-exp, decimal-leading-zero);
-  font-family: var(--font-editorial);
-  font-style: italic;
-  font-size: 1.45rem;
-  font-weight: var(--weight-semibold);
-  color: var(--color-brand);
-  line-height: 1;
-  flex-shrink: 0;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface, 12px);
+  box-shadow: 0 4px 16px -4px rgba(var(--black-rgb), 0.04);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .home-exp-card:hover {
-  transform: translateX(3px);
+  transform: translateY(-2px);
   border-color: var(--color-material-river);
+  box-shadow: 0 8px 24px -6px rgba(var(--black-rgb), 0.08);
 }
 
 .home-exp-card:active {
   transform: scale(0.98);
+}
+
+.home-exp-card__media {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-control, 8px);
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+}
+
+.home-exp-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+}
+
+.home-exp-card:hover .home-exp-card__img {
+  transform: scale(1.05);
+}
+
+.home-exp-card__tag {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--color-text);
+  background: rgba(var(--white-rgb), 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 0.15rem var(--space-2);
+  border-radius: var(--radius-control, 4px);
+  box-shadow: 0 2px 6px rgba(var(--black-rgb), 0.08);
+}
+
+:root.dark .home-exp-card__tag {
+  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
+}
+
+.home-exp-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
 }
 
 .home-exp-card__icon {

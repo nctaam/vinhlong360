@@ -682,17 +682,17 @@ useHead(() => {
   background: var(--color-brand);
 }
 
-/* Hero depth & cultural warmth: layered scrim over the festival gradient */
+/* Hero depth & cultural warmth: layered scrim over the festival photographic backdrop */
 .catalog-hero.cat-festival {
   position: relative;
-  background:
-    radial-gradient(120% 90% at 12% 0%, rgba(var(--color-brand-rgb), .06) 0%, transparent 55%),
-    linear-gradient(135deg, rgba(var(--color-brand-rgb), .04) 0%, rgba(var(--color-action-rgb), .06) 100%);
+  background-color: var(--color-surface);
+  background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 94%, transparent) 46%, color-mix(in srgb, var(--color-surface) 70%, transparent) 100%), url('/img/cat-le-hoi.webp');
+  background-size: cover;
+  background-position: center right;
 }
 .dark .catalog-hero.cat-festival {
-  background:
-    radial-gradient(120% 90% at 12% 0%, rgba(var(--color-brand-rgb), .08) 0%, transparent 55%),
-    linear-gradient(135deg, rgba(var(--white-rgb),.03) 0%, rgba(var(--white-rgb),.01) 100%);
+  background-color: var(--color-surface);
+  background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 92%, transparent) 46%, color-mix(in srgb, var(--color-surface) 75%, transparent) 100%), url('/img/cat-le-hoi.webp');
 }
 
 /* Time-aware status label above an event name */

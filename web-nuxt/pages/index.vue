@@ -394,14 +394,20 @@ const HERO_TERROIR_CHIPS = [
 const homeAeoEntries = [
   {
     heading: 'Mùa nước nổi & Miệt vườn (Tháng 8 – 10)',
+    tag: 'Sinh thái Cù lao',
+    coverSrc: '/img/spread/cu-lao-an-binh-640.webp',
     text: 'Thời điểm vàng trải nghiệm sinh thái sông nước Cửu Long. Xuồng ba lá len lỏi dưới bóng dừa nước Cù Lao An Bình, thưởng thức cá linh non đầu mùa và trái cây chín cây thanh ngọt.',
   },
   {
     heading: 'Mùa di sản gốm & Hoa xuân (Tháng 1 – 3)',
+    tag: 'Di sản Mang Thít',
+    coverSrc: '/img/entities/lo-gach-mang-thit.webp',
     text: 'Vương quốc gốm đỏ Mang Thít vào vụ nung đỏ lửa bên dòng Cổ Chiên. Tiết trời mát dịu đầu xuân thích hợp cho các chuyến điền dã di sản kiến trúc tâm linh, làng nghề truyền thống và hội hè bản địa.',
   },
   {
     heading: 'Mùa trái cây rộ hè (Tháng 5 – 7)',
+    tag: 'Vườn trái cây rộ',
+    coverSrc: '/img/entities/nha-vuon-tu-hien.webp',
     text: 'Mùa sầu riêng Ri6, chôm chôm Bình Hòa Phước và bưởi Năm Roi Bình Minh vào vụ thu hoạch rộ. Lữ khách tự tay hái trái chín tại vườn ven sông và thưởng thức bánh xèo hến cù lao.',
   },
 ]

@@ -644,20 +644,24 @@ useHead(() => {
    on `background` so a month change reads as a 400–600ms wash, not a pop.
    Layers on top of catalog.css's base .cat-season gradient (not replacing
    the shared component — additive override scoped to this page). */
+/* Scoped Seasonal Hero Photographic Backdrops
+   Authentic photography with quiet luxury Mekong scrim. */
 .catalog-hero.cat-season {
-  --sediment-teal-rgb: 51, 100, 110;
-  transition: background 550ms var(--ease-out-expo);
+  position: relative;
+  background-size: cover;
+  background-position: center right;
+  transition: background-image 550ms var(--ease-out-expo);
 }
-.catalog-hero.cat-season.q-spring  { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, var(--bg-warm) 100%); }
-.catalog-hero.cat-season.q-bloom   { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, rgba(var(--color-action-rgb), .05) 100%); }
-.catalog-hero.cat-season.q-summer  { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .12) 0%, var(--bg-warm) 100%); }
-.catalog-hero.cat-season.q-harvest { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, rgba(var(--sediment-teal-rgb), .06) 100%); }
-.catalog-hero.cat-season.q-flood   { background: linear-gradient(135deg, rgba(var(--sediment-teal-rgb), .14) 0%, var(--bg-warm) 100%); }
-.dark .catalog-hero.cat-season.q-spring  { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, rgba(var(--white-rgb),.02) 100%); }
-.dark .catalog-hero.cat-season.q-bloom   { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, rgba(var(--color-action-rgb), .06) 100%); }
-.dark .catalog-hero.cat-season.q-summer  { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .12) 0%, rgba(var(--white-rgb),.02) 100%); }
-.dark .catalog-hero.cat-season.q-harvest { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .08) 0%, rgba(var(--sediment-teal-rgb), .08) 100%); }
-.dark .catalog-hero.cat-season.q-flood   { background: linear-gradient(135deg, rgba(var(--sediment-teal-rgb), .18) 0%, rgba(var(--white-rgb),.02) 100%); }
+.catalog-hero.cat-season.q-spring  { background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 94%, transparent) 46%, color-mix(in srgb, var(--color-surface) 70%, transparent) 100%), url('/img/entities/lo-gach-mang-thit.webp'); }
+.catalog-hero.cat-season.q-bloom   { background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 94%, transparent) 46%, color-mix(in srgb, var(--color-surface) 70%, transparent) 100%), url('/img/spread/cu-lao-an-binh-1024.webp'); }
+.catalog-hero.cat-season.q-summer  { background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 94%, transparent) 46%, color-mix(in srgb, var(--color-surface) 70%, transparent) 100%), url('/img/entities/nha-vuon-tu-hien.webp'); }
+.catalog-hero.cat-season.q-harvest { background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 94%, transparent) 46%, color-mix(in srgb, var(--color-surface) 70%, transparent) 100%), url('/img/cat-ocop.webp'); }
+.catalog-hero.cat-season.q-flood   { background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 94%, transparent) 46%, color-mix(in srgb, var(--color-surface) 70%, transparent) 100%), url('/img/spread/song-nuoc-1024.webp'); }
+.dark .catalog-hero.cat-season.q-spring  { background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 92%, transparent) 46%, color-mix(in srgb, var(--color-surface) 75%, transparent) 100%), url('/img/entities/lo-gach-mang-thit.webp'); }
+.dark .catalog-hero.cat-season.q-bloom   { background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 92%, transparent) 46%, color-mix(in srgb, var(--color-surface) 75%, transparent) 100%), url('/img/spread/cu-lao-an-binh-1024.webp'); }
+.dark .catalog-hero.cat-season.q-summer  { background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 92%, transparent) 46%, color-mix(in srgb, var(--color-surface) 75%, transparent) 100%), url('/img/entities/nha-vuon-tu-hien.webp'); }
+.dark .catalog-hero.cat-season.q-harvest { background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 92%, transparent) 46%, color-mix(in srgb, var(--color-surface) 75%, transparent) 100%), url('/img/cat-ocop.webp'); }
+.dark .catalog-hero.cat-season.q-flood   { background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 92%, transparent) 46%, color-mix(in srgb, var(--color-surface) 75%, transparent) 100%), url('/img/spread/song-nuoc-1024.webp'); }
 
 /* Section eyebrow + dividers */
 .section-eyebrow {

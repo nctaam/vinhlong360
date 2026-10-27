@@ -574,7 +574,14 @@ useHead(() => {
 <style src="~/assets/css/events.css"></style>
 
 <style>
-.catalog-hero.cat-event { background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .06) 0%, rgba(var(--color-action-rgb), .06) 100%); }
-.dark .catalog-hero.cat-event { background: linear-gradient(135deg, rgba(var(--white-rgb),.03) 0%, rgba(var(--white-rgb),.01) 100%); }
-
+.catalog-hero.cat-event {
+  background-color: var(--color-surface);
+  background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 94%, transparent) 46%, color-mix(in srgb, var(--color-surface) 70%, transparent) 100%), url('/img/cat-le-hoi.webp');
+  background-size: cover;
+  background-position: center right;
+}
+.dark .catalog-hero.cat-event {
+  background-color: var(--color-surface);
+  background-image: linear-gradient(to right, color-mix(in srgb, var(--color-surface) 92%, transparent) 46%, color-mix(in srgb, var(--color-surface) 75%, transparent) 100%), url('/img/cat-le-hoi.webp');
+}
 </style>
