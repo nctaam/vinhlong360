@@ -39,8 +39,8 @@
               class="home-intent-anchor__avatar"
               :src="anchor.avatarSrc"
               :alt="anchor.label"
-              width="38"
-              height="38"
+              width="64"
+              height="64"
               loading="lazy"
               decoding="async"
               @error="onAvatarFallback"
@@ -367,7 +367,7 @@ function onAvatarFallback(e: Event) {
 
 .home-intent-anchors__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: var(--space-3);
 }
 
@@ -376,25 +376,25 @@ function onAvatarFallback(e: Event) {
   align-items: center;
   gap: var(--space-3);
   min-height: 48px;
-  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-2);
+  padding: var(--space-2-5, 10px) var(--space-4) var(--space-2-5, 10px) var(--space-2-5, 10px);
   background: var(--color-surface);
   border: 1px solid var(--border-liquid-glass, var(--color-border));
-  border-radius: var(--radius-pill, 999px);
+  border-radius: var(--radius-surface, 16px);
   color: var(--color-text);
   text-decoration: none;
-  box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.04);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+  box-shadow: var(--shadow-card-ambient);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.2s ease,
-              box-shadow 0.2s ease,
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               background-color 0.2s ease;
 }
 
 .home-intent-anchor:hover,
 .home-intent-anchor.is-selected {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--mangthit-600) 55%, var(--color-border));
-  box-shadow: 0 6px 18px rgba(var(--black-rgb), 0.08);
-  background: color-mix(in srgb, var(--color-surface) 97%, transparent);
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--color-brand) 50%, var(--color-border));
+  box-shadow: 0 10px 24px -4px rgba(var(--black-rgb), 0.10);
+  background: color-mix(in srgb, var(--color-brand) 4%, var(--color-surface));
 }
 
 .home-intent-anchor:active {
@@ -408,20 +408,22 @@ function onAvatarFallback(e: Event) {
 
 .home-intent-anchor__media {
   position: relative;
-  width: 38px;
-  height: 38px;
+  width: 64px;
+  height: 64px;
   flex-shrink: 0;
+  border-radius: var(--radius-control, 12px);
+  overflow: hidden;
 }
 
 .home-intent-anchor__avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-control, 12px);
   object-fit: cover;
   display: block;
-  border: 1.5px solid var(--color-surface);
-  box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.12);
-  transition: transform 0.25s var(--ease-out);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
+  box-shadow: 0 2px 6px rgba(var(--black-rgb), 0.10);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .home-intent-anchor:hover .home-intent-anchor__avatar {
@@ -434,18 +436,25 @@ function onAvatarFallback(e: Event) {
 
 .home-intent-anchor__icon-badge {
   position: absolute;
-  bottom: -2px;
-  right: -2px;
+  top: 4px;
+  left: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  font-size: 10px;
-  box-shadow: 0 1px 2px rgba(var(--black-rgb), 0.15);
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-pill, 999px);
+  background: rgba(var(--white-rgb), 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(var(--white-rgb), 0.6);
+  font-size: 11px;
+  box-shadow: 0 1px 4px rgba(var(--black-rgb), 0.18);
+}
+
+:global(.dark) .home-intent-anchor__icon-badge {
+  background: rgba(var(--black-rgb), 0.75);
+  border-color: rgba(var(--white-rgb), 0.15);
 }
 
 .home-intent-anchor__icon-badge--orchard { color: var(--orchard-600); }

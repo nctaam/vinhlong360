@@ -48,14 +48,17 @@
           </div>
           <div class="hero-terroir-chips" role="region" aria-label="Gợi ý thực địa Vĩnh Long">
             <span class="hero-terroir-chips__label">Rẽ lối lẹ</span>
-            <NuxtLink
-              v-for="chip in HERO_TERROIR_CHIPS"
-              :key="chip.label"
-              :to="`/tim-kiem?q=${encodeURIComponent(chip.q)}`"
-              class="hero-terroir-chip"
-            >
-              {{ chip.label }}
-            </NuxtLink>
+            <div class="hero-terroir-chips__list">
+              <NuxtLink
+                v-for="chip in HERO_TERROIR_CHIPS"
+                :key="chip.label"
+                :to="`/tim-kiem?q=${encodeURIComponent(chip.q)}`"
+                class="hero-terroir-chip"
+              >
+                <span class="hero-terroir-chip__thumb" :class="chip.thumbClass" aria-hidden="true" />
+                <span class="hero-terroir-chip__text">{{ chip.label }}</span>
+              </NuxtLink>
+            </div>
           </div>
         </div>
         <HomeFeatureDossier
@@ -92,6 +95,19 @@
     <HomeRiversideStays v-if="!homeFailed" />
     <div class="home-river-divider" aria-hidden="true" />
 
+    <div class="home-quick-decisions" data-home-section="quick-decisions">
+      <HomeIntentAnchors v-if="!homeFailed" />
+      <HomeDecisionLedger :entries="homePresentation.decisionEntries" class="sr-only" inert />
+      <HomeCategoryIndex
+        v-if="!homePending"
+        :groups="homePresentation.categoryGroups"
+        class="sr-only"
+        inert
+      />
+    </div>
+
+    <div class="home-river-divider" aria-hidden="true" />
+
     <CatalogAeoPlaque
       data-home-section="aeo-plaque"
       data-home-aeo-plaque
@@ -103,17 +119,6 @@
       cta-to="/theo-mua"
       cta-label="Lịch trình theo mùa"
     />
-
-    <div class="home-quick-decisions" data-home-section="quick-decisions">
-      <HomeIntentAnchors v-if="!homeFailed" />
-      <HomeDecisionLedger :entries="homePresentation.decisionEntries" class="sr-only" inert />
-      <HomeCategoryIndex
-        v-if="!homePending"
-        :groups="homePresentation.categoryGroups"
-        class="sr-only"
-        inert
-      />
-    </div>
 
     <!-- Degraded/empty fallback -->
     <section v-if="homeFailed" class="block reveal" data-home-section="recovery">
@@ -379,11 +384,11 @@ import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation
 import type { HomePresentationEntity } from '~/utils/homeNocturnePresentation'
 
 const HERO_TERROIR_CHIPS = [
-  { label: 'Cù lao An Bình', q: 'Cù lao An Bình' },
-  { label: 'Lò gạch Mang Thít', q: 'Lò gạch Mang Thít' },
-  { label: 'Chợ nổi Trà Ôn', q: 'Chợ nổi Trà Ôn' },
-  { label: 'Sầu riêng Ri6', q: 'Sầu riêng Ri6' },
-  { label: 'Chùa Phật Ngọc', q: 'Chùa Phật Ngọc Xá Lợi' },
+  { label: 'Cù lao An Bình', q: 'Cù lao An Bình', thumbClass: 'hero-chip-thumb--culao' },
+  { label: 'Lò gạch Mang Thít', q: 'Lò gạch Mang Thít', thumbClass: 'hero-chip-thumb--mangthit' },
+  { label: 'Chợ nổi Trà Ôn', q: 'Chợ nổi Trà Ôn', thumbClass: 'hero-chip-thumb--traon' },
+  { label: 'Sầu riêng Ri6', q: 'Sầu riêng Ri6', thumbClass: 'hero-chip-thumb--saurieng' },
+  { label: 'Chùa Phật Ngọc', q: 'Chùa Phật Ngọc Xá Lợi', thumbClass: 'hero-chip-thumb--phatngoc' },
 ] as const
 
 const homeAeoEntries = [

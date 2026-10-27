@@ -1127,3 +1127,42 @@ def test_campaign_phi_multi_agent_architecture_optimizations():
     am_thuc = (repo_root / "web-nuxt" / "pages" / "am-thuc.vue").read_text(encoding="utf-8")
     assert "đặc sản…" in am_thuc
 
+
+def test_campaign_chi_visual_elevation_and_de_textification():
+    """Test #39: Chiến dịch Chi (Mục 25) - Nâng cấp trải nghiệm thị giác & giải phóng chữ thừa:
+    1. Hero Terroir Chips: Nâng cấp thành thumbnail ảnh thực địa Vĩnh Long.
+    2. Intent Anchors: Chuyển hóa avatar 38px thành visual media card 64px cao cấp.
+    3. Hero Search & Scrim: Frosted glass floating island, giảm độ che khuất của scrim sông nước.
+    4. Tín hiệu địa phương: Bổ sung thumbnail ảnh thực địa cho sự kiện & nông sản mùa vụ.
+    5. Cấu trúc trang chủ: Đưa visual intent anchors lên trước Q&A text accordion.
+    """
+    repo_root = ROOT
+
+    # 1. Trang chủ index.vue
+    index_vue = (repo_root / "web-nuxt" / "pages" / "index.vue").read_text(encoding="utf-8")
+    assert "hero-terroir-chip__thumb" in index_vue
+    assert "hero-chip-thumb--culao" in index_vue
+    assert "hero-chip-thumb--mangthit" in index_vue
+    assert "Rẽ lối lẹ</span>" in index_vue
+
+    # Kiểm tra thứ tự cấu trúc: visual quick-decisions xuất hiện trước text Q&A aeo-plaque
+    pos_quick = index_vue.find('data-home-section="quick-decisions"')
+    pos_aeo = index_vue.find('data-home-section="aeo-plaque"')
+    assert pos_quick != -1 and pos_aeo != -1
+    assert pos_quick < pos_aeo
+
+    # 2. HomeIntentAnchors.vue
+    intent_anchors = (repo_root / "web-nuxt" / "components" / "home" / "HomeIntentAnchors.vue").read_text(encoding="utf-8")
+    assert 'width="64"' in intent_anchors
+    assert 'height="64"' in intent_anchors
+    assert "width: 64px;" in intent_anchors
+    assert "height: 64px;" in intent_anchors
+    assert "min-height: 48px;" in intent_anchors
+
+    # 3. home-nocturne.css
+    home_nocturne_css = (repo_root / "web-nuxt" / "assets" / "css" / "home-nocturne.css").read_text(encoding="utf-8")
+    assert ".hero-terroir-chip__thumb" in home_nocturne_css
+    assert ".hero-chip-thumb--culao" in home_nocturne_css
+    assert "color-mix(in srgb, var(--color-canvas) 58%, transparent)" in home_nocturne_css
+
+
