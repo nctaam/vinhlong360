@@ -149,9 +149,9 @@ def test_stage2_audit_remediations_contracts():
 
     # 3. contextual_retrieval._compute_hybrid falls back to keyword_scores when bm25 is 0
     hybrid = contextual_retrieval._compute_hybrid(
-        {"e1": 0.0}, {"e1": 0.5}, ["e1"], {"e1": 0.8}
+        {"e1": 0.0}, {"e1": 0.5}, {"e1": 0.8}, 0.3, 0.4, 0.3, {"e1": 0.6}
     )
-    assert hybrid["e1"] > 0.25
+    assert hybrid["e1"] > 0.5
 
     # 4. cases.public_api._session_user_ref & learn_loop._persist_enrichments & database SQLite CAST
     assert callable(case_public_api._session_user_ref)
