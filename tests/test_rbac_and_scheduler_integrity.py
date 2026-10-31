@@ -151,7 +151,7 @@ def test_stage2_audit_remediations_contracts():
     hybrid = contextual_retrieval._compute_hybrid(
         ["e1"], {"e1": 0.0}, {"e1": 0.5}, {"e1": 0.8}, 0.3, 0.4, 0.3, {"e1": 0.6}
     )
-    assert hybrid[0]["score"] > 0.5
+    assert hybrid[0]["hybrid_score"] > 0.5
 
     # 4. cases.public_api._session_user_ref & learn_loop._persist_enrichments & database SQLite CAST
     assert callable(case_public_api._session_user_ref)
