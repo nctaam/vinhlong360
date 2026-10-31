@@ -169,10 +169,43 @@ def _json_request(request: Request) -> bool:
 
 
 def _csrf_matches(request: Request) -> bool:
-    """Double submit at the transport edge; the HMAC binding is checked deeper."""
+    """Double submit at the transport edge; verify HMAC binding when CaseCrypto is wired."""
     header = request.headers.get("x-case-csrf") or ""
     cookie = request.cookies.get(CSRF_COOKIE) or ""
-    return bool(header) and bool(cookie) and hmac.compare_digest(header, cookie)
+    if not (bool(header) and bool(cookie) and hmac.compare_digest(header, cookie)):
+        return False
+    crypto = getattr(_SERVICE, "_crypto", None)
+    access_token = request.cookies.get(ACCESS_COOKIE) or ""
+    if isinstance(crypto, CaseCrypto) and access_token:
+        try:
+            session_digest = crypto.digest_capability(access_token)
+            access = crypto.make_access("0", "0", 1, session_digest, None)
+            crypto.validate_case_csrf(access, header)
+        except CaseSecurityError:
+            return False
+    return True
+
+
+async def _session_user_ref(request: Request) -> str | None:
+    """Extract optional signed-in user reference without failing anonymous requests."""
+    state_uid = getattr(request.state, "authenticated_user_id", None)
+    if state_uid:
+        uid = str(state_uid)
+        return uid if uid.startswith("user:") else f"user:{uid}"
+    if not (request.headers.get("authorization") or request.cookies.get("vl_access")):
+        return None
+    try:
+        from auth_middleware import get_current_user
+    except ModuleNotFoundError:
+        from agent.auth_middleware import get_current_user
+    try:
+        user = await get_current_user(request)
+    except Exception:  # noqa: BLE001
+        return None
+    if user and user.get("id") is not None:
+        uid = str(user["id"])
+        return uid if uid.startswith("user:") else f"user:{uid}"
+    return None
 
 
 def _guard_public_post(request: Request, *, intake: bool) -> JSONResponse | None:
@@ -484,13 +517,17 @@ async def _parse_correction_intake(request: Request, version: str):
     return body, None
 
 
-def _create_correction_service_result(request: Request, body, idempotency_key: str):
+def _create_correction_service_result(
+    request: Request, body, idempotency_key: str, session_user_ref: str | None = None
+):
+    extra = {"session_user_ref": session_user_ref} if session_user_ref else {}
     try:
         return _service().create_correction_from_transport(
             body,
             idempotency_key=idempotency_key,
             correlation_id=request.headers.get("x-request-id") or uuid.uuid4().hex,
             rate_subject=_rate_subject(request),
+            **extra,
         ), None
     except Exception as exc:  # noqa: BLE001 - mapped or re-raised below
         if getattr(exc, "problem", None) is not None and exc.problem.code == "phone_verification_required":
@@ -547,8 +584,9 @@ async def create_correction(request: Request):
     body, invalid = await _parse_correction_intake(request, version)
     if invalid is not None:
         return invalid
+    user_ref = await _session_user_ref(request)
     result, mapped = await asyncio.to_thread(
-        _create_correction_service_result, request, body, idempotency_key
+        _create_correction_service_result, request, body, idempotency_key, user_ref
     )
     if mapped is not None:
         return mapped
@@ -563,6 +601,8 @@ async def exchange_receipt(request: Request):
     body, invalid = await _model(request, _AccessIn)
     if invalid is not None:
         return invalid
+    user_ref = await _session_user_ref(request)
+    extra = {"session_user_ref": user_ref} if user_ref else {}
 
     try:
         grant = await asyncio.to_thread(
@@ -570,6 +610,7 @@ async def exchange_receipt(request: Request):
             public_reference=body.public_reference,
             capability=body.capability,
             rate_subject=_rate_subject(request),
+            **extra,
         )
     except Exception as exc:  # noqa: BLE001
         mapped = _map_domain_error(exc)
@@ -588,8 +629,10 @@ async def read_status(request: Request):
     token = request.cookies.get(ACCESS_COOKIE)
     if not token:
         return _problem(401, *_CREDENTIAL)
+    user_ref = await _session_user_ref(request)
+    extra = {"session_user_ref": user_ref} if user_ref else {}
     try:
-        status = await asyncio.to_thread(_service().public_status, access_token=token)
+        status = await asyncio.to_thread(_service().public_status, access_token=token, **extra)
     except Exception as exc:  # noqa: BLE001
         mapped = _map_domain_error(exc)
         if mapped is None:
@@ -607,11 +650,14 @@ async def rotate_receipt(request: Request):
     blocked = _guard_session_mutation(request)
     if blocked is not None:
         return blocked
+    user_ref = await _session_user_ref(request)
+    extra = {"session_user_ref": user_ref} if user_ref else {}
     try:
         grant = await asyncio.to_thread(
             _service().rotate_receipt,
             access_token=request.cookies.get(ACCESS_COOKIE),
             rate_subject=_rate_subject(request),
+            **extra,
         )
     except Exception as exc:  # noqa: BLE001
         mapped = _map_domain_error(exc)
@@ -629,8 +675,10 @@ async def revoke_access(request: Request):
     blocked = _guard_session_mutation(request)
     if blocked is not None:
         return blocked
+    user_ref = await _session_user_ref(request)
+    extra = {"session_user_ref": user_ref} if user_ref else {}
     try:
-        _service().revoke_access(access_token=request.cookies.get(ACCESS_COOKIE))
+        _service().revoke_access(access_token=request.cookies.get(ACCESS_COOKIE), **extra)
     except Exception as exc:  # noqa: BLE001
         mapped = _map_domain_error(exc)
         if mapped is None:
@@ -649,6 +697,8 @@ async def open_review(request: Request):
     body, invalid = await _model(request, _ReviewIn)
     if invalid is not None:
         return invalid
+    user_ref = await _session_user_ref(request)
+    extra = {"session_user_ref": user_ref} if user_ref else {}
 
     try:
         review = await asyncio.to_thread(
@@ -657,6 +707,7 @@ async def open_review(request: Request):
             reason=body.reason,
             expected_revision=body.expected_revision,
             rate_subject=_rate_subject(request),
+            **extra,
         )
     except Exception as exc:  # noqa: BLE001
         mapped = _map_domain_error(exc)

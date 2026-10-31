@@ -2687,7 +2687,7 @@ class Database:
         self.initialize()
         ph = self._ph
         with self._conn() as conn:
-            row = self._fetchone(conn, f"SELECT * FROM users WHERE id::text = {ph}", (str(user_id),))
+            row = self._fetchone(conn, f"SELECT * FROM users WHERE CAST(id AS TEXT) = {ph}", (str(user_id),))
             return self._row_to_dict(row)
 
     def create_user(self, phone: str, display_name: str = None, consent_version: str = "1.0",
@@ -2735,7 +2735,7 @@ class Database:
         params.append(str(user_id))
         with self._conn() as conn:
             row = self._fetchone(conn,
-                f"UPDATE users SET {', '.join(sets)} WHERE id::text = {ph} RETURNING *", params)
+                f"UPDATE users SET {', '.join(sets)} WHERE CAST(id AS TEXT) = {ph} RETURNING *", params)
             return self._row_to_dict(row)
 
     def delete_erased_user(self, conn, user_id: str, now):
@@ -2745,7 +2745,7 @@ class Database:
             conn,
             f"""
                 DELETE FROM users
-                WHERE id::text = {ph}
+                WHERE CAST(id AS TEXT) = {ph}
                   AND deleted_at IS NOT NULL
                   AND erasure_due_at IS NOT NULL
                   AND erasure_due_at <= {ph}

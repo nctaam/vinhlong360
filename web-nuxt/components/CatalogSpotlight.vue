@@ -53,7 +53,24 @@ const meta = computed(() => pick.value ? (TYPE_META[pick.value.type] || { label:
 const spotlightMaterialAccent = computed(() => props.colorRecipe === 'tri-region-v1'
   ? resolveRegionalAccent(pick.value?.type)
   : undefined)
-const bg = computed(() => pick.value && meta.value ? generateCategoryPlaceholder(pick.value.id, meta.value.cat) : '')
+const SPOTLIGHT_CATEGORY_IMAGES: Record<string, string> = {
+  place: '/img/cat-du-lich.webp',
+  attraction: '/img/cat-du-lich.webp',
+  experience: '/img/spread/cu-lao-an-binh-640.webp',
+  dish: '/img/cat-am-thuc.webp',
+  product: '/img/cat-ocop.webp',
+  craft: '/img/entities/lang-gom-do-mang-thit.webp',
+  accommodation: '/img/cat-luu-tru.webp',
+  event: '/img/cat-le-hoi.webp',
+  nature: '/img/spread/song-nuoc-640.webp',
+  history: '/img/entities/van-thanh-mieu-vinh-long.webp',
+}
+const bg = computed(() => {
+  if (!pick.value || !meta.value) return ''
+  const placeholder = generateCategoryPlaceholder(pick.value.id, meta.value.cat)
+  const catPhoto = SPOTLIGHT_CATEGORY_IMAGES[meta.value.cat] || '/img/cat-du-lich.webp'
+  return `var(--scrim-hero), url(${catPhoto}), ${placeholder}`
+})
 const icon = computed(() => meta.value ? generateCategoryIcon(meta.value.cat) : '')
 const region = computed(() => {
   const a = pick.value?.area || pick.value?.attributes?.area || pick.value?.attributes?.province

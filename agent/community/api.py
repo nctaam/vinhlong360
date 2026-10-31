@@ -582,6 +582,28 @@ class DraftPost(BaseModel):
     rating: Optional[int] = None
     images: list[str] = Field(default_factory=list, max_length=10)
 
+    @field_validator("content")
+    @classmethod
+    def validate_content(cls, v):
+        v = _strip_html_tags((v or "").strip())
+        if len(v) > 5000:
+            raise ValueError("Nội dung tối đa 5000 ký tự")
+        return v
+
+    @field_validator("post_type")
+    @classmethod
+    def validate_type(cls, v):
+        if v not in POST_TYPES:
+            raise ValueError(f"Loại bài viết: {', '.join(POST_TYPES)}")
+        return v
+
+    @field_validator("rating")
+    @classmethod
+    def validate_rating(cls, v):
+        if v is not None and (v < 1 or v > 5):
+            raise ValueError("Đánh giá từ 1 đến 5 sao")
+        return v
+
 
 @router.post("/drafts", status_code=201,
              summary="Save a draft",

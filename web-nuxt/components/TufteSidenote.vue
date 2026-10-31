@@ -312,6 +312,11 @@ onUnmounted(() => {
     border-radius: var(--radius-control);
     cursor: default;
   }
+
+  .tufte-backdrop,
+  .tufte-bottom-sheet {
+    display: none;
+  }
 }
 
 .tufte-sidenote__header {

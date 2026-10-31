@@ -437,7 +437,10 @@
 }
 
 [data-page-recipe="discovery"] .catalog-result-surface.list-view > .catalog-result-item[data-entity-contract="entity-row"] .card {
-  display: block;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: center;
   border: 0;
   border-block-end: 1px solid var(--color-border);
   border-radius: 0;
@@ -446,7 +449,14 @@
 }
 
 [data-page-recipe="discovery"] .catalog-result-surface.list-view > .catalog-result-item[data-entity-contract="entity-row"] .cover {
-  display: none;
+  display: block;
+  width: 72px;
+  height: 72px;
+  min-height: 72px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-surface);
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 [data-page-recipe="discovery"] .catalog-result-surface.list-view > .catalog-result-item[data-entity-contract="entity-row"] .card-b {

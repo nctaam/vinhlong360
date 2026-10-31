@@ -1003,7 +1003,7 @@ export function buildNewsArticleSchemaGraph(options: NewsArticleSchemaOptions): 
     ...(typeof a.author === 'object' && a.author?.url ? { url: a.author.url } : {}),
   }
 
-  const fallbackPublishedAt = a.datePublished || new Date().toISOString()
+  const fallbackPublishedAt = a.datePublished || a.dateModified || '2026-01-01T00:00:00Z'
   const articleMeta: Record<string, any> = {
     '@type': 'NewsArticle',
     '@id': `${articleUrl}#article`,
@@ -2062,7 +2062,6 @@ export function buildRoutesCatalogSchemaGraph(options: RoutesCatalogSchemaOption
       touristType: ['RoadTrip', 'CulturalTourism', 'Ecotourism'],
     }
     if (r.distance) itemNode.distance = r.distance
-    if (r.duration) itemNode.typicalAgeRange = r.duration
     if (r.stops && r.stops.length > 0) {
       itemNode.itinerary = {
         '@type': 'ItemList',

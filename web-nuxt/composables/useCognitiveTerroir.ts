@@ -14,7 +14,7 @@
  * - Unified Organic Heritage Constitution v2.0
  */
 
-import { ref, computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
+import { ref, computed, onMounted, onUnmounted, getCurrentInstance, type Ref } from 'vue'
 import { solarToLunar, todayInVietnam, type LunarDate } from './useLunar'
 
 export type TidePhase = 'rong' | 'kem' | 'chuyen'
@@ -317,16 +317,31 @@ export async function detectBatteryCondition(): Promise<BatteryCondition> {
 /**
  * Ergonomic reactive modes - module-scoped singletons for whole-client synchrony.
  */
-const isElderMode = ref(false)
-const isHighGlare = ref(false)
-const isEcoMode = ref(false)
+const clientElderMode = ref(false)
+const clientHighGlare = ref(false)
+const clientEcoMode = ref(false)
 let globalTerroirListenersCount = 0
 let activeKeydownListener: ((e: KeyboardEvent) => void) | null = null
+
+function sharedTerroirRef(key: string, clientSingleton: Ref<boolean>): Ref<boolean> {
+  if (typeof window === 'undefined') {
+    try {
+      return useState<boolean>(key, () => false)
+    } catch {
+      clientSingleton.value = false
+      return clientSingleton
+    }
+  }
+  return clientSingleton
+}
 
 /**
  * Master Cognitive Terroir Composable.
  */
 export function useCognitiveTerroir() {
+  const isElderMode = sharedTerroirRef('vl360-terroir-elder-mode', clientElderMode)
+  const isHighGlare = sharedTerroirRef('vl360-terroir-high-glare', clientHighGlare)
+  const isEcoMode = sharedTerroirRef('vl360-terroir-eco-mode', clientEcoMode)
   const seedDate = new Date(Math.floor(Date.now() / 300_000) * 300_000)
   const tide = ref<TideCalculationResult>(calculateAstronomicalTide(seedDate))
   const network = ref<NetworkCondition>(detectNetworkCondition())
@@ -432,12 +447,12 @@ export function useCognitiveTerroir() {
 
   function onKeydown(e: KeyboardEvent) {
     // Alt+E for Elder Reading Mode
-    if (e.altKey && (e.key === 'e' || e.key === 'E')) {
+    if ((e.altKey && (e.key === 'e' || e.key === 'E')) || (e.altKey && e.code === 'KeyE')) {
       e.preventDefault()
       toggleElderMode()
     }
     // Alt+S for High-Glare Sunlight Mode
-    if (e.altKey && (e.key === 's' || e.key === 'S')) {
+    if ((e.altKey && (e.key === 's' || e.key === 'S')) || (e.altKey && e.code === 'KeyS')) {
       e.preventDefault()
       toggleHighGlare()
     }

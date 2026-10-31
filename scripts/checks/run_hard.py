@@ -168,6 +168,15 @@ def _head_counts(files: list[str], checks: list, root: Path) -> dict:
     return out
 
 
+def _file_scoped_counts(files: list[str], results: list[dict]) -> dict:
+    norm = {f.replace("\\", "/") for f in files}
+    return {
+        r["rule"]: sum(1 for v in r.get("violations", [])
+                       if v.get("file", "").replace("\\", "/") in norm)
+        for r in results
+    }
+
+
 def _per_file_ratchet(files: list[str], checks: list, root: Path, baseline: dict,
                       results: list[dict], skips: set, lvl: dict) -> tuple[bool, list[str]]:
     """RATCHET THEO-FILE — bịt lỗ §44.
@@ -188,7 +197,7 @@ def _per_file_ratchet(files: list[str], checks: list, root: Path, baseline: dict
     rule quét-toàn-bộ như R50.* — chúng khoá theo `web/data.json` nên khi file đó
     được staged thì `count` đã là số toàn kho, so với baseline toàn kho là đúng.
     """
-    now = {r["rule"]: r["count"] for r in results}
+    now = _file_scoped_counts(files, results)
     watched = [c for c in checks
                if getattr(c, "level", "").endswith("-ratchet")
                and baseline.get(getattr(c, "rule", ""), 0) > 0]

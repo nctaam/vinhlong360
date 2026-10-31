@@ -110,6 +110,7 @@ const IDB_NAME = 'vinhlong360_sanctuary_db'
 const IDB_VERSION = 1
 const STORE_RECORDS = 'vault_records'
 const STORE_META = 'vault_meta'
+const DEVICE_KEY_META_ID = 'device_bound_crypto_key'
 
 // Module-scoped state
 let activeKey: CryptoKey | null = null
@@ -287,6 +288,41 @@ async function clearIDB(): Promise<void> {
   })
 }
 
+async function loadDeviceKeyFromIDB(): Promise<CryptoKey | null> {
+  const db = await openIDB()
+  if (!db) return null
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction([STORE_META], 'readonly')
+      const store = tx.objectStore(STORE_META)
+      const req = store.get(DEVICE_KEY_META_ID)
+      req.onsuccess = () => {
+        const result = req.result as { key: string; cryptoKey?: CryptoKey } | undefined
+        resolve(result?.cryptoKey ?? null)
+      }
+      req.onerror = () => resolve(null)
+    } catch {
+      resolve(null)
+    }
+  })
+}
+
+async function saveDeviceKeyToIDB(cryptoKey: CryptoKey): Promise<void> {
+  const db = await openIDB()
+  if (!db) return
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction([STORE_META], 'readwrite')
+      const store = tx.objectStore(STORE_META)
+      store.put({ key: DEVICE_KEY_META_ID, cryptoKey, updatedAt: new Date().toISOString() })
+      tx.oncomplete = () => resolve()
+      tx.onerror = () => resolve()
+    } catch {
+      resolve()
+    }
+  })
+}
+
 // ── Composable Definition ──
 
 export function useSovereignVault() {
@@ -321,7 +357,11 @@ export function useSovereignVault() {
         vaultMode.value = 'passphrase-derived'
       } else {
         if (!activeKey) {
+          activeKey = await loadDeviceKeyFromIDB()
+        }
+        if (!activeKey) {
           activeKey = await generateDeviceBoundKey()
+          await saveDeviceKeyToIDB(activeKey)
         }
         vaultMode.value = 'device-bound'
       }

@@ -32,16 +32,21 @@ NEG_DEFAULT = re.compile(
 )
 
 _SKIP_DIRS = {".git", "node_modules", ".nuxt", ".output", "dist", "__pycache__", ".venv", "venv"}
+_REPO_ROOT_CACHE: Path | None = None
 
 
 def repo_root() -> Path:
+    global _REPO_ROOT_CACHE
+    if _REPO_ROOT_CACHE is not None:
+        return _REPO_ROOT_CACHE
     try:
         out = subprocess.run(
             ["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True, check=True
         )
-        return Path(out.stdout.strip())
+        _REPO_ROOT_CACHE = Path(out.stdout.strip())
     except (subprocess.CalledProcessError, FileNotFoundError):
-        return Path(__file__).resolve().parents[2]
+        _REPO_ROOT_CACHE = Path(__file__).resolve().parents[2]
+    return _REPO_ROOT_CACHE
 
 
 def staged_files(root: Path | None = None) -> list[str]:

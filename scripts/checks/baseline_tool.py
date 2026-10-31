@@ -33,7 +33,10 @@ def collect(checks: list) -> dict:
 
 
 def run(checks: list, root: Path | None = None, write: bool = False) -> dict:
-    counts = collect(checks)
+    from checks.run_hard import _bind_checks_to_root
+
+    target_root = root or common.repo_root()
+    counts = collect(_bind_checks_to_root(checks, target_root))
     hard_rules = {getattr(c, "rule", None): getattr(c, "level", "") for c in checks if not callable(c)}
     width = max((len(r) for r in counts), default=6)
     print(f'{"RULE".ljust(width)}  COUNT')

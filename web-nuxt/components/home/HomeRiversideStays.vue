@@ -618,6 +618,15 @@ function onImgFallback(e: Event) {
   margin-top: var(--space-1);
 }
 
+.home-exp-card__header::before {
+  content: counter(folk-exp, decimal-leading-zero);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-material-river);
+}
+
 .home-exp-card__icon {
   display: inline-flex;
   align-items: center;

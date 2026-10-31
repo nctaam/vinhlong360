@@ -22,9 +22,9 @@
         </div>
       </div>
 
-      <div class="catalog-aeo-plaque__content" :style="{ '--column-count': Math.min(entries.length, 3) }">
+      <div class="catalog-aeo-plaque__content" :style="{ '--column-count': Math.min(resolvedEntries.length, 3) }">
         <article
-          v-for="(item, idx) in entries"
+          v-for="(item, idx) in resolvedEntries"
           :key="idx"
           class="catalog-aeo-plaque__item"
           :class="{ 'has-image': Boolean(item.coverSrc) }"
@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { useId } from 'vue'
+import { computed, useId } from 'vue'
 
 const props = withDefaults(defineProps<{
   title: string
@@ -77,6 +77,60 @@ const props = withDefaults(defineProps<{
 
 const instanceId = useId().replace(/[^A-Za-z0-9_-]+/g, '-')
 const titleId = `catalog-aeo-title-${instanceId}`
+
+const AEO_FALLBACK_COVERS: Record<string, string[]> = {
+  amber: ['/img/cat-am-thuc.webp', '/img/cat-ocop.webp', '/img/spread/cu-lao-an-binh-640.webp'],
+  clay: ['/img/entities/lang-gom-do-mang-thit.webp', '/img/area-vinh-long.webp', '/img/entities/van-thanh-mieu-vinh-long.webp'],
+  leaf: ['/img/spread/cu-lao-an-binh-640.webp', '/img/area-ben-tre.webp', '/img/cat-du-lich.webp'],
+  river: ['/img/spread/song-nuoc-640.webp', '/img/area-tra-vinh.webp', '/img/cat-lich-trinh.webp'],
+  neutral: ['/img/area-vinh-long.webp', '/img/area-ben-tre.webp', '/img/area-tra-vinh.webp'],
+}
+
+function resolveDefaultEntryCover(
+  item: { heading: string; text: string; tag?: string; coverSrc?: string },
+  idx: number,
+  accent: string,
+): { coverSrc: string; tag?: string } {
+  if (item.coverSrc) return { coverSrc: item.coverSrc, tag: item.tag }
+  const h = `${item.heading} ${item.text}`.toLowerCase()
+  if (h.includes('gốm') || h.includes('mang thít') || h.includes('lò gạch')) {
+    return { coverSrc: '/img/entities/lang-gom-do-mang-thit.webp', tag: item.tag || 'Di sản Gốm Đỏ' }
+  }
+  if (h.includes('bến tre') || h.includes('xứ dừa') || h.includes('chợ lách') || h.includes('mỹ lồng')) {
+    return { coverSrc: '/img/area-ben-tre.webp', tag: item.tag || 'Bến Tre · Xứ Dừa' }
+  }
+  if (h.includes('trà vinh') || h.includes('khmer') || h.includes('ao bà om') || h.includes('cầu kè')) {
+    return { coverSrc: '/img/area-tra-vinh.webp', tag: item.tag || 'Trà Vinh · Văn hóa Khmer' }
+  }
+  if (h.includes('an bình') || h.includes('cù lao') || h.includes('nhà vườn')) {
+    return { coverSrc: '/img/spread/cu-lao-an-binh-640.webp', tag: item.tag || 'Cù lao An Bình' }
+  }
+  if (h.includes('ocop') || h.includes('chứng nhận') || h.includes('sao')) {
+    return { coverSrc: '/img/cat-ocop.webp', tag: item.tag || 'Chuẩn OCOP' }
+  }
+  if (h.includes('ẩm thực') || h.includes('món') || h.includes('đặc sản')) {
+    return { coverSrc: '/img/cat-am-thuc.webp', tag: item.tag || 'Ẩm thực bản địa' }
+  }
+  if (h.includes('lưu trú') || h.includes('homestay') || h.includes('nghỉ dưỡng')) {
+    return { coverSrc: '/img/cat-luu-tru.webp', tag: item.tag || 'Không gian lưu trú' }
+  }
+  if (h.includes('lễ hội') || h.includes('nghi thức') || h.includes('văn hóa')) {
+    return { coverSrc: '/img/cat-le-hoi.webp', tag: item.tag || 'Di sản lễ hội' }
+  }
+  const pool = AEO_FALLBACK_COVERS[accent] ?? AEO_FALLBACK_COVERS.amber!
+  return { coverSrc: pool[idx % pool.length]!, tag: item.tag }
+}
+
+const resolvedEntries = computed(() =>
+  (props.entries || []).map((item, idx) => {
+    const media = resolveDefaultEntryCover(item, idx, props.accent || 'amber')
+    return {
+      ...item,
+      coverSrc: media.coverSrc,
+      tag: media.tag,
+    }
+  }),
+)
 </script>
 
 <style scoped>

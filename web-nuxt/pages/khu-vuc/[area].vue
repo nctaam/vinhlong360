@@ -485,7 +485,7 @@ if (areaMeta) {
 }
 .ce-area .page-article p:first-of-type::first-letter {
   font-family: var(--font-editorial); font-weight: 600;
-  float: left; font-size: 3.1em; line-height: .82; padding: .04em .12em 0 0; color: var(--color-brand);
+  float: left; font-size: 3.1em; line-height: 1.08; padding: .04em .12em 0 0; color: var(--color-brand);
 }
 /* Section heads: editorial serif + the vertical "sediment core" tick (river→amber→clay) — the same
    phù-sa signature the homepage uses, so the region page speaks one voice. */

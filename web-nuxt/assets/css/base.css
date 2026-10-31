@@ -1191,6 +1191,16 @@ html[data-outdoor-contrast="high"] {
   --color-warning: var(--contrast-glare-gold);
   --color-brand: var(--contrast-glare-accent-text, var(--contrast-glare-accent));
 
+  /* Remap legacy aliases so .dark + [data-outdoor-contrast="high"] never renders dark cards */
+  --bg: var(--contrast-glare-bg);
+  --bg-warm: var(--contrast-glare-bg);
+  --bg-alt: var(--contrast-glare-bg);
+  --card: var(--contrast-glare-bg);
+  --ink: var(--contrast-glare-fg);
+  --muted: var(--contrast-glare-border);
+  --line: var(--contrast-glare-border);
+  --border: var(--contrast-glare-border);
+
   /* 2. Triệt tiêu viền kính & bóng đổ mờ đục */
   --border-liquid-glass: 2px solid var(--contrast-glare-border);
   --shadow-xs: none;

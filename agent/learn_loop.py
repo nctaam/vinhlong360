@@ -548,7 +548,10 @@ def _truncate_summary(best_snippet: str) -> str:
 
 
 def _persist_enrichments(updates: dict[str, tuple[str | None, str, str]]) -> int:
+    changed_entities: list[dict] = []
+
     def apply_current(kb: dict) -> tuple[bool, int]:
+        changed_entities.clear()
         applied = 0
         for entity in kb["entities"]:
             update = updates.get(entity["id"])
@@ -559,10 +562,19 @@ def _persist_enrichments(updates: dict[str, tuple[str | None, str, str]]) -> int
                 continue
             entity["summary"] = summary
             entity["updatedAt"] = updated_at
+            changed_entities.append(dict(entity))
             applied += 1
         return applied > 0, applied
 
-    return mutate_json(DATA_JSON, apply_current)
+    applied_count = mutate_json(DATA_JSON, apply_current)
+    if applied_count:
+        try:
+            from database import db
+            for ent in changed_entities:
+                db.upsert_entity(ent)
+        except Exception as exc:
+            _logger.warning("DB sync after enrichment failed: %s", exc)
+    return applied_count
 
 
 def enrich_entities(max_entities: int = 10, dry_run: bool = False) -> dict:

@@ -623,20 +623,23 @@ def _effective_weights(
 
 def _compute_hybrid(
     all_ids, bm25_scores: dict, semantic_scores: dict, ctx_scores: dict,
-    w_bm25, w_sem, w_ctx,
+    w_bm25, w_sem, w_ctx, keyword_scores: dict | None = None,
 ) -> list[dict]:
     """Combine per-signal scores into hybrid rows (extracted verbatim)."""
     hybrid: list[dict] = []
     for eid in all_ids:
+        bm25_val = bm25_scores.get(eid, 0)
+        if not bm25_val and keyword_scores:
+            bm25_val = keyword_scores.get(eid, 0)
         s = 0.0
-        s += w_bm25 * bm25_scores.get(eid, 0)
+        s += w_bm25 * bm25_val
         s += w_sem * semantic_scores.get(eid, 0)
         s += w_ctx * ctx_scores.get(eid, 0)
 
         hybrid.append({
             "entity_id": eid,
             "hybrid_score": round(s, 4),
-            "bm25_score": round(bm25_scores.get(eid, 0), 4),
+            "bm25_score": round(bm25_val, 4),
             "semantic_score": round(semantic_scores.get(eid, 0), 4),
             "contextual_score": round(ctx_scores.get(eid, 0), 4),
         })
@@ -741,7 +744,7 @@ def enhanced_hybrid_search(
     # ── Compute hybrid scores ──
     hybrid = _compute_hybrid(
         all_ids, bm25_scores, semantic_scores, ctx_scores,
-        w_bm25, w_sem, w_ctx,
+        w_bm25, w_sem, w_ctx, keyword_scores=keyword_scores,
     )
 
     hybrid.sort(key=lambda x: x["hybrid_score"], reverse=True)

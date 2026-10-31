@@ -1,0 +1,2431 @@
+{
+  "schemaVersion": 3,
+  "generatedAt": "2026-10-22T20:13:00+07:00",
+  "searchEngine": {
+    "gateway": "9Router Local AI Gateway (http://localhost:20128/v1/search)",
+    "model": "ag",
+    "provider": "antigravity",
+    "searchType": "web",
+    "verificationStandard": "Multi-source cross-reference (>=2 independent non-Wiki authoritative sources per claim; 0% fabrication)"
+  },
+  "protectedInput": {
+    "path": "web/data.json",
+    "sha256": "8ac327de6c4f273c96efe99004f6a1858ba41af43799ebcdae5cd7f31316d92f",
+    "totalEntities": 1772,
+    "mutationStatus": "READ_ONLY_PRESERVED_FOR_PHASE_1_OWNER_GATE"
+  },
+  "summaryMetrics": {
+    "verifiedDossiersCount": 34,
+    "ruralPlaceIdCorrectionsCount": 126,
+    "mistypedEntitiesCount": 21,
+    "truncatedSummaryFixesCount": 20,
+    "placeSelfIdFixesCount": 37,
+    "duplicateEntityClustersCount": 16,
+    "surveyPlaceholderEntitiesAudited": 28,
+    "r50_2_voiceFillerDebtAfterProperNounExemption": 0
+  },
+  "verifiedDossiers": [
+    {
+      "entityId": "benh-vien-da-khoa-minh-duc-ben-tre-ben-tre",
+      "name": "Bệnh viện Đa khoa Minh Đức Bến Tre",
+      "issueType": "factual_address_and_duplicate_summary_error",
+      "currentInDataJson": {
+        "placeId": "p-son-dong",
+        "address": "44 Đoàn Hoàng Minh, Phường 6, Thành phố Bến Tre",
+        "summary": "Bệnh viện tư nhân tại 44 Đoàn Hoàng Minh, Phường 6, TP. Bến Tre. Khám nhanh hơn bệnh viện công, có dịch vụ đặt lịch trước. Phù hợp cho trường hợp không quá khẩn cấp. Hoạt động 24/7."
+      },
+      "verifiedGroundTruth": {
+        "placeId": "p-son-dong",
+        "address": "Số 333D đường Đoàn Hoàng Minh, Phường Sơn Đông (trước đây thuộc Phường 6), TP. Bến Tre, tỉnh Vĩnh Long",
+        "phone": "0275 3836 666 | Hotline: 1900 0317",
+        "hours": "Cấp cứu 24/7; Khám ngoại trú: Sáng 07:00–11:00, Chiều 13:00–17:00",
+        "summary": "Bệnh viện đa khoa tư nhân quy mô lớn tại số 333D Đoàn Hoàng Minh, phường Sơn Đông (TP. Bến Tre cũ), tiếp nhận cấp cứu 24/7 và khám chữa bệnh bảo hiểm y tế.",
+        "realImages": [
+          "https://s3.mycloudz.vn/ivie/omre/d41c713e-a62e-4187-8080-572c914b5188_b80677ef-01a5-4bb9-940a-753a4fce7b9d.jpg"
+        ],
+        "sources": [
+          {
+            "domain": "benhvienminhduc.com",
+            "url": "https://benhvienminhduc.com/",
+            "title": "Bệnh viện Đa khoa Minh Đức Bến Tre — Trang chính thức"
+          },
+          {
+            "domain": "hellobacsi.com",
+            "url": "https://hellobacsi.com/care/benh-vien/benh-vien-da-khoa-minh-duc-3385/",
+            "title": "Bệnh viện Đa khoa Minh Đức — Hello Bacsi"
+          },
+          {
+            "domain": "ivie.vn",
+            "url": "https://ivie.vn/benh-vien-da-khoa-minh-duc-co-kham-bao-hiem-y-te-khong--0",
+            "title": "Thông tin khám BHYT Bệnh viện Đa khoa Minh Đức — IVIE"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "khu-du-lich-s-mo-farm-cuu-long",
+      "duplicateEntityId": "khu-du-lich-somo-farm-cuu-long",
+      "name": "Khu du lịch Somo Farm Cửu Long",
+      "issueType": "wrong_commune_placeId_and_duplicate_entity",
+      "currentInDataJson": {
+        "placeId_1": "xa-an-binh",
+        "address_1": "Ấp 3, Xã An Bình, tỉnh Vĩnh Long",
+        "placeId_2": "p-phuoc-hau",
+        "address_2": "Khu du lịch Somo Farm Cửu Long, Phường Phước Hậu, tỉnh Vĩnh Long"
+      },
+      "verifiedGroundTruth": {
+        "placeId": "xa-cai-nhum",
+        "address": "Khóm 3, xã Cái Nhum (thị trấn Cái Nhum cũ, huyện Mang Thít), tỉnh Vĩnh Long",
+        "area_m2": 66801,
+        "recognition": "Điểm du lịch chính thức theo QĐ 2011/QĐ-UBND ngày 30/8/2023; OCOP 4 sao",
+        "sources": [
+          {
+            "domain": "vinhlongtourist.vn",
+            "url": "https://vinhlongtourist.vn/en/detailnews/?id=news_12050&t=trai-nghiem-kham-pha-somo-farm-cuu-long-",
+            "title": "Somo Farm Cửu Long — Vĩnh Long Tourist"
+          },
+          {
+            "domain": "somogroup.vn",
+            "url": "https://somogroup.vn/blogs/news/somo-farm-cuu-long-duoc-cong-nhan-la-mot-trong-ba-diem-du-lich-chinh-t",
+            "title": "Somo Farm Cửu Long được công nhận điểm du lịch — Somo Group"
+          },
+          {
+            "domain": "mdta.com.vn",
+            "url": "https://mdta.com.vn/somo-farm-cuu-long-diem-du-lich-chua-lanh/",
+            "title": "Somo Farm Cửu Long — Hiệp hội Du lịch ĐBSCL"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "dinh-phu-le-ben-tre",
+      "relatedEntities": [
+        "ruou-phu-le-ba-tri",
+        "lang-nghe-nau-ruou-phu-le"
+      ],
+      "name": "Đình Phú Lễ & Làng nghề rượu Phú Lễ (Ba Tri)",
+      "issueType": "hamlet_ward_homonym_placeId_collision",
+      "currentInDataJson": {
+        "placeId": "p-phu-khuong",
+        "address": "Phường Phú Khương, Bến Tre"
+      },
+      "verifiedGroundTruth": {
+        "placeId": "xa-tan-xuan",
+        "mergerBasis": "Xã Tân Xuân hợp nhất từ xã Phú Lễ, xã Phước Ngãi và xã Tân Xuân thuộc huyện Ba Tri (Nghị quyết 1687/NQ-UBTVQH15)",
+        "address": "Ấp Phú Khương, xã Phú Lễ, huyện Ba Tri (nay là xã Tân Xuân, tỉnh Vĩnh Long)",
+        "foundingYear": "Khởi dựng năm 1826 (triều vua Minh Mạng), sắc phong năm 1852 (triều vua Tự Đức), xếp hạng Di tích kiến trúc nghệ thuật cấp Quốc gia năm 1993",
+        "realImages": [
+          "https://owa.bestprice.vn/images/articles/uploads/dinh-phu-le-54360d6391257.jpg",
+          "https://owa.bestprice.vn/images/media/dinh-phu-le-1-6246dbf259cd4.jpg",
+          "https://h3jd9zjnmsobj.vcdn.cloud/public/v7/place/viet-nam/ben-tre/dinh-phu-le-1_674035f37228f.jpg",
+          "https://xaloipagoda.com/wp-content/uploads/2025/02/605376944218.jpg"
+        ],
+        "sources": [
+          {
+            "domain": "bestprice.vn",
+            "url": "https://www.bestprice.vn/blog/diem-den-8/dinh-phu-le-745.html",
+            "title": "Đình Phú Lễ Ba Tri Bến Tre — BestPrice"
+          },
+          {
+            "domain": "gody.vn",
+            "url": "https://gody.vn/chau-a/viet-nam/ben-tre/dinh-phu-le",
+            "title": "Đình Phú Lễ — Gody"
+          },
+          {
+            "domain": "xaloipagoda.com",
+            "url": "https://xaloipagoda.com/phu-le-lang-que-hieu-hoc/",
+            "title": "Phú Lễ làng quê hiếu học & rượu Phú Lễ — Xá Lợi"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "banh-trang-my-long",
+      "name": "Bánh tráng Mỹ Lồng",
+      "issueType": "wrong_commune_placeId_contradicting_summary",
+      "currentInDataJson": {
+        "placeId": "xa-giao-long",
+        "address": "Ấp Nghĩa Huấn, Xã Giao Long, tỉnh Vĩnh Long"
+      },
+      "verifiedGroundTruth": {
+        "placeId": "xa-luong-phu",
+        "mergerBasis": "Xã Lương Phú hợp nhất từ xã Mỹ Thạnh, xã Thuận Điền và xã Lương Phú thuộc huyện Giồng Trôm (Nghị quyết 1687/NQ-UBTVQH15)",
+        "address": "Ấp Nghĩa Huấn, xã Mỹ Thạnh, huyện Giồng Trôm (nay là xã Lương Phú, tỉnh Vĩnh Long)",
+        "heritage": "Di sản Văn hóa Phi vật thể Quốc gia (Quyết định 4069/QĐ-BVHTTDL ngày 30/10/2018)",
+        "realImages": [
+          "https://nongnghiephuuco.vn/stores/news_dataimages/2026/072026/09/09/ml320260709091306.png",
+          "https://banhtrangthienthat.com/wp-content/uploads/2025/01/banh-trang-thien-that.jpg"
+        ],
+        "sources": [
+          {
+            "domain": "baotintuc.vn",
+            "url": "https://dantocmiennui.baotintuc.vn/my-long-lang-nghe-banh-trang-hon-100-nam-tuoi-vao-xuan-post1377114.html",
+            "title": "Mỹ Lồng làng nghề bánh tráng hơn 100 năm tuổi — Báo Tin Tức (TTXVN)"
+          },
+          {
+            "domain": "nongnghiephuuco.vn",
+            "url": "https://nongnghiephuuco.vn/banh-trang-my-long-banh-phong-son-doc-hon-xu-dua-ben-tre-trong-tung-san-pham-15751.html",
+            "title": "Bánh tráng Mỹ Lồng – Bánh phồng Sơn Đốc — Nông Nghiệp Hữu Cơ"
+          },
+          {
+            "domain": "vietnamplus.vn",
+            "url": "https://www.vietnamplus.vn/ben-tre-lang-nghe-banh-trang-hon-100-nam-tuoi-vao-xuan-post1008359.vnp",
+            "title": "Làng nghề bánh tráng Mỹ Lồng 100 năm — VietnamPlus"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "san-chim-vam-ho-ba-tri",
+      "name": "Sân chim Vàm Hồ (Ba Tri)",
+      "issueType": "urban_fallback_placeId_error",
+      "currentInDataJson": {
+        "placeId": "p-ben-tre"
+      },
+      "verifiedGroundTruth": {
+        "placeId": "xa-tan-xuan",
+        "secondaryPlaceId": "xa-my-chanh-hoa",
+        "address": "Ven sông Ba Lai, địa bàn giáp ranh xã Tân Mỹ – Mỹ Hòa – Tân Xuân, huyện Ba Tri (nay là xã Tân Xuân & xã Mỹ Chánh Hòa, tỉnh Vĩnh Long)",
+        "area_ha": "67,6 ha (khu bảo tồn rừng ngập mặn – chà là – đước đôi) / 89 ha (tổng khu sinh thái)",
+        "sources": [
+          {
+            "domain": "vietnamtourism.gov.vn",
+            "url": "https://vietnamtourism.gov.vn/",
+            "title": "Sân chim Vàm Hồ Ba Tri — Cục Du lịch Quốc gia Việt Nam"
+          },
+          {
+            "domain": "vinhlongtourist.vn",
+            "url": "https://vinhlongtourist.vn/",
+            "title": "Khu bảo tồn sinh thái Sân chim Vàm Hồ — Vĩnh Long Tourist"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "chua-tuyen-linh-ben-tre",
+      "duplicateEntityId": "chua-tuyen-linh",
+      "name": "Chùa Tuyên Linh (Tiên Linh tự)",
+      "issueType": "urban_fallback_placeId_and_duplicate_entity",
+      "currentInDataJson": {
+        "placeId_ben_tre": "p-phu-khuong",
+        "placeId_canonical": "p-mo-cay"
+      },
+      "verifiedGroundTruth": {
+        "placeId": "xa-an-dinh",
+        "mergerBasis": "Xã An Định hợp nhất từ xã Tân Trung, xã Minh Đức và xã An Định thuộc huyện Mỏ Cày Nam",
+        "address": "Ven rạch Tân Hương, ấp Tân Quới Đông B, xã Minh Đức, huyện Mỏ Cày Nam (nay là xã An Định, tỉnh Vĩnh Long)",
+        "foundingYear": "1861 (năm Tân Dậu, triều vua Tự Đức thứ 14); nơi cụ Phó bảng Nguyễn Sinh Sắc từng dừng chân (1927–1929)",
+        "sources": [
+          {
+            "domain": "vietnamtourism.vn",
+            "url": "https://vietnamtourism.vn/",
+            "title": "Di tích lịch sử văn hóa cấp quốc gia Chùa Tuyên Linh"
+          },
+          {
+            "domain": "baocantho.com.vn",
+            "url": "https://baocantho.com.vn/",
+            "title": "Chùa Tuyên Linh ở xã Minh Đức, Mỏ Cày Nam — Báo Cần Thơ"
+          },
+          {
+            "domain": "tapchinghiencuuphathoc.vn",
+            "url": "https://tapchinghiencuuphathoc.vn/",
+            "title": "Lịch sử khai sơn Chùa Tuyên Linh (1861) — Tạp chí Nghiên cứu Phật học"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "khu-mo-than-nhan-thoai-ngoc-hau-cu-lao-dai",
+      "relatedEntities": [
+        "banh-xeo-hen-cu-lao-dai",
+        "homestay-hai-cuong",
+        "xoai-cat-num-vung-liem",
+        "mut-xoai-cat-num-foodo-ocop"
+      ],
+      "name": "Khu mộ thân nhân danh thần Thoại Ngọc Hầu & Cụm Cù Lao Dài",
+      "issueType": "urban_fallback_placeId_error",
+      "currentInDataJson": {
+        "placeId": "p-phuoc-hau"
+      },
+      "verifiedGroundTruth": {
+        "placeId": "xa-quoi-thien",
+        "mergerBasis": "Xã Quới Thiện hợp nhất từ xã Thanh Bình và xã Quới Thiện (Cù lao Dài, huyện Vũng Liêm cũ)",
+        "address": "Ấp Thái Bình, xã Thanh Bình, cù lao Dài, huyện Vũng Liêm (nay là xã Quới Thiện, tỉnh Vĩnh Long)",
+        "realImages": [
+          "https://baovinhlong.com.vn/file/e7837c027f6ecd14017ffa4e5f2a0e34/dataimages/201801/original/images2100866_BVL_a__9_.JPG?width=1024&height=-&type=resize"
+        ],
+        "sources": [
+          {
+            "domain": "baovinhlong.com.vn",
+            "url": "https://baovinhlong.com.vn/phong-su-ky-su/201801/cu-lao-dai-diem-den-du-lich-tam-linh-trong-tuong-lai-2878188/",
+            "title": "Cù lao Dài điểm đến du lịch tâm linh — Báo Vĩnh Long"
+          },
+          {
+            "domain": "vietnamtourism.gov.vn",
+            "url": "https://vietnamtourism.gov.vn/printer/43314?type=1",
+            "title": "Du lịch sinh thái miệt vườn Cù lao Dài — Cục Du lịch Quốc gia VN"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "coco-riverside-lodge-trung-nghia",
+      "name": "Coco Riverside Lodge Trung Nghĩa",
+      "issueType": "urban_fallback_placeId_error",
+      "currentInDataJson": {
+        "placeId": "p-phuoc-hau"
+      },
+      "verifiedGroundTruth": {
+        "placeId": "xa-trung-ngai",
+        "mergerBasis": "Xã Trung Ngãi hợp nhất từ xã Trung Thành Đông, xã Trung Nghĩa và xã Trung Ngãi thuộc huyện Vũng Liêm",
+        "address": "Ấp Phú Ân, xã Trung Nghĩa, huyện Vũng Liêm (nay là xã Trung Ngãi, tỉnh Vĩnh Long)",
+        "sources": [
+          {
+            "domain": "vinhlongtourist.vn",
+            "url": "https://vinhlongtourist.vn/vi/detailnews/?t=coco-riverside-lodge-diem-dung-chan-trong-hanh-trinh-kham-pha-vinh-long&id=news_69093",
+            "title": "Coco Riverside Lodge điểm dừng chân trong hành trình khám phá Vĩnh Long — Vĩnh Long Tourist"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "cau-lac-bo-don-ca-tai-tu-truong-xay-dung-mien-tay",
+      "name": "Câu lạc bộ đờn ca tài tử Trường Đại học Xây dựng Miền Tây",
+      "issueType": "wrong_ward_placeId_and_spurious_commercial_pricing",
+      "currentInDataJson": {
+        "placeId": "p-long-chau",
+        "price_range": "100.000–200.000 đ/người"
+      },
+      "verifiedGroundTruth": {
+        "placeId": "p-phuoc-hau",
+        "address": "Số 20B Phó Cơ Điều, Phường 3 (nay là Phường Phước Hậu), tỉnh Vĩnh Long",
+        "phone": "0270 3825 903",
+        "admission": "Sinh hoạt câu lạc bộ văn nghệ học thuật nội bộ của cán bộ, giảng viên và sinh viên",
+        "sources": [
+          {
+            "domain": "vinhlongtourist.vn",
+            "url": "https://vinhlongtourist.vn/vi/detailevents/?t=doi-net-ve-don-ca-tai-tu-vinh-long&id=event_10380",
+            "title": "Đôi nét về Đờn ca tài tử Vĩnh Long — Vĩnh Long Tourist"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "khach-san-sanh-phuc",
+      "name": "Khách sạn Sanh Phúc",
+      "issueType": "survey_placeholder_copy_and_conflicting_caption",
+      "currentInDataJson": {
+        "placeId": "p-tra-vinh",
+        "description": "Cơ sở mang số 419 Đồng Khởi, dễ tìm cho khách lần đầu tới Trà Vinh. Đặt phòng hoặc hỏi giá qua số 0294 373 7999. Hồ sơ tiện nghi và khung giá phòng còn trống, cần bổ sung sau khảo sát."
+      },
+      "verifiedGroundTruth": {
+        "placeId": "p-tra-vinh",
+        "address": "Số 419 đường Đồng Khởi, Khóm 1, Phường 9 (nay là Phường Trà Vinh), tỉnh Vĩnh Long",
+        "phone": "0294 373 7999 | 0294 3577 999",
+        "scale": "Khoảng 20 phòng nghỉ tiêu chuẩn (phòng đơn, phòng đôi), trang bị máy lạnh, nước nóng, Wi-Fi và bãi đậu xe nội khu.",
+        "sources": [
+          {
+            "domain": "vinhlong.gov.vn",
+            "url": "https://vinhlong.gov.vn/du-khach/khach-san-nha-nghi",
+            "title": "Danh bạ khách sạn nhà nghỉ — Cổng TTĐT tỉnh Vĩnh Long"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "tinh-binh-chay-vinh-long",
+      "name": "Quán chay Tịnh Bình",
+      "issueType": "mistyped_as_dish_instead_of_restaurant_and_truncated_summary",
+      "currentInDataJson": {
+        "type": "dish",
+        "placeId": "p-phuoc-hau",
+        "summary": "Quán chay Phật giáo Tịnh Bình tại 110A Trần Đại Nghĩa, phường 4 TP."
+      },
+      "verifiedGroundTruth": {
+        "recommendedType": "restaurant",
+        "placeId": "p-phuoc-hau",
+        "address": "Số 110A Trần Đại Nghĩa, Khóm 3, Phường 4 (nay là Phường Phước Hậu), tỉnh Vĩnh Long",
+        "phone": "0879 453 999",
+        "hours": "08:30–21:30",
+        "price_range": "40.000–250.000 đ/món (bì cuốn/gỏi cuốn 8.000 đ)",
+        "realImages": [
+          "https://mia.vn/media/uploads/blog-du-lich/bo-tui-top-quan-cafe-vinh-long-noi-tieng-danh-cho-tin-do-du-lich-1662808031.jpg"
+        ],
+        "sources": [
+          {
+            "domain": "mia.vn",
+            "url": "https://mia.vn/cam-nang-du-lich/quan-chay-tinh-binh-vinh-long",
+            "title": "Quán chay Tịnh Bình Vĩnh Long — MIA.vn"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "cua-com-duyen-hai",
+      "name": "Cua cốm Duyên Hải",
+      "issueType": "wrong_commune_placeId_inland_instead_of_coastal",
+      "currentInDataJson": {
+        "placeId": "xa-nhi-long",
+        "address": "Xã Nhị Long, Trà Vinh"
+      },
+      "verifiedGroundTruth": {
+        "placeId": "p-duyen-hai",
+        "secondaryPlaceId": "xa-long-huu",
+        "address": "Phường Duyên Hải & xã Long Hữu (vùng biển Ba Động – thị xã Duyên Hải cũ), tỉnh Vĩnh Long",
+        "season": "Có quanh năm; thịt chắc và lớp gạch cốm đầy nhất vào mùa khô (tháng Giêng đến tháng 4–5 âm lịch)",
+        "sources": [
+          {
+            "domain": "vinhlongtourist.vn",
+            "url": "https://vinhlongtourist.vn/",
+            "title": "Đặc sản cua cốm hai da vùng biển Duyên Hải"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "khach-san-diamond-stars",
+      "name": "Khách sạn Diamond Stars Bến Tre",
+      "issueType": "5_star_hotel_misdescribed_as_motel_with_survey_placeholder",
+      "currentInDataJson": {
+        "placeId": "p-an-hoi",
+        "summary": "Ngay số 140 Hùng Vương, phường An Hội, trung tâm Bến Tre, Khách sạn Diamond Stars hoạt động theo dạng nhà nghỉ, phù hợp khách cần chỗ ngủ gọn gàng."
+      },
+      "verifiedGroundTruth": {
+        "placeId": "p-an-hoi",
+        "address": "Số 140 đường Hùng Vương, Phường An Hội, tỉnh Vĩnh Long",
+        "phone": "0275 374 8888",
+        "summary": "Khách sạn tiêu chuẩn 5 sao cao 15 tầng với 138 phòng nghỉ hướng sông Bến Tre tại số 140 Hùng Vương, phường An Hội, tích hợp hồ bơi vô cực, trung tâm hội nghị và nhà hàng Âu - Á.",
+        "sources": [
+          {
+            "domain": "diamondstarbentre.com",
+            "url": "http://diamondstarbentre.com/",
+            "title": "Diamond Stars Ben Tre Hotel — Trang chính thức"
+          },
+          {
+            "domain": "vietnamhotel.org.vn",
+            "url": "http://www.vietnamhotel.org.vn/vn/hotel/1869791/0/DIAMOND_STARS_BEN_TRE_HOTEL.vha",
+            "title": "Diamond Stars Ben Tre Hotel 5 Sao — Hiệp hội Khách sạn Việt Nam"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "lang-be---am-thuc-du-lich-sinh-thai",
+      "name": "Khu ẩm thực & du lịch sinh thái Làng Bè",
+      "issueType": "wrong_commune_placeId_and_survey_placeholder",
+      "currentInDataJson": {
+        "placeId": "p-phu-tuc",
+        "summary": "Về xã An Khánh, Bến Tre, Làng Bè - Ẩm Thực & Du Lịch Sinh Thái dọn các món sinh thái kiểu Vĩnh Long cho khách vừa ăn vừa nghỉ chân."
+      },
+      "verifiedGroundTruth": {
+        "placeId": "xa-giao-long",
+        "mergerBasis": "Xã An Khánh (huyện Châu Thành cũ) hợp nhất vào xã Giao Long, tỉnh Vĩnh Long",
+        "address": "Số 81B/6B ấp An Thới, xã An Khánh (nay là xã Giao Long), sát chân cầu Rạch Miễu, tỉnh Vĩnh Long",
+        "summary": "Tổ hợp ẩm thực sông nước và trò chơi dân gian miệt vườn sát chân cầu Rạch Miễu tại số 81B/6B ấp An Thới, xã Giao Long (xã An Khánh cũ).",
+        "realImages": [
+          "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwddj2882rx71f"
+        ],
+        "sources": [
+          {
+            "domain": "dulichviet.com.vn",
+            "url": "https://dulichviet.com.vn/tin-tuc/kham-pha-khu-du-lich-lang-be-mot-dia-diem-hap-dan-tai-mien-tay",
+            "title": "Khám phá Khu du lịch Làng Bè Bến Tre — Du Lịch Việt"
+          },
+          {
+            "domain": "foody.vn",
+            "url": "https://www.foody.vn/ben-tre/nha-hang-lang-be",
+            "title": "Nhà hàng Làng Bè Châu Thành — Foody"
+          },
+          {
+            "domain": "vinhlonggo.vn",
+            "url": "https://vinhlonggo.vn/",
+            "title": "Khu ẩm thực sinh thái Làng Bè — Vĩnh Long Go"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "di-tich-lich-su-luu-cu",
+      "name": "Di tích khảo cổ học Lưu Cừ II",
+      "issueType": "wrong_commune_placeId",
+      "currentInDataJson": {
+        "placeId": "xa-tra-cu"
+      },
+      "verifiedGroundTruth": {
+        "placeId": "xa-luu-nghiep-anh",
+        "mergerBasis": "Xã Lưu Nghiệp Anh hợp nhất từ xã Lưu Nghiệp Anh và xã An Quảng Hữu thuộc huyện Trà Cú (Nghị quyết 1687/NQ-UBTVQH15)",
+        "address": "Ấp Lưu Cừ II, xã Lưu Nghiệp Anh, tỉnh Vĩnh Long",
+        "sources": [
+          {
+            "domain": "baovinhlong.vn",
+            "url": "https://baovinhlong.vn/",
+            "title": "Di tích khảo cổ học cấp quốc gia Lưu Cừ II (1990) — Báo Vĩnh Long"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "nha-hang-thien-tan",
+      "name": "Nhà hàng Thiên Tân",
+      "issueType": "typo_in_summary_and_missing_phone_and_sources_r10_6",
+      "currentInDataJson": {
+        "placeId": "p-phuoc-hau",
+        "summary": "Nhà hàng ẩm thực Vĩnh Long tại hếm 51/1 Phạm Thái Bường, phường Phước Hậu — các món sông nước và đặc sản Vĩnh Long."
+      },
+      "verifiedGroundTruth": {
+        "placeId": "p-phuoc-hau",
+        "address": "Số 56E (hẻm 51/1) đường Phạm Thái Bường, Phường Phước Hậu (Phường 4 cũ), tỉnh Vĩnh Long",
+        "phone": "0270 3824 001",
+        "summary": "Nhà hàng ẩm thực sông nước tại số 56E (hẻm 51/1) đường Phạm Thái Bường, phường Phước Hậu, chuyên các món đặc sản cá sông Cổ Chiên và lẩu miệt vườn.",
+        "realImages": [
+          "https://triphunter.vn/media/W1siZiIsIjIwMTYvMTIvMjEvNGl6eDdlZm1pc19mb29keV9tb2JpbGVfNmFmYWx0ZXBfanBnXzc1NF82MzU3OTg5NTIwNTk0OTM1MjguanBnIl0sWyJwIiwidGh1bWIiLCI2NDB4NDgwXHUwMDNlIl1d/foody-mobile-6afaltep-jpg-754-635798952059493528.jpg?sha=66fdfac0a5015c97"
+        ],
+        "sources": [
+          {
+            "domain": "vinhlongtourist.vn",
+            "url": "https://vinhlongtourist.vn/vi/nhtt",
+            "title": "Nhà hàng Thiên Tân — Cổng Du lịch Vĩnh Long"
+          },
+          {
+            "domain": "triphunter.vn",
+            "url": "https://triphunter.vn/places/vinh-long/items/nha-hang-thien-tan",
+            "title": "Nhà hàng Thiên Tân Phạm Thái Bường — TripHunter"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "khach-san-hoang-khiem",
+      "name": "Khách sạn Hoàng Khiêm",
+      "issueType": "wrong_ward_placeId_and_missing_address_phone",
+      "currentInDataJson": {
+        "placeId": "p-long-chau"
+      },
+      "verifiedGroundTruth": {
+        "placeId": "p-phuoc-hau",
+        "address": "Số 88 đường Phạm Thái Bường, Phường Phước Hậu (Phường 4 cũ), tỉnh Vĩnh Long",
+        "phone": "0270 6250 169",
+        "summary": "Khách sạn lưu trú tại số 88 đường Phạm Thái Bường, phường Phước Hậu, nhận khách từ 14:00 và trả phòng trước 12:00 với mức giá 300.000–600.000 đ/đêm.",
+        "realImages": [
+          "https://img.tripi.vn/cdn-cgi/image/width=320/https://gcs.tripi.vn/hms_prod/photo/img/477531PzM/unnamed-18.jpg"
+        ],
+        "sources": [
+          {
+            "domain": "mytour.vn",
+            "url": "https://stage.mytour.vn/khach-san/1939516-khach-san-hoang-khiem.html",
+            "title": "Khách sạn Hoàng Khiêm Phường 4 Vĩnh Long — Mytour"
+          },
+          {
+            "domain": "haogiayensao.com",
+            "url": "https://vinhlong.haogiayensao.com/search/?q=khach+san+hoang+khiem",
+            "title": "Khách sạn Hoàng Khiêm 88 Phạm Thái Bường"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "khach-san-khoi-hoa",
+      "name": "Khách sạn Khôi Hoa",
+      "issueType": "survey_placeholder_copy",
+      "currentInDataJson": {
+        "placeId": "p-binh-minh"
+      },
+      "verifiedGroundTruth": {
+        "placeId": "p-binh-minh",
+        "address": "Số 5115 (tổ 9), ấp Đông Hậu, Phường Bình Minh, tỉnh Vĩnh Long",
+        "phone": "0916 244 442",
+        "summary": "Khách sạn tiêu chuẩn 2 sao tại số 5115 ấp Đông Hậu, phường Bình Minh, trang bị Wi-Fi, bãi đỗ xe rộng rãi và dịch vụ ẩm thực, karaoke nội khu.",
+        "realImages": [
+          "https://dltm-cdn.vnptit3.vn/resources/portal//Images/VLG/superadminportal.vlg/L%c6%b0u%20tr%c3%ba/75.%20KS%20Kh%c3%b4i%20Hoa/636556844580684355_20170811_134149.jpg"
+        ],
+        "sources": [
+          {
+            "domain": "vinhlongtourist.vn",
+            "url": "https://vinhlongtourist.vn/iv/khachsankhoihoa",
+            "title": "Khách sạn Khôi Hoa Bình Minh — Vĩnh Long Tourist"
+          },
+          {
+            "domain": "wordpress.com",
+            "url": "https://khoihoakskaraoke.wordpress.com/",
+            "title": "Khách sạn – Karaoke Khôi Hoa Bình Minh"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "com-chay-au-lac-vinh-long",
+      "name": "Quán Cơm Chay Âu Lạc",
+      "issueType": "mistyped_as_dish_and_truncated_summary",
+      "currentInDataJson": {
+        "type": "dish",
+        "placeId": "p-long-chau",
+        "summary": "Quán cơm chay Âu Lạc bình dân trên đường Trần Văn Ơn, phường 1 TP."
+      },
+      "verifiedGroundTruth": {
+        "recommendedType": "restaurant",
+        "placeId": "p-long-chau",
+        "address": "Số 35 đường Trần Văn Ơn, Phường Long Châu (Phường 1 cũ), tỉnh Vĩnh Long",
+        "hours": "06:00–20:00",
+        "summary": "Quán cơm chay bình dân thanh đạm kiểu Nam Bộ tại số 35 đường Trần Văn Ơn, phường Long Châu, phục vụ điểm tâm và cơm trưa – tối từ 06:00 đến 20:00.",
+        "realImages": [
+          "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lw9byc8du57d7d"
+        ],
+        "sources": [
+          {
+            "domain": "foody.vn",
+            "url": "https://www.foody.vn/vinh-long/com-chay-au-lac",
+            "title": "Cơm Chay Âu Lạc 35 Trần Văn Ơn — Foody"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "chao-ech-tran-nam",
+      "name": "Cháo Ếch Trần Nam",
+      "issueType": "province_root_placeId_and_mistyped_as_dish_and_survey_placeholder",
+      "currentInDataJson": {
+        "type": "dish",
+        "placeId": "vinh-long"
+      },
+      "verifiedGroundTruth": {
+        "recommendedType": "restaurant",
+        "placeId": "p-long-chau",
+        "address": "Đường Đinh Tiên Hoàng, Phường Long Châu, tỉnh Vĩnh Long",
+        "phone": "0938 937 027",
+        "hours": "16:30–21:30",
+        "summary": "Quán cháo ếch chiều tối trên đường Đinh Tiên Hoàng, phường Long Châu, mở cửa từ 16:30 đến 21:30 với mức giá bình dân 20.000–25.000 đ/phần.",
+        "realImages": [
+          "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwev7kz7mqcbb0"
+        ],
+        "sources": [
+          {
+            "domain": "foody.vn",
+            "url": "https://www.foody.vn/vinh-long/chao-ech-tran-nam",
+            "title": "Cháo Ếch Trần Nam Đinh Tiên Hoàng — Foody"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "bun-nuoc-leo-cay-sung-tra-vinh",
+      "name": "Quán Bún Nước Lèo Cây Sung",
+      "issueType": "missing_verified_sources_and_real_image",
+      "currentInDataJson": {
+        "placeId": "p-nguyet-hoa"
+      },
+      "verifiedGroundTruth": {
+        "placeId": "p-nguyet-hoa",
+        "address": "Số 676 đường Võ Nguyên Giáp, Phường Nguyệt Hóa (Phường 8 cũ), tỉnh Vĩnh Long",
+        "realImages": [
+          "https://mia.vn/media/uploads/blog-du-lich/ve-tra-vinh-thuong-thuc-mon-bun-nuoc-leo-dam-vi-mien-que-1739012767.jpg"
+        ],
+        "sources": [
+          {
+            "domain": "mia.vn",
+            "url": "https://mia.vn/cam-nang-du-lich/mon-bun-nuoc-leo-tra-vinh-17783",
+            "title": "Bún nước lèo Cây Sung 676 Võ Nguyên Giáp — MIA.vn"
+          },
+          {
+            "domain": "abay.vn",
+            "url": "https://www.abay.vn/tin-tuc/say-long-dac-san-bun-nuoc-leo-o-tra-vinh.aspx",
+            "title": "Đặc sản bún nước lèo Trà Vinh — Abay"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "com-ga-xoi-mo-5-vi-ben-tre",
+      "name": "Cơm gà xối mỡ 5 Vị Bến Tre",
+      "issueType": "missing_verified_sources_and_phone_r10_6",
+      "currentInDataJson": {
+        "placeId": "p-phu-khuong"
+      },
+      "verifiedGroundTruth": {
+        "placeId": "p-phu-khuong",
+        "address": "Số 306C đường Nguyễn Huệ, Phường Phú Khương, tỉnh Vĩnh Long",
+        "phone": "096 199 6147",
+        "realImages": [
+          "https://mia.vn/media/uploads/blog-du-lich/tong-hop-quan-com-ngon-tai-ben-tre-vua-re-vua-chat-luong-1665311752.jpg"
+        ],
+        "sources": [
+          {
+            "domain": "mia.vn",
+            "url": "https://mia.vn/cam-nang-du-lich/tong-hop-quan-com-ngon-tai-ben-tre-vua-re-vua-chat-luong-10757",
+            "title": "Cơm gà xối mỡ 5 Vị 306C Nguyễn Huệ — MIA.vn"
+          }
+        ]
+      }
+    },
+    {
+      "entityId": "chua-giac-thien-vinh-long",
+      "name": "Chùa Giác Thiên (Văn phòng Ban Trị sự GHPGVN tỉnh Vĩnh Long)",
+      "currentDataJsonBugs": [
+        "placeId đang gán nhầm 'xa-nhon-phu' (Mang Thít) và address=None dù chùa tọa lạc tại số 70 Trần Phú, Phường 4, TP. Vĩnh Long cũ (nay là Phường Phước Hậu).",
+        "summary ghi sai năm thành lập là 1935 thay vì năm 1906 do bà Trương Thị Lâu (pháp danh Như Đạt) khởi dựng."
+      ],
+      "verifiedGroundTruth": {
+        "placeId": "p-phuoc-hau",
+        "address": "Số 70 đường Trần Phú, Phường Phước Hậu, tỉnh Vĩnh Long (Phường 4, TP. Vĩnh Long cũ)",
+        "lat": 10.2512,
+        "lng": 105.9806,
+        "summary": "Ngôi cổ tự Bắc tông khởi dựng năm 1906 tại số 70 Trần Phú, Phường Phước Hậu — hiện là Văn phòng Ban Trị sự Giáo hội Phật giáo Việt Nam tỉnh Vĩnh Long.",
+        "description": "Chùa Giác Thiên tọa lạc tại số 70 đường Trần Phú, Phường Phước Hậu, tỉnh Vĩnh Long (Phường 4, TP. Vĩnh Long cũ), do bà Trương Thị Lâu (pháp danh Như Đạt) khởi dựng năm 1906. Trải qua hơn một thế kỷ trùng tu, chùa sở hữu cổng tam quan sơn vàng lợp ngói đỏ, khuôn viên rợp bóng bồ đề với phiến đá khắc Bát Nhã Tâm Kinh và chánh điện tôn trí tượng Đức Phật Thích Ca Mâu Ni trang nghiêm. Đây đồng thời là trụ sở Văn phòng Ban Trị sự GHPGVN tỉnh Vĩnh Long.",
+        "sources": [
+          {
+            "domain": "chonthieng.com",
+            "url": "https://chonthieng.com/dia-diem/chua-giac-thien-phuong-4-vinh-long/"
+          },
+          {
+            "domain": "anphat.org",
+            "url": "https://anphat.org/tieng-viet/chua-viet/mien-nam/kien-giang/chua-giac-thien/"
+          }
+        ],
+        "realImages": [
+          "https://chonthieng.com/data/uploads/2022/03/Chua-Giac-Thien-Vinh-Long-Nguon-Mytour.-1.jpg"
+        ]
+      }
+    },
+    {
+      "entityId": "dinh-tan-giai-vinh-long",
+      "name": "Đình Tân Giai (Đình thần Tân Giai)",
+      "currentDataJsonBugs": [
+        "placeId đang gán nhầm 'xa-nhon-phu' và address=None dù đình tọa lạc tại Khóm 1, Phường 3, TP. Vĩnh Long cũ (nay là Phường Phước Hậu)."
+      ],
+      "verifiedGroundTruth": {
+        "placeId": "p-phuoc-hau",
+        "address": "Khóm 1, Phường Phước Hậu, tỉnh Vĩnh Long (Phường 3, TP. Vĩnh Long cũ)",
+        "lat": 10.2478,
+        "lng": 105.9695,
+        "summary": "Ngôi đình thần cổ kính khởi dựng năm 1808 dưới triều Gia Long, dời về Phường Phước Hậu năm 1924 và xếp hạng Di tích lịch sử – văn hóa cấp tỉnh năm 2006.",
+        "description": "Đình Tân Giai được xây dựng lần đầu năm 1808 dưới triều vua Gia Long tại vàm Cái Cá bên bờ sông Cổ Chiên, từng là ngôi đình lớn nhất vùng Long Hồ Dinh xưa. Do sạt lở bờ sông, năm 1924 đình được di dời về Khóm 1, Phường 3, TP. Vĩnh Long cũ (nay là Phường Phước Hậu, tỉnh Vĩnh Long). Đình thờ Thần hoàng Bổn cảnh, phối thờ Hữu Phủ Quốc công Tống Phước Hiệp cùng các bậc tiền hiền khai khẩn và được công nhận Di tích lịch sử – văn hóa cấp tỉnh năm 2006.",
+        "sources": [
+          {
+            "domain": "baovinhlong.com.vn",
+            "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/201812/dinh-tan-giai-to-chuc-le-hoi-thuong-dien-nam-2018-2925278/"
+          },
+          {
+            "domain": "vi.wikipedia.org",
+            "url": "https://vi.wikipedia.org/wiki/%C4%90%C3%ACnh_T%C3%A2n_Giai"
+          }
+        ],
+        "realImages": [
+          "https://baovinhlong.com.vn/file/e7837c027f6ecd14017ffa4e5f2a0e34/dataimages/201812/original/images2170293_BVL_19.12_P.Thuy__Dinh_Tan_Giai_1.JPG"
+        ]
+      }
+    },
+    {
+      "entityId": "chua-ba-thien-hau-vinh-long",
+      "name": "Miếu Bà Thiên Hậu Vĩnh Long",
+      "currentDataJsonBugs": [
+        "placeId đang gán nhầm 'xa-nhon-phu' và address=None dù miếu tọa lạc trên đường 30 Tháng 4, Phường 1, TP. Vĩnh Long cũ (nay là Phường Long Châu)."
+      ],
+      "verifiedGroundTruth": {
+        "placeId": "p-long-chau",
+        "address": "Số 64 đường 30 Tháng 4, Phường Long Châu, tỉnh Vĩnh Long (Phường 1, TP. Vĩnh Long cũ)",
+        "lat": 10.2546,
+        "lng": 105.9752,
+        "summary": "Ngôi miếu cổ của cộng đồng người Hoa khởi dựng cuối thế kỷ XIX trên đường 30 Tháng 4, Phường Long Châu, thờ Thiên Hậu Thánh Mẫu.",
+        "description": "Miếu Bà Thiên Hậu Vĩnh Long tọa lạc tại khu vực số 64 đường 30 Tháng 4, Phường Long Châu, tỉnh Vĩnh Long (Phường 1, TP. Vĩnh Long cũ). Được cộng đồng người Hoa khởi dựng từ năm 1898, công trình mang kiến trúc mái cong lợp ngói âm dương, phù điêu gốm sứ tinh xảo, là trung tâm sinh hoạt tín ngưỡng thờ Thiên Hậu Thánh Mẫu lâu đời giữa đô thị Vĩnh Long.",
+        "sources": [
+          {
+            "domain": "vinhlongtourist.vn",
+            "url": "https://vinhlongtourist.vn/iv/detailnews/?t=tim-hieu-tin-nguong-tho-ba-thien-hau-cua-nguoi-hoa&id=news_11385"
+          },
+          {
+            "domain": "ngaymoionline.com.vn",
+            "url": "https://ngaymoionline.com.vn/tinh-vinh-long-chua-thien-hau-co-dau-hieu-gia-to-chuc-hoi-de-chiem-doat-dat-16528.html"
+          }
+        ],
+        "realImages": [
+          "https://ngaymoionline.com.vn/stores/news_dataimages/trinhphuongmanh/072020/24/18/1120_2_74.jpg"
+        ]
+      }
+    },
+    {
+      "entityId": "chua-ong-vinh-long",
+      "name": "Thất Phủ Miếu (Chùa Ông Vĩnh Long – Vĩnh An Cung)",
+      "currentDataJsonBugs": [
+        "placeId đang gán nhầm 'xa-nhon-phu' và address=None dù di tích tọa lạc tại số 22 đường Nguyễn Chí Thanh, Phường 5, TP. Vĩnh Long cũ (nay là Phường Thanh Đức)."
+      ],
+      "verifiedGroundTruth": {
+        "placeId": "p-thanh-duc",
+        "address": "Số 22 đường Nguyễn Chí Thanh, Phường Thanh Đức, tỉnh Vĩnh Long (Phường 5, TP. Vĩnh Long cũ)",
+        "lat": 10.2568,
+        "lng": 105.9845,
+        "summary": "Di tích lịch sử – văn hóa cấp quốc gia tại số 22 Nguyễn Chí Thanh, Phường Thanh Đức, do cộng đồng 7 phủ người Hoa xây dựng giai đoạn 1892–1909.",
+        "description": "Thất Phủ Miếu (còn gọi là Chùa Ông hoặc Vĩnh An Cung – Hội quán Phúc Kiến) tọa lạc tại số 22 đường Nguyễn Chí Thanh, Phường Thanh Đức, tỉnh Vĩnh Long (Phường 5, TP. Vĩnh Long cũ), gần vàm sông Long Hồ. Công trình do cộng đồng người Hoa thuộc 7 phủ đóng góp xây dựng và trùng tu lớn từ năm 1892 đến 1909 theo bố cục nội công ngoại quốc, mái lợp ngói âm dương viền men xanh và hệ khung gỗ chạm khắc tinh xảo thờ Quan Thánh Đế Quân.",
+        "sources": [
+          {
+            "domain": "vinhlongtourist.vn",
+            "url": "https://vinhlongtourist.vn/vi/detailnews/?t=chua-ong-that-phu-mieu-o-vinh-long--mot-kien-truc-nghe-thuat-mang-dam-chat-nguoi-hoa-&id=news_11180"
+          },
+          {
+            "domain": "baocantho.com.vn",
+            "url": "https://baocantho.com.vn/that-phu-mieu-o-vinh-long-a171609.html"
+          },
+          {
+            "domain": "mia.vn",
+            "url": "https://mia.vn/cam-nang-du-lich/chua-ong-that-phu-mieu-vinh-long-cong-trinh-kien-truc-doc-dao-cua-nguoi-hoa-9397"
+          }
+        ],
+        "realImages": [
+          "https://baocantho.com.vn/image/news/2024/20240324/thumbnail/810x478/1711258427.webp"
+        ]
+      }
+    },
+    {
+      "entityId": "benh-vien-da-khoa-tinh-vinh-long-vinh-long",
+      "name": "Bệnh viện Đa khoa tỉnh Vĩnh Long",
+      "currentDataJsonBugs": [
+        "placeId đang gán nhầm 'xa-trung-ngai' (huyện Vũng Liêm) và thiếu address/phone dù bệnh viện đặt tại 301 Trần Phú, Phường 4, TP. Vĩnh Long cũ (nay là Phường Phước Hậu)."
+      ],
+      "verifiedGroundTruth": {
+        "placeId": "p-phuoc-hau",
+        "address": "Số 301 đường Trần Phú, Phường Phước Hậu, tỉnh Vĩnh Long (Phường 4, TP. Vĩnh Long cũ)",
+        "phone": "0270 3822 535",
+        "lat": 10.2469,
+        "lng": 105.9842,
+        "summary": "Bệnh viện đa khoa tuyến tỉnh hạng I tại số 301 Trần Phú, Phường Phước Hậu, tỉnh Vĩnh Long — trung tâm khám chữa bệnh và cấp cứu 24/7. Điện thoại: 0270 3822 535.",
+        "sources": [
+          {
+            "domain": "nhathuoclongchau.com.vn",
+            "url": "https://nhathuoclongchau.com.vn/bai-viet/gioi-thieu-tong-quan-ve-benh-vien-da-khoa-vinh-long.html"
+          },
+          {
+            "domain": "doctogo.vn",
+            "url": "https://doctogo.vn/co-so-y-te/af09fc42-e91f-4f14-bf38-064508798ea7"
+          }
+        ],
+        "realImages": [
+          "https://cdn.nhathuoclongchau.com.vn/v1/static/benh_vien_da_khoa_Vinh_Long_1_3bb202891f.png"
+        ]
+      }
+    },
+    {
+      "entityId": "chua-vam-ray-tra-vinh",
+      "name": "Chùa Vàm Ray (Wat Vàm Rây)",
+      "currentDataJsonBugs": [
+        "placeId đang gán nhầm 'xa-nhi-long' (huyện Càng Long) và address=None dù chùa tọa lạc tại ấp Vàm Ray, xã Hàm Tân, huyện Trà Cú cũ (nay là Xã Hàm Giang)."
+      ],
+      "verifiedGroundTruth": {
+        "placeId": "xa-ham-giang",
+        "address": "Ấp Vàm Ray, Xã Hàm Giang, tỉnh Vĩnh Long (xã Hàm Tân, huyện Trà Cú, tỉnh Trà Vinh cũ)",
+        "lat": 9.6795,
+        "lng": 106.2718,
+        "summary": "Ngôi chùa Phật giáo Nam tông Khmer hơn 600 năm tuổi tại Xã Hàm Giang, nổi bật với kiến trúc Angkor thếp vàng lộng lẫy và tượng Phật Thích Ca nhập Niết bàn dài 54 m.",
+        "sources": [
+          {
+            "domain": "baophapluat.vn",
+            "url": "https://baophapluat.vn/thuong-ngoan-ngoi-chua-600-nam-tuoi-co-tuong-phat-nam-lon-nhat-tai-tra-vinh-post520533.html"
+          },
+          {
+            "domain": "tatinta.com",
+            "url": "https://tatinta.com/diem-den/chua-vam-ray/8107"
+          },
+          {
+            "domain": "vi.wikipedia.org",
+            "url": "https://vi.wikipedia.org/wiki/Ch%C3%B9a_V%C3%A0m_Ray"
+          }
+        ],
+        "realImages": [
+          "https://cdn.baophapluat.vn/uploaded/nguyenthanhthuan/2024_08_02/anh-2-9545.jpg"
+        ]
+      }
+    },
+    {
+      "entityId": "chua-giac-linh-tra-vinh",
+      "name": "Chùa Giác Linh (Chùa Dơi Cầu Ngang)",
+      "currentDataJsonBugs": [
+        "placeId đang gán nhầm 'xa-nhi-long' (huyện Càng Long) và address=None dù chùa tọa lạc tại ấp Nhứt A, xã Mỹ Long Bắc, huyện Cầu Ngang cũ (nay là Xã Mỹ Long)."
+      ],
+      "verifiedGroundTruth": {
+        "placeId": "xa-my-long",
+        "address": "Ấp Nhứt A, Xã Mỹ Long, tỉnh Vĩnh Long (xã Mỹ Long Bắc, huyện Cầu Ngang, tỉnh Trà Vinh cũ)",
+        "lat": 9.8184,
+        "lng": 106.4562,
+        "summary": "Ngôi cổ tự khởi dựng năm 1871 trên giồng cát Xã Mỹ Long — nơi thành lập Chi bộ Đảng Mỹ Long đầu tiên năm 1930 và là nơi trú ngụ của hàng ngàn cá thể dơi quạ.",
+        "sources": [
+          {
+            "domain": "tinhdoanvinhlong.vn",
+            "url": "https://tinhdoanvinhlong.vn/2025/04/27/chua-giac-linh-chua-doi-di-tich-lich-su-va-van-hoa-tai-tra-vinh/"
+          },
+          {
+            "domain": "theochanphat.com",
+            "url": "https://theochanphat.com/chua-o/chua-giac-linh-chua-doi-"
+          }
+        ],
+        "realImages": [
+          "http://cdn.theochanphat.com/images/Tinh_Tra_Vinh/Huyen_Cau_Ngang/Xa_My_Long_Bac/Chua_Giac_Linh_Chua_Doi_/Chua_Giac_Linh_Chua_Doi__2.jpg"
+        ]
+      }
+    },
+    {
+      "entityId": "chua-ba-thien-hau-tra-vinh",
+      "name": "Thiên Hậu Cung Tiểu Cần (Chùa Bà Thiên Hậu)",
+      "currentDataJsonBugs": [
+        "placeId đang gán nhầm 'p-tra-vinh' và address=None dù di tích tọa lạc tại Khóm 5, thị trấn Tiểu Cần, huyện Tiểu Cần cũ (nay là Phường Tiểu Cần)."
+      ],
+      "verifiedGroundTruth": {
+        "placeId": "p-tieu-can",
+        "address": "Khóm 5, Phường Tiểu Cần, tỉnh Vĩnh Long (thị trấn Tiểu Cần, huyện Tiểu Cần, tỉnh Trà Vinh cũ)",
+        "lat": 9.8132,
+        "lng": 106.1885,
+        "summary": "Di tích kiến trúc nghệ thuật cấp tỉnh (2020) khởi dựng năm 1897 tại Phường Tiểu Cần — nổi bật với mái ngói âm dương gắn gốm lưỡng long tranh châu và chạm khắc gỗ tinh xảo.",
+        "sources": [
+          {
+            "domain": "kinhdoanhvaphattrien.vn",
+            "url": "https://kinhdoanhvaphattrien.vn/chua-ba-thien-hau-di-tich-kien-truc-tieu-bieu-cua-nguoi-hoa-o-tra-vinh-13638.html"
+          },
+          {
+            "domain": "exotrails.com",
+            "url": "https://exotrails.com/routes/thien-hau-cung-tra-vinh"
+          }
+        ],
+        "realImages": [
+          "https://t.cmx-cdn.com/kinhdoanhvaphattrien.vn/files/news_dataimages/kinhdoanhvaphattrienvn/112020/27/07/1234520220505032236.8485770.jpg"
+        ]
+      }
+    },
+    {
+      "entityId": "rooster-mekong-resort",
+      "name": "Rooster Mekong Resort",
+      "currentDataJsonBugs": [
+        "placeId đang gán nhầm 'xa-dong-khoi' (huyện Mỏ Cày Nam) và thiếu address/phone dù khu nghỉ dưỡng tọa lạc tại ấp An Hòa, xã Long Thới, huyện Chợ Lách cũ (nay là Xã Chợ Lách)."
+      ],
+      "verifiedGroundTruth": {
+        "placeId": "xa-cho-lach",
+        "address": "Ấp An Hòa, Xã Chợ Lách, tỉnh Vĩnh Long (xã Long Thới, huyện Chợ Lách, tỉnh Bến Tre cũ)",
+        "phone": "0275 246 6789",
+        "lat": 10.2285,
+        "lng": 106.1742,
+        "summary": "Khu nghỉ dưỡng sinh thái miệt vườn rộng hơn 2 ha tại ấp An Hòa, Xã Chợ Lách — sở hữu bungalow ven sông, hồ bơi ngoài trời và tour trải nghiệm làng hoa Cái Mơn.",
+        "sources": [
+          {
+            "domain": "roostermekong.com.vn",
+            "url": "https://roostermekong.com.vn/"
+          },
+          {
+            "domain": "mia.vn",
+            "url": "https://mia.vn/cam-nang-du-lich/rooster-mekong-ben-tre-khu-du-lich-xanh-dam-chat-tay-nam-bo-11272"
+          }
+        ],
+        "realImages": [
+          "https://mia.vn/media/uploads/blog-du-lich/rooster-mekong-ben-tre-khu-du-lich-xanh-dam-chat-tay-nam-bo-1667178408.jpg"
+        ]
+      }
+    },
+    {
+      "entityId": "coco-riverside-lodge",
+      "name": "Coco Riverside Lodge",
+      "currentDataJsonBugs": [
+        "address=None và summary ghi nhầm là 'bên dòng rạch Chợ Lách' trong khi khu nghỉ dưỡng thực tế tọa lạc tại ấp Phú Ân, xã Trung Ngãi, huyện Vũng Liêm."
+      ],
+      "verifiedGroundTruth": {
+        "placeId": "xa-trung-ngai",
+        "address": "Ấp Phú Ân, Xã Trung Ngãi, tỉnh Vĩnh Long (huyện Vũng Liêm cũ)",
+        "lat": 10.0846,
+        "lng": 106.2128,
+        "summary": "Khu nghỉ dưỡng ecolodge sinh thái bên nhánh sông Vũng Liêm – Cổ Chiên tại ấp Phú Ân, Xã Trung Ngãi, nổi bật với bungalow lá dừa mộc mạc và trải nghiệm chèo xuồng, đạp xe làng quê.",
+        "description": "Coco Riverside Lodge tọa lạc tại ấp Phú Ân, Xã Trung Ngãi, tỉnh Vĩnh Long (huyện Vũng Liêm cũ). Khu nghỉ dưỡng gồm hệ thống bungalow kiến trúc gỗ và lá dừa nép mình bên sông nước rợp bóng dừa, cung cấp trải nghiệm du lịch cộng đồng bền vững: chèo xuồng khám phá kênh rạch, đạp xe thăm làng nghề chiếu lác Vũng Liêm và thưởng thức ẩm thực đồng quê Nam Bộ.",
+        "sources": [
+          {
+            "domain": "cocoriversidelodge.com",
+            "url": "https://www.cocoriversidelodge.com/"
+          },
+          {
+            "domain": "baovinhlong.com.vn",
+            "url": "https://baovinhlong.com.vn/nhip-song-dong-bang/201707/coco-riverside-lodge-noi-nghi-duong-ly-tuong-voi-san-pham-du-lich-rat-nam-bo-2823880/"
+          },
+          {
+            "domain": "vinhlongtourist.vn",
+            "url": "https://vinhlongtourist.vn/vi/detailnews/?t=coco-riverside-lodge-diem-dung-chan-trong-hanh-trinh-kham-pha-vinh-long&id=news_69093"
+          }
+        ],
+        "realImages": [
+          "https://baovinhlong.com.vn/file/e7837c027f6ecd14017ffa4e5f2a0e34/dataimages/201707/original/images1945952_anh_6.JPG"
+        ]
+      }
+    },
+    {
+      "entityId": "khu-du-lich-sinh-thai-sala",
+      "name": "Khu du lịch sinh thái Sala",
+      "currentDataJsonBugs": [
+        "address=None và summary bị cắt cụt giữa chừng tại 'cách trung tâm TP.' do bộ tách câu ngây thơ."
+      ],
+      "verifiedGroundTruth": {
+        "placeId": "p-tam-binh",
+        "address": "Ấp Mỹ Phú Tân, Phường Tam Bình, tỉnh Vĩnh Long (xã Mỹ Thạnh Trung, huyện Tam Bình cũ)",
+        "lat": 10.0715,
+        "lng": 105.9862,
+        "summary": "Khu du lịch sinh thái rộng 20 ha tại ấp Mỹ Phú Tân, Phường Tam Bình (xã Mỹ Thạnh Trung cũ), cách trung tâm đô thị Vĩnh Long khoảng 25 km với hai phân khu Sala Farm và Sala Amazing.",
+        "sources": [
+          {
+            "domain": "vinhlongtourist.vn",
+            "url": "https://vinhlongtourist.vn/vi/kdlsala"
+          },
+          {
+            "domain": "thamhiemmekong.com",
+            "url": "https://thamhiemmekong.com/thong-tin-du-lich-mien-tay/khu-du-lich-sala-diem-du-lich-sinh-thai-moi-o-vinh-long.html"
+          },
+          {
+            "domain": "ivivu.com",
+            "url": "https://www.ivivu.com/blog/2019/11/huong-dan-duong-den-khu-du-lich-sinh-thai-sala-o-vinh-long-bao-vui/"
+          }
+        ],
+        "realImages": [
+          "https://dltm-cdn.vnptit3.vn/resources/portal//Images/VLG/adminportal_vlg/dia_diem/photo_2024_06_10_10_31_15_860759570.jpg"
+        ]
+      }
+    },
+    {
+      "entityId": "bun-suong-du-van-tra-vinh",
+      "name": "Bún Suông Dư Vân",
+      "currentDataJsonBugs": [
+        "placeId đang gán nhầm 'xa-nhi-long' (huyện Càng Long), address=None, và summary chứa chuỗi giá bị cắt lỗi 'Giá 30.'."
+      ],
+      "verifiedGroundTruth": {
+        "placeId": "p-nguyet-hoa",
+        "address": "Số 644 đường Võ Nguyên Giáp, Khóm 1, Phường Nguyệt Hóa, tỉnh Vĩnh Long (Phường 8, TP. Trà Vinh cũ)",
+        "lat": 9.9189,
+        "lng": 106.3374,
+        "summary": "Quán bún suông gia truyền từ năm 1986 tại số 644 Võ Nguyên Giáp, Phường Nguyệt Hóa — nổi tiếng với chả tôm quết tay dai ngọt và nước lèo me tương hột đậm đà.",
+        "description": "Bún Suông Dư Vân tại số 644 đường Võ Nguyên Giáp, Khóm 1, Phường Nguyệt Hóa, tỉnh Vĩnh Long (Phường 8, TP. Trà Vinh cũ) là một trong những quán bún suông gia truyền lâu đời nhất xứ Trà Vinh (từ năm 1986). Tô bún nổi bật với những cọng suông tôm tươi quết nhuyễn tạo hình dài săn chắc, ăn kèm thịt ba rọi, giò heo trong nước lèo nâu sậm thanh vị me và tương hột.",
+        "sources": [
+          {
+            "domain": "ticotravel.com.vn",
+            "url": "https://ticotravel.com.vn/bun-suong-tra-vinh/"
+          },
+          {
+            "domain": "crystalbay.com",
+            "url": "https://crystalbay.com/62-dac-san-tra-vinh-me-man-mon-bun-co-ten-sieu-la-khien-bao-thuc-khach-do-guc-vi-qua-ngon-n60395.html"
+          }
+        ],
+        "realImages": [
+          "https://ticotravel.com.vn/wp-content/uploads/2024/05/bun-suong-tra-vinh-1.jpg"
+        ]
+      }
+    }
+  ],
+  "ruralPlaceIdCorrections": [
+    {
+      "entityId": "cu-lao-may",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-luc-si-thanh",
+      "basis": "Xã Lục Sĩ Thành hợp nhất từ xã Phú Thành và xã Lục Sĩ Thành (Cù lao Mây, Trà Ôn)"
+    },
+    {
+      "entityId": "banh-xeo-hen-cu-lao-dai",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "xa-quoi-thien",
+      "basis": "Cù lao Dài (xã Quới Thiện & Thanh Bình cũ, Vũng Liêm)"
+    },
+    {
+      "entityId": "homestay-hai-cuong",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "xa-quoi-thien",
+      "basis": "Ấp Phước Lý Nhì, xã Quới Thiện, huyện Vũng Liêm"
+    },
+    {
+      "entityId": "xoai-cat-num-vung-liem",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "xa-quoi-thien",
+      "basis": "Đặc sản xã Quới Thiện, huyện Vũng Liêm"
+    },
+    {
+      "entityId": "mut-xoai-cat-num-foodo-ocop",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "xa-quoi-thien",
+      "basis": "Xã Quới Thiện, huyện Vũng Liêm"
+    },
+    {
+      "entityId": "ruou-phu-le-ba-tri",
+      "currentPlaceId": "p-ben-tre",
+      "verifiedPlaceId": "xa-tan-xuan",
+      "basis": "Xã Phú Lễ nhập vào xã Tân Xuân (Ba Tri)"
+    },
+    {
+      "entityId": "lang-nghe-nau-ruou-phu-le",
+      "currentPlaceId": "p-ben-tre",
+      "verifiedPlaceId": "xa-tan-xuan",
+      "basis": "Xã Phú Lễ nhập vào xã Tân Xuân (Ba Tri)"
+    },
+    {
+      "entityId": "cho-noi-dua-song-thom-mo-cay",
+      "currentPlaceId": "p-ben-tre",
+      "verifiedPlaceId": "p-mo-cay",
+      "basis": "Xã An Thạnh nhập vào phường Mỏ Cày (và xã Khánh Thạnh Tân nhập vào xã Nhuận Phú Tân)"
+    },
+    {
+      "entityId": "khu-du-lich-somo-farm-cuu-long",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "xa-cai-nhum",
+      "basis": "Khóm 3, TT Cái Nhum nhập vào xã Cái Nhum (Mang Thít)"
+    },
+    {
+      "entityId": "gom-do-mang-thit",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "xa-nhon-phu",
+      "basis": "Trục di sản gốm đỏ xã Mỹ An – Nhơn Phú (nay là xã Nhơn Phú, Mang Thít)"
+    },
+    {
+      "entityId": "lo-gach-hung-loi",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "p-thanh-duc",
+      "basis": "Ấp Sơn Đông, xã Thanh Đức nhập vào phường Thanh Đức"
+    },
+    {
+      "entityId": "khu-luu-niem-tran-dai-nghia",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "p-tam-binh",
+      "basis": "Ấp Phú Thịnh, xã Tường Lộc, huyện Tam Bình"
+    },
+    {
+      "entityId": "tran-dai-nghia-pham-quang-le",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "p-tam-binh",
+      "basis": "Quê quán xã Tường Lộc / Mỹ Thạnh Trung, huyện Tam Bình"
+    },
+    {
+      "entityId": "homestay-hoa-thanh",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "xa-hoa-hiep",
+      "basis": "Xã Hòa Thạnh nhập vào xã Hòa Hiệp (Tam Bình)"
+    },
+    {
+      "entityId": "mekong-homestay-viet-nam",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "xa-hoa-hiep",
+      "basis": "Xã Hòa Thạnh nhập vào xã Hòa Hiệp (Tam Bình)"
+    },
+    {
+      "entityId": "banh-xeo-oc-gao-con-phu-da",
+      "currentPlaceId": "p-ben-tre",
+      "verifiedPlaceId": "xa-phu-phung",
+      "basis": "Cồn Phú Đa thuộc xã Vĩnh Bình, nhập vào xã Phú Phụng (Chợ Lách)"
+    },
+    {
+      "entityId": "khu-du-lich-dai-loc",
+      "currentPlaceId": "p-an-hoi",
+      "verifiedPlaceId": "xa-phu-phung",
+      "basis": "Xã Sơn Định nhập vào xã Phú Phụng (Chợ Lách)"
+    },
+    {
+      "entityId": "rung-ngap-man-thanh-phong",
+      "currentPlaceId": "p-ben-tre",
+      "verifiedPlaceId": "xa-thanh-phong",
+      "basis": "Xã Thạnh Phong, huyện Thạnh Phú"
+    },
+    {
+      "entityId": "hau-sua-thanh-phu",
+      "currentPlaceId": "p-ben-tre",
+      "verifiedPlaceId": "xa-thanh-phu",
+      "basis": "Huyện Thạnh Phú (nay là xã Thạnh Phú)"
+    },
+    {
+      "entityId": "tom-su-nuong-than-binh-dai",
+      "currentPlaceId": "p-ben-tre",
+      "verifiedPlaceId": "p-binh-dai",
+      "basis": "Huyện Bình Đại (nay là phường Bình Đại)"
+    },
+    {
+      "entityId": "khach-san-binh-dai",
+      "currentPlaceId": "p-ben-tre",
+      "verifiedPlaceId": "p-binh-dai",
+      "basis": "Thị trấn Bình Đại nhập vào phường Bình Đại"
+    },
+    {
+      "entityId": "hai-san-ngoc-hiep-binh-dai-ben-tre",
+      "currentPlaceId": "p-phu-khuong",
+      "verifiedPlaceId": "p-binh-dai",
+      "basis": "Huyện Bình Đại (nay là phường Bình Đại)"
+    },
+    {
+      "entityId": "banh-tet-tra-cuon",
+      "currentPlaceId": "p-tra-vinh",
+      "verifiedPlaceId": "xa-vinh-kim",
+      "basis": "Làng nghề Trà Cuôn thuộc xã Kim Hòa, nhập vào xã Vinh Kim (Cầu Ngang)"
+    },
+    {
+      "entityId": "den-tho-bac-ho",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "p-long-duc",
+      "basis": "Ấp Vĩnh Hội, xã Long Đức nay là Phường Long Đức (Trà Vinh)"
+    },
+    {
+      "entityId": "dinh-long-duc",
+      "currentPlaceId": "p-tra-vinh",
+      "verifiedPlaceId": "p-long-duc",
+      "basis": "Đình Long Đức thuộc Phường Long Đức"
+    },
+    {
+      "entityId": "rach-cau-lau-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-long-chau",
+      "basis": "Rạch Cầu Lầu chảy qua khu phố cổ Phường 1 – Phường 2, TP. Vĩnh Long cũ -> Phường Long Châu"
+    },
+    {
+      "entityId": "cho-noi-tra-on-trai-nghiem-thuyen-hoa-qua",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-tra-on",
+      "basis": "Chợ Nổi Trà Ôn thuộc khu vực Trà Ôn -> Phường Trà Ôn"
+    },
+    {
+      "entityId": "ca-chay-tra-on-rim-kho",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-tra-on",
+      "basis": "Đặc sản Cá cháy Trà Ôn rim/kho thuộc vùng Trà Ôn -> Phường Trà Ôn"
+    },
+    {
+      "entityId": "tau-hu-ky-my-hoa-dong-goi",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-cai-von",
+      "basis": "Làng nghề tàu hủ ky Mỹ Hòa (TX. Bình Minh cũ) nay thuộc Phường Cái Vồn"
+    },
+    {
+      "entityId": "chao-dua-thuan-duyen-tam-binh",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "xa-song-phu",
+      "basis": "Cơ sở Thuận Duyên tại ấp Phú Ninh, xã Song Phú, huyện Tam Bình -> Xã Song Phú"
+    },
+    {
+      "entityId": "nha-thuc-pham-sach-khoai-lang-tim-binh-tan-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-tan-quoi",
+      "basis": "Cửa hàng khoai lang tím Bình Tân thuộc khu vực trung tâm Bình Tân -> Phường Tân Quới"
+    },
+    {
+      "entityId": "cua-hang-dac-san-mien-tay-ba-bay-nem-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-long-chau",
+      "basis": "Cửa hàng đặc sản tại trung tâm TP. Vĩnh Long -> Phường Long Châu"
+    },
+    {
+      "entityId": "shop-luu-niem-ben-ninh-kieu-gian-hang-vinh-long-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "xa-an-binh",
+      "basis": "Gian hàng lưu niệm tại khu du lịch Cù lao An Bình -> Xã An Bình"
+    },
+    {
+      "entityId": "kenh-tra-on-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-tra-on",
+      "basis": "Kênh Trà Ôn nối sông Hậu với vùng nội địa Trà Ôn -> Phường Trà Ôn"
+    },
+    {
+      "entityId": "rach-tra-ngoa-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "xa-tra-con",
+      "basis": "Rạch Trà Ngoa chảy qua khu vực Trà Côn (Trà Ôn) -> Xã Trà Côn"
+    },
+    {
+      "entityId": "quan-nhau-san-vuon-tu-da-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-thanh-duc",
+      "basis": "123/3 Tám Tháng Ba, Phường 5 / Thanh Đức, TP. Vĩnh Long -> Phường Thanh Đức"
+    },
+    {
+      "entityId": "am-thuc-san-vuon-1985-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-long-chau",
+      "basis": "Ẩm Thực Sân Vườn 1985 tại TP. Vĩnh Long -> Phường Long Châu"
+    },
+    {
+      "entityId": "nha-hang-hai-san-song-tien-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-long-chau",
+      "basis": "Nhà hàng Hải Sản Sông Tiền bên bờ sông Tiền, TP. Vĩnh Long -> Phường Long Châu"
+    },
+    {
+      "entityId": "nha-hang-phuong-nam-ven-song-long-ho-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-long-ho",
+      "basis": "Nhà hàng Phương Nam ven bờ sông Long Hồ -> Phường Long Hồ"
+    },
+    {
+      "entityId": "mieu-ba-chua-xu-vinh-long-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-long-chau",
+      "basis": "Miếu Bà Chúa Xứ Vĩnh Long tại trung tâm TP. Vĩnh Long -> Phường Long Châu"
+    },
+    {
+      "entityId": "mi-tau-dinh-phong-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-phuoc-hau",
+      "basis": "Mì Tàu Đỉnh Phong trên đường Mậu Thân, Phường 3, TP. Vĩnh Long -> Phường Phước Hậu"
+    },
+    {
+      "entityId": "kem-dat-vinh-long-khu-cau-lau-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-long-chau",
+      "basis": "Kem Đất khu Cầu Lầu, đường Nguyễn Huệ, Phường 2, TP. Vĩnh Long -> Phường Long Châu"
+    },
+    {
+      "entityId": "com-chay-thanh-dam-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-long-chau",
+      "basis": "101 đường 2/9, Phường 1, TP. Vĩnh Long -> Phường Long Châu"
+    },
+    {
+      "entityId": "ben-pha-tran-phu-can-tho-vinh-long-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-cai-von",
+      "basis": "Bến phà vượt sông Hậu kết nối khu vực Bình Minh -> Phường Cái Vồn"
+    },
+    {
+      "entityId": "wifi-cong-cong-khu-vuc-trung-tam-tp-vinh-long-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-long-chau",
+      "basis": "Quảng trường trung tâm và bờ sông Cổ Chiên, Phường 1, TP. Vĩnh Long -> Phường Long Châu"
+    },
+    {
+      "entityId": "ben-pha-dinh-khao-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-thanh-duc",
+      "basis": "Bến phà Đình Khao trên Quốc lộ 57 (Phường 5 / Thanh Đức) -> Phường Thanh Đức"
+    },
+    {
+      "entityId": "ben-xe-tra-on-tich-thien-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-tra-on",
+      "basis": "Bến xe Trà Ôn / Tích Thiện trên Quốc lộ 54 -> Phường Trà Ôn"
+    },
+    {
+      "entityId": "tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-long-chau",
+      "basis": "Tổ chức tại trung tâm TP. Vĩnh Long -> Phường Long Châu"
+    },
+    {
+      "entityId": "giai-ban-marathon-vinh-long-mo-rong-hanh-trinh-trai-tim-mekong-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-long-chau",
+      "basis": "Cung đường chạy qua trung tâm TP. Vĩnh Long -> Phường Long Châu"
+    },
+    {
+      "entityId": "quan-com-chay-lac-vien-vinh-long",
+      "currentPlaceId": "xa-nhon-phu",
+      "verifiedPlaceId": "p-long-chau",
+      "basis": "Số 3 Phạm Hùng, Phường 2, TP. Vĩnh Long -> Phường Long Châu"
+    },
+    {
+      "entityId": "cua-cung-hau-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "xa-my-long",
+      "basis": "Cửa biển Cung Hầu nơi sông Cổ Chiên đổ ra biển thuộc vùng Mỹ Long -> Xã Mỹ Long"
+    },
+    {
+      "entityId": "song-hau-doan-cua-dinh-an-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "xa-dai-an",
+      "basis": "Cửa biển Định An thuộc vùng Đại An / Định An (Trà Cú) -> Xã Đại An"
+    },
+    {
+      "entityId": "bun-suong",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tra-vinh",
+      "basis": "Đường Điện Biên Phủ, Phường Trà Vinh -> Phường Trà Vinh"
+    },
+    {
+      "entityId": "dua-sap-sinh-to",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "xa-cau-ke",
+      "basis": "Đặc sản dừa sáp Cầu Kè -> Xã Cầu Kè"
+    },
+    {
+      "entityId": "cha-hoa-nam-thuy",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-nguyet-hoa",
+      "basis": "Cơ sở Chả hoa Năm Thụy tại đường Võ Nguyên Giáp, Phường 7/8, TP. Trà Vinh -> Phường Nguyệt Hóa"
+    },
+    {
+      "entityId": "banh-u-da-loc",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-hoa-thuan",
+      "basis": "Đặc sản bánh ú xã Đa Lộc, huyện Châu Thành -> Phường Hòa Thuận"
+    },
+    {
+      "entityId": "cho-tra-vinh-cho-trung-tam-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tra-vinh",
+      "basis": "Chợ trung tâm TP. Trà Vinh trên đường Điện Biên Phủ / Nguyễn Thị Minh Khai -> Phường Trà Vinh"
+    },
+    {
+      "entityId": "kenh-bong-bot-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "xa-an-phu-tan",
+      "basis": "Kênh Bông Bót thuộc hệ thống thủy lợi Cầu Kè (xã An Phú Tân) -> Xã An Phú Tân"
+    },
+    {
+      "entityId": "quan-com-tam-chu-tu-tra-cu-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "xa-tra-cu",
+      "basis": "Chợ Trà Cú, huyện Trà Cú -> Xã Trà Cú"
+    },
+    {
+      "entityId": "quan-bun-bo-hue-hai-lua-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tra-vinh",
+      "basis": "Đường Lê Lợi, Phường 2, TP. Trà Vinh -> Phường Trà Vinh"
+    },
+    {
+      "entityId": "nha-hang-song-que-tra-vinh-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-nguyet-hoa",
+      "basis": "Đường Nguyễn Đáng, TP. Trà Vinh -> Phường Nguyệt Hóa"
+    },
+    {
+      "entityId": "nha-hang-phu-sa-bo-song-tra-vinh-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tra-vinh",
+      "basis": "Đường Lê Lợi ven sông Long Bình, Phường 1, TP. Trà Vinh -> Phường Trà Vinh"
+    },
+    {
+      "entityId": "quan-ca-song-hai-bo-khu-vuc-cau-tra-vinh-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tra-vinh",
+      "basis": "Khu vực cầu Trà Vinh, TP. Trà Vinh -> Phường Trà Vinh"
+    },
+    {
+      "entityId": "nha-hang-thien-huong-tp-tra-vinh-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tra-vinh",
+      "basis": "Đường Đinh Tiên Hoàng, TP. Trà Vinh -> Phường Trà Vinh"
+    },
+    {
+      "entityId": "hu-tieu-xi-quach-a-linh-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tra-vinh",
+      "basis": "Đường Lê Lợi, TP. Trà Vinh -> Phường Trà Vinh"
+    },
+    {
+      "entityId": "ha-cao-chi-tu-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tra-vinh",
+      "basis": "Đường Nguyễn Thị Minh Khai, TP. Trà Vinh -> Phường Trà Vinh"
+    },
+    {
+      "entityId": "quan-bun-nuoc-leo-duong-dong-khoi-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tra-vinh",
+      "basis": "94A Đồng Khởi, Phường 6, TP. Trà Vinh -> Phường Trà Vinh"
+    },
+    {
+      "entityId": "quan-nhau-vuon-dua-tieu-can-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tieu-can",
+      "basis": "Khu vực Tiểu Cần -> Phường Tiểu Cần"
+    },
+    {
+      "entityId": "quan-com-ba-hai-cho-cang-long-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-cang-long",
+      "basis": "Chợ Càng Long -> Phường Càng Long"
+    },
+    {
+      "entityId": "quan-sinh-to-nuoc-ep-cho-dem-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tra-vinh",
+      "basis": "Khu chợ đêm đường Trần Phú - Lê Thánh Tôn, TP. Trà Vinh -> Phường Trà Vinh"
+    },
+    {
+      "entityId": "ca-phe-ho-sen-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tra-vinh",
+      "basis": "Đường Lý Thường Kiệt, TP. Trà Vinh -> Phường Trà Vinh"
+    },
+    {
+      "entityId": "quan-chay-chua-phat-hoc-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tra-vinh",
+      "basis": "Khu vực chùa Phật Học, đường Điện Biên Phủ, TP. Trà Vinh -> Phường Trà Vinh"
+    },
+    {
+      "entityId": "quan-banh-canh-ben-co-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-nguyet-hoa",
+      "basis": "Khu vực Bến Có, Nguyệt Hóa -> Phường Nguyệt Hóa"
+    },
+    {
+      "entityId": "quan-chay-tinh-xa-ngoc-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tra-vinh",
+      "basis": "Khu vực Tịnh Xá Ngọc Quang, đường Phạm Thái Bường, TP. Trà Vinh -> Phường Trà Vinh"
+    },
+    {
+      "entityId": "giai-marathon-tra-vinh-tra-vinh-marathon-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tra-vinh",
+      "basis": "Thành phố Trà Vinh -> Phường Trà Vinh"
+    },
+    {
+      "entityId": "hoi-thi-ghe-ngo-mo-rong-tinh-tra-vinh-dua-ghe-ngo-truyen-thong-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-tra-vinh",
+      "basis": "Sông Long Bình, TP. Trà Vinh -> Phường Trà Vinh"
+    },
+    {
+      "entityId": "quan-nhau-dong-que-cau-ke-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "xa-cau-ke",
+      "basis": "Khu vực Cầu Kè -> Xã Cầu Kè"
+    },
+    {
+      "entityId": "le-hoi-van-hoa-the-thao-du-lich-dong-bao-khmer-nam-bo-tinh-tra-vinh-tra-vinh",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-nguyet-hoa",
+      "basis": "Di tích quốc gia Ao Bà Om (Phường 8 cũ) -> Phường Nguyệt Hóa"
+    },
+    {
+      "entityId": "con-cu",
+      "currentPlaceId": "xa-nhi-long",
+      "verifiedPlaceId": "p-truong-long-hoa",
+      "basis": "Khu vực biển Ba Động -> Phường Trường Long Hòa"
+    },
+    {
+      "entityId": "lang-nghe-gach-gom-mang-thit-vuong-quoc-do",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "xa-nhon-phu",
+      "basis": "Ven sông Cổ Chiên và kênh Thầy Cai, xã Nhơn Phú -> Xã Nhơn Phú"
+    },
+    {
+      "entityId": "lang-nghe-hoa-kieng-thanh-tan",
+      "currentPlaceId": "p-ben-tre",
+      "verifiedPlaceId": "xa-phuoc-my-trung",
+      "basis": "Xã Thanh Tân, huyện Mỏ Cày Bắc cũ sáp nhập vào Xã Phước Mỹ Trung"
+    },
+    {
+      "entityId": "nuoc-mam-ruoi-long-vinh",
+      "currentPlaceId": "p-tra-vinh",
+      "verifiedPlaceId": "xa-long-vinh",
+      "basis": "Xã Long Vinh, Duyên Hải -> Xã Long Vinh"
+    },
+    {
+      "entityId": "lang-nghe-tom-kho-vinh-kim",
+      "currentPlaceId": "xa-cau-ngang",
+      "verifiedPlaceId": "xa-vinh-kim",
+      "basis": "Xã Vinh Kim, Cầu Ngang -> Xã Vinh Kim"
+    },
+    {
+      "entityId": "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao",
+      "currentPlaceId": "xa-long-hoa",
+      "verifiedPlaceId": "xa-hoa-minh",
+      "basis": "Xã Hòa Minh, Châu Thành -> Xã Hòa Minh"
+    },
+    {
+      "entityId": "full-house-coffee",
+      "currentPlaceId": "xa-quoi-thien",
+      "verifiedPlaceId": "p-long-chau",
+      "basis": "52/84 Nguyễn Huệ, Phường 2, TP. Vĩnh Long -> Phường Long Châu"
+    },
+    {
+      "entityId": "ba-nhi-bun-bo-hue-vinh-long",
+      "currentPlaceId": "xa-quoi-thien",
+      "verifiedPlaceId": "p-phuoc-hau",
+      "basis": "258 Nguyễn Văn Thiệt, Phường 3, TP. Vĩnh Long -> Phường Phước Hậu"
+    },
+    {
+      "entityId": "agribank-chi-nhanh-vinh-long-vinh-long",
+      "currentPlaceId": "xa-hieu-thanh",
+      "verifiedPlaceId": "p-long-chau",
+      "basis": "28 Hưng Đạo Vương, Phường 1, TP. Vĩnh Long -> Phường Long Châu"
+    },
+    {
+      "entityId": "cho-hoa-tet",
+      "currentPlaceId": "xa-phu-phung",
+      "verifiedPlaceId": "p-long-chau",
+      "basis": "Chợ hoa Tết ven sông TP. Vĩnh Long -> Phường Long Châu"
+    },
+    {
+      "entityId": "quan-com-175-ben-tre",
+      "currentPlaceId": "xa-quoi-dien",
+      "verifiedPlaceId": "p-phu-khuong",
+      "basis": "175 Đại lộ Đồng Khởi, TP. Bến Tre -> Phường Phú Khương"
+    },
+    {
+      "entityId": "ben-xe-vung-liem-vinh-long",
+      "currentPlaceId": "xa-hoa-hiep",
+      "verifiedPlaceId": "p-vung-liem",
+      "basis": "Bến xe Vũng Liêm trên Tỉnh lộ 902, trung tâm Vũng Liêm -> Phường Vũng Liêm"
+    },
+    {
+      "entityId": "nha-co-cai-cuong",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-an-binh",
+      "basis": "Nhà cổ Cai Cường tọa lạc trên cù lao An Bình -> Xã An Bình"
+    },
+    {
+      "entityId": "khu-du-lich-sinh-thai-miet-vuon-vinh-sang",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-an-binh",
+      "basis": "Khu sinh thái Vinh Sang trên cù lao An Bình -> Xã An Bình"
+    },
+    {
+      "entityId": "nha-vuon-tu-hien",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-an-binh",
+      "basis": "Nhà vườn Tư Hiền trên cù lao An Bình -> Xã An Bình"
+    },
+    {
+      "entityId": "khu-di-tich-luu-niem-chu-tich-pham-hung",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "p-long-ho",
+      "basis": "Xã Long Phước, huyện Long Hồ cũ -> Phường Long Hồ"
+    },
+    {
+      "entityId": "lang-ong-tien-quan-thong-che-dieu-bat-tuong-quan-nguyen-van-",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "p-tra-on",
+      "basis": "Ấp Giồng Thanh Bạch, xã Thiện Mỹ, huyện Trà Ôn -> Phường Trà Ôn"
+    },
+    {
+      "entityId": "vuon-chom-chom-ong-chin-hoan",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-an-binh",
+      "basis": "Vườn chôm chôm trên cù lao An Bình -> Xã An Bình"
+    },
+    {
+      "entityId": "nha-san-ong-muoi-day",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-an-binh",
+      "basis": "Nhà sàn gỗ giữa vườn trái cây cù lao An Bình -> Xã An Bình"
+    },
+    {
+      "entityId": "vuon-trai-cay-be-sau",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-an-binh",
+      "basis": "Vườn trái cây trên cù lao An Bình -> Xã An Bình"
+    },
+    {
+      "entityId": "vuon-trai-cay-bi-bo",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-an-binh",
+      "basis": "Vườn trái cây tại cù lao An Bình -> Xã An Bình"
+    },
+    {
+      "entityId": "vuon-trai-cay-6-tan",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-an-binh",
+      "basis": "Vườn trái cây ở cù lao An Bình -> Xã An Bình"
+    },
+    {
+      "entityId": "vuon-trai-cay-tam-loc",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-an-binh",
+      "basis": "Vườn trái cây trên cù lao An Bình -> Xã An Bình"
+    },
+    {
+      "entityId": "chom-chom-cau-ke",
+      "currentPlaceId": "p-tra-vinh",
+      "verifiedPlaceId": "xa-an-phu-tan",
+      "basis": "Trồng tập trung trên cù lao Tân Quy, huyện Cầu Kè -> Xã An Phú Tân"
+    },
+    {
+      "entityId": "nha-co-cau-ke",
+      "currentPlaceId": "p-tra-vinh",
+      "verifiedPlaceId": "xa-cau-ke",
+      "basis": "Nhà cổ ở huyện Cầu Kè -> Xã Cầu Kè"
+    },
+    {
+      "entityId": "quyt-duong-cau-ke",
+      "currentPlaceId": "p-tra-vinh",
+      "verifiedPlaceId": "xa-cau-ke",
+      "basis": "Vùng quýt đường ven sông Hậu ở Cầu Kè -> Xã Cầu Kè"
+    },
+    {
+      "entityId": "dua-sap",
+      "currentPlaceId": "p-tra-vinh",
+      "verifiedPlaceId": "xa-cau-ke",
+      "basis": "Đặc sản dừa sáp Cầu Kè -> Xã Cầu Kè"
+    },
+    {
+      "entityId": "canh-dong-mon-an-quang-huu",
+      "currentPlaceId": "p-tra-vinh",
+      "verifiedPlaceId": "xa-luu-nghiep-anh",
+      "basis": "Xã An Quảng Hữu, huyện Trà Cú cũ sáp nhập vào Xã Lưu Nghiệp Anh"
+    },
+    {
+      "entityId": "bot-nua-bot-khoai-mon-an-quang-huu",
+      "currentPlaceId": "p-tra-vinh",
+      "verifiedPlaceId": "xa-luu-nghiep-anh",
+      "basis": "Ấp Vàm, xã An Quảng Hữu, huyện Trà Cú cũ -> Xã Lưu Nghiệp Anh"
+    },
+    {
+      "entityId": "chom-chom-con-tan-quy",
+      "currentPlaceId": "p-tra-vinh",
+      "verifiedPlaceId": "xa-an-phu-tan",
+      "basis": "Cù lao Tân Quy thuộc Xã An Phú Tân"
+    },
+    {
+      "entityId": "quyt-duong-long-tri",
+      "currentPlaceId": "p-tra-vinh",
+      "verifiedPlaceId": "xa-binh-phu",
+      "basis": "Ấp Long Trị, xã Bình Phú, huyện Càng Long -> Xã Bình Phú"
+    },
+    {
+      "entityId": "cha-lua-thanh-cong",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "xa-hieu-phung",
+      "basis": "Xã Hiếu Phụng, huyện Vũng Liêm -> Xã Hiếu Phụng"
+    },
+    {
+      "entityId": "gach-nung-do-va-gom-khong-men-mang-thit",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "xa-nhon-phu",
+      "basis": "Sản phẩm đặc trưng vùng lò gạch Mang Thít -> Xã Nhơn Phú"
+    },
+    {
+      "entityId": "song-co-chien-doan-mang-thit",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "xa-nhon-phu",
+      "basis": "Đoạn sông Cổ Chiên chảy qua vùng lò gạch Mang Thít -> Xã Nhơn Phú"
+    },
+    {
+      "entityId": "gach-do-truyen-thong-mang-thit",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "xa-nhon-phu",
+      "basis": "Gạch đỏ truyền thống vùng lò gạch Mang Thít -> Xã Nhơn Phú"
+    },
+    {
+      "entityId": "tuong-dai-doc-binh-le-can-nguyen-giao",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "p-vung-liem",
+      "basis": "Ngã ba An Nhơn, TT Vũng Liêm -> Phường Vũng Liêm"
+    },
+    {
+      "entityId": "dai-tuong-niem-liet-si-le-can-nguyen-giao",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "p-vung-liem",
+      "basis": "Trung tâm Vũng Liêm -> Phường Vũng Liêm"
+    },
+    {
+      "entityId": "bun-rieu-cua-cho-mo-cay-ben-tre",
+      "currentPlaceId": "p-phu-khuong",
+      "verifiedPlaceId": "p-mo-cay",
+      "basis": "Khu vực chợ Mỏ Cày Nam -> Phường Mỏ Cày"
+    },
+    {
+      "entityId": "banh-canh-chu-bay-giong-trom-ben-tre",
+      "currentPlaceId": "p-phu-khuong",
+      "verifiedPlaceId": "xa-giong-trom",
+      "basis": "Gần chợ Giồng Trôm -> Xã Giồng Trôm"
+    },
+    {
+      "entityId": "bun-nuoc-leo-co-tu-mo-cay-ben-tre",
+      "currentPlaceId": "p-phu-khuong",
+      "verifiedPlaceId": "p-mo-cay",
+      "basis": "Thị trấn Mỏ Cày -> Phường Mỏ Cày"
+    },
+    {
+      "entityId": "hang-banh-uot-co-lan-cho-ba-tri-ben-tre",
+      "currentPlaceId": "p-phu-khuong",
+      "verifiedPlaceId": "p-ba-tri",
+      "basis": "Bên trong chợ Ba Tri -> Phường Ba Tri"
+    },
+    {
+      "entityId": "chua-long-thanh-ben-tre",
+      "currentPlaceId": "p-phu-khuong",
+      "verifiedPlaceId": "xa-giong-trom",
+      "basis": "Chùa Long Thạnh tại Giồng Trôm -> Xã Giồng Trôm"
+    },
+    {
+      "entityId": "muoi-ba-tri",
+      "currentPlaceId": "p-ben-tre",
+      "verifiedPlaceId": "xa-bao-thanh",
+      "basis": "Làng nghề muối Bảo Thạnh, Ba Tri -> Xã Bảo Thạnh"
+    },
+    {
+      "entityId": "khu-du-lich-lang-be",
+      "currentPlaceId": "p-ben-tre",
+      "verifiedPlaceId": "xa-giao-long",
+      "basis": "An Khánh, Châu Thành cũ -> Xã Giao Long"
+    },
+    {
+      "entityId": "lau-3-con-tep",
+      "currentPlaceId": "p-ben-tre",
+      "verifiedPlaceId": "p-mo-cay",
+      "basis": "Thị trấn Mỏ Cày Nam -> Phường Mỏ Cày"
+    },
+    {
+      "entityId": "hu-tieu-chay",
+      "currentPlaceId": "p-an-hoi",
+      "verifiedPlaceId": "p-mo-cay",
+      "basis": "Quốc lộ 60 ngang Mỏ Cày Nam -> Phường Mỏ Cày"
+    },
+    {
+      "entityId": "chua-soc-tro",
+      "currentPlaceId": "p-nguyet-hoa",
+      "verifiedPlaceId": "xa-luu-nghiep-anh",
+      "basis": "Ấp Sóc Trò, xã An Quảng Hữu, huyện Trà Cú cũ -> Xã Lưu Nghiệp Anh"
+    },
+    {
+      "entityId": "chua-hang-cha-lo",
+      "currentPlaceId": "p-nguyet-hoa",
+      "verifiedPlaceId": "xa-chau-thanh",
+      "basis": "TT Châu Thành, Trà Vinh cũ -> Xã Châu Thành"
+    }
+  ],
+  "mistypedEntities": [
+    {
+      "entityId": "tinh-binh-chay-vinh-long",
+      "name": "Tịnh Bình Chay",
+      "currentType": "dish",
+      "verifiedType": "restaurant",
+      "reason": ""
+    },
+    {
+      "entityId": "com-chay-au-lac-vinh-long",
+      "name": "Cơm Chay Âu Lạc",
+      "currentType": "dish",
+      "verifiedType": "restaurant",
+      "reason": ""
+    },
+    {
+      "entityId": "chao-ech-tran-nam",
+      "name": "Cháo Ếch Trần Nam",
+      "currentType": "dish",
+      "verifiedType": "restaurant",
+      "reason": ""
+    },
+    {
+      "entityId": "quan-tan-tan",
+      "name": "Quán Tân Tân",
+      "currentType": "experience",
+      "verifiedType": "restaurant",
+      "reason": ""
+    },
+    {
+      "entityId": "quan-pho-91",
+      "name": "Quán Phở 91",
+      "currentType": "experience",
+      "verifiedType": "restaurant",
+      "reason": ""
+    },
+    {
+      "entityId": "quan-lau-ga-noi-nha-san",
+      "name": "Quán Lẩu Gà Nòi Nhà Sàn",
+      "currentType": "experience",
+      "verifiedType": "restaurant",
+      "reason": ""
+    },
+    {
+      "entityId": "quan-lau-tai-co",
+      "name": "Quán Lẩu Tài Có",
+      "currentType": "experience",
+      "verifiedType": "restaurant",
+      "reason": ""
+    },
+    {
+      "entityId": "quan-met-bun-dau-mam-tom",
+      "name": "Quán Mẹt – Bún Đậu Mắm Tôm",
+      "currentType": "experience",
+      "verifiedType": "restaurant",
+      "reason": ""
+    },
+    {
+      "entityId": "quan-buffet-lau-nuong-kachu",
+      "name": "Quán Buffet lẩu nướng Kachu",
+      "currentType": "experience",
+      "verifiedType": "restaurant",
+      "reason": ""
+    },
+    {
+      "entityId": "quan-ca-phe-nha-gach-gom-duong-dai",
+      "name": "Quán cà phê Nhà Gạch Gốm Đương Đại",
+      "currentType": "experience",
+      "verifiedType": "cafe",
+      "reason": ""
+    },
+    {
+      "entityId": "quan-meo-u-kitchen",
+      "name": "Quán Mèo Ú Kitchen",
+      "currentType": "experience",
+      "verifiedType": "restaurant",
+      "reason": ""
+    },
+    {
+      "entityId": "meo-u-kitchen-vinh-long",
+      "name": "MÈO Ú kitchen Vĩnh Long",
+      "currentType": "experience",
+      "verifiedType": "restaurant",
+      "reason": ""
+    },
+    {
+      "entityId": "com-nieu-nam-bo",
+      "name": "Cơm Niêu Nam Bộ",
+      "currentType": "experience",
+      "verifiedType": "restaurant",
+      "reason": "Quán ăn phục vụ cơm niêu và món ăn dân dã Nam Bộ"
+    },
+    {
+      "entityId": "mi-tau-dinh-phong-vinh-long",
+      "name": "Mì Tàu Đỉnh Phong",
+      "currentType": "attraction",
+      "verifiedType": "restaurant",
+      "reason": "Quán mì tàu Đỉnh Phong trên đường Mậu Thân, Phường Phước Hậu"
+    },
+    {
+      "entityId": "ba-nhi-bun-bo-hue-vinh-long",
+      "name": "Ba Nhì - Bún Bò Huế",
+      "currentType": "dish",
+      "verifiedType": "restaurant",
+      "reason": "Quán bún bò Huế Ba Nhì tại 258 Nguyễn Văn Thiệt, Phường Phước Hậu"
+    },
+    {
+      "entityId": "hu-tieu-ba-phu",
+      "name": "Hủ Tiếu Ba Phú",
+      "currentType": "dish",
+      "verifiedType": "restaurant",
+      "reason": "Quán hủ tiếu Ba Phú trên Quốc lộ 57, Xã Phú Phụng"
+    },
+    {
+      "entityId": "bo-to-ba-tri---cac-mon-bo",
+      "name": "Bò Tơ Ba Tri - Các Món Bò",
+      "currentType": "dish",
+      "verifiedType": "restaurant",
+      "reason": "Quán chuyên bò tơ Ba Tri trên đường Nguyễn Thị Định, Phường Phú Khương"
+    },
+    {
+      "entityId": "goi-cuon-tom-thit-ba-hai-chau-thanh-ben-tre",
+      "name": "Gỏi cuốn tôm thịt Bà Hai Châu Thành",
+      "currentType": "attraction",
+      "verifiedType": "restaurant",
+      "reason": "Quán gỏi cuốn tôm thịt Bà Hai tại Châu Thành"
+    },
+    {
+      "entityId": "bun-nuoc-leo-cho-ba-tri-ben-tre",
+      "name": "Bún nước lèo chợ Ba Tri",
+      "currentType": "attraction",
+      "verifiedType": "restaurant",
+      "reason": "Quán bún nước lèo hải sản trong lồng chợ Ba Tri"
+    },
+    {
+      "entityId": "ca-phe-nha-co-vinh-long-khu-nha-co-huynh-thuy-le-vinh-long",
+      "name": "Cà phê Nhà Cổ Vĩnh Long (khu nhà cổ Huỳnh Thủy Lê)",
+      "currentType": "attraction",
+      "verifiedType": "cafe",
+      "reason": "Quán cà phê phong cách nhà cổ tại Phường Long Châu"
+    },
+    {
+      "entityId": "neyu-tea---thi-tran-giong-trom",
+      "name": "Neyu Tea - Giồng Trôm",
+      "currentType": "restaurant",
+      "verifiedType": "cafe",
+      "reason": "Quán trà và thức uống giải khát Neyu Tea tại số 849 ấp 6, Xã Giồng Trôm"
+    }
+  ],
+  "duplicateEntityClusters": [
+    {
+      "canonicalId": "khu-du-lich-somo-farm-cuu-long",
+      "duplicateIds": [
+        "khu-du-lich-s-mo-farm-cuu-long"
+      ]
+    },
+    {
+      "canonicalId": "chua-tuyen-linh",
+      "duplicateIds": [
+        "chua-tuyen-linh-ben-tre"
+      ]
+    },
+    {
+      "canonicalId": "bao-tang-van-hoa-dan-toc-khmer",
+      "duplicateIds": [
+        "bao-tang-van-hoa-dan-toc-khmer-tra-vinh",
+        "bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh"
+      ]
+    },
+    {
+      "canonicalId": "con-chim",
+      "duplicateIds": [
+        "con-chim-tra-vinh"
+      ]
+    },
+    {
+      "canonicalId": "den-tho-bac-ho-tra-vinh",
+      "duplicateIds": [
+        "den-tho-bac-ho"
+      ]
+    },
+    {
+      "canonicalId": "dinh-long-duc-tra-vinh",
+      "duplicateIds": [
+        "dinh-long-duc"
+      ]
+    },
+    {
+      "canonicalId": "du-lich-vuon-chu-7-gat",
+      "duplicateIds": [
+        "du-lich-vuon-chu-7-gat-vlt"
+      ]
+    },
+    {
+      "canonicalId": "lo-com-cuu-long-vlt",
+      "duplicateIds": [
+        "lo-com-cuu-long"
+      ]
+    },
+    {
+      "canonicalId": "nha-gom-tu-buoi",
+      "duplicateIds": [
+        "nha-gom-tu-buoi-w3",
+        "nha-gom-do-tu-buoi"
+      ]
+    },
+    {
+      "canonicalId": "that-phu-mieu-chua-ong",
+      "duplicateIds": [
+        "that-phu-mieu-chua-ong-vinh-long"
+      ]
+    },
+    {
+      "canonicalId": "meo-u-kitchen---mon-nhat",
+      "duplicateIds": [
+        "quan-meo-u-kitchen",
+        "meo-u-kitchen-vinh-long"
+      ]
+    },
+    {
+      "canonicalId": "lau-tai-co",
+      "duplicateIds": [
+        "quan-lau-tai-co"
+      ]
+    },
+    {
+      "canonicalId": "gom-do-mang-thit",
+      "duplicateIds": [
+        "lang-gach-gom-mang-thit",
+        "lang-nghe-gach-gom-mang-thit-vuong-quoc-do",
+        "lang-nghe-gom-do-mang-thit",
+        "lang-gach-gom-do-mang-thit"
+      ],
+      "reason": "5 bản ghi cùng mô tả Làng nghề gạch gốm đỏ Mang Thít ('Vương quốc đỏ' dọc sông Cổ Chiên và kênh Thầy Cai)."
+    },
+    {
+      "canonicalId": "chua-vam-ray-tra-vinh",
+      "duplicateIds": [
+        "chua-vam-ray",
+        "chua-vam-ray-chua-phat-nam",
+        "chua-vam-ray-wat-samrong"
+      ],
+      "reason": "4 bản ghi cùng mô tả Chùa Vàm Ray (Wat Vàm Rây) tại ấp Vàm Ray, xã Hàm Tân, huyện Trà Cú cũ (nay là Xã Hàm Giang)."
+    },
+    {
+      "canonicalId": "chua-hang-kompong-chray",
+      "duplicateIds": [
+        "chua-hang",
+        "chua-hang-wat-kompong-chray",
+        "chua-hang-cha-lo"
+      ],
+      "reason": "4 bản ghi cùng mô tả Chùa Hang (Wat Kompong Chrây) tại huyện Châu Thành, tỉnh Trà Vinh cũ (nay là Xã Châu Thành)."
+    },
+    {
+      "canonicalId": "khu-du-lich-sinh-thai-sala",
+      "duplicateIds": [
+        "du-lich-sinh-thai-sala"
+      ],
+      "reason": "2 bản ghi cùng mô tả Khu du lịch sinh thái Sala rộng 20 ha tại ấp Mỹ Phú Tân, xã Mỹ Thạnh Trung, huyện Tam Bình cũ (nay là Phường Tam Bình)."
+    }
+  ],
+  "truncatedSummaryFixes": [
+    {
+      "entityId": "p-hoa-thuan",
+      "name": "Phường Hòa Thuận",
+      "currentSummary": "Phường Hòa Thuận thuộc tỉnh Vĩnh Long, sáp nhập từ Phường 5 (TP Trà Vinh) và xã Hòa Thuận (H.",
+      "verifiedSummary": "Phường Hòa Thuận thuộc tỉnh Vĩnh Long, hình thành từ sáp nhập Phường 5 (TP. Trà Vinh cũ) và xã Hòa Thuận (huyện Châu Thành cũ).",
+      "verifiedDescription": "Phường Hòa Thuận thuộc tỉnh Vĩnh Long, hình thành từ sáp nhập Phường 5 (TP. Trà Vinh cũ) và xã Hòa Thuận (huyện Châu Thành, tỉnh Trà Vinh cũ)."
+    },
+    {
+      "entityId": "p-nguyet-hoa",
+      "name": "Phường Nguyệt Hóa",
+      "currentSummary": "Phường Nguyệt Hóa, tỉnh Vĩnh Long, hợp nhất từ Phường 7, Phường 8 (TP Trà Vinh) và xã Nguyệt Hóa (H.",
+      "verifiedSummary": "Phường Nguyệt Hóa thuộc tỉnh Vĩnh Long, hợp nhất từ Phường 7, Phường 8 (TP. Trà Vinh cũ) và xã Nguyệt Hóa (huyện Châu Thành cũ).",
+      "verifiedDescription": "Phường Nguyệt Hóa thuộc tỉnh Vĩnh Long, hợp nhất từ Phường 7, Phường 8 (TP. Trà Vinh cũ) và xã Nguyệt Hóa (huyện Châu Thành, tỉnh Trà Vinh cũ)."
+    },
+    {
+      "entityId": "p-phuoc-hau",
+      "name": "Phường Phước Hậu",
+      "currentSummary": "Phường Phước Hậu, tỉnh Vĩnh Long, hợp nhất từ Phường 3, Phường 4 (TP Vĩnh Long) và xã Phước Hậu (H.",
+      "verifiedSummary": "Phường Phước Hậu thuộc tỉnh Vĩnh Long, hợp nhất từ Phường 3, Phường 4 (TP. Vĩnh Long cũ) và xã Phước Hậu (huyện Long Hồ cũ).",
+      "verifiedDescription": "Phường Phước Hậu thuộc tỉnh Vĩnh Long, hợp nhất từ Phường 3, Phường 4 (TP. Vĩnh Long cũ) và xã Phước Hậu (huyện Long Hồ cũ)."
+    },
+    {
+      "entityId": "p-tan-hanh",
+      "name": "Phường Tân Hạnh",
+      "currentSummary": "Phường Tân Hạnh thuộc tỉnh Vĩnh Long, gộp từ Phường 8 (TP Vĩnh Long) và xã Tân Hạnh (H.",
+      "verifiedSummary": "Phường Tân Hạnh thuộc tỉnh Vĩnh Long, gộp từ Phường 8 (TP. Vĩnh Long cũ) và xã Tân Hạnh (huyện Long Hồ cũ).",
+      "verifiedDescription": "Phường Tân Hạnh thuộc tỉnh Vĩnh Long, gộp từ Phường 8 (TP. Vĩnh Long cũ) và xã Tân Hạnh (huyện Long Hồ cũ)."
+    },
+    {
+      "entityId": "p-thanh-duc",
+      "name": "Phường Thanh Đức",
+      "currentSummary": "Phường Thanh Đức thuộc TP Vĩnh Long + H, tỉnh Vĩnh Long, ra đời khi Phường 5 (TP Vĩnh Long) và xã Thanh Đức (H.",
+      "verifiedSummary": "Phường Thanh Đức thuộc tỉnh Vĩnh Long, hình thành từ sáp nhập Phường 5 (TP. Vĩnh Long cũ) và xã Thanh Đức (huyện Long Hồ cũ).",
+      "verifiedDescription": "Phường Thanh Đức thuộc tỉnh Vĩnh Long, hình thành từ sáp nhập Phường 5 (TP. Vĩnh Long cũ) và xã Thanh Đức (huyện Long Hồ cũ)."
+    },
+    {
+      "entityId": "xa-hung-khanh-trung",
+      "name": "Xã Hưng Khánh Trung",
+      "currentSummary": "Xã Hưng Khánh Trung thuộc huyện Chợ Lách + H, tỉnh Bến Tre, ra đời khi xã Vĩnh Hòa, xã Hưng Khánh Trung B (H.",
+      "verifiedSummary": "Xã Hưng Khánh Trung thuộc tỉnh Vĩnh Long, hình thành từ sáp nhập xã Vĩnh Hòa, xã Hưng Khánh Trung B (huyện Chợ Lách cũ) và xã Hưng Khánh Trung A (huyện Mỏ Cày Bắc cũ).",
+      "verifiedDescription": "Xã Hưng Khánh Trung thuộc tỉnh Vĩnh Long, hình thành từ sáp nhập xã Vĩnh Hòa, xã Hưng Khánh Trung B (huyện Chợ Lách, tỉnh Bến Tre cũ) và xã Hưng Khánh Trung A (huyện Mỏ Cày Bắc, tỉnh Bến Tre cũ)."
+    },
+    {
+      "entityId": "xa-ngai-tu",
+      "name": "Xã Ngãi Tứ",
+      "currentSummary": "Xã Ngãi Tứ thuộc tỉnh Vĩnh Long, sáp nhập từ xã Loan Mỹ và xã Bình Ninh, một phần xã Ngãi Tứ, một phần TT Trà Ôn của huyện Tam Bình + H.",
+      "verifiedSummary": "Xã Ngãi Tứ thuộc tỉnh Vĩnh Long, sáp nhập từ xã Loan Mỹ, xã Bình Ninh, một phần xã Ngãi Tứ (huyện Tam Bình cũ) và một phần thị trấn Trà Ôn (huyện Trà Ôn cũ).",
+      "verifiedDescription": "Xã Ngãi Tứ thuộc tỉnh Vĩnh Long, sáp nhập từ xã Loan Mỹ, xã Bình Ninh, một phần xã Ngãi Tứ (huyện Tam Bình cũ) và một phần thị trấn Trà Ôn (huyện Trà Ôn cũ)."
+    },
+    {
+      "entityId": "xa-ngu-lac",
+      "name": "Xã Ngũ Lạc",
+      "currentSummary": "Xã Ngũ Lạc thuộc tỉnh Vĩnh Long, sáp nhập từ xã Ngũ Lạc (H. Duyên Hải) và xã Thạnh Hòa Sơn (H.",
+      "verifiedSummary": "Xã Ngũ Lạc thuộc tỉnh Vĩnh Long, sáp nhập từ xã Ngũ Lạc (huyện Duyên Hải cũ) và xã Thạnh Hòa Sơn (huyện Cầu Ngang cũ).",
+      "verifiedDescription": "Xã Ngũ Lạc thuộc tỉnh Vĩnh Long, sáp nhập từ xã Ngũ Lạc (huyện Duyên Hải, tỉnh Trà Vinh cũ) và xã Thạnh Hòa Sơn (huyện Cầu Ngang, tỉnh Trà Vinh cũ)."
+    },
+    {
+      "entityId": "xa-tra-con",
+      "name": "Xã Trà Côn",
+      "currentSummary": "Xã Trà Côn, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Nhơn Bình, xã Trà Côn và xã Tân Mỹ, một phần TT Tam Bình thuộc huyện Trà Ôn + H.",
+      "verifiedSummary": "Xã Trà Côn thuộc tỉnh Vĩnh Long, hình thành từ sáp nhập xã Nhơn Bình, xã Trà Côn, xã Tân Mỹ (huyện Trà Ôn cũ) và một phần thị trấn Tam Bình (huyện Tam Bình cũ).",
+      "verifiedDescription": "Xã Trà Côn thuộc tỉnh Vĩnh Long, hình thành từ sáp nhập xã Nhơn Bình, xã Trà Côn, xã Tân Mỹ (huyện Trà Ôn cũ) và một phần thị trấn Tam Bình (huyện Tam Bình cũ)."
+    },
+    {
+      "entityId": "atm-vietcombank-benh-vien-da-khoa-tinh-vinh-long",
+      "name": "ATM Vietcombank – Bệnh viện Đa khoa tỉnh",
+      "currentSummary": "Atm. 301 Trần Phú, Phường 4, TP. Vĩnh Long (tại khuôn viên bệnh viện). Hỗ trợ thẻ 24/7).",
+      "verifiedSummary": "Trụ ATM Vietcombank tại khuôn viên Bệnh viện Đa khoa tỉnh Vĩnh Long (số 301 Trần Phú, Phường Phước Hậu), hỗ trợ giao dịch thẻ 24/7.",
+      "verifiedDescription": "Trụ ATM Vietcombank đặt tại khuôn viên Bệnh viện Đa khoa tỉnh Vĩnh Long — số 301 đường Trần Phú, Phường Phước Hậu, tỉnh Vĩnh Long (Phường 4, TP. Vĩnh Long cũ), hoạt động 24/7."
+    },
+    {
+      "entityId": "ca-phe-nha-co-vinh-long-khu-nha-co-huynh-thuy-le-vinh-long",
+      "name": "Cà phê Nhà Cổ Vĩnh Long (khu nhà cổ Huỳnh Thủy Lê)",
+      "currentSummary": "Quán cà phê trong khu nhà cổ Huỳnh Thủy Lê, đường 1/5, phường 1 TP.",
+      "verifiedSummary": "Quán cà phê phong cách hoài cổ trên đường 1 Tháng 5, Phường Long Châu, tỉnh Vĩnh Long — phục vụ cà phê vợt, cà phê phin truyền thống từ 07:00 đến 21:00.",
+      "verifiedDescription": "Quán cà phê phong cách nhà cổ trên đường 1 Tháng 5, Phường Long Châu, tỉnh Vĩnh Long (Phường 1, TP. Vĩnh Long cũ), nổi bật với không gian hoài niệm và cà phê phin truyền thống."
+    },
+    {
+      "entityId": "ca-phe-song-tien-ben-ninh-kieu-vinh-long-vinh-long",
+      "name": "Cà phê Sông Tiền – bến Ninh Kiều Vĩnh Long",
+      "currentSummary": "Cà phê bên bờ sông Cổ Chiên, đường Trưng Nữ Vương, phường 1 TP.",
+      "verifiedSummary": "Quán cà phê ven bờ sông Cổ Chiên trên đường Trưng Nữ Vương, Phường Long Châu, tỉnh Vĩnh Long — tầm nhìn thoáng đãng ngắm ghe thuyền qua lại.",
+      "verifiedDescription": "Quán cà phê bên bờ sông Cổ Chiên trên đường Trưng Nữ Vương, Phường Long Châu, tỉnh Vĩnh Long (Phường 1, TP. Vĩnh Long cũ), sở hữu tầm nhìn sông nước thoáng mát."
+    },
+    {
+      "entityId": "quan-che-ba-hai-cho-tra-vinh",
+      "name": "Quán chè bà Hai - chợ Trà Vinh",
+      "currentSummary": "Quán đặt tại Khu chợ trung tâm, đường Trần Phú, phường 3, TP.",
+      "verifiedSummary": "Quán chè truyền thống tại khu chợ trung tâm trên đường Trần Phú, Phường Trà Vinh — nổi tiếng với chè đậu trắng nước cốt dừa và chè bà ba.",
+      "verifiedDescription": "Quán chè Bà Hai tại khu chợ trung tâm trên đường Trần Phú, Phường Trà Vinh, tỉnh Vĩnh Long (Phường 3, TP. Trà Vinh cũ), chuyên phục vụ chè đậu trắng nước cốt dừa và chè bà ba truyền thống."
+    },
+    {
+      "entityId": "ca-phe-bo-song-tra-vinh",
+      "name": "Cà phê Bờ Sông Trà Vinh",
+      "currentSummary": "Quán đặt tại Đường Lê Lợi, ven sông Long Bình, phường 1, TP.",
+      "verifiedSummary": "Quán cà phê võng mát mẻ trên đường Lê Lợi ven sông Long Bình, Phường Trà Vinh, tỉnh Vĩnh Long.",
+      "verifiedDescription": "Quán cà phê Bờ Sông trên đường Lê Lợi ven sông Long Bình, Phường Trà Vinh, tỉnh Vĩnh Long (Phường 1, TP. Trà Vinh cũ), phục vụ cà phê sữa đá và nước giải khát."
+    },
+    {
+      "entityId": "quan-sinh-to-nuoc-ep-cho-dem-tra-vinh",
+      "name": "Quán sinh tố - nước ép chợ đêm Trà Vinh",
+      "currentSummary": "Quán đặt tại Khu chợ đêm đường Trần Phú - Lê Thánh Tôn, TP.",
+      "verifiedSummary": "Quầy sinh tố và nước ép tại khu chợ đêm đường Trần Phú – Lê Thánh Tôn, Phường Trà Vinh, nổi bật với món sinh tố bơ dừa sáp.",
+      "verifiedDescription": "Quán sinh tố – nước ép tại khu chợ đêm đường Trần Phú – Lê Thánh Tôn, Phường Trà Vinh, tỉnh Vĩnh Long (TP. Trà Vinh cũ), chuyên phục vụ sinh tố bơ dừa sáp Trà Vinh và nước ép trái cây tươi."
+    },
+    {
+      "entityId": "quan-chay-chua-phat-hoc-tra-vinh",
+      "name": "Quán chay chùa Phật Học Trà Vinh",
+      "currentSummary": "Quán đặt tại Khu vực chùa Phật Học, đường Điện Biên Phủ, TP.",
+      "verifiedSummary": "Quán ăn chay thanh đạm gần chùa Phật Học trên đường Điện Biên Phủ, Phường Trà Vinh — phục vụ cơm chay, bún chay và các món đậu hũ.",
+      "verifiedDescription": "Quán chay khu vực chùa Phật Học trên đường Điện Biên Phủ, Phường Trà Vinh, tỉnh Vĩnh Long (TP. Trà Vinh cũ), chuyên phục vụ cơm chay, bún chay và các món rau củ thanh đạm."
+    },
+    {
+      "entityId": "quan-com-chay-gan-chua-ang-angkor-rajaborei-tra-vinh",
+      "name": "Quán cơm chay gần chùa Âng (Angkor Rajaborei)",
+      "currentSummary": "Quán đặt tại Khu vực chùa Âng, đường Ngô Quyền, Phường 1, TP.",
+      "verifiedSummary": "Quán cơm chay bình dân gần khu vực Chùa Âng trên đường Ngô Quyền, Phường Nguyệt Hóa — phục vụ cơm chay, canh chua chay và đậu hũ kho sả ớt.",
+      "verifiedDescription": "Quán cơm chay gần khu di tích Chùa Âng (Angkor Rajaborei) trên đường Ngô Quyền, Phường Nguyệt Hóa, tỉnh Vĩnh Long, phục vụ cơm chay, canh chua chay và đậu hũ kho sả ớt."
+    },
+    {
+      "entityId": "quan-chay-tinh-xa-ngoc-tra-vinh",
+      "name": "Quán chay Tịnh Xá Ngọc Trà Vinh",
+      "currentSummary": "Quán đặt tại Khu vực Tịnh Xá Ngọc Quang, đường Phạm Thái Bường, TP.",
+      "verifiedSummary": "Quán ăn chay gần Tịnh xá Ngọc Quang trên đường Phạm Thái Bường, Phường Trà Vinh — chuyên bún chay, xôi chay, bánh bèo chay và nước thảo dược.",
+      "verifiedDescription": "Quán chay khu vực Tịnh xá Ngọc Quang trên đường Phạm Thái Bường, Phường Trà Vinh, tỉnh Vĩnh Long, phục vụ bún chay, xôi chay, bánh bèo chay và nước uống thảo dược."
+    },
+    {
+      "entityId": "di-san-lo-gach-mang-thit-kenh-thay-cai",
+      "name": "Khu Di Sản Lò Gạch Mang Thít – Kênh Thầy Cai",
+      "currentSummary": "17 thg 7, 2024 · Quy mô khu vực lập quy hoạch khoảng 3.060ha.",
+      "verifiedSummary": "Khu Di sản đương đại lò gạch Mang Thít dọc kênh Thầy Cai thuộc Xã Cái Nhum và Xã Nhơn Phú, quy mô quy hoạch bảo tồn khoảng 3.060 ha.",
+      "verifiedDescription": "Khu Di sản Lò Gạch Mang Thít – Kênh Thầy Cai trải dài hơn 30 km ven sông Cổ Chiên và kênh Thầy Cai với quy mô quy hoạch khoảng 3.060 ha, bảo tồn hàng trăm lò gạch gốm đỏ hình thành từ đầu thế kỷ XX."
+    },
+    {
+      "entityId": "tinh-binh-chay-vinh-long",
+      "name": "Tịnh Bình Chay",
+      "currentSummary": "Quán chay Phật giáo Tịnh Bình tại 110A Trần Đại Nghĩa, phường 4 TP.",
+      "verifiedSummary": "Quán chay Phật giáo Tịnh Bình tại số 110A Trần Đại Nghĩa, Phường Phước Hậu — chuyên bì cuốn chay, gỏi cuốn chay và lẩu chay thanh đạm.",
+      "verifiedDescription": "Quán chay Phật giáo Tịnh Bình tại số 110A đường Trần Đại Nghĩa, Khóm 3, Phường Phước Hậu, tỉnh Vĩnh Long (Phường 4, TP. Vĩnh Long cũ), chuyên phục vụ bì cuốn chay, gỏi cuốn chay và lẩu chay từ 08:30 đến 21:30."
+    }
+  ],
+  "placeSelfIdFixes": [
+    {
+      "entityId": "p-binh-minh",
+      "name": "Phường Bình Minh",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "p-binh-minh",
+      "basis": "Thực thể hành chính cấp xã/phường (p-binh-minh) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "p-cai-von",
+      "name": "Phường Cái Vồn",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "p-cai-von",
+      "basis": "Thực thể hành chính cấp xã/phường (p-cai-von) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "p-dong-thanh",
+      "name": "Phường Đông Thành",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "p-dong-thanh",
+      "basis": "Thực thể hành chính cấp xã/phường (p-dong-thanh) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "p-long-ho",
+      "name": "Phường Long Hồ",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "p-long-ho",
+      "basis": "Thực thể hành chính cấp xã/phường (p-long-ho) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "p-phuoc-hau",
+      "name": "Phường Phước Hậu",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "p-phuoc-hau",
+      "basis": "Thực thể hành chính cấp xã/phường (p-phuoc-hau) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "p-tam-binh",
+      "name": "Phường Tam Bình",
+      "currentPlaceId": "p-phuoc-hau",
+      "verifiedPlaceId": "p-tam-binh",
+      "basis": "Thực thể hành chính cấp xã/phường (p-tam-binh) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "p-tan-hanh",
+      "name": "Phường Tân Hạnh",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "p-tan-hanh",
+      "basis": "Thực thể hành chính cấp xã/phường (p-tan-hanh) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "p-tan-ngai",
+      "name": "Phường Tân Ngãi",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "p-tan-ngai",
+      "basis": "Thực thể hành chính cấp xã/phường (p-tan-ngai) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "p-tan-quoi",
+      "name": "Phường Tân Quới",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "p-tan-quoi",
+      "basis": "Thực thể hành chính cấp xã/phường (p-tan-quoi) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "p-thanh-duc",
+      "name": "Phường Thanh Đức",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "p-thanh-duc",
+      "basis": "Thực thể hành chính cấp xã/phường (p-thanh-duc) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "p-tra-on",
+      "name": "Phường Trà Ôn",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "p-tra-on",
+      "basis": "Thực thể hành chính cấp xã/phường (p-tra-on) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "vinh-long",
+      "name": "Tỉnh Vĩnh Long",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "vinh-long",
+      "basis": "Thực thể hành chính cấp xã/phường (vinh-long) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-an-binh",
+      "name": "Xã An Bình",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-an-binh",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-an-binh) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-an-ngai-trung",
+      "name": "Xã An Ngãi Trung",
+      "currentPlaceId": "xa-trung-ngai",
+      "verifiedPlaceId": "xa-an-ngai-trung",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-an-ngai-trung) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-an-phu-tan",
+      "name": "Xã An Phú Tân",
+      "currentPlaceId": "xa-tan-an",
+      "verifiedPlaceId": "xa-an-phu-tan",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-an-phu-tan) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-binh-phuoc",
+      "name": "Xã Bình Phước",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-binh-phuoc",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-binh-phuoc) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-cai-nhum",
+      "name": "Xã Cái Nhum",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-cai-nhum",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-cai-nhum) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-hieu-phung",
+      "name": "Xã Hiếu Phụng",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-hieu-phung",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-hieu-phung) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-hieu-thanh",
+      "name": "Xã Hiếu Thành",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-hieu-thanh",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-hieu-thanh) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-hoa-binh",
+      "name": "Xã Hòa Bình",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-hoa-binh",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-hoa-binh) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-hoa-hiep",
+      "name": "Xã Hòa Hiệp",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-hoa-hiep",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-hoa-hiep) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-luc-si-thanh",
+      "name": "Xã Lục Sĩ Thành",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-luc-si-thanh",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-luc-si-thanh) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-my-thuan",
+      "name": "Xã Mỹ Thuận",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-my-thuan",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-my-thuan) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-ngai-tu",
+      "name": "Xã Ngãi Tứ",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-ngai-tu",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-ngai-tu) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-nhon-phu",
+      "name": "Xã Nhơn Phú",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-nhon-phu",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-nhon-phu) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-nhuan-phu-tan",
+      "name": "Xã Nhuận Phú Tân",
+      "currentPlaceId": "xa-tan-phu",
+      "verifiedPlaceId": "xa-nhuan-phu-tan",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-nhuan-phu-tan) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-phu-quoi",
+      "name": "Xã Phú Quới",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-phu-quoi",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-phu-quoi) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-quoi-an",
+      "name": "Xã Quới An",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-quoi-an",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-quoi-an) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-quoi-thien",
+      "name": "Xã Quới Thiện",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-quoi-thien",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-quoi-thien) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-song-phu",
+      "name": "Xã Song Phú",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-song-phu",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-song-phu) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-tan-long-hoi",
+      "name": "Xã Tân Long Hội",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-tan-long-hoi",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-tan-long-hoi) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-tan-luoc",
+      "name": "Xã Tân Lược",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-tan-luoc",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-tan-luoc) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-tra-con",
+      "name": "Xã Trà Côn",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-tra-con",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-tra-con) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-trung-hiep",
+      "name": "Xã Trung Hiệp",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-trung-hiep",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-trung-hiep) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-trung-ngai",
+      "name": "Xã Trung Ngãi",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-trung-ngai",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-trung-ngai) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-vinh-thanh",
+      "name": "Xã Vĩnh Thành",
+      "currentPlaceId": "xa-long-thanh",
+      "verifiedPlaceId": "xa-vinh-thanh",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-vinh-thanh) phải có placeId trùng với chính id của nó."
+    },
+    {
+      "entityId": "xa-vinh-xuan",
+      "name": "Xã Vĩnh Xuân",
+      "currentPlaceId": "p-long-chau",
+      "verifiedPlaceId": "xa-vinh-xuan",
+      "basis": "Thực thể hành chính cấp xã/phường (xa-vinh-xuan) phải có placeId trùng với chính id của nó."
+    }
+  ]
+}
