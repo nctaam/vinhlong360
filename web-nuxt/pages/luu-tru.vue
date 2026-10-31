@@ -27,16 +27,6 @@
       </ul>
     </section>
 
-    <CatalogAeoPlaque
-      title="Chỉ dẫn lưu trú Vĩnh Long — Thức dậy cùng nhịp sống cù lao"
-      kicker="Mẹo chọn chỗ nghỉ · Thực địa miệt vườn"
-      accent="river"
-      icon="home"
-      :entries="catalogAeoEntries"
-      cta-to="/ban-do"
-      cta-label="Xem vị trí các homestay trên bản đồ số"
-    />
-
     <!-- Spotlight nổi bật -->
     <CatalogSpotlight :items="allEntities" color-recipe="tri-region-v1" />
 
@@ -48,6 +38,9 @@
       <p class="section-desc">Mỗi kiểu ở là một nhịp sống khác nhau — chọn theo cách bạn muốn mở mắt buổi sáng, không phải theo hạng sao.</p>
       <div class="stay-triad">
         <article v-for="s in stayTypes" :key="s.key" class="stay-tile" :class="`stay-${s.key}`">
+          <div class="stay-tile-media">
+            <img :src="s.coverSrc" :alt="s.title" loading="lazy" decoding="async" width="360" height="225" />
+          </div>
           <span class="stay-tile-motif" aria-hidden="true" v-html="s.motif"></span>
           <p class="stay-tile-kicker">{{ s.kicker }}</p>
           <h3 class="stay-tile-title">{{ s.title }}</h3>
@@ -71,7 +64,10 @@
           :aria-pressed="areaFilter === key"
           @click="toggleAreaAndScroll(key as string)"
         >
-          <span class="rw-motif" :class="`rw-${key}`" aria-hidden="true"><IconLine :name="meta.icon || 'pin'" /></span>
+          <div class="rw-head">
+            <img :src="regionThumb(key as string)" :alt="meta.name" class="rw-thumb" loading="lazy" decoding="async" width="48" height="48" />
+            <span class="rw-motif" :class="`rw-${key}`" aria-hidden="true"><IconLine :name="meta.icon || 'pin'" /></span>
+          </div>
           <span class="rw-name">{{ meta.name }}</span>
           <span class="rw-count">{{ countByArea(key as string) }} chỗ ở</span>
           <span class="rw-blurb">{{ meta.blurb }}</span>
@@ -156,6 +152,16 @@
       </EmptyState>
     </section>
 
+    <CatalogAeoPlaque
+      title="Chỉ dẫn lưu trú Vĩnh Long — Thức dậy cùng nhịp sống cù lao"
+      kicker="Mẹo chọn chỗ nghỉ · Thực địa miệt vườn"
+      accent="river"
+      icon="home"
+      :entries="catalogAeoEntries"
+      cta-to="/ban-do"
+      cta-label="Xem vị trí các homestay trên bản đồ số"
+    />
+
     <CatalogFaqAccordion
       :items="STAY_CATALOG_FAQS"
       title="Hỏi đáp lưu trú & homestay Vĩnh Long"
@@ -217,6 +223,7 @@ const stayTypes = [
     persona: 'ngủ giữa vườn, ăn cơm chủ nhà nấu, không phiền đường xa',
     price: 'Thường 200.000–500.000đ/đêm, có bữa sáng',
     motif: nhaMotif,
+    coverSrc: '/img/spread/cu-lao-an-binh-640.webp',
   },
   {
     key: 'resort',
@@ -226,6 +233,7 @@ const stayTypes = [
     persona: 'nghỉ dưỡng thong thả mà vẫn thấy sông',
     price: 'Thường 800.000–2.000.000đ/đêm',
     motif: natureMotif,
+    coverSrc: '/img/spread/song-nuoc-640.webp',
   },
   {
     key: 'hotel',
@@ -235,8 +243,19 @@ const stayTypes = [
     persona: 'đi công việc hoặc chỉ ghé qua một đêm',
     price: 'Thường 150.000–600.000đ/đêm',
     motif: attractionMotif,
+    coverSrc: '/img/cat-luu-tru.webp',
   },
 ]
+
+const REGION_THUMBS: Record<string, string> = {
+  'vinh-long': '/img/area-vinh-long.webp',
+  'ben-tre': '/img/area-ben-tre.webp',
+  'tra-vinh': '/img/area-tra-vinh.webp',
+  'lien-vung': '/img/spread/song-nuoc-640.webp',
+}
+function regionThumb(key: string): string {
+  return REGION_THUMBS[key] || '/img/area-vinh-long.webp'
+}
 
 const { data, error: fetchError } = await useAsyncData('catalog-accommodation', () =>
   apiFetch<{ entities: Entity[] }>('/api/entities?type=accommodation&limit=200')
@@ -450,6 +469,23 @@ useHead(() => {
   color: var(--color-brand);
 }
 .stay-tile:hover { background: color-mix(in srgb, var(--bg-warm) 55%, transparent); }
+.stay-tile-media {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radius-surface);
+  overflow: hidden;
+  margin-bottom: var(--space-3);
+  background: var(--bg-warm);
+  border: 1px solid var(--line);
+}
+.stay-tile-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .stay-tile-motif {
   position: absolute; right: -10%; bottom: -12%; z-index: 0;
   width: 96px; height: 96px; opacity: .1; color: var(--color-brand);
@@ -531,6 +567,22 @@ useHead(() => {
 }
 .dark .region-window.active::after {
   background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+}
+.rw-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.rw-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-control);
+  object-fit: cover;
+  border: 1px solid var(--line);
+  flex-shrink: 0;
 }
 .rw-motif {
   font-size: 1.6rem;

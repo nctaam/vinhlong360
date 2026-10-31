@@ -115,15 +115,17 @@
 
       <div class="gazetteer-tabs" role="tablist" aria-label="Danh mục niên giám bản địa">
         <button
-          v-for="t in gazetteerTabs"
+          v-for="(t, idx) in gazetteerTabs"
           :key="t.id"
           type="button"
           role="tab"
           class="gazetteer-tab"
           :class="{ active: activeGazetteerTab === t.id }"
           :aria-selected="activeGazetteerTab === t.id"
+          :tabindex="activeGazetteerTab === t.id ? 0 : -1"
           :aria-controls="`gazetteer-panel-${t.id}`"
           @click="activeGazetteerTab = t.id"
+          @keydown="onGazetteerTabKeydown($event, idx)"
         >
           <IconLine :name="t.icon" aria-hidden="true" />
           <span>{{ t.label }}</span>
@@ -153,7 +155,10 @@
             <span class="entry-tag">{{ item.tag }}</span>
             <SourceMark tier="official" compact />
           </div>
-          <h4 class="entry-title">{{ item.name }}</h4>
+          <div class="entry-title-row">
+            <img :src="gazetteerThumb(item.id)" :alt="item.name" class="entry-thumb" loading="lazy" decoding="async" width="52" height="52" />
+            <h4 class="entry-title">{{ item.name }}</h4>
+          </div>
           <p class="entry-lead"><strong>Nghệ nhân / Đại diện:</strong> {{ item.lead }}</p>
           <p class="entry-locality"><IconLine name="pin" aria-hidden="true" /> {{ item.locality }}</p>
           <p class="entry-address">{{ item.address }}</p>
@@ -200,7 +205,10 @@
             <span class="entry-tag entry-tag--orchard">{{ item.tag }}</span>
             <SourceMark tier="official" compact />
           </div>
-          <h4 class="entry-title">{{ item.name }}</h4>
+          <div class="entry-title-row">
+            <img :src="gazetteerThumb(item.id)" :alt="item.name" class="entry-thumb" loading="lazy" decoding="async" width="52" height="52" />
+            <h4 class="entry-title">{{ item.name }}</h4>
+          </div>
           <p class="entry-lead"><strong>Chủ vườn / Hợp tác xã:</strong> {{ item.lead }}</p>
           <p class="entry-locality"><IconLine name="pin" aria-hidden="true" /> {{ item.locality }}</p>
           <p class="entry-address">{{ item.address }}</p>
@@ -247,7 +255,10 @@
             <span class="entry-tag entry-tag--pier">{{ item.tag }}</span>
             <SourceMark tier="official" compact />
           </div>
-          <h4 class="entry-title">{{ item.name }}</h4>
+          <div class="entry-title-row">
+            <img :src="gazetteerThumb(item.id)" :alt="item.name" class="entry-thumb" loading="lazy" decoding="async" width="52" height="52" />
+            <h4 class="entry-title">{{ item.name }}</h4>
+          </div>
           <p class="entry-lead"><strong>Đơn vị vận hành:</strong> {{ item.lead }}</p>
           <p class="entry-locality"><IconLine name="compass" aria-hidden="true" /> {{ item.locality }}</p>
           <p class="entry-address">{{ item.address }}</p>
@@ -942,6 +953,33 @@ const gazetteerTabs = computed(() => [
   { id: 'facilities' as const, label: 'Cơ quan 124 xã/phường', icon: 'landmark', count: totalWards.value },
 ])
 
+function gazetteerThumb(id: string): string {
+  if (id.includes('mangthit')) return '/img/entities/lang-gom-do-mang-thit.webp'
+  if (id.includes('van-thanh-mieu')) return '/img/entities/van-thanh-mieu-vinh-long.webp'
+  if (id.startsWith('dining-')) return '/img/cat-am-thuc.webp'
+  if (id.startsWith('heritage-')) return '/img/cat-lich-su.webp'
+  if (id.startsWith('orchard-')) return '/img/spread/cu-lao-an-binh-640.webp'
+  if (id.startsWith('pier-')) return '/img/spread/song-nuoc-640.webp'
+  return '/img/cat-lang-nghe.webp'
+}
+
+function onGazetteerTabKeydown(event: KeyboardEvent, index: number) {
+  const tabs = gazetteerTabs.value
+  let nextIdx = -1
+  if (event.key === 'ArrowRight') nextIdx = (index + 1) % tabs.length
+  else if (event.key === 'ArrowLeft') nextIdx = (index - 1 + tabs.length) % tabs.length
+  else if (event.key === 'Home') nextIdx = 0
+  else if (event.key === 'End') nextIdx = tabs.length - 1
+  if (nextIdx >= 0) {
+    event.preventDefault()
+    activeGazetteerTab.value = tabs[nextIdx]!.id
+    nextTick(() => {
+      const btns = (event.currentTarget as HTMLElement)?.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+      btns?.[nextIdx]?.focus()
+    })
+  }
+}
+
 let facilitiesAbort: AbortController | null = null
 
 onBeforeUnmount(() => {
@@ -1383,57 +1421,16 @@ useHead(() => ({
   padding: 0.15rem 0.5rem;
   border-radius: var(--radius-control);
 }
-.entry-tag--orchard {
-  color: var(--color-material-leaf, var(--color-brand));
-  background: rgba(var(--leaf-rgb), 0.1);
-}
-.entry-tag--pier {
-  color: var(--color-material-river);
-  background: rgba(var(--river-rgb), 0.1);
-}
-.entry-title {
-  font-family: var(--font-editorial);
-  font-size: var(--text-lg);
-  font-weight: 600;
-  color: var(--ink);
-  margin: 0 0 var(--space-2);
-  line-height: 1.35;
-  text-wrap: balance;
-  overflow-wrap: break-word;
-}
-.entry-lead {
-  font-size: var(--text-sm);
-  color: var(--ink);
-  margin: 0 0 var(--space-1);
-}
-.entry-locality {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  color: var(--muted);
-  margin: 0 0 var(--space-1);
-}
-.entry-address {
-  font-size: var(--text-xs);
-  color: var(--muted);
-  margin: 0 0 var(--space-2);
-}
-.entry-notes {
-  font-size: var(--text-xs);
-  color: var(--ink-secondary);
-  line-height: 1.5;
-  margin: 0 0 var(--space-4);
-  flex-grow: 1;
-}
-.entry-actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  border-top: 1px solid var(--line);
-  padding-top: var(--space-3);
-}
+.entry-tag--orchard { color: var(--color-material-leaf, var(--color-brand)); background: rgba(var(--leaf-rgb), 0.1); }
+.entry-tag--pier { color: var(--color-material-river); background: rgba(var(--river-rgb), 0.1); }
+.entry-title-row { display: flex; align-items: center; gap: var(--space-3); margin: 0 0 var(--space-2); }
+.entry-thumb { width: 52px; height: 52px; border-radius: var(--radius-control); object-fit: cover; border: 1px solid var(--line); flex-shrink: 0; background: var(--bg-warm); }
+.entry-title { font-family: var(--font-editorial); font-size: var(--text-lg); font-weight: 600; color: var(--ink); margin: 0; line-height: 1.35; text-wrap: balance; overflow-wrap: break-word; }
+.entry-lead { font-size: var(--text-sm); color: var(--ink); margin: 0 0 var(--space-1); }
+.entry-locality { display: flex; align-items: center; gap: var(--space-1); font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--muted); margin: 0 0 var(--space-1); }
+.entry-address { font-size: var(--text-xs); color: var(--muted); margin: 0 0 var(--space-2); }
+.entry-notes { font-size: var(--text-xs); color: var(--ink-secondary); line-height: 1.5; margin: 0 0 var(--space-4); flex-grow: 1; }
+.entry-actions { display: flex; flex-direction: column; gap: var(--space-2); border-top: 1px solid var(--line); padding-top: var(--space-3); }
 .gazetteer-call-btn {
   display: inline-flex;
   align-items: center;

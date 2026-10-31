@@ -183,6 +183,7 @@ SEARCH_AGENT = AgentSpec(
     allowed_tools=[
         "search", "entity_detail", "nearby_entities", "web_search",
         "weather", "seasonal_now", "places_in_area",
+        "directory_lookup", "ocop_products", "accommodation_search",
         "suggest_followups",
     ],
     max_rounds=3,

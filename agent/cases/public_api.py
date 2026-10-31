@@ -678,7 +678,11 @@ async def revoke_access(request: Request):
     user_ref = await _session_user_ref(request)
     extra = {"session_user_ref": user_ref} if user_ref else {}
     try:
-        _service().revoke_access(access_token=request.cookies.get(ACCESS_COOKIE), **extra)
+        await asyncio.to_thread(
+            _service().revoke_access,
+            access_token=request.cookies.get(ACCESS_COOKIE),
+            **extra,
+        )
     except Exception as exc:  # noqa: BLE001
         mapped = _map_domain_error(exc)
         if mapped is None:

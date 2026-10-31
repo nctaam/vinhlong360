@@ -21,17 +21,6 @@
       </div>
     </section>
 
-    <!-- AEO Plaque — Culinary Guidance -->
-    <CatalogAeoPlaque
-      title="Chỉ dẫn Ẩm thực Bản địa Vĩnh Long — Hương vị sông Cửu Long"
-      kicker="Góc nhìn bản địa · Giải đáp nhanh"
-      accent="amber"
-      icon="cup"
-      :entries="culinaryAeoEntries"
-      cta-to="/ocop"
-      cta-label="Khám phá sản vật OCOP ẩm thực"
-    />
-
     <!-- Signature Dishes Triad -->
     <section class="block band reveal">
       <div class="sediment-head">
@@ -40,6 +29,9 @@
       <p class="section-desc">Hương vị hình thành từ sự hòa quyện giữa văn hóa ẩm thực ba dân tộc Kinh - Khmer - Hoa và chu kỳ con nước Cửu Long.</p>
       <div class="cuisine-triad">
         <article class="cuisine-tile">
+          <div class="cuisine-tile-media">
+            <img src="/img/cat-am-thuc.webp" alt="Bún nước lèo và bún suông đặc sản Trà Vinh - Vĩnh Long" loading="lazy" decoding="async" width="360" height="225" />
+          </div>
           <div class="cuisine-tile-icon" aria-hidden="true"><IconLine name="bowl" /></div>
           <p class="cuisine-tile-kicker">Món nước đậm vị</p>
           <h3 class="cuisine-tile-title">Bún nước lèo & Bún suông</h3>
@@ -47,6 +39,9 @@
           <p class="cuisine-tile-tag">Đặc sản Trà Vinh & Vĩnh Long</p>
         </article>
         <article class="cuisine-tile">
+          <div class="cuisine-tile-media">
+            <img src="/img/spread/song-nuoc-640.webp" alt="Mùa nước nổi cá linh bông điên điển sông Cửu Long" loading="lazy" decoding="async" width="360" height="225" />
+          </div>
           <div class="cuisine-tile-icon" aria-hidden="true"><IconLine name="sun" /></div>
           <p class="cuisine-tile-kicker">Mùa nước nổi</p>
           <h3 class="cuisine-tile-title">Canh chua cá linh & Bông điên điển</h3>
@@ -54,6 +49,9 @@
           <p class="cuisine-tile-tag">Theo con nước tháng 8 - 11</p>
         </article>
         <article class="cuisine-tile">
+          <div class="cuisine-tile-media">
+            <img src="/img/spread/cu-lao-an-binh-640.webp" alt="Bánh xèo vịt xiêm củ hũ dừa miệt vườn cù lao" loading="lazy" decoding="async" width="360" height="225" />
+          </div>
           <div class="cuisine-tile-icon" aria-hidden="true"><IconLine name="gift" /></div>
           <p class="cuisine-tile-kicker">Miệt vườn cù lao</p>
           <h3 class="cuisine-tile-title">Bánh xèo vịt xiêm củ hũ dừa</h3>
@@ -200,6 +198,17 @@
         <IconLine name="arrow-down" class="cuisine-more-icon" />
       </button>
     </section>
+
+    <!-- AEO Plaque — Culinary Guidance (placed below main dish grid for visual-first discovery) -->
+    <CatalogAeoPlaque
+      title="Chỉ dẫn Ẩm thực Bản địa Vĩnh Long — Hương vị sông Cửu Long"
+      kicker="Góc nhìn bản địa · Giải đáp nhanh"
+      accent="amber"
+      icon="cup"
+      :entries="culinaryAeoEntries"
+      cta-to="/ocop"
+      cta-label="Khám phá sản vật OCOP ẩm thực"
+    />
 
     <!-- Cross-links -->
     <CatalogCrossLinks
@@ -377,6 +386,30 @@ watch([areaFilter, typeFilter, q], () => {
   box-shadow: none;
   counter-increment: cuisine-triad;
   transition: transform .3s var(--ease-out-expo), border-color .3s var(--ease-out);
+}
+
+.cuisine-tile-media {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radius-surface);
+  overflow: hidden;
+  margin-bottom: var(--space-2);
+  background: var(--bg-warm);
+  border: 1px solid var(--color-border);
+}
+
+.cuisine-tile-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .45s var(--ease-out-expo);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cuisine-tile:hover .cuisine-tile-media img {
+    transform: scale(1.04);
+  }
 }
 
 .cuisine-tile::before {

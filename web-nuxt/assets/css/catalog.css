@@ -405,7 +405,8 @@
 }
 
 @container catalog-results (min-width: 48rem) {
-  .catalog-result-surface:not(.list-view) > :is(.catalog-result-item:first-child, .catalog-result-item:nth-child(7n + 1)) {
+  .catalog-result-surface:not(.list-view) > .catalog-result-item:first-child,
+  .catalog-result-surface:not(.list-view) > .catalog-result-item:nth-child(7n + 1) {
     grid-column: span 2;
   }
   .catalog-result-surface:not(.list-view) > :is(.catalog-result-item:first-child, .catalog-result-item:nth-child(7n + 1)) .card {
@@ -1443,8 +1444,8 @@
 /* Editorial signature: drop-cap on the lead paragraph of each article intro */
 .page-article > p:first-of-type::first-letter {
   font-family: var(--font-editorial); font-weight: 700;
-  float: left; font-size: 3.1em; line-height: 1.2;
-  padding: .02em .12em 0 0; margin-top: -.08em; color: var(--color-brand);
+  float: left; font-size: 3.1em; line-height: 1.12;
+  padding: .06em .12em 0 0; margin-top: 0; color: var(--color-brand);
 }
 .page-article p {
   color: var(--ink); font-size: var(--text-base);

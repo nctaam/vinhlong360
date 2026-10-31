@@ -154,7 +154,11 @@ def test_stage2_audit_remediations_contracts():
     assert hybrid[0]["hybrid_score"] > 0.5
 
     # 4. cases.public_api._session_user_ref & learn_loop._persist_enrichments & database SQLite CAST
+    assert "directory_lookup" in orchestrator.SEARCH_AGENT.allowed_tools
+    assert "ocop_products" in orchestrator.SEARCH_AGENT.allowed_tools
+    assert "accommodation_search" in orchestrator.SEARCH_AGENT.allowed_tools
     assert callable(case_public_api._session_user_ref)
+    assert callable(case_public_api.revoke_access)
     assert callable(learn_loop._persist_enrichments)
     assert hasattr(database, "Database")
 

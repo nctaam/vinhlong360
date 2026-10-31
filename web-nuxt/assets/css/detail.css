@@ -91,7 +91,7 @@
 .detail-main { grid-area: main; min-width: 0; }
 .detail-main .lead { display: flow-root; font-size: var(--text-lg); margin-top: 0; line-height: var(--leading-relaxed); max-width: var(--measure-read); }
 /* Editorial feature opening: drop-cap on the lead's first letter */
-.detail-main .lead::first-letter { font-family: var(--font-editorial); font-weight: 700; float: left; font-size: 3.1em; line-height: 1.2; padding: .02em .12em 0 0; margin-top: -.08em; color: var(--color-brand); }
+.detail-main .lead::first-letter { font-family: var(--font-editorial); font-weight: 700; float: left; font-size: 3.1em; line-height: 1.12; padding: .06em .12em 0 0; margin-top: 0; color: var(--color-brand); }
 
 .article-sourcemark-bar { display: inline-flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4); padding: var(--space-1) var(--space-3); background: var(--bg-alt); border: 1px solid var(--border-liquid-glass, var(--line)); border-radius: var(--radius-full); font-size: var(--text-xs); color: var(--ink-secondary, var(--color-text-muted)); line-height: var(--leading-normal); }
 .article-sourcemark-bar strong { color: var(--ink); font-weight: var(--weight-semibold); }

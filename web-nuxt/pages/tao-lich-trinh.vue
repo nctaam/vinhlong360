@@ -19,13 +19,13 @@
 
     <!-- Mobile Wizard Stepper Nav -->
     <div class="planner-wizard-nav" role="tablist" aria-label="Các bước tạo lịch trình">
-      <button type="button" role="tab" :aria-selected="activeStep === 1" :class="['pw-tab', 'planner-wizard-step', { active: activeStep === 1 }]" @click="activeStep = 1">
+      <button type="button" role="tab" :aria-selected="activeStep === 1" :tabindex="activeStep === 1 ? 0 : -1" :class="['pw-tab', 'planner-wizard-step', { active: activeStep === 1 }]" @click="activeStep = 1" @keydown="onWizardTabKeydown($event, 1)">
         1. Chọn điểm ({{ stops.length }})
       </button>
-      <button type="button" role="tab" :aria-selected="activeStep === 2" :class="['pw-tab', 'planner-wizard-step', { active: activeStep === 2 }]" @click="activeStep = 2">
+      <button type="button" role="tab" :aria-selected="activeStep === 2" :tabindex="activeStep === 2 ? 0 : -1" :class="['pw-tab', 'planner-wizard-step', { active: activeStep === 2 }]" @click="activeStep = 2" @keydown="onWizardTabKeydown($event, 2)">
         2. Sắp xếp &amp; Phương tiện
       </button>
-      <button type="button" role="tab" :aria-selected="activeStep === 3" :class="['pw-tab', 'planner-wizard-step', { active: activeStep === 3 }]" @click="activeStep = 3">
+      <button type="button" role="tab" :aria-selected="activeStep === 3" :tabindex="activeStep === 3 ? 0 : -1" :class="['pw-tab', 'planner-wizard-step', { active: activeStep === 3 }]" @click="activeStep = 3" @keydown="onWizardTabKeydown($event, 3)">
         3. Xem &amp; Lưu
       </button>
     </div>
@@ -62,6 +62,7 @@
             :class="['picker-item', { adding: addingId === e.id }]"
             @click="addStop(e)"
           >
+            <img :src="plannerTypeThumb(e.type)" :alt="getTypeMeta(e.type).label" class="picker-thumb" loading="lazy" decoding="async" width="44" height="44" />
             <IconLine class="picker-emoji" :name="getTypeMeta(e.type).icon" aria-hidden="true" />
             <div class="picker-info">
               <strong :title="e.name">{{ e.name }}</strong>
@@ -217,6 +218,7 @@
                 @keydown.alt.down.prevent="moveStop(idx, 1)"
               >
                 <div class="stop-card-head">
+                  <img :src="plannerTypeThumb(stop.type)" :alt="getTypeMeta(stop.type).label" class="stop-thumb" loading="lazy" decoding="async" width="44" height="44" />
                   <IconLine class="stop-emoji" :name="getTypeMeta(stop.type).icon" aria-hidden="true" />
                   <div class="stop-card-info">
                     <strong>{{ stop.name }}</strong>
@@ -729,6 +731,37 @@ function extractCoords(entity: Entity): [number, number] | null {
   return normalizeCoords(entity.coordinates)
 }
 
+const PLANNER_TYPE_THUMBS: Record<string, string> = {
+  attraction: '/img/cat-du-lich.webp',
+  dish: '/img/cat-am-thuc.webp',
+  accommodation: '/img/cat-luu-tru.webp',
+  product: '/img/cat-san-pham.webp',
+  craft_village: '/img/cat-lang-nghe.webp',
+  event: '/img/cat-le-hoi.webp',
+  history: '/img/cat-lich-su.webp',
+  nature: '/img/cat-sinh-thai.webp',
+  experience: '/img/spread/cu-lao-an-binh-640.webp',
+}
+function plannerTypeThumb(type?: string): string {
+  return (type && PLANNER_TYPE_THUMBS[type]) || '/img/cat-du-lich.webp'
+}
+
+function onWizardTabKeydown(event: KeyboardEvent, step: 1 | 2 | 3) {
+  let nextStep: 1 | 2 | 3 | null = null
+  if (event.key === 'ArrowRight') nextStep = (step === 3 ? 1 : (step + 1)) as 1 | 2 | 3
+  else if (event.key === 'ArrowLeft') nextStep = (step === 1 ? 3 : (step - 1)) as 1 | 2 | 3
+  else if (event.key === 'Home') nextStep = 1
+  else if (event.key === 'End') nextStep = 3
+  if (nextStep) {
+    event.preventDefault()
+    activeStep.value = nextStep
+    nextTick(() => {
+      const btns = (event.currentTarget as HTMLElement)?.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+      btns?.[nextStep! - 1]?.focus()
+    })
+  }
+}
+
 async function refreshPlannerStopEvidence(stopId: string): Promise<boolean> {
   const stop = stops.value.find(candidate => candidate.id === stopId)
   if (!stop) return false
@@ -955,6 +988,7 @@ await plannerAsyncData
 .picker-item:hover { background: var(--bg-warm); }
 .picker-item:active { transform: scale(.98); transition-duration: .08s; }
 .picker-item:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-surface); }
+.picker-thumb, .stop-thumb { width: 44px; height: 44px; border-radius: var(--radius-control); object-fit: cover; border: 1px solid var(--line); flex-shrink: 0; background: var(--bg-warm); }
 .picker-emoji { font-size: var(--text-lg); flex-shrink: 0; }
 .picker-info { flex: 1; min-width: 0; }
 .picker-info strong { display: block; font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
