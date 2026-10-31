@@ -10,30 +10,6 @@
       :stats="communityStats"
     />
 
-    <!-- AEO Plaque: Community Co-Creation & Responsible Storytelling -->
-    <CatalogAeoPlaque
-      title="Diễn Đàn Đồng Sáng Tạo &amp; Lan Tỏa Văn Hóa Bản Địa"
-      kicker="Góc nhìn cộng đồng · Trải nghiệm thực địa từ người bản xứ"
-      accent="river"
-      icon="users"
-      :entries="[
-        {
-          heading: 'Không Gian Chia Sẻ Thực Chất &amp; Khách Quan',
-          text: 'Cộng đồng du khách và người dân cùng ghi nhận những góc quán mộc mạc, con đò quen và nếp sống hào sảng.',
-        },
-        {
-          heading: 'Quy Chuẩn Gắn Thẻ &amp; Xác Thực Địa Điểm',
-          text: 'Sử dụng ký tự @ để liên kết chính xác địa chỉ danh thắng, nhà vườn sinh thái hoặc nghệ nhân làng nghề trong tỉnh.',
-        },
-        {
-          heading: 'Tôn Trọng Sự Thật &amp; Gìn Giữ Cảnh Quan Bản Địa',
-          text: 'Khuyến khích các đánh giá trung thực, văn minh, bảo vệ môi trường và tôn vinh phong tục tập quán truyền thống.',
-        },
-      ]"
-      cta-to="/huong-dan-thanh-vien"
-      cta-label="Quy tắc ứng xử &amp; hướng dẫn cộng đồng"
-    />
-
     <div class="threads-layout">
       <div class="threads-feed">
         <h2 class="sr-only">Bảng tin cộng đồng</h2>
@@ -244,6 +220,30 @@
         @follow="followSuggested"
       />
     </div>
+
+    <!-- AEO Plaque: Community Co-Creation & Responsible Storytelling (placed below live feed) -->
+    <CatalogAeoPlaque
+      title="Diễn Đàn Đồng Sáng Tạo &amp; Lan Tỏa Văn Hóa Bản Địa"
+      kicker="Góc nhìn cộng đồng · Trải nghiệm thực địa từ người bản xứ"
+      accent="river"
+      icon="users"
+      :entries="[
+        {
+          heading: 'Không Gian Chia Sẻ Thực Chất &amp; Khách Quan',
+          text: 'Cộng đồng du khách và người dân cùng ghi nhận những góc quán mộc mạc, con đò quen và nếp sống hào sảng.',
+        },
+        {
+          heading: 'Quy Chuẩn Gắn Thẻ &amp; Xác Thực Địa Điểm',
+          text: 'Sử dụng ký tự @ để liên kết chính xác địa chỉ danh thắng, nhà vườn sinh thái hoặc nghệ nhân làng nghề trong tỉnh.',
+        },
+        {
+          heading: 'Tôn Trọng Sự Thật &amp; Gìn Giữ Cảnh Quan Bản Địa',
+          text: 'Khuyến khích các đánh giá trung thực, văn minh, bảo vệ môi trường và tôn vinh phong tục tập quán truyền thống.',
+        },
+      ]"
+      cta-to="/huong-dan-thanh-vien"
+      cta-label="Quy tắc ứng xử &amp; hướng dẫn cộng đồng"
+    />
 
     <!-- Save momentum & undo-hide notifications (data-testid="hide-undo", data-post-action="undo-hide") -->
     <CommunityFloatingNotices

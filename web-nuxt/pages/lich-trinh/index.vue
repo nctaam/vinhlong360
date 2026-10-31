@@ -37,30 +37,6 @@
       </div>
     </section>
 
-    <!-- AEO Plaque: Custom Itinerary Design & Travel Rhythm -->
-    <CatalogAeoPlaque
-      title="Sổ Tay Thiết Kế Lịch Trình &amp; Cung Đường Khám Phá"
-      kicker="Góc nhìn bản địa · Tối ưu thời gian &amp; Cung bậc trải nghiệm"
-      accent="river"
-      icon="calendar"
-      :entries="[
-        {
-          heading: 'Nhịp Điệu Nửa Ngày (Sáng sớm hoặc Chiều tà)',
-          text: 'Thích hợp dạo chợ sớm ven sông, khám phá cù lao An Bình hoặc ghé thăm cụm di tích danh nhân Long Hồ Dinh.',
-        },
-        {
-          heading: 'Nhịp Điệu Trọn Ngày (Khám phá Sâu sắc)',
-          text: 'Trải nghiệm trọn vẹn cuộc sống bản địa: len lỏi rạch dừa nước, thưởng thức cá đồng và ngắm hoàng hôn sông Cổ Chiên.',
-        },
-        {
-          heading: 'Nhịp Điệu Nhiều Ngày (Hành trình Liên vùng)',
-          text: 'Cung đường liên thông 3 vùng địa hạt kết nối di sản lò gạch Mang Thít, làng hoa Cái Mơn và quần thể chùa Khmer cổ kính.',
-        },
-      ]"
-      cta-to="/tao-lich-trinh"
-      cta-label="Khởi tạo hành trình cá nhân hóa"
-    />
-
     <!-- Đã lưu (client-only, từ localStorage) -->
     <ClientOnly>
       <section v-if="count > 0" class="block saved-section reveal">
@@ -107,24 +83,6 @@
     <!-- declutter-2 A5 (chiều ngược): quick-picks khu-vực đã bỏ — trang này trục chính
          là NHỊP NGÀY (pace-chips); chip-row khu vực trong controls là 1 đường filter
          khu vực duy nhất. countByArea giữ (hero areaCounts dùng). -->
-
-    <!-- Editorial -->
-    <section v-once class="page-article reveal">
-      <h2 class="sediment-head">Lịch trình có sẵn — đi ngay không cần lên kế hoạch</h2>
-      <p>Mỗi lịch trình được thiết kế dựa trên kinh nghiệm thực tế, sắp xếp các điểm đến theo thứ tự hợp lý về khoảng cách và thời gian. Bạn chỉ cần chọn lịch trình phù hợp với số ngày đi, sở thích (văn hoá, ẩm thực, thiên nhiên) và phương tiện (xe máy, ô tô, xuồng). Mỗi điểm dừng đều có thông tin thực tế: giờ mở cửa, giá tham khảo, mẹo di chuyển.</p>
-      <p>Có thể kết hợp nhiều lịch trình hoặc tuỳ chỉnh — bỏ bớt điểm dừng, thêm điểm mới, thay đổi thứ tự. Tất cả lịch trình đều miễn phí và có thể lưu vào tài khoản để xem lại khi đi.</p>
-    </section>
-
-    <!-- Interstitial -->
-    <CatalogInterstitial
-      v-if="itineraries?.length"
-      fact="Mỗi lịch trình được thiết kế dựa trên kinh nghiệm thực tế — lưu vào tài khoản để xem lại khi đi."
-      icon-name="bulb"
-      :links="[
-        { to: '/tao-lich-trinh', label: 'Tự tạo lịch trình' },
-        { to: '/du-lich', label: 'Khám phá du lịch' },
-      ]"
-    />
 
     <!-- Divider -->
     <div class="catalog-divider">
@@ -197,6 +155,48 @@
         <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary"><IconLine name="plus" /> Tự tạo lịch trình</NuxtLink>
       </div>
     </section>
+
+    <!-- Editorial (placed below itinerary shelves so visual cards appear first) -->
+    <section v-once class="page-article reveal">
+      <h2 class="sediment-head">Lịch trình có sẵn — đi ngay không cần lên kế hoạch</h2>
+      <p>Mỗi lịch trình được thiết kế dựa trên kinh nghiệm thực tế, sắp xếp các điểm đến theo thứ tự hợp lý về khoảng cách và thời gian. Bạn chỉ cần chọn lịch trình phù hợp với số ngày đi, sở thích (văn hoá, ẩm thực, thiên nhiên) và phương tiện (xe máy, ô tô, xuồng). Mỗi điểm dừng đều có thông tin thực tế: giờ mở cửa, giá tham khảo, mẹo di chuyển.</p>
+      <p>Có thể kết hợp nhiều lịch trình hoặc tuỳ chỉnh — bỏ bớt điểm dừng, thêm điểm mới, thay đổi thứ tự. Tất cả lịch trình đều miễn phí và có thể lưu vào tài khoản để xem lại khi đi.</p>
+    </section>
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      v-if="itineraries?.length"
+      fact="Mỗi lịch trình được thiết kế dựa trên kinh nghiệm thực tế — lưu vào tài khoản để xem lại khi đi."
+      icon-name="bulb"
+      :links="[
+        { to: '/tao-lich-trinh', label: 'Tự tạo lịch trình' },
+        { to: '/du-lich', label: 'Khám phá du lịch' },
+      ]"
+    />
+
+    <!-- AEO Plaque: Custom Itinerary Design & Travel Rhythm -->
+    <CatalogAeoPlaque
+      title="Sổ Tay Thiết Kế Lịch Trình &amp; Cung Đường Khám Phá"
+      kicker="Góc nhìn bản địa · Tối ưu thời gian &amp; Cung bậc trải nghiệm"
+      accent="river"
+      icon="calendar"
+      :entries="[
+        {
+          heading: 'Nhịp Điệu Nửa Ngày (Sáng sớm hoặc Chiều tà)',
+          text: 'Thích hợp dạo chợ sớm ven sông, khám phá cù lao An Bình hoặc ghé thăm cụm di tích danh nhân Long Hồ Dinh.',
+        },
+        {
+          heading: 'Nhịp Điệu Trọn Ngày (Khám phá Sâu sắc)',
+          text: 'Trải nghiệm trọn vẹn cuộc sống bản địa: len lỏi rạch dừa nước, thưởng thức cá đồng và ngắm hoàng hôn sông Cổ Chiên.',
+        },
+        {
+          heading: 'Nhịp Điệu Nhiều Ngày (Hành trình Liên vùng)',
+          text: 'Cung đường liên thông 3 vùng địa hạt kết nối di sản lò gạch Mang Thít, làng hoa Cái Mơn và quần thể chùa Khmer cổ kính.',
+        },
+      ]"
+      cta-to="/tao-lich-trinh"
+      cta-label="Khởi tạo hành trình cá nhân hóa"
+    />
 
     <!-- Cross-links -->
     <CatalogCrossLinks />

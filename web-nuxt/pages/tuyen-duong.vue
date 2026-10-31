@@ -40,30 +40,6 @@
       </div>
     </section>
 
-    <!-- AEO Plaque: River Ecology Routes & Land Road Adventures -->
-    <CatalogAeoPlaque
-      title="Cẩm Nang Tuyến Đường Khám Phá &amp; Hành Trình Sông Nước"
-      kicker="Góc nhìn bản địa · Kết nối liên vùng &amp; Nhịp sống bến phà"
-      accent="leaf"
-      icon="route"
-      :entries="[
-        {
-          heading: 'Cung đường Cù lao An Bình &amp; Đò ngang sông Cổ Chiên',
-          text: 'Lộ trình len lỏi qua các liếp vườn cây trái trĩu cành, trải nghiệm qua phà An Bình ngắm toàn cảnh sông nước mênh mông.',
-        },
-        {
-          heading: 'Cung đường Di sản Gốm đỏ Mang Thít (ĐT 902)',
-          text: 'Chạy xe dọc kênh Thầy Cai chiêm ngưỡng hàng ngàn mái lò nung gạch đất nung rêu phong cổ kính độc bản phương Nam.',
-        },
-        {
-          heading: 'Hành trình Liên Vùng Ba Con Sông (Tiền – Cổ Chiên – Hậu)',
-          text: 'Kết nối các trục lộ huyết mạch QL53, QL57 qua Chợ Lách và Trà Vinh (địa hạt trước 7-2025), ngắm những rặng bần xanh ngắt và cồn bãi màu mỡ.',
-        },
-      ]"
-      cta-to="/tao-lich-trinh"
-      cta-label="Khởi tạo lịch trình theo tuyến đường"
-    />
-
     <div class="block">
       <div class="controls">
         <p class="control-label">Khu vực</p>
@@ -90,28 +66,12 @@
       </div>
     </div>
 
-    <!-- Editorial -->
-    <section v-once class="page-article reveal">
-      <div class="sediment-head route-article-head"><h2>Tự khám phá Vĩnh Long bằng xe máy hoặc ô tô</h2></div>
-      <p>Các tuyến đường dưới đây được thiết kế cho người muốn <strong>tự đi</strong> — không cần tour, không cần hướng dẫn viên. Mỗi tuyến ghi rõ khoảng cách, thời gian di chuyển và các điểm dừng theo thứ tự hợp lý. Đường liên vùng kết nối giữa các xã, phường của tỉnh Vĩnh Long phần lớn là đường nhựa tốt, phù hợp cả xe máy lẫn ô tô 4-7 chỗ.</p>
-      <p>Nếu đi xe máy, ưu tiên khởi hành sáng sớm (trước 7h) để tránh nắng và tận dụng ánh sáng đẹp. Mang theo áo mưa — vùng này hay có mưa rào chiều, đặc biệt từ tháng 6 đến tháng 11. Đường vào các làng nghề đôi khi hẹp và dốc cầu, chạy chậm khi qua khu dân cư.</p>
-
-      <!-- declutter-2 A2: interstitial inline vào mạch bài -->
-      <CatalogInterstitial
-        fact="Mỗi tuyến ghi rõ khoảng cách, thời gian và điểm dừng — tải về hoặc lưu vào tài khoản để xem offline khi đi."
-        icon-name="route"
-        :links="[
-          { to: '/lich-trinh', label: 'Lịch trình gợi ý' },
-          { to: '/ban-do', label: 'Xem bản đồ' },
-        ]"
-      />
-    </section>
-
     <p class="result-meta" aria-live="polite">{{ filtered.length }} tuyến đường</p>
 
     <div v-if="filtered.length" class="route-grid">
       <article v-for="r in filtered" :key="r.id" class="route-card" :class="`area-${r.area}`" :aria-label="r.name + ' — ' + r.duration">
         <div :class="['route-header', `area-${r.area}`]">
+          <img :src="routeCover(r)" :alt="r.name" class="route-thumb" width="64" height="64" loading="lazy" decoding="async" />
           <span class="route-emoji" aria-hidden="true"><IconLine :name="routeIcon(r)" /></span>
           <div>
             <h3 class="route-name">{{ r.name }}</h3>
@@ -177,6 +137,47 @@
         </template>
       </EmptyState>
     </div>
+
+    <!-- Editorial (placed below route cards so users scan visual routes first) -->
+    <section v-once class="page-article reveal">
+      <div class="sediment-head route-article-head"><h2>Tự khám phá Vĩnh Long bằng xe máy hoặc ô tô</h2></div>
+      <p>Các tuyến đường dưới đây được thiết kế cho người muốn <strong>tự đi</strong> — không cần tour, không cần hướng dẫn viên. Mỗi tuyến ghi rõ khoảng cách, thời gian di chuyển và các điểm dừng theo thứ tự hợp lý. Đường liên vùng kết nối giữa các xã, phường của tỉnh Vĩnh Long phần lớn là đường nhựa tốt, phù hợp cả xe máy lẫn ô tô 4-7 chỗ.</p>
+      <p>Nếu đi xe máy, ưu tiên khởi hành sáng sớm (trước 7h) để tránh nắng và tận dụng ánh sáng đẹp. Mang theo áo mưa — vùng này hay có mưa rào chiều, đặc biệt từ tháng 6 đến tháng 11. Đường vào các làng nghề đôi khi hẹp và dốc cầu, chạy chậm khi qua khu dân cư.</p>
+
+      <!-- declutter-2 A2: interstitial inline vào mạch bài -->
+      <CatalogInterstitial
+        fact="Mỗi tuyến ghi rõ khoảng cách, thời gian và điểm dừng — tải về hoặc lưu vào tài khoản để xem offline khi đi."
+        icon-name="route"
+        :links="[
+          { to: '/lich-trinh', label: 'Lịch trình gợi ý' },
+          { to: '/ban-do', label: 'Xem bản đồ' },
+        ]"
+      />
+    </section>
+
+    <!-- AEO Plaque: River Ecology Routes & Land Road Adventures -->
+    <CatalogAeoPlaque
+      title="Cẩm Nang Tuyến Đường Khám Phá &amp; Hành Trình Sông Nước"
+      kicker="Góc nhìn bản địa · Kết nối liên vùng &amp; Nhịp sống bến phà"
+      accent="leaf"
+      icon="route"
+      :entries="[
+        {
+          heading: 'Cung đường Cù lao An Bình &amp; Đò ngang sông Cổ Chiên',
+          text: 'Lộ trình len lỏi qua các liếp vườn cây trái trĩu cành, trải nghiệm qua phà An Bình ngắm toàn cảnh sông nước mênh mông.',
+        },
+        {
+          heading: 'Cung đường Di sản Gốm đỏ Mang Thít (ĐT 902)',
+          text: 'Chạy xe dọc kênh Thầy Cai chiêm ngưỡng hàng ngàn mái lò nung gạch đất nung rêu phong cổ kính độc bản phương Nam.',
+        },
+        {
+          heading: 'Hành trình Liên Vùng Ba Con Sông (Tiền – Cổ Chiên – Hậu)',
+          text: 'Kết nối các trục lộ huyết mạch QL53, QL57 qua Chợ Lách và Trà Vinh (địa hạt trước 7-2025), ngắm những rặng bần xanh ngắt và cồn bãi màu mỡ.',
+        },
+      ]"
+      cta-to="/tao-lich-trinh"
+      cta-label="Khởi tạo lịch trình theo tuyến đường"
+    />
 
     <!-- Cross-links -->
     <CatalogCrossLinks subtitle="Tiếp tục hành trình Vĩnh Long của bạn" />
@@ -421,6 +422,28 @@ function routeIcon(r: RouteDef): string {
   return AREA_META[r.area]?.icon || 'route'
 }
 
+const ROUTE_COVER_MAP: Record<string, string> = {
+  'vong-trai-cay-vinh-long': '/img/spread/cu-lao-an-binh-640.webp',
+  'lang-nghe-mang-thit': '/img/spread/lo-gach-640.webp',
+  'vong-mua-nuoc-noi': '/img/spread/song-nuoc-640.webp',
+  'chua-khmer-tra-vinh': '/img/spread/chua-ang-640.webp',
+}
+const ROUTE_AREA_COVER: Record<string, string> = {
+  'vinh-long': '/img/area-vinh-long.webp',
+  'ben-tre': '/img/area-ben-tre.webp',
+  'tra-vinh': '/img/area-tra-vinh.webp',
+  'lien-vung': '/img/spread/song-nuoc-640.webp',
+}
+function routeCover(r: RouteDef): string {
+  if (ROUTE_COVER_MAP[r.id]) return ROUTE_COVER_MAP[r.id]
+  const text = `${r.id} ${r.name}`.toLowerCase()
+  if (text.includes('gốm') || text.includes('mang-thit') || text.includes('làng nghề')) return '/img/spread/lo-gach-640.webp'
+  if (text.includes('cù lao') || text.includes('trái cây') || text.includes('an-binh')) return '/img/spread/cu-lao-an-binh-640.webp'
+  if (text.includes('chùa') || text.includes('khmer')) return '/img/spread/chua-ang-640.webp'
+  if (text.includes('sông') || text.includes('nước nổi')) return '/img/spread/song-nuoc-640.webp'
+  return ROUTE_AREA_COVER[r.area] || '/img/spread/cu-lao-an-binh-640.webp'
+}
+
 const previewRoute = ref<RouteDef | null>(null)
 const selectedStopIndex = ref(0)
 const currentPreviewStop = computed<RouteStop | null>(() => {
@@ -513,6 +536,7 @@ useHead(() => {
 .route-header::after { content: "TUYẾN " counter(route-dossier, decimal-leading-zero); margin-inline-start: auto; font-family: var(--font-editorial); font-style: italic; font-weight: 400; font-size: var(--text-sm); letter-spacing: 0.08em; color: var(--muted); white-space: nowrap; }
 .route-header h3 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); line-height: 1.24; letter-spacing: var(--tracking-tight); color: var(--ink); text-wrap: balance; overflow-wrap: break-word; }
 .route-meta { font-size: var(--text-sm); color: var(--muted); }
+.route-thumb { width: 64px; height: 64px; border-radius: var(--radius-control); object-fit: cover; flex-shrink: 0; border: 1px solid var(--line); box-shadow: var(--shadow-xs); }
 .route-emoji { font-size: var(--text-2xl); display: inline-flex; align-items: center; justify-content: center; color: var(--color-action); }
 .chip-area-icon { margin-right: .25rem; font-size: .95em; }
 .route-header.area-vinh-long { border-block-start-color: var(--cat-experience); }

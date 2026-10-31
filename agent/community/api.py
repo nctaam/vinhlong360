@@ -718,9 +718,13 @@ async def publish_draft(draft_id: str, user=Depends(require_user), _csrf=Depends
             return db._row_to_dict(row)
 
     draft = await asyncio.to_thread(_get_draft)
-    content = draft.get("content", "")
-    if len(content.strip()) < 10:
+    content = _strip_html_tags(draft.get("content", "")).strip()
+    if len(content) < 10:
         raise HTTPException(400, "Nội dung cần ít nhất 10 ký tự")
+    raw_post_type = draft.get("post_type") or "share"
+    post_type = raw_post_type if raw_post_type in POST_TYPES else "share"
+    from types import SimpleNamespace as _NS
+    _validate_post_type(_NS(post_type=post_type, entity_id=draft.get("entity_id"), rating=draft.get("rating")))
 
     images = draft.get("images", [])
     if isinstance(images, str):
@@ -735,11 +739,11 @@ async def publish_draft(draft_id: str, user=Depends(require_user), _csrf=Depends
     def _publish():
         with db._conn() as conn:
             row = db._fetchone(conn, f"""
-                UPDATE posts SET is_draft = FALSE, moderation_status = {ph},
-                       hashtags = {ph}::jsonb, updated_at = NOW()
+                UPDATE posts SET is_draft = FALSE, content = {ph}, post_type = {ph},
+                       moderation_status = {ph}, hashtags = {ph}::jsonb, updated_at = NOW()
                 WHERE id::text = {ph} AND user_id = {ph}::uuid AND is_draft = TRUE
                 RETURNING *
-            """, (mod_result["status"], json.dumps(hashtags, ensure_ascii=False),
+            """, (content, post_type, mod_result["status"], json.dumps(hashtags, ensure_ascii=False),
                   draft_id, uid))
             if not row:
                 raise HTTPException(404, "Bài nháp không tồn tại")
@@ -800,18 +804,24 @@ async def schedule_draft(draft_id: str, scheduled_at: str = Query(..., max_lengt
     def _query():
         with db._conn() as conn:
             row = db._fetchone(conn, f"""
-                SELECT id, content FROM posts
+                SELECT id, content, post_type, entity_id, rating FROM posts
                 WHERE id::text = {ph} AND user_id = {ph}::uuid AND is_draft = TRUE
             """, (draft_id, uid))
             if not row:
                 raise HTTPException(404, "Bài nháp không tồn tại")
             d = db._row_to_dict(row)
-            if len((d.get("content") or "").strip()) < 10:
+            clean_content = _strip_html_tags(d.get("content") or "").strip()
+            if len(clean_content) < 10:
                 raise HTTPException(400, "Nội dung cần ít nhất 10 ký tự")
+            raw_pt = d.get("post_type") or "share"
+            clean_post_type = raw_pt if raw_pt in POST_TYPES else "share"
+            from types import SimpleNamespace as _NS
+            _validate_post_type(_NS(post_type=clean_post_type, entity_id=d.get("entity_id"), rating=d.get("rating")))
             db._execute(conn, f"""
-                UPDATE posts SET scheduled_at = {ph}::timestamptz, is_draft = FALSE
+                UPDATE posts SET scheduled_at = {ph}::timestamptz, is_draft = FALSE,
+                       content = {ph}, post_type = {ph}, updated_at = NOW()
                 WHERE id::text = {ph} AND user_id = {ph}::uuid
-            """, (scheduled_at, draft_id, uid))
+            """, (scheduled_at, clean_content, clean_post_type, draft_id, uid))
             return True
 
     await asyncio.to_thread(_query)

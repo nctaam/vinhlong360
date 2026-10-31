@@ -54,13 +54,30 @@ const AREA_PHOTO: Record<string, string> = {
   'ben-tre': '/img/area-ben-tre.webp',
   'tra-vinh': '/img/area-tra-vinh.webp',
 }
-const ROVING = ['/img/area-vinh-long.webp', '/img/area-ben-tre.webp', '/img/area-tra-vinh.webp', '/img/cat-du-lich.webp']
+const ROVING = [
+  '/img/spread/cu-lao-an-binh-640.webp',
+  '/img/spread/lo-gach-640.webp',
+  '/img/spread/song-nuoc-640.webp',
+  '/img/spread/chua-ang-640.webp',
+  '/img/area-vinh-long.webp',
+  '/img/area-ben-tre.webp',
+  '/img/area-tra-vinh.webp',
+  '/img/cat-du-lich.webp',
+]
 const coverSrc = computed(() => {
+  const explicit = props.itinerary.image || props.itinerary.cover
+  if (typeof explicit === 'string' && explicit.trim()) return explicit.trim()
+  const text = `${props.itinerary.id || ''} ${props.itinerary.title || ''} ${props.itinerary.name || ''} ${props.itinerary.summary || ''}`.toLowerCase()
+  if (text.includes('gốm') || text.includes('mang thít') || text.includes('mang-thit') || text.includes('làng nghề')) return '/img/spread/lo-gach-640.webp'
+  if (text.includes('cù lao') || text.includes('an bình') || text.includes('an-binh') || text.includes('miệt vườn') || text.includes('trái cây')) return '/img/spread/cu-lao-an-binh-640.webp'
+  if (text.includes('chùa') || text.includes('khmer') || text.includes('tâm linh')) return '/img/spread/chua-ang-640.webp'
+  if (text.includes('ẩm thực') || text.includes('món ngon') || text.includes('ăn')) return '/img/cat-am-thuc.webp'
+  if (text.includes('sông') || text.includes('chợ nổi') || text.includes('nước nổi')) return '/img/spread/song-nuoc-640.webp'
   const direct = AREA_PHOTO[props.itinerary.area]
-  if (direct) return direct
   const id = String(props.itinerary.id || props.itinerary.title || '')
   let h = 0
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
+  if (direct && h % 2 === 0) return direct
   return ROVING[h % ROVING.length]
 })
 // Deterministic per-itinerary placeholder fallback — seeded by id.

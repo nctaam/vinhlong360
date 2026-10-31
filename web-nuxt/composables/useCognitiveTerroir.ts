@@ -377,15 +377,19 @@ export function useCognitiveTerroir() {
     if (isElderMode.value) {
       el.setAttribute('data-reading-mode', 'elder')
       el.setAttribute('data-elder-mode', 'true')
+      el.setAttribute('data-elder-friendly', 'true')
     } else {
       el.removeAttribute('data-reading-mode')
       el.removeAttribute('data-elder-mode')
+      el.setAttribute('data-elder-friendly', 'false')
     }
 
     if (isHighGlare.value) {
       el.setAttribute('data-outdoor-contrast', 'high')
+      el.setAttribute('data-high-contrast', 'true')
     } else {
       el.removeAttribute('data-outdoor-contrast')
+      el.setAttribute('data-high-contrast', 'false')
     }
 
     if (isEcoTerroir.value) {

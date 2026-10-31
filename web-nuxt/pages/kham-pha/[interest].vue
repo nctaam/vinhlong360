@@ -3,7 +3,7 @@
     <Breadcrumb :items="breadcrumbItems" :json-ld="true" />
 
     <!-- Hero — "Một góc nhìn, một người kể": lens hero with per-interest halo shape -->
-    <section class="catalog-hero cat-interest">
+    <section class="catalog-hero cat-interest" :style="{ '--int-bg-image': `url('${interestCover}')` }">
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon int-hero-icon" :class="`int-halo-${haloShape}`" aria-hidden="true" v-html="interestIconSvg"></span>
         <div>
@@ -34,17 +34,6 @@
         :aria-current="key === interest ? 'page' : undefined"
       ><IconLine :name="meta.icon" /> {{ meta.label }}</NuxtLink>
     </div>
-
-    <!-- AEO Plaque & AI Search Digest -->
-    <CatalogAeoPlaque
-      :title="aeoContent.title"
-      :kicker="aeoContent.kicker"
-      :accent="aeoContent.accent"
-      :icon="aeoContent.icon"
-      :entries="aeoContent.entries"
-      :cta-to="aeoContent.ctaTo"
-      :cta-label="aeoContent.ctaLabel"
-    />
 
     <section class="block reveal" aria-label="Duyệt tất cả">
     <h2 class="sr-only">Duyệt tất cả {{ interestMeta.label.toLowerCase() }}</h2>
@@ -131,6 +120,17 @@
     </button>
     </section>
 
+    <!-- AEO Plaque & AI Search Digest (placed below visual grid to prevent text-wall above the fold) -->
+    <CatalogAeoPlaque
+      :title="aeoContent.title"
+      :kicker="aeoContent.kicker"
+      :accent="aeoContent.accent"
+      :icon="aeoContent.icon"
+      :entries="aeoContent.entries"
+      :cta-to="aeoContent.ctaTo"
+      :cta-label="aeoContent.ctaLabel"
+    />
+
     <!-- Cross-links -->
     <CatalogCrossLinks
       title="Đi tiếp"
@@ -196,6 +196,15 @@ const INTEREST_TINT: Record<string, string> = {
   'mua-sam': 'var(--color-action-rgb)',
 }
 const interestTintRgb = computed(() => INTEREST_TINT[interest] || 'var(--color-brand-rgb)')
+
+const INTEREST_COVER: Record<string, string> = {
+  'am-thuc': '/img/cat-am-thuc.webp',
+  'lang-nghe': '/img/spread/lo-gach-640.webp',
+  'van-hoa': '/img/spread/chua-ang-640.webp',
+  'thien-nhien': '/img/spread/cu-lao-an-binh-640.webp',
+  'mua-sam': '/img/cat-ocop.webp',
+}
+const interestCover = computed(() => INTEREST_COVER[interest] || '/img/hero-poster.webp')
 
 // Lens hero icon — the interest's own motif glyph, reusing the same
 // generateCategoryIcon() system already powering EntityCard placeholders so
@@ -525,10 +534,13 @@ useHead(() => ({
    cascades into every page-local element below, so hero + intro + ribbon all
    share one cohesive per-interest colour. Falls back to --color-brand-rgb. */
 .catalog-hero.cat-interest {
-  /* lift the local hero with a soft brand wash keyed to the interest tone */
-  background:
+  /* lift the local hero with a soft brand wash + photographic terroir backdrop */
+  background-image:
+    linear-gradient(98deg, color-mix(in srgb, var(--bg) 94%, transparent) 0%, color-mix(in srgb, var(--bg) 85%, transparent) 54%, color-mix(in srgb, var(--bg) 62%, transparent) 100%),
     radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--color-brand-rgb)), .12), transparent 62%),
-    linear-gradient(135deg, rgba(var(--int-rgb, var(--color-brand-rgb)), .07) 0%, rgba(var(--color-action-rgb), .04) 100%);
+    var(--int-bg-image, url('/img/hero-poster.webp'));
+  background-size: cover;
+  background-position: center;
 }
 
 /* animated interest icon: gentle scale + fade reveal on mount, with a soft
@@ -650,9 +662,12 @@ useHead(() => ({
 
 /* Dark mode */
 .dark .catalog-hero.cat-interest {
-  background:
+  background-image:
+    linear-gradient(98deg, color-mix(in srgb, var(--bg) 94%, transparent) 0%, color-mix(in srgb, var(--bg) 85%, transparent) 54%, color-mix(in srgb, var(--bg) 68%, transparent) 100%),
     radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--color-brand-rgb)), .16), transparent 62%),
-    linear-gradient(135deg, rgba(var(--int-rgb, var(--color-brand-rgb)), .1) 0%, rgba(var(--color-action-rgb), .05) 100%);
+    var(--int-bg-image, url('/img/hero-poster.webp'));
+  background-size: cover;
+  background-position: center;
 }
 .dark .int-byline { color: var(--ink-tertiary) !important; }
 .dark .interest-nav .chip { background: var(--bg-alt); }

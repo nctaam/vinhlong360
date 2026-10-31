@@ -162,3 +162,61 @@ def test_stage2_audit_remediations_contracts():
     assert callable(learn_loop._persist_enrichments)
     assert hasattr(database, "Database")
 
+
+def test_publish_draft_strips_legacy_html_and_validates_post_type(monkeypatch):
+    monkeypatch.setattr(comm_api, "validate_path_id", lambda v, _: v)
+    monkeypatch.setattr(comm_api, "check_rate", lambda *a, **k: None)
+    monkeypatch.setattr(comm_api, "log_moderation", lambda *a, **k: None)
+    monkeypatch.setattr(comm_api, "_invalidate_social_caches", lambda: None)
+    monkeypatch.setattr(comm_api, "_enrich_post", lambda p, u: p)
+
+    async def _fake_mod(content, user_id=None, image_urls=None):
+        return {"status": "approved", "reason": "ok"}
+
+    monkeypatch.setattr(comm_api, "moderate_content_enhanced", _fake_mod)
+
+    captured_params = {}
+
+    class FakeDB:
+        _ph = "%s"
+
+        def _conn(self):
+            class _Ctx:
+                def __enter__(self_inner):
+                    return "conn"
+
+                def __exit__(self_inner, *args):
+                    return False
+
+            return _Ctx()
+
+        def _fetchone(self, conn, sql, params):
+            if "SELECT id, content, post_type" in sql:
+                return {
+                    "id": "d-1",
+                    "content": "<script>alert(1)</script>Chuyến đi cù lao An Bình thật tuyệt vời #vinhlong",
+                    "post_type": "review",
+                    "entity_id": "ent-an-binh",
+                    "rating": 5,
+                    "images": "[]",
+                }
+            captured_params["sql"] = sql
+            captured_params["params"] = params
+            return {
+                "id": "d-1",
+                "content": params[0],
+                "post_type": params[1],
+                "moderation_status": params[2],
+                "hashtags": params[3],
+            }
+
+        def _row_to_dict(self, row):
+            return dict(row)
+
+    monkeypatch.setattr(comm_api, "db", FakeDB())
+    res = asyncio.run(comm_api.publish_draft("d-1", user={"id": "u-1"}, _csrf=None, _idem=None))
+    assert "<script>" not in res["post"]["content"]
+    assert res["post"]["content"].startswith("alert(1)Chuyến đi cù lao An Bình")
+    assert res["post"]["post_type"] == "review"
+
+
