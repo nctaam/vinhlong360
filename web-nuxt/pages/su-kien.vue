@@ -60,30 +60,6 @@
     <!-- Spotlight -->
     <CatalogSpotlight :items="allEvents" color-recipe="tri-region-v1" />
 
-    <!-- AEO Plaque & Contemporary Event Ledger Digest -->
-    <CatalogAeoPlaque
-      title="Nhịp Điệu Sự Kiện &amp; Hội Chợ Vĩnh Long"
-      kicker="Góc nhìn bản địa · Nhịp đập sự kiện đương đại"
-      accent="amber"
-      icon="megaphone"
-      :entries="[
-        {
-          heading: 'Festival Gạch Gốm Đỏ Mang Thít',
-          text: 'Sự kiện văn hóa du lịch quy mô lớn tôn vinh hơn 100 năm di sản đương đại dọc kênh Thầy Cai và nghệ thuật nung đất sét đỏ độc bản.',
-        },
-        {
-          heading: 'Ngày hội Du lịch Sông nước Cù lao',
-          text: 'Diễn ra định kỳ vào mùa trái cây chín rộ tháng 5–7 hàng năm với giải đua ghe tam bản, đờn ca tài tử và tour tham quan vườn sinh thái.',
-        },
-        {
-          heading: 'Hội chợ Nông nghiệp &amp; Triển lãm OCOP',
-          text: 'Điểm giao thương và giới thiệu hơn 100 nông đặc sản OCOP tiêu biểu của 124 xã/phường toàn tỉnh Vĩnh Long và ĐBSCL.',
-        },
-      ]"
-      cta-to="/le-hoi"
-      cta-label="Khám phá sổ lễ hội truyền thống"
-    />
-
     <!-- Register toggle: contemporary (sự kiện, here) vs ancestral (lễ hội) — amber ↔ leaf -->
     <section class="block reveal">
       <div class="register-toggle" role="group" aria-label="Chọn sổ lễ hội">
@@ -157,16 +133,6 @@
           <span class="quick-pick-count">{{ countByArea(key as string) }} sự kiện</span>
         </button>
       </div>
-    </section>
-
-    <!-- Editorial: the contemporary register — same land, modern calendar -->
-    <section v-once class="page-article reveal">
-      <div class="sediment-head sediment-head-first"><h2>Sự kiện tại Vĩnh Long</h2></div>
-      <p>Ngoài các lễ hội truyền thống, các vùng của tỉnh Vĩnh Long hợp nhất (gồm khu vực Bến Tre và Trà Vinh trước 7-2025) ngày càng có nhiều sự kiện văn hoá, thể thao và du lịch hiện đại. Hội chợ nông sản, festival ẩm thực, giải chạy marathon, triển lãm nghệ thuật và các chương trình xúc tiến du lịch được tổ chức thường xuyên, đặc biệt vào dịp cuối tuần và các ngày lễ lớn.</p>
-      <blockquote class="pull-quote">
-        Thưởng thức ẩm thực đường phố, xem trình diễn nghề truyền thống, mua sản phẩm OCOP trực tiếp từ nhà sản xuất, hoặc tham gia hoạt động cộng đồng cùng người dân bản địa — cùng một vùng đất, nhưng qua nhịp sống đương đại gần gũi.
-        <cite>— Ban biên tập vinhlong360 · Ký sự sự kiện</cite>
-      </blockquote>
     </section>
 
     <!-- Divider -->
@@ -279,6 +245,40 @@
         </div>
       </div>
     </template>
+    </section>
+
+    <!-- AEO Plaque & Contemporary Event Ledger Digest -->
+    <CatalogAeoPlaque
+      title="Nhịp Điệu Sự Kiện &amp; Hội Chợ Vĩnh Long"
+      kicker="Góc nhìn bản địa · Nhịp đập sự kiện đương đại"
+      accent="amber"
+      icon="megaphone"
+      :entries="[
+        {
+          heading: 'Festival Gạch Gốm Đỏ Mang Thít',
+          text: 'Sự kiện văn hóa du lịch quy mô lớn tôn vinh hơn 100 năm di sản đương đại dọc kênh Thầy Cai và nghệ thuật nung đất sét đỏ độc bản.',
+        },
+        {
+          heading: 'Ngày hội Du lịch Sông nước Cù lao',
+          text: 'Diễn ra định kỳ vào mùa trái cây chín rộ tháng 5–7 hàng năm với giải đua ghe tam bản, đờn ca tài tử và tour tham quan vườn sinh thái.',
+        },
+        {
+          heading: 'Hội chợ Nông nghiệp &amp; Triển lãm OCOP',
+          text: 'Điểm giao thương và giới thiệu hơn 100 nông đặc sản OCOP tiêu biểu của 124 xã/phường toàn tỉnh Vĩnh Long và ĐBSCL.',
+        },
+      ]"
+      cta-to="/le-hoi"
+      cta-label="Khám phá sổ lễ hội truyền thống"
+    />
+
+    <!-- Editorial: the contemporary register — same land, modern calendar -->
+    <section v-once class="page-article reveal">
+      <div class="sediment-head sediment-head-first"><h2>Sự kiện tại Vĩnh Long</h2></div>
+      <p>Ngoài các lễ hội truyền thống, các vùng của tỉnh Vĩnh Long hợp nhất (gồm khu vực Bến Tre và Trà Vinh trước 7-2025) ngày càng có nhiều sự kiện văn hoá, thể thao và du lịch hiện đại. Hội chợ nông sản, festival ẩm thực, giải chạy marathon, triển lãm nghệ thuật và các chương trình xúc tiến du lịch được tổ chức thường xuyên, đặc biệt vào dịp cuối tuần và các ngày lễ lớn.</p>
+      <blockquote class="pull-quote">
+        Thưởng thức ẩm thực đường phố, xem trình diễn nghề truyền thống, mua sản phẩm OCOP trực tiếp từ nhà sản xuất, hoặc tham gia hoạt động cộng đồng cùng người dân bản địa — cùng một vùng đất, nhưng qua nhịp sống đương đại gần gũi.
+        <cite>— Ban biên tập vinhlong360 · Ký sự sự kiện</cite>
+      </blockquote>
     </section>
 
     <CatalogFaqAccordion

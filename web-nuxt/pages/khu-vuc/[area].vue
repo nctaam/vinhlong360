@@ -25,37 +25,8 @@
       </div>
     </section>
 
-    <!-- Editorial -->
-    <section v-if="areaEditorial" class="page-article reveal">
-      <h2>{{ areaEditorial.title }}</h2>
-      <p v-for="(p, i) in areaEditorial.paragraphs" :key="i">{{ p }}</p>
-    </section>
-
     <!-- Spotlight -->
     <CatalogSpotlight :items="entities" color-recipe="tri-region-v1" />
-
-    <!-- AEO Plaque: District Terroir & Cultural Geography Portfolio -->
-    <CatalogAeoPlaque
-      :title="areaAeoDigest.title"
-      :kicker="areaAeoDigest.kicker"
-      :accent="areaAeoDigest.accent"
-      :icon="areaAeoDigest.icon"
-      :entries="areaAeoDigest.entries"
-      :cta-to="areaAeoDigest.ctaTo"
-      :cta-label="areaAeoDigest.ctaLabel"
-    />
-
-    <!-- Interstitial -->
-    <CatalogInterstitial
-      v-if="typeStats.length"
-      :fact="`${areaMeta?.name} quy tụ ${typeStats.length} loại hình khác nhau — từ trải nghiệm miệt vườn đến ẩm thực, lưu trú và làng nghề.`"
-      icon-name="compass"
-      variant="warm"
-      :links="[
-        { to: `/du-lich?vung=${areaKey}`, label: `Du lịch ${areaMeta?.name}` },
-        { to: `/san-pham?vung=${areaKey}`, label: 'Đặc sản vùng' },
-      ]"
-    />
 
     <!-- Error state -->
     <EmptyState v-if="fetchError && !entities.length" tone="error" icon-name="alert-triangle" title="Không thể tải dữ liệu" message="Lỗi kết nối. Vui lòng thử lại.">
@@ -102,6 +73,35 @@
         <EntityCard v-for="e in (expanded[cat.type] ? cat.items : cat.items.slice(0, 8))" :key="e.id" :entity="e" />
       </div>
     </section>
+
+    <!-- Editorial -->
+    <section v-if="areaEditorial" class="page-article reveal">
+      <h2>{{ areaEditorial.title }}</h2>
+      <p v-for="(p, i) in areaEditorial.paragraphs" :key="i">{{ p }}</p>
+    </section>
+
+    <!-- AEO Plaque: District Terroir & Cultural Geography Portfolio -->
+    <CatalogAeoPlaque
+      :title="areaAeoDigest.title"
+      :kicker="areaAeoDigest.kicker"
+      :accent="areaAeoDigest.accent"
+      :icon="areaAeoDigest.icon"
+      :entries="areaAeoDigest.entries"
+      :cta-to="areaAeoDigest.ctaTo"
+      :cta-label="areaAeoDigest.ctaLabel"
+    />
+
+    <!-- Interstitial -->
+    <CatalogInterstitial
+      v-if="typeStats.length"
+      :fact="`${areaMeta?.name} quy tụ ${typeStats.length} loại hình khác nhau — từ trải nghiệm miệt vườn đến ẩm thực, lưu trú và làng nghề.`"
+      icon-name="compass"
+      variant="warm"
+      :links="[
+        { to: `/du-lich?vung=${areaKey}`, label: `Du lịch ${areaMeta?.name}` },
+        { to: `/san-pham?vung=${areaKey}`, label: 'Đặc sản vùng' },
+      ]"
+    />
 
     <!-- Wards — declutter-3 T12: thu gọn sau <details>, giữ toàn bộ link hub-spoke
          /xa-phuong/* trong DOM cho crawler (SEO-caution, không xoá) -->

@@ -446,6 +446,7 @@ export function useCognitiveTerroir() {
   }
 
   function onKeydown(e: KeyboardEvent) {
+    if (e.defaultPrevented) return
     // Alt+E for Elder Reading Mode
     if ((e.altKey && (e.key === 'e' || e.key === 'E')) || (e.altKey && e.code === 'KeyE')) {
       e.preventDefault()

@@ -56,16 +56,6 @@
       </div>
     </section>
 
-    <CatalogAeoPlaque
-      title="Nhịp điệu mùa vụ sông nước — Lịch nông sản & con nước nổi Vĩnh Long"
-      kicker="Chu kỳ tự nhiên · Thời điểm vàng trải nghiệm"
-      accent="clay"
-      icon="calendar"
-      :entries="catalogAeoEntries"
-      cta-to="/su-kien"
-      cta-label="Xem lịch sự kiện và lễ hội sắp tới"
-    />
-
     <!-- Spotlight nổi bật (entity đang mùa có summary dài nhất) -->
     <CatalogSpotlight :items="inSeasonItems" color-recipe="tri-region-v1" />
 
@@ -163,6 +153,16 @@
       </div>
       <NuxtLink to="/lien-he" class="b2b-callout-link">Gửi yêu cầu <IconLine name="arrow-right" class="b2b-arrow" /></NuxtLink>
     </aside>
+
+    <CatalogAeoPlaque
+      title="Nhịp điệu mùa vụ sông nước — Lịch nông sản & con nước nổi Vĩnh Long"
+      kicker="Chu kỳ tự nhiên · Thời điểm vàng trải nghiệm"
+      accent="clay"
+      icon="calendar"
+      :entries="catalogAeoEntries"
+      cta-to="/su-kien"
+      cta-label="Xem lịch sự kiện và lễ hội sắp tới"
+    />
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">

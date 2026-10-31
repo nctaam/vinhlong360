@@ -30,16 +30,6 @@
       </div>
     </section>
 
-    <CatalogAeoPlaque
-      title="Chỉ dẫn địa lý & Đặc sản Vĩnh Long — Nông sản thượng hạng đất phù sa"
-      kicker="Chỉ dẫn địa lý PGI & Bảo hộ thương hiệu"
-      accent="leaf"
-      icon="fruit"
-      :entries="catalogAeoEntries"
-      cta-to="/ocop"
-      cta-label="Danh mục sản phẩm OCOP đạt sao"
-    />
-
     <!-- declutter-3 T10: CatalogSpotlight đã bỏ — market-shelf mùa vụ thay vai khối tease
          duy nhất trước grid (chốt spec-review). -->
     <!-- Đang vào mùa — promoted above OCOP teaser: season is this page's spine -->
@@ -72,6 +62,16 @@
         <IconLine name="arrow-right" class="ocop-teaser-arrow" aria-hidden="true" />
       </NuxtLink>
     </section>
+
+    <CatalogAeoPlaque
+      title="Chỉ dẫn địa lý & Đặc sản Vĩnh Long — Nông sản thượng hạng đất phù sa"
+      kicker="Chỉ dẫn địa lý PGI & Bảo hộ thương hiệu"
+      accent="leaf"
+      icon="fruit"
+      :entries="catalogAeoEntries"
+      cta-to="/ocop"
+      cta-label="Danh mục sản phẩm OCOP đạt sao"
+    />
 
     <!-- Editorial — drop-cap (auto via .page-article) + pull-quote (concept §4).
          declutter-2 A2 (pilot): interstitial thôi đứng section riêng — inline vào giữa

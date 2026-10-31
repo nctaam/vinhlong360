@@ -32,16 +32,6 @@
       </ol>
     </section>
 
-    <CatalogAeoPlaque
-      title="Cẩm nang du lịch trải nghiệm — 124 xã, phường tỉnh Vĩnh Long"
-      kicker="Định hướng thực địa · Toàn tỉnh Vĩnh Long thống nhất"
-      :accent="(activeMode.accent as any) || 'clay'"
-      icon="map-pin"
-      :entries="catalogAeoEntries"
-      cta-to="/ban-do"
-      cta-label="Khám phá toàn tỉnh trên bản đồ số"
-    />
-
     <section class="catalog-filter-ledger block reveal" data-catalog-section="filters" aria-labelledby="catalog-filter-title">
       <header class="catalog-filter-ledger__header">
         <div>
@@ -169,6 +159,16 @@
         Xem thêm ({{ filtered.length - visibleCount }} còn lại)
       </button>
     </section>
+
+    <CatalogAeoPlaque
+      title="Cẩm nang du lịch trải nghiệm — 124 xã, phường tỉnh Vĩnh Long"
+      kicker="Định hướng thực địa · Toàn tỉnh Vĩnh Long thống nhất"
+      :accent="(activeMode.accent as any) || 'clay'"
+      icon="map-pin"
+      :entries="catalogAeoEntries"
+      cta-to="/ban-do"
+      cta-label="Khám phá toàn tỉnh trên bản đồ số"
+    />
 
     <section class="catalog-evidence block reveal" data-catalog-section="evidence" aria-labelledby="catalog-evidence-title">
       <header>

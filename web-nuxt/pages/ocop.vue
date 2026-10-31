@@ -34,16 +34,6 @@
       </div>
     </section>
 
-    <CatalogAeoPlaque
-      title="Bộ tiêu chuẩn chất lượng OCOP Vĩnh Long"
-      kicker="Quy chuẩn quốc gia · Xếp hạng 3 đến 5 sao"
-      accent="amber"
-      icon="trophy"
-      :entries="ocopAeoEntries"
-      cta-to="/san-pham"
-      cta-label="Khám phá chợ đặc sản mùa vụ"
-    />
-
     <!-- declutter-3 T9: CatalogSpotlight đã bỏ — 3 star-band honor-roll là "what's great"
          signal đặc trưng của trang này. -->
     <!-- Star-rank quick-jump — subordinate to the ledger bands below, not equal rank -->
@@ -100,6 +90,16 @@
         <EntityCard v-for="e in threeStarHighlights" :key="e.id" :entity="e" color-recipe="tri-region-v1" />
       </div>
     </section>
+
+    <CatalogAeoPlaque
+      title="Bộ tiêu chuẩn chất lượng OCOP Vĩnh Long"
+      kicker="Quy chuẩn quốc gia · Xếp hạng 3 đến 5 sao"
+      accent="amber"
+      icon="trophy"
+      :entries="ocopAeoEntries"
+      cta-to="/san-pham"
+      cta-label="Khám phá chợ đặc sản mùa vụ"
+    />
 
     <!-- declutter-2 A5: region-picks đã bỏ — lớp discovery thứ 4 trùng FilterChips
          khu-vực trong controls (nhà của 3 tầng filter sao/khu-vực/tháng). -->

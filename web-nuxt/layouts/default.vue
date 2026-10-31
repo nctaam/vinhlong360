@@ -151,7 +151,7 @@ const route = useRoute()
 const { envelope } = usePublicContextEnvelope()
 const { isLoggedIn, user } = useAuth()
 const { get: ss } = useSiteSettings()
-const { tide, isOffline, isEcoTerroir } = useCognitiveTerroir()
+const { tide, isOffline, isEcoTerroir, toggleElderMode, toggleHighGlare } = useCognitiveTerroir()
 const searchDrawerOpen = ref(false)
 
 const currentHour = useState<number>('vl360-current-hour', () => (new Date().getUTCHours() + 7) % 24)
@@ -431,6 +431,19 @@ const onGlobalKeydown = (e: KeyboardEvent) => {
     closeNav()
     searchDrawerOpen.value = false
     return
+  }
+
+  if (!e.defaultPrevented && e.altKey && !e.ctrlKey && !e.metaKey) {
+    if (e.key === 'e' || e.key === 'E' || e.code === 'KeyE') {
+      e.preventDefault()
+      toggleElderMode()
+      return
+    }
+    if (e.key === 's' || e.key === 'S' || e.code === 'KeyS') {
+      e.preventDefault()
+      toggleHighGlare()
+      return
+    }
   }
 
   if (!isEditableFocused() && !e.ctrlKey && !e.altKey && !e.metaKey) {
