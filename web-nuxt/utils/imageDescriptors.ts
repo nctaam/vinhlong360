@@ -61,7 +61,7 @@ const RENDERABLE_ENTITY_SOURCE_COMBINATIONS = new Set([
   'rights-cleared|press|entity-sourced-photo',
 ])
 
-const CANONICAL_LEGACY_ENTITY_IMAGE_PATTERN = /^\/img\/entities\/[a-z0-9]+(?:-+[a-z0-9]+)*\.webp$/
+const CANONICAL_LEGACY_ENTITY_IMAGE_PATTERN = /^\/img\/entities\/[a-z0-9]+(?:-+[a-z0-9]+)*-*\.webp$/
 
 function isValidPort(port: string): boolean {
   if (port.length > 5 || !DIGITS_ONLY_PATTERN.test(port)) return false

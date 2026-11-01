@@ -340,3 +340,17 @@ def test_homepage_itineraries_filter_hidden_entity_stops():
     assert [item["name"] for item in result[0]["stops"]] == [
         "Public child", "Free-form stop",
     ]
+
+
+def test_ground_truth_overlay_and_similar_reasons():
+    import entity_read
+    from entities import api as entities_api
+
+    row = _entity(
+        "p-hoa-thuan",
+        type="place",
+        summary="Phường Hòa Thuận thuộc tỉnh Vĩnh Long, sáp nhập từ Phường 5 (TP Trà Vinh) và xã Hòa Thuận (H.",
+    )
+    fixed = entity_read._apply_ground_truth_overlay(row)
+    assert fixed["summary"].endswith("(huyện Châu Thành cũ).")
+    assert entities_api._similar_reason_vi("same_ward") == "Gần nhau trong cùng xã, phường"

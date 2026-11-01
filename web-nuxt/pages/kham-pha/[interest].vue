@@ -199,12 +199,12 @@ const interestTintRgb = computed(() => INTEREST_TINT[interest] || 'var(--color-b
 
 const INTEREST_COVER: Record<string, string> = {
   'am-thuc': '/img/cat-am-thuc.webp',
-  'lang-nghe': '/img/spread/lo-gach-640.webp',
-  'van-hoa': '/img/spread/chua-ang-640.webp',
+  'lang-nghe': '/img/entities/lo-gach-mang-thit.webp',
+  'van-hoa': '/img/entities/chua-ang-angkorajaborey.webp',
   'thien-nhien': '/img/spread/cu-lao-an-binh-640.webp',
   'mua-sam': '/img/cat-ocop.webp',
 }
-const interestCover = computed(() => INTEREST_COVER[interest] || '/img/hero-poster.webp')
+const interestCover = computed(() => INTEREST_COVER[interest] || '/img/hero.webp')
 
 // Lens hero icon — the interest's own motif glyph, reusing the same
 // generateCategoryIcon() system already powering EntityCard placeholders so
@@ -538,7 +538,7 @@ useHead(() => ({
   background-image:
     linear-gradient(98deg, color-mix(in srgb, var(--bg) 94%, transparent) 0%, color-mix(in srgb, var(--bg) 85%, transparent) 54%, color-mix(in srgb, var(--bg) 62%, transparent) 100%),
     radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--color-brand-rgb)), .12), transparent 62%),
-    var(--int-bg-image, url('/img/hero-poster.webp'));
+    var(--int-bg-image, url('/img/hero.webp'));
   background-size: cover;
   background-position: center;
 }
@@ -665,7 +665,7 @@ useHead(() => ({
   background-image:
     linear-gradient(98deg, color-mix(in srgb, var(--bg) 94%, transparent) 0%, color-mix(in srgb, var(--bg) 85%, transparent) 54%, color-mix(in srgb, var(--bg) 68%, transparent) 100%),
     radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--color-brand-rgb)), .16), transparent 62%),
-    var(--int-bg-image, url('/img/hero-poster.webp'));
+    var(--int-bg-image, url('/img/hero.webp'));
   background-size: cover;
   background-position: center;
 }

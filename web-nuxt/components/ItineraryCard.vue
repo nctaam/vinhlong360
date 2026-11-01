@@ -56,9 +56,9 @@ const AREA_PHOTO: Record<string, string> = {
 }
 const ROVING = [
   '/img/spread/cu-lao-an-binh-640.webp',
-  '/img/spread/lo-gach-640.webp',
+  '/img/entities/lo-gach-mang-thit.webp',
   '/img/spread/song-nuoc-640.webp',
-  '/img/spread/chua-ang-640.webp',
+  '/img/entities/chua-ang-angkorajaborey.webp',
   '/img/area-vinh-long.webp',
   '/img/area-ben-tre.webp',
   '/img/area-tra-vinh.webp',
@@ -68,9 +68,9 @@ const coverSrc = computed(() => {
   const explicit = props.itinerary.image || props.itinerary.cover
   if (typeof explicit === 'string' && explicit.trim()) return explicit.trim()
   const text = `${props.itinerary.id || ''} ${props.itinerary.title || ''} ${props.itinerary.name || ''} ${props.itinerary.summary || ''}`.toLowerCase()
-  if (text.includes('gốm') || text.includes('mang thít') || text.includes('mang-thit') || text.includes('làng nghề')) return '/img/spread/lo-gach-640.webp'
+  if (text.includes('gốm') || text.includes('mang thít') || text.includes('mang-thit') || text.includes('làng nghề')) return '/img/entities/lo-gach-mang-thit.webp'
   if (text.includes('cù lao') || text.includes('an bình') || text.includes('an-binh') || text.includes('miệt vườn') || text.includes('trái cây')) return '/img/spread/cu-lao-an-binh-640.webp'
-  if (text.includes('chùa') || text.includes('khmer') || text.includes('tâm linh')) return '/img/spread/chua-ang-640.webp'
+  if (text.includes('chùa') || text.includes('khmer') || text.includes('tâm linh')) return '/img/entities/chua-ang-angkorajaborey.webp'
   if (text.includes('ẩm thực') || text.includes('món ngon') || text.includes('ăn')) return '/img/cat-am-thuc.webp'
   if (text.includes('sông') || text.includes('chợ nổi') || text.includes('nước nổi')) return '/img/spread/song-nuoc-640.webp'
   const direct = AREA_PHOTO[props.itinerary.area]

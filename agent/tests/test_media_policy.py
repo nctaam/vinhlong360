@@ -62,6 +62,8 @@ def test_media_policy_owns_exact_source_triples_and_shared_error_detail():
     [
         ("/img/entities/ok.webp", True),
         ("/img/entities/ben-ninh-kieu-2.webp", True),
+        ("/img/entities/son-hao---hai-san.webp", True),
+        ("/img/entities/lang-ong-tien-quan-thong-che-dieu-bat-tuong-quan-nguyen-van-.webp", True),
         ("/img/entities/UPPER.webp", False),
         ("/img/entities/under_score.webp", False),
         ("/img/entities/nested/ok.webp", False),

@@ -80,7 +80,7 @@ const titleId = `catalog-aeo-title-${instanceId}`
 
 const AEO_FALLBACK_COVERS: Record<string, string[]> = {
   amber: ['/img/cat-am-thuc.webp', '/img/cat-ocop.webp', '/img/spread/cu-lao-an-binh-640.webp'],
-  clay: ['/img/entities/lang-gom-do-mang-thit.webp', '/img/area-vinh-long.webp', '/img/entities/van-thanh-mieu-vinh-long.webp'],
+  clay: ['/img/entities/lo-gach-mang-thit.webp', '/img/area-vinh-long.webp', '/img/entities/van-thanh-mieu-vinh-long.webp'],
   leaf: ['/img/spread/cu-lao-an-binh-640.webp', '/img/area-ben-tre.webp', '/img/cat-du-lich.webp'],
   river: ['/img/spread/song-nuoc-640.webp', '/img/area-tra-vinh.webp', '/img/cat-lich-trinh.webp'],
   neutral: ['/img/area-vinh-long.webp', '/img/area-ben-tre.webp', '/img/area-tra-vinh.webp'],
@@ -94,7 +94,7 @@ function resolveDefaultEntryCover(
   if (item.coverSrc) return { coverSrc: item.coverSrc, tag: item.tag }
   const h = `${item.heading} ${item.text}`.toLowerCase()
   if (h.includes('gốm') || h.includes('mang thít') || h.includes('lò gạch')) {
-    return { coverSrc: '/img/entities/lang-gom-do-mang-thit.webp', tag: item.tag || 'Di sản Gốm Đỏ' }
+    return { coverSrc: '/img/entities/lo-gach-mang-thit.webp', tag: item.tag || 'Di sản Gốm Đỏ' }
   }
   if (h.includes('bến tre') || h.includes('xứ dừa') || h.includes('chợ lách') || h.includes('mỹ lồng')) {
     return { coverSrc: '/img/area-ben-tre.webp', tag: item.tag || 'Bến Tre · Xứ Dừa' }

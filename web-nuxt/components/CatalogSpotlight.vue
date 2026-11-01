@@ -59,7 +59,7 @@ const SPOTLIGHT_CATEGORY_IMAGES: Record<string, string> = {
   experience: '/img/spread/cu-lao-an-binh-640.webp',
   dish: '/img/cat-am-thuc.webp',
   product: '/img/cat-ocop.webp',
-  craft: '/img/entities/lang-gom-do-mang-thit.webp',
+  craft: '/img/entities/lo-gach-mang-thit.webp',
   accommodation: '/img/cat-luu-tru.webp',
   event: '/img/cat-le-hoi.webp',
   nature: '/img/spread/song-nuoc-640.webp',

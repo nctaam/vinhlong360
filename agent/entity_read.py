@@ -16,6 +16,8 @@ ROADMAP về "năm truy vấn quét-toàn-kho cắt lặng lẽ".
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
 import threading as _threading
 from collections import OrderedDict
 from typing import Optional
@@ -94,6 +96,66 @@ _place_cache: OrderedDict[str, dict] = OrderedDict()
 _place_cache_lock = _threading.Lock()
 
 
+def _load_ground_truth_overlays() -> tuple[dict[str, dict], dict[str, dict]]:
+    """Load verified summary/attribute overlays from outputs/ground-truth-9router-verification-2026-10-21.json
+    in-memory without mutating web/data.json or agent/data/vinhlong360.db on disk."""
+    summary_fixes: dict[str, dict] = {}
+    dossier_fixes: dict[str, dict] = {}
+    try:
+        gt_path = Path(__file__).resolve().parent.parent / "outputs" / "ground-truth-9router-verification-2026-10-21.json"
+        if not gt_path.exists():
+            return summary_fixes, dossier_fixes
+        payload = json.loads(gt_path.read_text(encoding="utf-8"))
+        for item in payload.get("truncatedSummaryFixes", []):
+            eid = item.get("entityId")
+            if eid and item.get("verifiedSummary"):
+                summary_fixes[eid] = item
+        for item in payload.get("verifiedDossiers", []):
+            eid = item.get("entityId")
+            if eid and isinstance(item.get("verifiedGroundTruth"), dict):
+                dossier_fixes[eid] = item
+    except Exception:
+        pass
+    return summary_fixes, dossier_fixes
+
+
+_SUMMARY_FIXES, _DOSSIER_FIXES = _load_ground_truth_overlays()
+
+
+def _apply_summary_fix(e: dict, sfix: dict | None) -> dict:
+    if not sfix or e.get("summary") != sfix.get("currentSummary"):
+        return e
+    out = dict(e)
+    out["summary"] = sfix["verifiedSummary"]
+    if not out.get("description") or out.get("description") == sfix.get("currentSummary"):
+        out["description"] = sfix.get("verifiedDescription") or sfix["verifiedSummary"]
+    return out
+
+
+def _apply_dossier_fix(e: dict, dfix: dict | None) -> dict:
+    if not dfix or len(str(e.get("summary") or "")) <= 25:
+        return e
+    gt = dfix["verifiedGroundTruth"]
+    curr = dfix.get("currentInDataJson") or {}
+    out = dict(e)
+    if gt.get("summary") and out.get("summary") == curr.get("summary"):
+        out["summary"] = gt["summary"]
+    attrs = dict(out.get("attributes") or {})
+    for k in ("address", "phone", "hours"):
+        if gt.get(k) and not attrs.get(k):
+            attrs[k] = gt[k]
+    out["attributes"] = attrs
+    return out
+
+
+def _apply_ground_truth_overlay(e: dict) -> dict:
+    eid = e.get("id")
+    if not eid:
+        return e
+    e = _apply_summary_fix(e, _SUMMARY_FIXES.get(eid))
+    return _apply_dossier_fix(e, _DOSSIER_FIXES.get(eid))
+
+
 def _is_public(e: dict) -> bool:
     """Entity được hiển thị công khai (listing/homepage): loại entity provisional /
     chưa kiểm chứng (auto-learned). Quarantine cho public display — KB chat vẫn dùng,
@@ -105,18 +167,18 @@ def _get_public_entity(entity_id: str) -> Optional[dict]:
     entity = db.get_entity(entity_id)
     if not entity or not _is_public(entity):
         return None
-    return entity
+    return _apply_ground_truth_overlay(entity)
 
 
 def _filter_public_entities(entities: list[dict]) -> list[dict]:
     """Keep only entities eligible for anonymous public projections."""
-    return [entity for entity in entities if _is_public(entity)]
+    return [_apply_ground_truth_overlay(entity) for entity in entities if _is_public(entity)]
 
 
 def _get_public_entities_batch(entity_ids: list[str]) -> dict[str, dict]:
     """Batch lookup that cannot return provisional or explicitly unverified rows."""
     return {
-        entity_id: entity
+        entity_id: _apply_ground_truth_overlay(entity)
         for entity_id, entity in db.get_entities_batch(entity_ids).items()
         if _is_public(entity)
     }

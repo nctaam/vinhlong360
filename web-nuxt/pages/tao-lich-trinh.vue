@@ -62,7 +62,7 @@
             :class="['picker-item', { adding: addingId === e.id }]"
             @click="addStop(e)"
           >
-            <img :src="plannerTypeThumb(e.type)" :alt="getTypeMeta(e.type).label" class="picker-thumb" loading="lazy" decoding="async" width="44" height="44" />
+            <img :src="plannerItemThumb(e)" :alt="getTypeMeta(e.type).label" class="picker-thumb" loading="lazy" decoding="async" width="44" height="44" />
             <IconLine class="picker-emoji" :name="getTypeMeta(e.type).icon" aria-hidden="true" />
             <div class="picker-info">
               <strong :title="e.name">{{ e.name }}</strong>
@@ -218,7 +218,7 @@
                 @keydown.alt.down.prevent="moveStop(idx, 1)"
               >
                 <div class="stop-card-head">
-                  <img :src="plannerTypeThumb(stop.type)" :alt="getTypeMeta(stop.type).label" class="stop-thumb" loading="lazy" decoding="async" width="44" height="44" />
+                  <img :src="plannerItemThumb(stop)" :alt="getTypeMeta(stop.type).label" class="stop-thumb" loading="lazy" decoding="async" width="44" height="44" />
                   <IconLine class="stop-emoji" :name="getTypeMeta(stop.type).icon" aria-hidden="true" />
                   <div class="stop-card-info">
                     <strong>{{ stop.name }}</strong>
@@ -735,15 +735,22 @@ const PLANNER_TYPE_THUMBS: Record<string, string> = {
   attraction: '/img/cat-du-lich.webp',
   dish: '/img/cat-am-thuc.webp',
   accommodation: '/img/cat-luu-tru.webp',
-  product: '/img/cat-san-pham.webp',
-  craft_village: '/img/cat-lang-nghe.webp',
+  product: '/img/cat-ocop.webp',
+  craft_village: '/img/entities/lo-gach-mang-thit.webp',
   event: '/img/cat-le-hoi.webp',
-  history: '/img/cat-lich-su.webp',
-  nature: '/img/cat-sinh-thai.webp',
+  history: '/img/entities/van-thanh-mieu-vinh-long.webp',
+  nature: '/img/spread/song-nuoc-640.webp',
   experience: '/img/spread/cu-lao-an-binh-640.webp',
 }
 function plannerTypeThumb(type?: string): string {
   return (type && PLANNER_TYPE_THUMBS[type]) || '/img/cat-du-lich.webp'
+}
+function plannerItemThumb(item?: { id?: string; type?: string } | null): string {
+  const id = item?.id?.trim()
+  if (id && /^[a-z0-9]+(?:-+[a-z0-9]+)*-*$/.test(id)) {
+    return `/img/entities/${id}.webp`
+  }
+  return plannerTypeThumb(item?.type)
 }
 
 function onWizardTabKeydown(event: KeyboardEvent, step: 1 | 2 | 3) {

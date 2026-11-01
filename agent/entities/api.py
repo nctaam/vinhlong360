@@ -91,6 +91,7 @@ from entity_read import (
     _rollout_enabled,
     _public_entity_has_media,
     _gallery_editorial_images,
+    _apply_cached_place,
     _enrich_place,
     _get_place,
     _public_facilities_by_place,
@@ -285,16 +286,16 @@ def _entity_card_shape(entity: dict, *, score: float | None = None, reason_vi: s
 def _similar_reason_vi(reason: str) -> str:
     raw = str(reason or "")
     if "related" in raw:
-        return "Lien quan trong ban do tri thuc"
+        return "Liên quan trong bản đồ tri thức"
     if "same_ward" in raw:
-        return "Gan nhau trong cung xa phuong"
+        return "Gần nhau trong cùng xã, phường"
     if "same_area" in raw:
-        return "Cung khu vuc kham pha"
+        return "Cùng khu vực khám phá"
     if "shared_tags" in raw:
-        return "Co chu de trai nghiem gan nhau"
+        return "Có chủ đề trải nghiệm gần nhau"
     if "same_type" in raw:
-        return "Cung nhom noi dung"
-    return "Phu hop de kham pha tiep"
+        return "Cùng nhóm nội dung"
+    return "Phù hợp để khám phá tiếp"
 
 
 async def _fetch_entities_page(
@@ -865,7 +866,7 @@ async def list_places(response: Response, area: Optional[str] = Query(None, max_
 _WARD_GROUPS = {
     "tourism": {"attraction", "nature", "experience", "craft_village", "history", "event"},
     "lodging": {"accommodation"},
-    "products": {"product", "dish", "drink"},
+    "products": {"product", "dish", "drink", "restaurant", "cafe"},
 }
 
 
@@ -883,10 +884,12 @@ async def place_overview(place_id: str, response: Response):
         if not p or p.get("type") != "place":
             return None
         ents = _public_entities_by_place(place_id)
+        cached_place = {"name": p.get("name"), "area": p.get("area")}
         groups: dict[str, list] = {"tourism": [], "lodging": [], "products": [], "other": []}
         for e in ents:
             t = e.get("type")
             placed = False
+            _apply_cached_place(e, cached_place=cached_place)
             projected = _project_public_entity_media(e)
             for g, types in _WARD_GROUPS.items():
                 if t in types:
@@ -899,7 +902,8 @@ async def place_overview(place_id: str, response: Response):
             "place": {"id": p["id"], "name": p.get("name"), "area": p.get("area"),
                       "level": p.get("level"), "summary": p.get("summary"),
                       "attributes": p.get("attributes", {}),
-                      "coordinates": p.get("coordinates")},
+                      "coordinates": p.get("coordinates"),
+                      "quality": entity_quality(p)},
             "facilities": _public_facilities_by_place(place_id),
             "counts": {g: len(v) for g, v in groups.items()},
             "tourism": groups["tourism"],

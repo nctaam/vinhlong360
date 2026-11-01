@@ -45,7 +45,7 @@ AI_ONLY_MEDIA_DETAIL = {
 }
 
 _CANONICAL_LEGACY_ENTITY_IMAGE = re.compile(
-    r"/img/entities/[a-z0-9]+(?:-[a-z0-9]+)*\.webp\Z"
+    r"/img/entities/[a-z0-9]+(?:-+[a-z0-9]+)*-*\.webp\Z"
 )
 
 

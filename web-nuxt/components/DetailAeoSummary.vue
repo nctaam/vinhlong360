@@ -86,16 +86,100 @@ const quickSummary = computed(() => {
   return attrs.value.highlight || props.entity?.description || props.entity?.name
 })
 
+const TYPE_DEFAULTS: Record<string, { goldenHour: string; transit: string; durationCost: string; tip: string }> = {
+  attraction: {
+    goldenHour: '07:00 – 10:00 hoặc 15:30 – 17:30 (nắng dịu, thuận tiện chụp ảnh)',
+    transit: 'Đường bộ thuận tiện cho xe máy và ô tô từ trung tâm phường/xã',
+    durationCost: '60 – 90 phút · Tham quan tự do',
+    tip: 'Nên đi vào buổi sáng sớm để tận hưởng không gian thoáng đãng và ánh sáng đẹp.',
+  },
+  nature: {
+    goldenHour: '06:30 – 09:30 hoặc 16:00 – 17:30 (mát mẻ, nhiều chim và gió sông)',
+    transit: 'Kết hợp đường bộ và đò ngang/thuyền chèo theo tuyến sông rạch',
+    durationCost: '90 – 120 phút · Theo dịch vụ trải nghiệm tại điểm',
+    tip: 'Chuẩn bị nón rộng vành, nước uống và hỏi trước lịch con nước trước khi xuống bến.',
+  },
+  history: {
+    goldenHour: '07:30 – 11:00 hoặc 14:00 – 16:30 (khung giờ mở cửa di tích)',
+    transit: 'Đường nhựa thông thoáng, có sân dừng đỗ xe cho khách đoàn và cá nhân',
+    durationCost: '45 – 60 phút · Miễn phí vào cổng',
+    tip: 'Mặc trang phục lịch sự, kín đáo và giữ trật tự khi vào khu vực chánh điện/nhà tưởng niệm.',
+  },
+  experience: {
+    goldenHour: '08:00 – 11:30 hoặc 14:30 – 17:00 (trải nghiệm miệt vườn & sông nước)',
+    transit: 'Di chuyển bằng xe máy, ô tô hoặc phà qua cù lao theo hướng dẫn bản đồ',
+    durationCost: '2 – 3 giờ · Tùy gói trải nghiệm thực tế',
+    tip: 'Liên hệ trước nếu đi theo đoàn đông để nhà vườn chuẩn bị trái cây và bữa ăn dân dã.',
+  },
+  craft_village: {
+    goldenHour: '07:00 – 10:30 (thời điểm nghệ nhân đang làm nghề nhộn nhịp nhất)',
+    transit: 'Đường liên xã ven sông rạch, thuận tiện đi xe máy hoặc xe đạp khám phá',
+    durationCost: '60 – 90 phút · Tham quan tự do, mua sản phẩm tại xưởng',
+    tip: 'Xin phép nghệ nhân trước khi chụp ảnh cận cảnh quy trình sản xuất truyền thống.',
+  },
+  accommodation: {
+    goldenHour: 'Nhận phòng từ 14:00 · Trả phòng trước 12:00 trưa hôm sau',
+    transit: 'Có lối đón khách đường bộ hoặc bến tàu đưa đón nếu ở khu vực cù lao',
+    durationCost: 'Lưu trú qua đêm · Liên hệ trực tiếp để nhận báo giá theo mùa',
+    tip: 'Đặt phòng trước 3–5 ngày vào dịp cuối tuần hoặc mùa lễ hội trái cây.',
+  },
+  restaurant: {
+    goldenHour: '11:00 – 13:30 (bữa trưa) hoặc 17:30 – 20:30 (bữa tối)',
+    transit: 'Đường phố trung tâm hoặc ven sông, có chỗ đậu xe máy và ô tô',
+    durationCost: '60 – 90 phút · Theo thực đơn niêm yết tại quán',
+    tip: 'Gọi trước các món đặc sản theo mùa và đặt bàn sớm nếu đi nhóm gia đình cuối tuần.',
+  },
+  cafe: {
+    goldenHour: '06:30 – 09:30 (cà phê sáng) hoặc 16:30 – 21:00 (ngắm hoàng hôn/phố đêm)',
+    transit: 'Thuận tiện di chuyển bằng xe máy hoặc đi bộ quanh khu trung tâm',
+    durationCost: '45 – 60 phút · Giá đồ uống bình dân địa phương',
+    tip: 'Chọn bàn ngoài hiên hoặc ven bờ sông vào buổi chiều mát để cảm nhận nhịp sống Vĩnh Long.',
+  },
+  dish: {
+    goldenHour: 'Thưởng thức ngon nhất khi món ăn vừa chế biến nóng tại quán bản địa',
+    transit: 'Tìm tại các quán ăn gia truyền, chợ trung tâm hoặc khu ẩm thực địa phương',
+    durationCost: '30 – 45 phút · Mức giá bình dân địa phương',
+    tip: 'Ăn kèm rau vườn tươi theo mùa và nước chấm pha chế theo công thức riêng của đầu bếp.',
+  },
+  drink: {
+    goldenHour: 'Thưởng thức buổi trưa nắng hoặc chiều mát để giải nhiệt',
+    transit: 'Phổ biến tại các quán giải khát, chợ đêm và điểm dừng chân miệt vườn',
+    durationCost: '15 – 30 phút · Mức giá bình dân',
+    tip: 'Ngon hơn khi dùng nguyên liệu tươi trong ngày và ít đá để giữ trọn vị tự nhiên.',
+  },
+  product: {
+    goldenHour: 'Mua sắm thuận tiện từ 07:30 – 18:00 tại điểm bán hoặc hợp tác xã',
+    transit: 'Bán tại cơ sở sản xuất, cửa hàng OCOP và các chợ đặc sản trung tâm',
+    durationCost: '15 – 30 phút chọn mua · Theo giá niêm yết sản phẩm',
+    tip: 'Kiểm tra tem truy xuất nguồn gốc OCOP và hỏi cách bảo quản nếu mang đi xa làm quà.',
+  },
+  event: {
+    goldenHour: 'Theo lịch tổ chức lễ hội hằng năm (ưu tiên buổi sáng sớm và đêm hội)',
+    transit: 'Tập trung tại không gian lễ hội trung tâm; nên gửi xe ở bãi giữ xe quy định',
+    durationCost: '2 – 4 giờ · Tham dự cộng đồng tự do',
+    tip: 'Đến sớm trước giờ khai mạc để chọn vị trí quan sát tốt và bảo quản tư trang cá nhân.',
+  },
+  facility: {
+    goldenHour: 'Giờ hành chính 07:30 – 17:00 (hoặc 24/7 đối với dịch vụ cấp cứu/ATM)',
+    transit: 'Nằm trên trục đường chính của phường/xã, dễ dàng tra cứu định vị',
+    durationCost: '15 – 45 phút giao dịch',
+    tip: 'Mang theo giấy tờ tùy thân (CCCD) hoặc kiểm tra số điện thoại liên hệ trước khi đến.',
+  },
+}
+
+const typeDefault = computed(() => TYPE_DEFAULTS[props.entity?.type || ''] || TYPE_DEFAULTS.attraction!)
+
 const goldenHour = computed(() => {
   if (attrs.value.best_time) return String(attrs.value.best_time)
   if (attrs.value.hours) return "Mở cửa: " + String(attrs.value.hours)
-  return ''
+  return typeDefault.value.goldenHour
 })
 
 const transitInfo = computed(() => {
   if (attrs.value.transport) return String(attrs.value.transport)
   if (attrs.value.vehicle_access) return "Đường đến: " + String(attrs.value.vehicle_access)
-  return ''
+  if (attrs.value.address) return "Địa chỉ: " + String(attrs.value.address)
+  return typeDefault.value.transit
 })
 
 const durationAndCost = computed(() => {
@@ -104,12 +188,13 @@ const durationAndCost = computed(() => {
     ? String(attrs.value.price || attrs.value.fee || attrs.value.price_range)
     : ''
   if (duration && cost) return duration + " · " + cost
-  return duration || cost || ''
+  return duration || cost || typeDefault.value.durationCost
 })
 
 const localTip = computed(() => {
   if (attrs.value.local_tip) return String(attrs.value.local_tip)
-  return ''
+  if (attrs.value.travel_tip) return String(attrs.value.travel_tip)
+  return typeDefault.value.tip
 })
 
 const tideCue = computed(() => {
