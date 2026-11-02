@@ -155,7 +155,7 @@
                 </span>
               </div>
               <p v-if="stop.summary" class="summary">{{ stop.summary }}</p>
-              <p v-if="stop.note" class="step-note-callout"><IconLine name="bulb" class="tnc-icon" aria-hidden="true" /><span>{{ stop.note }}</span></p>
+              <p v-if="cleanStopNote(stop)" class="step-note-callout"><IconLine name="bulb" class="tnc-icon" aria-hidden="true" /><span>{{ cleanStopNote(stop) }}</span></p>
             </div>
           </div>
         </li>
@@ -299,6 +299,16 @@ function catClass(type?: string) {
 
 function stopIdentity(stop: any): string {
   return String(stop?.id || stop?.entityId || stop?.entity_id || '')
+}
+
+function cleanStopNote(stop: any): string {
+  const note = typeof stop?.note === 'string' ? stop.note.trim() : ''
+  if (!note || note === stop?.summary) return ''
+  const sid = stopIdentity(stop)
+  if (sid && note.includes(sid) && stop?.name) {
+    return note.replaceAll(sid, stop.name)
+  }
+  return note
 }
 
 // ── Time-of-day parsing (signature moment, §10 sun-arc rail + timeline

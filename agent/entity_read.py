@@ -197,6 +197,26 @@ def _itinerary_stop_entity_id(stop) -> str:
     return ""
 
 
+def _clean_stop_note(stop: dict, stop_id: str, entity: dict) -> None:
+    note = stop.get("note")
+    if not stop_id or not isinstance(note, str) or stop_id not in note:
+        return
+    attrs = entity.get("attributes")
+    tip = (attrs.get("travel_tip") or attrs.get("highlight")) if isinstance(attrs, dict) else None
+    stop["note"] = str(tip).strip() if tip else note.replace(stop_id, entity["name"])
+
+
+def _enrich_itinerary_stop(stop: dict, stop_id: str, entity: dict) -> None:
+    stop.setdefault("id", stop_id)
+    stop.setdefault("entityId", stop_id)
+    stop["name"] = entity["name"]
+    if not stop.get("summary"):
+        stop["summary"] = entity.get("summary", "")
+    stop["type"] = entity["type"]
+    if entity.get("coordinates"):
+        stop["coordinates"] = entity["coordinates"]
+
+
 def _public_itinerary_stops(
     stops: list, public_entities: dict[str, dict] | None = None, *, enrich: bool = False,
 ) -> list:
@@ -208,17 +228,11 @@ def _public_itinerary_stops(
         stop_id = _itinerary_stop_entity_id(stop)
         if stop_id and stop_id not in public_entities:
             continue
-        if enrich and isinstance(stop, dict):
-            entity = public_entities.get(stop_id)
-            if entity:
-                stop.setdefault("id", stop_id)
-                stop.setdefault("entityId", stop_id)
-                stop["name"] = entity["name"]
-                if not stop.get("summary"):
-                    stop["summary"] = entity.get("summary", "")
-                stop["type"] = entity["type"]
-                if entity.get("coordinates"):
-                    stop["coordinates"] = entity["coordinates"]
+        entity = public_entities.get(stop_id) if isinstance(stop, dict) else None
+        if entity:
+            _clean_stop_note(stop, stop_id, entity)
+            if enrich:
+                _enrich_itinerary_stop(stop, stop_id, entity)
         result.append(stop)
     return result
 

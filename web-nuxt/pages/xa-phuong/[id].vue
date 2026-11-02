@@ -118,6 +118,10 @@
               <dt>Hợp nhất từ</dt>
               <dd>{{ attrs.merged_from.join(', ') }}</dd>
             </div>
+            <div v-if="Array.isArray(attrs.terroir_anchors) && attrs.terroir_anchors.length">
+              <dt>Đặc trưng</dt>
+              <dd>{{ attrs.terroir_anchors.join(' · ') }}</dd>
+            </div>
             <div v-if="attrs.area_km2">
               <dt>Diện tích</dt>
               <dd>{{ attrs.area_km2 }} km²</dd>
@@ -188,6 +192,9 @@
         <div v-if="data.place.summary" class="wp-summary-wrap">
           <p class="wp-summary">
             {{ data.place.summary }}
+          </p>
+          <p v-if="data.place.description && data.place.description !== data.place.summary && data.place.description !== attrs.administrative_history" class="wp-admin-history">
+            {{ data.place.description }}
           </p>
           <p v-if="attrs.administrative_history && attrs.administrative_history !== data.place.summary" class="wp-admin-history">
             {{ attrs.administrative_history }}

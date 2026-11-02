@@ -135,6 +135,26 @@
             </a>
           </div>
 
+          <div v-if="healthPhone" class="ward-terroir-digest__contact-row">
+            <div class="ward-terroir-digest__contact-meta">
+              <span class="ward-terroir-digest__contact-label">Trạm Y tế địa bàn</span>
+              <span class="ward-terroir-digest__contact-sub">Sơ cấp cứu &amp; Y tế dự phòng</span>
+            </div>
+            <a
+              :href="telHref(healthPhone)"
+              class="ward-terroir-digest__call-btn"
+              data-contact-action="phone"
+              data-contact-surface="ward-detail"
+              data-contact-outcome="navigation"
+              :data-contact-entity-id="place.id"
+              :aria-label="`Gọi Trạm Y tế ${placeName}: ${healthPhone}`"
+              @click="trackContactView(place.id, 'phone')"
+            >
+              <IconLine name="phone" aria-hidden="true" />
+              <span>{{ healthPhone }}</span>
+            </a>
+          </div>
+
           <div class="ward-terroir-digest__contact-row">
             <div class="ward-terroir-digest__contact-meta">
               <span class="ward-terroir-digest__contact-label">Cấp cứu Y tế &amp; Cứu nạn</span>
@@ -186,6 +206,10 @@ const attrs = computed(() => (props.place?.attributes || {}) as Record<string, a
 
 const policePhone = computed(() => {
   return attrs.value.police_phone || '0270 3822 224'
+})
+
+const healthPhone = computed(() => {
+  return attrs.value.health_phone ? String(attrs.value.health_phone) : ''
 })
 
 const accent = computed<'leaf' | 'clay' | 'amber' | 'river' | 'neutral'>(() => {
@@ -360,6 +384,22 @@ const terroirSpecs = computed<TerroirSpec[]>(() => {
     ]
   }
 
+  const anchors = Array.isArray(attrs.value.terroir_anchors)
+    ? attrs.value.terroir_anchors.filter((a: unknown) => typeof a === 'string' && a.trim())
+    : []
+  if (anchors.length) {
+    const former = attrs.value.former_district ? ` (${attrs.value.former_district})` : ''
+    return anchors.slice(0, 3).map((title: string, idx: number) => ({
+      title,
+      desc: idx === 0
+        ? `Điểm nhấn văn hóa – sản vật tiêu biểu gắn liền với thổ nhưỡng địa bàn ${placeName.value}${former}.`
+        : idx === 1
+          ? `Di sản nghề truyền thống và ẩm thực bản địa đặc sắc của người dân ${placeName.value}.`
+          : `Không gian sinh thái, tín ngưỡng và trải nghiệm điền dã đặc trưng tại ${placeName.value}.`,
+      badge: idx === 0 ? 'Bản địa' : idx === 1 ? 'Đặc sản' : 'Điểm nhấn',
+    }))
+  }
+
   return [
     {
       title: 'Bánh tét 3 màu nghệ nhân',
@@ -437,6 +477,26 @@ const transitGuide = computed<TransitGuide>(() => {
         'Trục ĐT 904 và ĐT 905 kết nối các vựa cam sành và miệt vườn trù phú. Đường nông thôn mới rộng rãi, ô tô dưới 16 chỗ tiếp cận dễ dàng. Vào dịp triều cường ngày rằm và mùng một âm lịch, du khách nên chú ý quan sát mé đường ven rạch.',
       vehicle: 'Ô tô dưới 16 chỗ · Xe máy',
       tide: 'Triều cường nhẹ mé rạch ngày rằm',
+    }
+  }
+
+  if (area === 'ben-tre') {
+    return {
+      kicker: 'Dải Cù Lao Xứ Dừa',
+      detail:
+        'Mạng lưới giao thông kết nối qua trục Quốc lộ 60, Quốc lộ 57B, Quốc lộ 57C và hệ thống cầu – bến đò vượt sông Tiền, Hàm Luông, Cổ Chiên. Thuận tiện di chuyển bằng ô tô, xe máy và thuyền du lịch sinh thái rạch dừa nước.',
+      vehicle: 'Ô tô · Xe máy · Đò chèo rạch dừa',
+      tide: 'Theo dõi con nước sông Hàm Luông',
+    }
+  }
+
+  if (area === 'tra-vinh') {
+    return {
+      kicker: 'Hành Lang Cổ Chiên – Cung Hầu',
+      detail:
+        'Kết nối thông suốt qua Quốc lộ 53, Quốc lộ 54 và Quốc lộ 60 giữa hai nhánh sông Cổ Chiên – Cung Hầu hướng ra biển Đông. Đường rợp bóng cây cổ thụ trăm năm, thuận lợi cho cả ô tô đoàn và xe máy khám phá quần thể chùa Khmer.',
+      vehicle: 'Ô tô · Xe máy · Xe đạp dưới tán cổ thụ',
+      tide: 'Gió biển & thuỷ triều cửa sông',
     }
   }
 

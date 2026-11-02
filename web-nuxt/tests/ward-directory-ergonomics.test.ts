@@ -72,6 +72,25 @@ describe('WardTerroirDigest & 24/7 Emergency Directory Ergonomics (Moc 127)', ()
       expect(wrapper.text()).toContain('Di sản Quốc gia')
       expect(wrapper.text()).toContain('Cầu Cần Thơ')
     })
+
+    it('renders dynamic terroir_anchors, health_phone, and Ben Tre transit advisories', async () => {
+      const place = {
+        id: 'p-ba-tri',
+        name: 'Phường Ba Tri',
+        area: 'ben-tre',
+        attributes: {
+          former_district: 'H. Ba Tri',
+          police_phone: '0275 3591 10',
+          health_phone: '0275 3592 10',
+          terroir_anchors: ['Rượu nếp Phú Lễ', 'Muối Bảo Thạnh', 'Nghêu sò Ba Tri'],
+        },
+      }
+      const wrapper = await mountDigest({ place })
+      expect(wrapper.text()).toContain('Rượu nếp Phú Lễ')
+      expect(wrapper.text()).toContain('Muối Bảo Thạnh')
+      expect(wrapper.text()).toContain('0275 3592 10')
+      expect(wrapper.text()).toContain('Dải Cù Lao Xứ Dừa')
+    })
   })
 
   describe('Integration in pages/xa-phuong/[id].vue', () => {

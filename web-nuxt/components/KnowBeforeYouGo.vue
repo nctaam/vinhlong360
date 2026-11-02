@@ -149,6 +149,10 @@ const practicalItems = computed(() => {
   const items: { icon: string; label: string; value: string }[] = []
   if (a.heritage_level) items.push({ icon: 'shield-check', label: 'Xếp hạng di sản', value: String(a.heritage_level) })
   if (a.booking_note) items.push({ icon: 'clipboard-list', label: 'Đặt trước', value: String(a.booking_note) })
+  if (a.dress_code) items.push({ icon: 'users', label: 'Trang phục', value: String(a.dress_code) })
+  if (a.best_view_point) items.push({ icon: 'camera', label: 'Góc nhìn đẹp', value: String(a.best_view_point) })
+  if (a.payment_methods) items.push({ icon: 'tag', label: 'Thanh toán', value: Array.isArray(a.payment_methods) ? a.payment_methods.join(', ') : String(a.payment_methods) })
+  if (a.queue_level) items.push({ icon: 'clock', label: 'Mức độ chờ', value: String(a.queue_level) })
   if (a.raw_material) items.push({ icon: 'leaf', label: 'Nguyên liệu', value: String(a.raw_material) })
   if (a.households) items.push({ icon: 'home', label: 'Quy mô làng nghề', value: String(a.households) })
   if (a.parking) items.push({ icon: 'pin', label: 'Đậu xe', value: String(a.parking) })

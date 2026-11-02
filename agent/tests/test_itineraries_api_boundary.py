@@ -15,6 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import entity_read  # noqa: E402
 from itineraries import admin_api  # noqa: E402
 from itineraries import api  # noqa: E402
 
@@ -117,10 +118,15 @@ def test_buoc_1a_hai_helper_ve_entity_read_va_tai_xuat_cung_object():
     """Bước 1a của lát: _itinerary_stop_entity_id + _public_itinerary_stops dời
     về entity_read (hạ tầng đọc dùng chung); public_api tái xuất — 3 chỗ test
     cũ soi qua public_api.<tên> phải trỏ CÙNG object với nhà thật."""
-    import entity_read
     import public_api
 
     for ten in ("_itinerary_stop_entity_id", "_public_itinerary_stops"):
         assert getattr(public_api, ten) is getattr(entity_read, ten), ten
     assert entity_read._itinerary_stop_entity_id({"entityId": "cho-lach"}) == "cho-lach"
     assert entity_read._itinerary_stop_entity_id({}) in ("", None)
+    cleaned = entity_read._public_itinerary_stops(
+        [{"id": "van-thanh-mieu", "note": "Điểm dừng tại van-thanh-mieu"}],
+        {"van-thanh-mieu": {"id": "van-thanh-mieu", "name": "Văn Thánh Miếu", "type": "history", "attributes": {}}},
+        enrich=True,
+    )
+    assert cleaned[0]["note"] == "Điểm dừng tại Văn Thánh Miếu"

@@ -69,9 +69,9 @@
         :entity-image-descriptors="entityImageDescriptors"
         :has-entity-images="hasEntityImages"
       />
-      <div v-if="entity.attributes?.image_author" class="dc-photo-credit" data-photo-credit>
+      <div v-if="entity.attributes?.image_author || heroPhotoCaption" class="dc-photo-credit" data-photo-credit>
         <IconLine name="camera" class="dc-credit-icon" aria-hidden="true" />
-        <span>Ảnh: {{ entity.attributes.image_author }}<template v-if="entity.attributes?.image_source"> · Nguồn: {{ entity.attributes.image_source }}</template></span>
+        <span><template v-if="heroPhotoCaption">{{ heroPhotoCaption }} · </template><template v-if="entity.attributes?.image_author">Ảnh: {{ entity.attributes.image_author }}</template><template v-if="entity.attributes?.image_source"> · Nguồn: {{ entity.attributes.image_source }}</template></span>
       </div>
       <ImageDisclosure :id="heroDisclosureId" :descriptor="heroDescriptor" presentation="short" class="dc-disclosure" />
     </div>
@@ -273,16 +273,12 @@
               </dl>
             </section>
 
-            <section v-if="hasFeatureFacts" class="fact-group">
+            <section v-if="featureFactRows.length" class="fact-group">
               <h3 class="fg-label">Đặc điểm</h3>
               <dl>
-                <div v-if="entity.attributes?.amenities" class="fact">
-                  <dt class="k"><IconLine class="fact-ic" name="check" aria-hidden="true" /><span>{{ ss('labels.detail.fact_amenities', 'Tiện ích') }}</span></dt>
-                  <dd class="v">{{ Array.isArray(entity.attributes.amenities) ? entity.attributes.amenities.join(', ') : entity.attributes.amenities }}</dd>
-                </div>
-                <div v-if="entity.attributes?.price_range" class="fact">
-                  <dt class="k"><IconLine class="fact-ic" name="tag" aria-hidden="true" /><span>Mức giá</span></dt>
-                  <dd class="v">{{ entity.attributes.price_range }}</dd>
+                <div v-for="row in featureFactRows" :key="row.label" class="fact">
+                  <dt class="k"><IconLine class="fact-ic" :name="row.icon" aria-hidden="true" /><span>{{ row.label }}</span></dt>
+                  <dd class="v">{{ row.value }}</dd>
                 </div>
               </dl>
             </section>
@@ -402,6 +398,19 @@
                 <IconLine name="shield-check" />
               </span>
               <span class="key-fact-text">{{ fact }}</span>
+            </li>
+          </ul>
+        </section>
+
+        <section v-if="sourceCitations.length" class="detail-key-facts detail-source-citations reveal" aria-labelledby="source-citations-heading">
+          <h2 id="source-citations-heading" class="section-subtitle sediment-head">
+            <IconLine name="file-text" aria-hidden="true" /> Nguồn dẫn &amp; Tư liệu chính thống
+          </h2>
+          <ul class="key-facts-list">
+            <li v-for="(cit, ci) in sourceCitations" :key="ci" class="key-fact-item">
+              <span class="key-fact-marker" aria-hidden="true"><IconLine name="shield-check" /></span>
+              <a v-if="cit.url" :href="cit.url" target="_blank" rel="noopener noreferrer" class="fact-link key-fact-text">{{ cit.title }}</a>
+              <span v-else class="key-fact-text">{{ cit.title }}</span>
             </li>
           </ul>
         </section>
@@ -883,6 +892,22 @@ const totalDescParagraphs = computed(() => descriptionSections.value.reduce((n, 
 
 const descExpanded = ref(false)
 
+const heroPhotoCaption = computed(() => {
+  const cap = String(entity.value?.attributes?.image_caption || '').trim()
+  if (!cap || cap === entity.value?.name || cap === entity.value?.summary) return ''
+  return cap
+})
+
+const sourceCitations = computed(() => {
+  const raw = entity.value?.attributes?.source_citations
+  if (!Array.isArray(raw)) return []
+  return raw.flatMap((c: any) => {
+    const title = typeof c?.title === 'string' ? c.title.trim() : ''
+    const url = typeof c?.url === 'string' ? safeUrl(c.url.trim()) : ''
+    return title ? [{ title, url }] : []
+  })
+})
+
 const extraContentSections = computed(() => {
   const a = entity.value?.attributes
   if (!a) return []
@@ -891,16 +916,24 @@ const extraContentSections = computed(() => {
     sections.push({ icon: 'landmark', title: 'Khảo cứu Văn hóa Thổ nhưỡng', text: a.cultural_notes })
   if (a.visual_narrative && typeof a.visual_narrative === 'string')
     sections.push({ icon: 'camera', title: 'Chỉ dẫn Thị giác Thổ nhưỡng', text: a.visual_narrative })
+  if (a.culinary_secrets && typeof a.culinary_secrets === 'string')
+    sections.push({ icon: 'flame', title: 'Bí quyết Ẩm thực Bản địa', text: a.culinary_secrets })
+  if (a.stay_experience && typeof a.stay_experience === 'string')
+    sections.push({ icon: 'compass', title: 'Trải nghiệm Lưu trú Bản địa', text: a.stay_experience })
+  if (a.welcome_menu && typeof a.welcome_menu === 'string')
+    sections.push({ icon: 'bowl', title: 'Thức quà Đón khách', text: a.welcome_menu })
+  if (a.transit_guidance && typeof a.transit_guidance === 'string')
+    sections.push({ icon: 'route', title: 'Chỉ dẫn Kết nối & Lộ trình', text: a.transit_guidance })
   if (a.waterway_access && typeof a.waterway_access === 'string')
     sections.push({ icon: 'route', title: 'Tiếp cận Đường thủy', text: a.waterway_access })
-  if (a.significance && typeof a.significance === 'string')
+  if (a.significance && typeof a.significance === 'string' && (a.highlight || a.famous_for))
     sections.push({ icon: 'landmark', title: 'Ý nghĩa', text: a.significance })
   if (a.atmosphere && typeof a.atmosphere === 'string')
     sections.push({ icon: 'leaf', title: 'Không gian', text: a.atmosphere })
-  if (a.famous_for && typeof a.famous_for === 'string')
+  if (a.famous_for && typeof a.famous_for === 'string' && a.highlight)
     sections.push({ icon: 'star', title: 'Nổi tiếng với', text: a.famous_for })
-  if (a.travel_tips && typeof a.travel_tips === 'string')
-    sections.push({ icon: 'bulb', title: 'Mẹo du lịch', text: a.travel_tips })
+  if (a.note_for_tourists && typeof a.note_for_tourists === 'string')
+    sections.push({ icon: 'bulb', title: 'Lưu ý cho Du khách', text: a.note_for_tourists })
   return sections
 })
 
@@ -946,7 +979,28 @@ function trackContact(action: ContactAction) {
 const hasHighlights = computed(() => !!(entity.value?.attributes?.phone || zaloLink.value || entity.value?.attributes?.hours || priceText.value || addressText.value || hasCoords.value))
 const hasVisitFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.hours || a?.price || a?.fee || a?.admission || a?.suggested_duration || a?.transport || a?.vehicle_access || a?.parking) })
 const hasContactFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.phone || a?.address || (a?.coords_approximate && hasCoords.value) || a?.website) })
-const hasFeatureFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.amenities || a?.price_range || a?.atmosphere || a?.famous_for || a?.significance) })
+const featureFactRows = computed(() => {
+  const a = entity.value?.attributes
+  if (!a) return []
+  const rows: { icon: string; label: string; value: string }[] = []
+  const arch = a.architectural_style || a.architecture_style
+  if (arch) rows.push({ icon: 'landmark', label: 'Kiến trúc', value: String(arch) })
+  const built = a.built || a.founding_year || a.founded
+  if (built) rows.push({ icon: 'calendar', label: 'Khởi dựng', value: String(built) })
+  if (a.religion) rows.push({ icon: 'landmark', label: 'Tín ngưỡng', value: String(a.religion) })
+  if (a.deity_worshipped) rows.push({ icon: 'shield-check', label: 'Thờ phụng', value: String(a.deity_worshipped) })
+  if (a.accommodation_type) rows.push({ icon: 'home', label: 'Loại hình', value: String(a.accommodation_type) })
+  if (a.star_rating) rows.push({ icon: 'star', label: 'Tiêu chuẩn', value: `${a.star_rating} sao` })
+  if (a.check_in || a.check_out) rows.push({ icon: 'clock', label: 'Nhận / Trả phòng', value: [a.check_in && `Nhận: ${a.check_in}`, a.check_out && `Trả: ${a.check_out}`].filter(Boolean).join(' · ') })
+  if (a.lunar_date) rows.push({ icon: 'calendar', label: 'Âm lịch', value: String(a.lunar_date) })
+  if (a.date_start) rows.push({ icon: 'calendar', label: 'Thời gian', value: a.date_end && a.date_end !== a.date_start ? `${a.date_start} – ${a.date_end}` : String(a.date_start) })
+  if (a.organizer) rows.push({ icon: 'users', label: 'Ban tổ chức', value: String(a.organizer) })
+  if (a.role) rows.push({ icon: 'user', label: 'Vai trò', value: String(a.role) })
+  if (a.birth_year || a.death_year) rows.push({ icon: 'calendar', label: 'Niên biểu', value: `${a.birth_year || '?'} – ${a.death_year || 'nay'}` })
+  if (a.amenities) rows.push({ icon: 'check', label: ss('labels.detail.fact_amenities', 'Tiện ích'), value: Array.isArray(a.amenities) ? a.amenities.join(', ') : String(a.amenities) })
+  if (a.price_range) rows.push({ icon: 'tag', label: 'Mức giá', value: String(a.price_range) })
+  return rows
+})
 
 // The trust CTA files a correction against this entry. It used to drop the
 // reader into a community search, which records nothing and promises less.

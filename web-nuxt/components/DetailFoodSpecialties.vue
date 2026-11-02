@@ -1,5 +1,5 @@
 <template>
-  <!-- Food & Craft specialties (dish, product, craft_village) -->
+  <!-- Food & Craft specialties (dish, drink, product, craft_village, restaurant, cafe) -->
   <div v-if="foodSpecialties.length" class="food-specialties reveal">
     <h2 class="section-subtitle sediment-head"><IconLine :name="sectionIcon" aria-hidden="true" /> {{ sectionTitle }}</h2>
     <ul class="fs-list">
@@ -41,10 +41,17 @@ const SPECIALTY_FIELDS: readonly { key: string; icon: string; label: string }[] 
   { key: 'best_dish', icon: 'trophy', label: 'Món hay gọi nhất' },
   { key: 'specialty', icon: 'gift', label: 'Đặc sản' },
   { key: 'flavor_profile', icon: 'bowl', label: 'Hương vị đặc trưng' },
+  { key: 'terroir_ingredients', icon: 'leaf', label: 'Nguyên liệu bản địa' },
   { key: 'ingredients', icon: 'bowl', label: 'Nguyên liệu' },
   { key: 'raw_material', icon: 'leaf', label: 'Nguyên liệu chính' },
+  { key: 'broth_style', icon: 'flame', label: 'Nước dùng & Chế biến' },
+  { key: 'noodle_type', icon: 'bowl', label: 'Sợi bánh & Cốt bánh' },
+  { key: 'toppings', icon: 'star', label: 'Ăn kèm' },
   { key: 'cooking_method', icon: 'flame', label: 'Phương pháp chế biến' },
   { key: 'serving_suggestion', icon: 'bowl', label: 'Cách thưởng thức' },
+  { key: 'origin', icon: 'pin', label: 'Vùng nguyên liệu / Xuất xứ' },
+  { key: 'brand', icon: 'award', label: 'Thương hiệu / Cơ sở' },
+  { key: 'weight/unit', icon: 'tag', label: 'Quy cách đóng gói' },
   { key: 'where_to_eat', icon: 'pin', label: 'Địa chỉ thưởng thức' },
   { key: 'what_to_buy', icon: 'gift', label: 'Nên mua làm quà' },
   { key: 'households', icon: 'home', label: 'Quy mô làng nghề' },
@@ -53,7 +60,7 @@ const SPECIALTY_FIELDS: readonly { key: string; icon: string; label: string }[] 
   { key: 'shelf_life', icon: 'clock', label: 'Hạn sử dụng & Bảo quản' },
 ]
 
-const ALLOWED_TYPES = new Set(['dish', 'product', 'craft_village', 'restaurant'])
+const ALLOWED_TYPES = new Set(['dish', 'drink', 'product', 'craft_village', 'restaurant', 'cafe'])
 
 const foodSpecialties = computed(() => {
   const a = props.entity?.attributes
