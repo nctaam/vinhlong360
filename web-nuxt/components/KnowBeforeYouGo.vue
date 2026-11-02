@@ -147,7 +147,6 @@ const hasTimeSensitiveFacts = computed(() => Boolean(goldenHours.value || peakDa
 const practicalItems = computed(() => {
   const a = attrs.value
   const items: { icon: string; label: string; value: string }[] = []
-  if (a.highlight) items.push({ icon: 'star', label: 'Điểm nhấn', value: String(a.highlight) })
   if (a.heritage_level) items.push({ icon: 'shield-check', label: 'Xếp hạng di sản', value: String(a.heritage_level) })
   if (a.booking_note) items.push({ icon: 'clipboard-list', label: 'Đặt trước', value: String(a.booking_note) })
   if (a.raw_material) items.push({ icon: 'leaf', label: 'Nguyên liệu', value: String(a.raw_material) })

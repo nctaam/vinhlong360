@@ -124,7 +124,7 @@
   white-space: nowrap;
 }
 
-.entity-description, .detail-main > :nth-child(n+4) { content-visibility: auto; contain-intrinsic-size: auto 300px; }
+.detail-main > :nth-child(n+8) { content-visibility: auto; contain-intrinsic-size: auto 300px; }
 .entity-description { margin: var(--space-5) 0 var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); max-width: var(--measure-read); }
 .entity-description p { margin: 0 0 var(--space-4); font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--ink); }
 .entity-description p:last-of-type { margin-bottom: 0; }

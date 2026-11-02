@@ -354,11 +354,6 @@
           {{ entity.summary }}
         </p>
 
-        <!-- Highlight tagline -->
-        <blockquote v-if="entity.attributes?.highlight" class="entity-highlight">
-          <p>{{ entity.attributes.highlight }}</p>
-        </blockquote>
-
         <!-- Green Tourism Criteria badge -->
         <div class="green-tourism-badge" data-green-tourism="vinhlong">
           <VernacularGlyph name="green-lotus" class="gt-icon" aria-hidden="true" />
@@ -850,7 +845,13 @@ const heroDateline = computed(() =>
 const heroHook = computed(() => {
   if (!entity.value) return ''
   const t = entityStoryTeaser(entity.value)
-  return t && t !== entity.value.name ? t : ''
+  if (!t || t === entity.value.name) return ''
+  const summary = (entity.value.summary || '').trim()
+  const highlight = String(entity.value.attributes?.highlight || '').trim()
+  if ((summary && (t === summary || summary.startsWith(t))) || (highlight && t === highlight)) {
+    return ''
+  }
+  return t
 })
 const coverLightboxRef = ref<{ open: (idx?: number) => void } | null>(null)
 function openCoverLightbox(idx = 0) {

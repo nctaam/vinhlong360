@@ -81,9 +81,14 @@ const props = withDefaults(defineProps<{
 })
 
 const attrs = computed(() => (props.entity?.attributes as Record<string, any>) || {})
+const hasAttributes = computed(() => Boolean(props.entity?.attributes && Object.keys(attrs.value).length > 0))
 
 const quickSummary = computed(() => {
-  return attrs.value.highlight || props.entity?.description || props.entity?.name
+  if (attrs.value.highlight) return String(attrs.value.highlight)
+  if (attrs.value.famous_for) return String(attrs.value.famous_for)
+  if (attrs.value.significance) return String(attrs.value.significance)
+  if (!props.entity?.summary) return props.entity?.description || props.entity?.name || ''
+  return ''
 })
 
 const TYPE_DEFAULTS: Record<string, { goldenHour: string; transit: string; durationCost: string; tip: string }> = {
@@ -172,29 +177,32 @@ const typeDefault = computed(() => TYPE_DEFAULTS[props.entity?.type || ''] || TY
 const goldenHour = computed(() => {
   if (attrs.value.best_time) return String(attrs.value.best_time)
   if (attrs.value.hours) return "Mở cửa: " + String(attrs.value.hours)
-  return typeDefault.value.goldenHour
+  return hasAttributes.value ? typeDefault.value.goldenHour : ''
 })
 
 const transitInfo = computed(() => {
   if (attrs.value.transport) return String(attrs.value.transport)
   if (attrs.value.vehicle_access) return "Đường đến: " + String(attrs.value.vehicle_access)
   if (attrs.value.address) return "Địa chỉ: " + String(attrs.value.address)
-  return typeDefault.value.transit
+  return hasAttributes.value ? typeDefault.value.transit : ''
 })
 
 const durationAndCost = computed(() => {
   const duration = attrs.value.suggested_duration ? String(attrs.value.suggested_duration) : ''
-  const cost = (attrs.value.price || attrs.value.fee || attrs.value.price_range)
-    ? String(attrs.value.price || attrs.value.fee || attrs.value.price_range)
+  const cost = (attrs.value.price || attrs.value.fee || attrs.value.admission || attrs.value.price_range)
+    ? String(attrs.value.price || attrs.value.fee || attrs.value.admission || attrs.value.price_range)
     : ''
   if (duration && cost) return duration + " · " + cost
-  return duration || cost || typeDefault.value.durationCost
+  if (duration || cost) return duration || cost
+  return hasAttributes.value ? typeDefault.value.durationCost : ''
 })
 
 const localTip = computed(() => {
   if (attrs.value.local_tip) return String(attrs.value.local_tip)
   if (attrs.value.travel_tip) return String(attrs.value.travel_tip)
-  return typeDefault.value.tip
+  if (Array.isArray(attrs.value.travel_tips) && attrs.value.travel_tips[0]) return String(attrs.value.travel_tips[0])
+  if (typeof attrs.value.travel_tips === 'string' && attrs.value.travel_tips.trim()) return attrs.value.travel_tips.trim()
+  return hasAttributes.value ? typeDefault.value.tip : ''
 })
 
 const tideCue = computed(() => {

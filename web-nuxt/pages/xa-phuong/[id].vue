@@ -110,6 +110,14 @@
               <dt>Trực thuộc</dt>
               <dd>Tỉnh Vĩnh Long</dd>
             </div>
+            <div v-if="attrs.former_district">
+              <dt>Địa bàn cũ</dt>
+              <dd>{{ attrs.former_district }}</dd>
+            </div>
+            <div v-if="Array.isArray(attrs.merged_from) && attrs.merged_from.length">
+              <dt>Hợp nhất từ</dt>
+              <dd>{{ attrs.merged_from.join(', ') }}</dd>
+            </div>
             <div v-if="attrs.area_km2">
               <dt>Diện tích</dt>
               <dd>{{ attrs.area_km2 }} km²</dd>
@@ -124,8 +132,8 @@
             </div>
           </dl>
 
-          <div v-if="attrs.police_phone" class="wp-contact">
-            <div class="wp-contact-item wp-contact-main">
+          <div v-if="attrs.police_phone || attrs.health_phone" class="wp-contact">
+            <div v-if="attrs.police_phone" class="wp-contact-item wp-contact-main">
               <span class="wp-contact-label"><IconLine name="user" aria-hidden="true" /> Công an {{ data.place.name }}</span>
               <a
                 :href="telHref(attrs.police_phone)"
@@ -137,6 +145,19 @@
                 :aria-label="`Gọi công an ${data.place.name}`"
                 @click="trackContactView(data.place.id, 'phone')"
               >{{ attrs.police_phone }}</a>
+            </div>
+            <div v-if="attrs.health_phone" class="wp-contact-item">
+              <span class="wp-contact-label"><IconLine name="phone" aria-hidden="true" /> Trạm Y tế {{ data.place.name }}</span>
+              <a
+                :href="telHref(attrs.health_phone)"
+                class="wp-phone"
+                data-contact-action="phone"
+                data-contact-surface="ward-detail"
+                :data-contact-entity-id="data.place.id"
+                data-contact-outcome="navigation"
+                :aria-label="`Gọi Trạm Y tế ${data.place.name}`"
+                @click="trackContactView(data.place.id, 'phone')"
+              >{{ attrs.health_phone }}</a>
             </div>
           </div>
 
@@ -167,6 +188,9 @@
         <div v-if="data.place.summary" class="wp-summary-wrap">
           <p class="wp-summary">
             {{ data.place.summary }}
+          </p>
+          <p v-if="attrs.administrative_history && attrs.administrative_history !== data.place.summary" class="wp-admin-history">
+            {{ attrs.administrative_history }}
           </p>
         </div>
 
@@ -549,52 +573,6 @@ const terroirGlyphName = computed(() => {
   return 'silt-current'
 })
 
-const wardAcademicMarginalia = computed(() => {
-  const name = (data.value?.place?.name || '').toLowerCase()
-  const area = data.value?.place?.area || ''
-
-  if (name.includes('mang thít') || name.includes('mỹ an') || name.includes('nhơn phú') || name.includes('mỹ phước')) {
-    return {
-      content: 'Dải phù sa mịn lắng đọng dọc sông Cổ Chiên tạo nên vỉa đất sét mộc dẻo quánh đặc thù — nền tảng nuôi dưỡng quần thể Di sản Đương đại Mang Thít với hơn 1.000 lò nung gạch gốm đỏ hình phễu trầm tích qua cả thế kỷ.',
-      sourceTitle: 'Khảo sát Địa chí Văn hóa Vĩnh Long & Hồ sơ Di sản Lò gốm Mang Thít (NotebookLM Archive)',
-      sourceUrl: 'https://vinhlong360.vn/dia-diem/lang-gom-mang-thit',
-    }
-  }
-  if (name.includes('an bình') || name.includes('bình hòa') || name.includes('hòa ninh') || name.includes('đồng phú') || name.includes('cù lao')) {
-    return {
-      content: 'Cù lao An Bình được bồi đắp bởi hai nhánh sông lớn Cổ Chiên và Hàm Luông, quanh năm đón nguồn nước ngọt và phù sa màu mỡ; đây là cái nôi khởi phát mô hình du lịch sinh thái miệt vườn sông nước châu thổ Cửu Long từ đầu những năm 1980.',
-      sourceTitle: 'Sổ tay Điền dã Địa lý Du lịch Sinh thái ĐBSCL (NotebookLM Archive)',
-      sourceUrl: 'https://vinhlong360.vn/dia-diem/cu-lao-an-binh',
-    }
-  }
-  if (name.includes('trà ôn') || name.includes('lục sĩ')) {
-    return {
-      content: 'Giao điểm ngã ba sông Hậu và sông Mang Thít đem lại cho Trà Ôn thủy đạo giao thương huyết mạch, hình thành tập quán buôn bán trên ghe thuyền nông sản theo con nước lớn ròng từ thế kỷ XIX.',
-      sourceTitle: 'Tập san Văn hóa Dân gian & Chợ Nổi Sông Cửu Long',
-      sourceUrl: 'https://vinhlong360.vn/dia-diem/cho-noi-tra-on',
-    }
-  }
-  if (area === 'ben-tre') {
-    return {
-      content: 'Vùng đất cù lao hạ lưu sông Tiền với mạng lưới kênh rạch chằng chịt, đất phù sa pha cát và nước lợ theo mùa kiến tạo nên vương quốc dừa với hơn 70.000 ha vườn dừa ngút ngàn.',
-      sourceTitle: 'Địa chí Địa lý Bến Tre & Văn hóa Xứ Dừa',
-      sourceUrl: 'https://vinhlong360.vn/khu-vuc/ben-tre',
-    }
-  }
-  if (area === 'tra-vinh') {
-    return {
-      content: 'Vùng đất giồng cát ven biển cổ kẹp giữa hai cửa sông Cung Hầu và Định An, nơi hội tụ và giao thoa sâu sắc giữa các cộng đồng Kinh, Khmer, Hoa với hơn 140 ngôi chùa tháp Nam tông cổ kính.',
-      sourceTitle: 'Khảo cứu Văn hóa Chùa tháp & Dân tộc học Trà Vinh',
-      sourceUrl: 'https://vinhlong360.vn/khu-vuc/tra-vinh',
-    }
-  }
-  return {
-    content: 'Tâm điểm châu thổ Cửu Long giữa hai nhánh Tiền Giang và Hậu Giang đem đến cho địa bàn mạng lưới thủy trình tự nhiên phong phú, định hình nếp sống thương hồ, làng nghề ven sông và nông nghiệp trù phú.',
-    sourceTitle: 'Tư liệu Địa chí Văn hóa Lịch sử Đồng bằng Sông Cửu Long (NotebookLM Core)',
-    sourceUrl: 'https://vinhlong360.vn/gioi-thieu',
-  }
-})
-
 function formatPop(n: number | string) {
   const value = typeof n === 'number' ? n : Number(n)
   if (!Number.isFinite(value)) return String(n)
@@ -614,6 +592,10 @@ const allWardEntities = computed<Entity[]>(() => {
 })
 
 const representativeImageDescriptor = computed(() => {
+  if (data.value?.place) {
+    const placeDesc = describeEntityImages(data.value.place).find(image => image.url !== null)
+    if (placeDesc) return placeDesc
+  }
   for (const entity of allWardEntities.value) {
     const descriptor = describeEntityImages(entity).find(image => image.url !== null)
     if (descriptor) return descriptor
@@ -809,6 +791,7 @@ useHead({
   margin: var(--space-5) 0 var(--space-2);
 }
 .wp-summary { max-width: 72ch; font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--ink); margin: 0; }
+.wp-admin-history { max-width: 72ch; font-size: var(--text-sm); line-height: var(--leading-relaxed); color: var(--muted); margin: var(--space-2) 0 0; }
 
 /* Map */
 .wp-map-sec { margin: var(--space-5) 0 var(--space-2); }

@@ -898,11 +898,14 @@ async def place_overview(place_id: str, response: Response):
                     break
             if not placed:
                 groups["other"].append(projected)
+        projected_place = _project_public_entity_media(p)
         return {
             "place": {"id": p["id"], "name": p.get("name"), "area": p.get("area"),
                       "level": p.get("level"), "summary": p.get("summary"),
+                      "description": p.get("description"),
                       "attributes": p.get("attributes", {}),
                       "coordinates": p.get("coordinates"),
+                      "image_descriptors": projected_place.get("image_descriptors", []),
                       "quality": entity_quality(p)},
             "facilities": _public_facilities_by_place(place_id),
             "counts": {g: len(v) for g, v in groups.items()},
@@ -1722,7 +1725,7 @@ async def entity_search(
     page: int = Query(1, ge=1, le=200),
     limit: int = Query(20, ge=1, le=50),
 ):
-    """Entity search with type, area, image, and sort filters."""
+    """Entity search with type, area, image, and sort filters (projected via _project_public_entity_media)."""
     from ratelimit import check_rate
     check_rate(f"esearch:{get_client_ip(request)}", 30, 60,
                "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")

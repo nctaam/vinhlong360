@@ -134,8 +134,22 @@ export interface DescSection {
 export function parseDescriptionSections(description?: string | null, summary?: string | null): DescSection[] {
   if (!description || typeof description !== 'string') return []
   let blocks = description.split(BLANK_LINE_SPLIT_RE).map(b => b.trim()).filter(b => b.length > 0)
-  if (summary && blocks.length && normalizeSectionProse(blocks[0]) === normalizeSectionProse(summary)) {
-    blocks = blocks.slice(1)
+  if (summary && blocks.length) {
+    const normSummary = normalizeSectionProse(summary)
+    const normFirst = normalizeSectionProse(blocks[0])
+    if (normFirst === normSummary) {
+      blocks = blocks.slice(1)
+    } else {
+      const trimmedSummary = summary.trim()
+      if (trimmedSummary && blocks[0]!.startsWith(trimmedSummary)) {
+        const remainder = blocks[0]!.slice(trimmedSummary.length).trim()
+        if (remainder) {
+          blocks[0] = remainder
+        } else {
+          blocks = blocks.slice(1)
+        }
+      }
+    }
   }
   if (!blocks.length) return []
   const sections: DescSection[] = []

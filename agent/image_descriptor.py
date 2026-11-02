@@ -276,7 +276,7 @@ def _parse_supplied_entity_descriptor(
     *,
     disclosure: LoadedAiDisclosure,
 ) -> ImageDescriptor | None:
-    if type(raw) is not dict or set(raw) != _IMAGE_DESCRIPTOR_KEYS:
+    if type(raw) is not dict or (set(raw) | {"source_url"}) != _IMAGE_DESCRIPTOR_KEYS:
         return None
     alt = raw.get("alt")
     source = descriptor_source(raw)

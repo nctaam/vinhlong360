@@ -66,6 +66,22 @@ describe('DetailAeoSummary — 30s Field Digest (AEO/GEO)', () => {
     expect(wrapper.text()).not.toContain('Mẹo người bản địa')
   })
 
+  it('avoids repeating full description when entity.summary is already present and highlight is absent', async () => {
+    const wrapper = await mount({
+      entity: {
+        id: 'dinh-tan-hoa',
+        name: 'Đình Tân Hòa',
+        type: 'attraction',
+        summary: 'Đình Tân Hòa dựng từ giữa thế kỷ 18.',
+        description: 'Đình Tân Hòa dựng từ giữa thế kỷ 18. Đình còn giữ tấm biển cổ năm 1798.',
+        attributes: { hours: '07:00 - 17:00' },
+      },
+      accent: 'clay',
+    })
+    expect(wrapper.text()).not.toContain('Đình còn giữ tấm biển cổ năm 1798.')
+    expect(wrapper.text()).toContain('07:00 - 17:00')
+  })
+
   it('strictly adheres to design tokens with zero raw hex in styles', () => {
     const filePath = resolve(__dirname, '../components/DetailAeoSummary.vue')
     const source = readFileSync(filePath, 'utf8')

@@ -8,6 +8,7 @@ from fastapi import Request, Response
 
 import public_api
 from entities import api as entities_api
+import image_descriptor
 import seo
 from community import api as social
 from ai_disclosure import load_ai_disclosure
@@ -319,6 +320,8 @@ def test_place_overview_projects_grouped_entities_without_mutating_rows(monkeypa
 
     _assert_no_raw_media(result["tourism"])
     assert result["tourism"][0]["image_descriptors"][0]["source_class"] == "ai-generated"
+    assert "image_descriptors" in result["place"]
+    assert image_descriptor.ImageDescriptor is not None
     assert child["images"] == ["/img/entities/ward-child.webp"]
 
 

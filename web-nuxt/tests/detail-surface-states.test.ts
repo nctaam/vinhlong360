@@ -7,6 +7,7 @@ import EntityTrustPanel from '../components/EntityTrustPanel.vue'
 import FramedDossier from '../components/FramedDossier.vue'
 import KnowBeforeYouGo from '../components/KnowBeforeYouGo.vue'
 import SourceTrustDrawer from '../components/SourceTrustDrawer.vue'
+import { parseDescriptionSections } from '../utils/detailExperience'
 
 const wrappers: Array<{ unmount: () => void }> = []
 const entityDetailSource = readFileSync(resolve(process.cwd(), 'pages/dia-diem/[id].vue'), 'utf8')
@@ -185,5 +186,15 @@ describe('detail dossier surface states', () => {
     expect(offsets.every(offset => offset >= 0)).toBe(true)
     expect(offsets).toEqual([...offsets].sort((left, right) => left - right))
     expect(wardDetailSource).toContain('data-detail-action-safe-area')
+  })
+
+  it('strips leading summary prefix when description starts with summary in the same paragraph', () => {
+    const summary = 'Đình Tân Hòa dựng từ giữa thế kỷ 18 — một trong những ngôi đình cổ nhất Vĩnh Long.'
+    const description = `${summary} Đình còn giữ tấm biển cổ khắc ba chữ Tân Hoa Đình năm 1798.`
+    const sections = parseDescriptionSections(description, summary)
+    expect(sections).toHaveLength(1)
+    expect(sections[0]!.paragraphs).toEqual([
+      'Đình còn giữ tấm biển cổ khắc ba chữ Tân Hoa Đình năm 1798.',
+    ])
   })
 })
