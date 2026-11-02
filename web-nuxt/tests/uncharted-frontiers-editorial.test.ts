@@ -69,15 +69,13 @@ describe('Uncharted Frontiers — Editorial Di sản Cửu Long', () => {
     expect(text).toContain('<IconLine :name="t.icon"')
   })
 
-  it('pages/xa-phuong/[id].vue tích hợp TufteSidenote và VernacularGlyph', () => {
+  it('pages/xa-phuong/[id].vue tích hợp VernacularGlyph và loại bỏ TufteSidenote dư thừa', () => {
     const filePath = path.resolve(__dirname, '../pages/xa-phuong/[id].vue')
     const text = fs.readFileSync(filePath, 'utf-8')
 
-    expect(text).toContain('TufteSidenote')
+    expect(text).not.toContain('<TufteSidenote')
     expect(text).toContain('VernacularGlyph')
     expect(text).toContain('terroirGlyphName')
-    expect(text).toContain('wardAcademicMarginalia')
-    expect(text).toContain('<TufteSidenote')
     expect(text).toContain('<VernacularGlyph')
   })
 })

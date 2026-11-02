@@ -167,14 +167,6 @@
         <div v-if="data.place.summary" class="wp-summary-wrap">
           <p class="wp-summary">
             {{ data.place.summary }}
-            <TufteSidenote
-              :number="1"
-              :content="wardAcademicMarginalia.content"
-              :source-title="wardAcademicMarginalia.sourceTitle"
-              :source-url="wardAcademicMarginalia.sourceUrl"
-              notebook-id="v-nh-long-v-nh-long-b-n-tre-tr"
-              authority-tier="TIER_2_ACADEMIC"
-            />
           </p>
         </div>
 
@@ -245,7 +237,6 @@ import { describeEntityImages } from '~/utils/imageDescriptors'
 import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
 import ActionDock from '~/components/public/ActionDock.vue'
 import PageState from '~/components/public/PageState.vue'
-import TufteSidenote from '~/components/TufteSidenote.vue'
 import VernacularGlyph from '~/components/VernacularGlyph.vue'
 import { useWardDetailMap } from '~/composables/useWardDetailMap'
 

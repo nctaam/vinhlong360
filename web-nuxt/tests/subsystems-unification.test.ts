@@ -308,9 +308,9 @@ describe('Milestone M3: Unified Organic Heritage Entity Subsystems', () => {
       expect(sanPham).toContain('grid--asymmetric')
     })
 
-    it('integrates TufteSidenote and Green Tourism Criteria badge in dia-diem/[id].vue', () => {
+    it('integrates Green Tourism Criteria badge and removes redundant inline TufteSidenote in dia-diem/[id].vue', () => {
       const detail = readSource('pages/dia-diem/[id].vue')
-      expect(detail).toContain('<TufteSidenote')
+      expect(detail).not.toContain('<TufteSidenote')
       expect(detail).toContain('green-tourism-badge')
       expect(detail).toContain('Tiêu chí Du lịch Xanh Vĩnh Long')
       expect(detail).toContain('VernacularGlyph')

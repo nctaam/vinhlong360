@@ -352,15 +352,6 @@
 
         <p class="lead">
           {{ entity.summary }}
-          <TufteSidenote
-            v-if="trustSourceTitle"
-            :number="1"
-            :authority-tier="trustTier || 'official'"
-            :source-title="trustSourceTitle"
-            :source-url="trustSourceUrl || undefined"
-            notebook-id="NOTEBOOK-VL-HERITAGE-01"
-            content="Tư liệu khảo cứu thực địa và trích lục địa chí được đối soát theo chuẩn kiểm định đa tầng vinhlong360."
-          />
         </p>
 
         <!-- Highlight tagline -->
@@ -579,7 +570,6 @@
 </template>
 
 <script setup lang="ts">
-import TufteSidenote from '~/components/TufteSidenote.vue'
 import VernacularGlyph from '~/components/VernacularGlyph.vue'
 import { ocopBadgeLabel, ocopStars as ocopStarsOf } from '~/utils/ocop'
 import type { Entity } from '~/types'
