@@ -149,6 +149,7 @@
               </h3>
               <div class="step-badge-row">
                 <span v-if="stop.type" class="step-type-label">{{ typeLabel(stop.type) }}</span>
+                <span v-if="stop.place_name" class="step-place-label">{{ stop.place_name }}</span>
                 <span v-if="isMangThitStop(stop)" class="step-mangthit-badge">
                   <IconLine name="award" aria-hidden="true" />
                   <span>Di sản Mang Thít</span>
@@ -833,14 +834,19 @@ if (itinerary.value && !itinerary.value.error) {
 }
 
 /* Type label as scannable badge pill */
-.step-type-label {
+.step-type-label,
+.step-place-label {
   background: var(--bg-alt);
   padding: 2px var(--space-2);
   border-radius: var(--radius-pill, 999px);
   line-height: 1.4;
   font-size: var(--text-2xs);
 }
-.dark .step-type-label { background: rgba(var(--white-rgb),.06); }
+.step-place-label {
+  color: var(--color-text-muted);
+}
+.dark .step-type-label,
+.dark .step-place-label { background: rgba(var(--white-rgb),.06); }
 
 .step-mangthit-badge {
   display: inline-flex;

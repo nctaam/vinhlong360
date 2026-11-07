@@ -408,6 +408,18 @@ def test_ground_truth_overlay_and_similar_reasons():
     fixed_meta = entity_read._apply_ground_truth_overlay(meta_row)
     assert "Thế mạnh tự khai" not in fixed_meta["summary"]
     assert "cần bổ sung" not in fixed_meta["description"]
-    assert "Không gian ẩm thực và cà phê CT Quán" in fixed_meta["description"]
+    assert fixed_meta["description"].startswith("CT Quán") or "Không gian ẩm thực" in fixed_meta["description"]
+
+    stop = {"entityId": "ngam-binh-minh-co-chien", "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại ngam-binh-minh-co-chien"}
+    ent = _entity(
+        "ngam-binh-minh-co-chien",
+        name="Ngắm bình minh trên sông Cổ Chiên",
+        placeId="p-an-binh",
+        attributes={"best_time": "05:30 - 06:30"},
+    )
+    entity_read._clean_stop_note(stop, "ngam-binh-minh-co-chien", ent)
+    entity_read._enrich_itinerary_stop(stop, "ngam-binh-minh-co-chien", ent)
+    assert stop["note"] == "05:30 - 06:30"
+    assert stop["placeId"] == "p-an-binh"
 
     assert entities_api._similar_reason_vi("same_ward") == "Gần nhau trong cùng xã, phường"

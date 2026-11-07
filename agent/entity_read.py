@@ -487,13 +487,26 @@ def _itinerary_stop_entity_id(stop) -> str:
     return ""
 
 
+def _extract_stop_tip(attrs: object) -> str:
+    if not isinstance(attrs, dict):
+        return ""
+    for key in ("travel_tip", "highlight", "note_for_tourists", "best_time", "image_caption"):
+        val = attrs.get(key)
+        if isinstance(val, list) and val:
+            val = val[0]
+        if isinstance(val, str) and val.strip():
+            return val.strip()
+    return ""
+
+
 def _clean_stop_note(stop: dict, stop_id: str, entity: dict) -> None:
     note = stop.get("note")
-    if not stop_id or not isinstance(note, str) or stop_id not in note:
+    if not stop_id or not isinstance(note, str):
         return
-    attrs = entity.get("attributes")
-    tip = (attrs.get("travel_tip") or attrs.get("highlight")) if isinstance(attrs, dict) else None
-    stop["note"] = str(tip).strip() if tip else note.replace(stop_id, entity["name"])
+    if stop_id not in note and "Điểm dừng chân trải nghiệm" not in note:
+        return
+    tip = _extract_stop_tip(entity.get("attributes"))
+    stop["note"] = tip if tip else note.replace(stop_id, entity["name"])
 
 
 def _enrich_itinerary_stop(stop: dict, stop_id: str, entity: dict) -> None:
@@ -505,6 +518,17 @@ def _enrich_itinerary_stop(stop: dict, stop_id: str, entity: dict) -> None:
     stop["type"] = entity["type"]
     if entity.get("coordinates"):
         stop["coordinates"] = entity["coordinates"]
+    place_id = entity.get("placeId")
+    if place_id:
+        stop.setdefault("placeId", place_id)
+        place = _get_place(place_id)
+        if place and place.get("name"):
+            stop.setdefault("place_name", place["name"])
+            if place.get("area"):
+                stop.setdefault("area", place["area"])
+    descriptors = _gallery_editorial_images(entity)
+    if descriptors:
+        stop.setdefault("image_descriptors", descriptors[:1])
 
 
 def _public_itinerary_stops(
