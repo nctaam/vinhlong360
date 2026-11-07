@@ -376,4 +376,36 @@ def test_ground_truth_overlay_and_similar_reasons():
     fixed_mojibake = entity_read._apply_ground_truth_overlay(mojibake_row)
     assert "?" not in fixed_mojibake["description"]
     assert "Hồ Trúc Giang" in fixed_mojibake["description"]
+
+    dossier_row = _entity(
+        "chua-giac-thien-vinh-long",
+        type="heritage",
+        placeId="p-long-chau",
+        summary="Chùa Giác Thiên là cổ tự Phật giáo tại Vĩnh Long, được khởi dựng từ thế kỷ 19.",
+    )
+    fixed_dossier = entity_read._apply_ground_truth_overlay(dossier_row)
+    assert fixed_dossier["placeId"] == "p-phuoc-hau"
+    assert "70 Trần Phú" in fixed_dossier["summary"]
+    assert fixed_dossier["attributes"]["address"].startswith("Số 70 đường Trần Phú")
+
+    place_type_row = _entity(
+        "tinh-binh-chay-vinh-long",
+        type="dish",
+        placeId="p-long-chau",
+        summary="Quán chay tại Phường 4 cũ.",
+    )
+    fixed_pt = entity_read._apply_ground_truth_overlay(place_type_row)
+    assert fixed_pt["type"] == "restaurant"
+    assert fixed_pt["placeId"] == "p-phuoc-hau"
+
+    meta_row = _entity(
+        "ct-quan---mon-nuong-coffee",
+        type="restaurant",
+        summary="CT Quán phục vụ cà phê và đồ nướng. Thế mạnh tự khai: Cà phê, Đồ nướng.",
+        description="CT Quán phục vụ cà phê. Mức giá bình dân; số điện thoại và giờ mở cửa cần bổ sung sau khảo sát.",
+    )
+    fixed_meta = entity_read._apply_ground_truth_overlay(meta_row)
+    assert "Thế mạnh tự khai" not in fixed_meta["summary"]
+    assert "cần bổ sung" not in fixed_meta["description"]
+
     assert entities_api._similar_reason_vi("same_ward") == "Gần nhau trong cùng xã, phường"

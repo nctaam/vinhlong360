@@ -99,30 +99,33 @@ _place_cache: OrderedDict[str, dict] = OrderedDict()
 _place_cache_lock = _threading.Lock()
 
 
-def _load_ground_truth_overlays() -> tuple[dict[str, dict], dict[str, dict]]:
-    """Load verified summary/attribute overlays from outputs/ground-truth-9router-verification-2026-10-21.json
+def _index_by_entity_id(items: list, required_key: str) -> dict[str, dict]:
+    return {
+        item["entityId"]: item
+        for item in items
+        if isinstance(item, dict) and item.get("entityId") and item.get(required_key)
+    }
+
+
+def _load_ground_truth_overlays() -> tuple[dict[str, dict], dict[str, dict], dict[str, dict], dict[str, dict]]:
+    """Load verified overlays from outputs/ground-truth-9router-verification-2026-10-21.json
     in-memory without mutating web/data.json or agent/data/vinhlong360.db on disk."""
-    summary_fixes: dict[str, dict] = {}
-    dossier_fixes: dict[str, dict] = {}
     try:
         gt_path = Path(__file__).resolve().parent.parent / "outputs" / "ground-truth-9router-verification-2026-10-21.json"
         if not gt_path.exists():
-            return summary_fixes, dossier_fixes
+            return {}, {}, {}, {}
         payload = json.loads(gt_path.read_text(encoding="utf-8"))
-        for item in payload.get("truncatedSummaryFixes", []):
-            eid = item.get("entityId")
-            if eid and item.get("verifiedSummary"):
-                summary_fixes[eid] = item
-        for item in payload.get("verifiedDossiers", []):
-            eid = item.get("entityId")
-            if eid and isinstance(item.get("verifiedGroundTruth"), dict):
-                dossier_fixes[eid] = item
+        summary_fixes = _index_by_entity_id(payload.get("truncatedSummaryFixes", []), "verifiedSummary")
+        dossier_fixes = _index_by_entity_id(payload.get("verifiedDossiers", []), "verifiedGroundTruth")
+        place_items = payload.get("ruralPlaceIdCorrections", []) + payload.get("placeSelfIdFixes", [])
+        place_fixes = _index_by_entity_id(place_items, "verifiedPlaceId")
+        type_fixes = _index_by_entity_id(payload.get("mistypedEntities", []), "verifiedType")
+        return summary_fixes, dossier_fixes, place_fixes, type_fixes
     except Exception:
-        pass
-    return summary_fixes, dossier_fixes
+        return {}, {}, {}, {}
 
 
-_SUMMARY_FIXES, _DOSSIER_FIXES = _load_ground_truth_overlays()
+_SUMMARY_FIXES, _DOSSIER_FIXES, _PLACE_ID_FIXES, _TYPE_FIXES = _load_ground_truth_overlays()
 
 
 def _apply_summary_fix(e: dict, sfix: dict | None) -> dict:
@@ -138,6 +141,53 @@ def _apply_summary_fix(e: dict, sfix: dict | None) -> dict:
 _TRUNC_PRICE_END_RE = re.compile(
     r"(?:Giá(?: bình dân| tham khảo| rẻ)?(?::\s*Khoảng)?\s+\d{1,3}|"
     r"(?:Bình dân chợ|Bờ sông|Hiện đại bình dân|Cổ điển, dưới bóng cây lớn|Phố đêm sầm uất)\s+000)\.$"
+)
+_SUMMARY_META_RE = re.compile(
+    r"\s*(?:"
+    r"Thế mạnh tự khai:[^.!?]+[.!?]|"
+    r"Dữ liệu chưa ghi số nhà cụ thể[.!?]|"
+    r"Quán xếp nhóm[^.!?]+theo dữ liệu(?: tự khai)?[.!?]|"
+    r"Quán bán quanh năm theo dữ liệu(?: tự khai)?[.!?]|"
+    r"Món(?: chính)?(?: quán)?(?: tự)? khai:[^.!?]+[.!?]"
+    r")",
+    re.I,
+)
+_DESC_META_SENT_RE = re.compile(
+    r"(?:"
+    r"cần bổ sung|sẽ bổ sung|sẽ được bổ sung|cần khảo sát|chờ bổ sung|"
+    r"chờ cập nhật|sẽ cập nhật|cần cập nhật|"
+    r"chưa được ghi nhận|chưa được cập nhật|chưa được niêm yết|"
+    r"chưa có trong dữ liệu|chưa có trong hồ sơ|chưa có dữ liệu|chưa có thông tin|"
+    r"hồ sơ chưa ghi|hồ sơ tiện nghi.*còn trống|dữ liệu.*còn trống|"
+    r"giờ mở cửa.*còn trống|giờ bán.*còn thiếu|"
+    r"theo dữ liệu(?: tự khai| chuyên món| quán)?|"
+    r"tự khai trong dữ liệu|dữ liệu hiện chỉ ghi|dữ liệu chuyên món|"
+    r"theo hai bản ghi của chính dữ liệu|trong hồ sơ quán"
+    r")",
+    re.I,
+)
+_DESC_SEMI_META_RE = re.compile(
+    r";\s*[^;.!?\n]*(?:"
+    r"chưa có dữ liệu|chưa được ghi nhận|chưa được cập nhật|chưa được niêm yết|"
+    r"chưa có trong dữ liệu|chưa có trong hồ sơ|còn chờ bổ sung|còn chờ cập nhật|"
+    r"cần bổ sung|sẽ bổ sung|khách nên hỏi trước"
+    r")[^.!?\n]*",
+    re.I,
+)
+_INLINE_META_SUBS: tuple[tuple[re.Pattern, str], ...] = (
+    (re.compile(r"\s*—\s*phần 'chuyên' trong dữ liệu ghi nhận là cà phê", re.I), ""),
+    (re.compile(r"\s*như dữ liệu chuyên món ghi nhận", re.I), ""),
+    (re.compile(r"\s*theo dữ liệu(?: tự khai| chuyên món| quán)?(?:\s+ghi nhận)?", re.I), ""),
+    (re.compile(r"\s*tự khai trong dữ liệu", re.I), ""),
+    (re.compile(r"\s*quán tự khai\s*—", re.I), " —"),
+    (re.compile(r"\s*được xếp trong dữ liệu", re.I), " phục vụ chính"),
+    (re.compile(r"\s*trong dữ liệu", re.I), ""),
+    (re.compile(r"\s*theo hồ sơ", re.I), ""),
+    (re.compile(r"\s*được hồ sơ quán ghi nhận", re.I), " nổi bật của quán"),
+    (re.compile(r"đứng đầu hồ sơ quán", re.I), "đứng đầu thực đơn quán"),
+    (re.compile(r"Hồ sơ xếp quán vào nhóm", re.I), "Quán thuộc nhóm"),
+    (re.compile(r"Điểm ghi nhận trong hồ sơ đặt ở", re.I), "Lễ hội diễn ra tại"),
+    (re.compile(r"\s*theo hai bản ghi của chính dữ liệu", re.I), ""),
 )
 _MOJIBAKE_FIXES: dict[str, str] = {
     "ho-truc-giang": (
@@ -232,6 +282,35 @@ def _apply_prose_patch(e: dict, eid: str) -> dict:
     return out
 
 
+def _drop_meta_sentences(text: str) -> str:
+    cleaned_paras = []
+    for para in text.split("\n\n"):
+        sents = re.split(r"(?<=[.!?])\s+", para.strip())
+        kept = [st for st in sents if st and not _DESC_META_SENT_RE.search(st)]
+        if kept:
+            cleaned_paras.append(" ".join(kept))
+    return "\n\n".join(cleaned_paras).strip()
+
+
+_META_TRIGGER_RE = re.compile(r"hồ sơ|dữ liệu|tự khai|bổ sung|cập nhật|ghi nhận|thông tin", re.I)
+
+
+def _clean_meta_boilerplate(e: dict) -> dict:
+    s = str(e.get("summary") or "")
+    d = str(e.get("description") or "")
+    if "cổ tự khai sơn" in s or not (_META_TRIGGER_RE.search(s) or _META_TRIGGER_RE.search(d)):
+        return e
+    new_s = _SUMMARY_META_RE.sub("", s).strip()
+    new_s = re.sub(r"\bghi trong hồ sơ(?: của)? quán\b", "chủ đạo của quán", new_s)
+    new_d = _DESC_SEMI_META_RE.sub("", d)
+    for pat, repl in _INLINE_META_SUBS:
+        new_d = pat.sub(repl, new_d)
+    new_d = _drop_meta_sentences(new_d) or new_s
+    if new_s == s and new_d == d:
+        return e
+    return {**e, "summary": new_s, "description": new_d}
+
+
 def _repair_corrupted_prose(e: dict) -> dict:
     eid = str(e.get("id") or "")
     if eid in _MOJIBAKE_FIXES and "?" in str(e.get("description") or ""):
@@ -243,22 +322,69 @@ def _repair_corrupted_prose(e: dict) -> dict:
         price = attrs.get("price_range") or attrs.get("price") if isinstance(attrs, dict) else None
         suffix = f" Giá tham khảo: {price}." if price else ""
         e = {**e, "description": _TRUNC_PRICE_END_RE.sub("", desc).rstrip() + suffix}
-    return e
+    return _clean_meta_boilerplate(e)
+
+
+def _apply_dossier_attrs(attrs: dict, gt: dict) -> dict:
+    out = dict(attrs)
+    for k in ("address", "phone", "hours", "price_range", "admission", "scale", "season", "heritage", "recognition"):
+        if gt.get(k):
+            out[k] = gt[k]
+    if gt.get("foundingYear"):
+        out["founding_year"] = gt["foundingYear"]
+    return out
+
+
+def _apply_dossier_sources(out: dict, gt: dict) -> None:
+    gt_sources = gt.get("sources")
+    if not isinstance(gt_sources, list) or not gt_sources:
+        return
+    curr_src = out.get("source")
+    has_url = isinstance(curr_src, list) and any(isinstance(x, dict) and x.get("url") for x in curr_src)
+    if not has_url:
+        out["source"] = [
+            {"title": s.get("title") or s.get("domain") or "Nguồn đối chiếu", "url": s["url"]}
+            for s in gt_sources if isinstance(s, dict) and s.get("url")
+        ]
+
+
+def _apply_dossier_text(out: dict, gt: dict) -> None:
+    old_summary = out.get("summary")
+    if gt.get("summary"):
+        out["summary"] = gt["summary"]
+    if gt.get("description"):
+        out["description"] = gt["description"]
+    elif gt.get("summary") and (not out.get("description") or out.get("description") == old_summary):
+        out["description"] = gt["summary"]
 
 
 def _apply_dossier_fix(e: dict, dfix: dict | None) -> dict:
     if not dfix or len(str(e.get("summary") or "")) <= 25:
         return e
     gt = dfix["verifiedGroundTruth"]
-    curr = dfix.get("currentInDataJson") or {}
     out = dict(e)
-    if gt.get("summary") and out.get("summary") == curr.get("summary"):
-        out["summary"] = gt["summary"]
-    attrs = dict(out.get("attributes") or {})
-    for k in ("address", "phone", "hours"):
-        if gt.get(k) and not attrs.get(k):
-            attrs[k] = gt[k]
-    out["attributes"] = attrs
+    _apply_dossier_text(out, gt)
+    if gt.get("placeId"):
+        out["placeId"] = gt["placeId"]
+    if gt.get("recommendedType"):
+        out["type"] = gt["recommendedType"]
+    if gt.get("lat") is not None and gt.get("lng") is not None:
+        out["coordinates"] = [float(gt["lat"]), float(gt["lng"])]
+    out["attributes"] = _apply_dossier_attrs(out.get("attributes") or {}, gt)
+    _apply_dossier_sources(out, gt)
+    return out
+
+
+def _apply_place_and_type_fixes(e: dict, eid: str) -> dict:
+    pfix = _PLACE_ID_FIXES.get(eid)
+    tfix = _TYPE_FIXES.get(eid)
+    if not pfix and not tfix:
+        return e
+    out = dict(e)
+    if pfix and out.get("placeId") == pfix.get("currentPlaceId"):
+        out["placeId"] = pfix["verifiedPlaceId"]
+    if tfix and out.get("type") == tfix.get("currentType"):
+        out["type"] = tfix["verifiedType"]
     return out
 
 
@@ -268,6 +394,7 @@ def _apply_ground_truth_overlay(e: dict) -> dict:
         return e
     e = _apply_summary_fix(e, _SUMMARY_FIXES.get(eid))
     e = _apply_dossier_fix(e, _DOSSIER_FIXES.get(eid))
+    e = _apply_place_and_type_fixes(e, eid)
     return _repair_corrupted_prose(e)
 
 
@@ -419,6 +546,8 @@ def _warm_and_snapshot_places(needed_ids: set[str]) -> dict[str, dict | None]:
 
 
 def _enrich_place(entities: list[dict]):
+    for e in entities:
+        e.update(_apply_ground_truth_overlay(e))
     needed_ids = {e["placeId"] for e in entities if e.get("placeId")}
     place_snapshot = _warm_and_snapshot_places(needed_ids) if needed_ids else {}
     for e in entities:
@@ -428,6 +557,7 @@ def _enrich_place(entities: list[dict]):
 
 def _project_public_entity_media(entity: dict, *, limit: int | None = None) -> dict:
     """Return an owned public projection with descriptor-only entity media."""
+    entity = _apply_ground_truth_overlay(entity)
     projected = dict(entity)
     for key in ("image", "images", "image_url", "image_urls", "image_descriptor", "image_descriptors"):
         projected.pop(key, None)
