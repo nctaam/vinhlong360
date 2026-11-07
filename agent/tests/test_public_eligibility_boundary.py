@@ -403,9 +403,11 @@ def test_ground_truth_overlay_and_similar_reasons():
         type="restaurant",
         summary="CT Quán phục vụ cà phê và đồ nướng. Thế mạnh tự khai: Cà phê, Đồ nướng.",
         description="CT Quán phục vụ cà phê. Mức giá bình dân; số điện thoại và giờ mở cửa cần bổ sung sau khảo sát.",
+        attributes={"image_caption": "Không gian ẩm thực và cà phê CT Quán trên đường Bạch Đằng, phường 4."},
     )
     fixed_meta = entity_read._apply_ground_truth_overlay(meta_row)
     assert "Thế mạnh tự khai" not in fixed_meta["summary"]
     assert "cần bổ sung" not in fixed_meta["description"]
+    assert "Không gian ẩm thực và cà phê CT Quán" in fixed_meta["description"]
 
     assert entities_api._similar_reason_vi("same_ward") == "Gần nhau trong cùng xã, phường"

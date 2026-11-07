@@ -158,6 +158,10 @@ _DESC_META_SENT_RE = re.compile(
     r"chờ cập nhật|sẽ cập nhật|cần cập nhật|"
     r"chưa được ghi nhận|chưa được cập nhật|chưa được niêm yết|"
     r"chưa có trong dữ liệu|chưa có trong hồ sơ|chưa có dữ liệu|chưa có thông tin|"
+    r"chưa có trong danh bạ|danh bạ chưa có|danh bạ mới ghi nhận|"
+    r"chưa có địa chỉ đường cụ thể|chưa có số nhà|chưa rõ số nhà|chưa rõ phường|"
+    r"giờ mở cửa và giá món chưa có|giờ bán và giá món cũng chưa có|"
+    r"mới rõ tới tên đường|vị trí hiện(?: chỉ)? xác định|vị trí(?: trên)? bản đồ mới|"
     r"hồ sơ chưa ghi|hồ sơ tiện nghi.*còn trống|dữ liệu.*còn trống|"
     r"giờ mở cửa.*còn trống|giờ bán.*còn thiếu|"
     r"theo dữ liệu(?: tự khai| chuyên món| quán)?|"
@@ -169,7 +173,8 @@ _DESC_META_SENT_RE = re.compile(
 _DESC_SEMI_META_RE = re.compile(
     r";\s*[^;.!?\n]*(?:"
     r"chưa có dữ liệu|chưa được ghi nhận|chưa được cập nhật|chưa được niêm yết|"
-    r"chưa có trong dữ liệu|chưa có trong hồ sơ|còn chờ bổ sung|còn chờ cập nhật|"
+    r"chưa có trong dữ liệu|chưa có trong hồ sơ|chưa có trong danh bạ|"
+    r"còn chờ bổ sung|còn chờ cập nhật|"
     r"cần bổ sung|sẽ bổ sung|khách nên hỏi trước"
     r")[^.!?\n]*",
     re.I,
@@ -182,12 +187,33 @@ _INLINE_META_SUBS: tuple[tuple[re.Pattern, str], ...] = (
     (re.compile(r"\s*quán tự khai\s*—", re.I), " —"),
     (re.compile(r"\s*được xếp trong dữ liệu", re.I), " phục vụ chính"),
     (re.compile(r"\s*trong dữ liệu", re.I), ""),
+    (re.compile(r"\s*trong danh bạ", re.I), ""),
+    (re.compile(r"\s*trong danh mục lưu trú", re.I), ""),
+    (re.compile(r"\s*theo phân loại hồ sơ", re.I), ""),
     (re.compile(r"\s*theo hồ sơ", re.I), ""),
     (re.compile(r"\s*được hồ sơ quán ghi nhận", re.I), " nổi bật của quán"),
     (re.compile(r"đứng đầu hồ sơ quán", re.I), "đứng đầu thực đơn quán"),
     (re.compile(r"Hồ sơ xếp quán vào nhóm", re.I), "Quán thuộc nhóm"),
+    (re.compile(r"Bảng chuyên môn trong danh mục ghi nhóm", re.I), "Quán chuyên phục vụ nhóm"),
     (re.compile(r"Điểm ghi nhận trong hồ sơ đặt ở", re.I), "Lễ hội diễn ra tại"),
     (re.compile(r"\s*theo hai bản ghi của chính dữ liệu", re.I), ""),
+    (re.compile(r"Món chủ lực(?: duy nhất)? được ghi nhận là", re.I), "Món chủ lực là"),
+    (re.compile(r"món chủ lực(?: duy nhất)? được ghi nhận là", re.I), "món chủ lực là"),
+    (re.compile(r"chuyên môn(?: duy nhất)? được ghi nhận(?: của quán)?", re.I), "chuyên môn chính"),
+    (re.compile(r"Thực đơn ghi nhận được xoay quanh", re.I), "Thực đơn xoay quanh"),
+    (re.compile(r"Thực đơn được ghi nhận theo một hướng duy nhất:", re.I), "Thực đơn chuyên về"),
+    (re.compile(r"Thực đơn gói gọn trong hai nhóm ghi nhận được:", re.I), "Thực đơn tập trung vào hai nhóm:"),
+    (re.compile(r"Thực đơn xoay quanh hai nhóm được ghi nhận:", re.I), "Thực đơn xoay quanh hai nhóm:"),
+    (re.compile(r"Hai nhóm món được ghi nhận:", re.I), "Hai nhóm món chính của quán:"),
+    (re.compile(r"Nhóm món được ghi nhận gồm", re.I), "Thực đơn quán gồm"),
+    (re.compile(r"Bảng món đi theo một hướng được ghi nhận:", re.I), "Thực đơn đi theo hướng"),
+    (re.compile(r"toàn bộ thực đơn ghi nhận được của quán", re.I), "điểm nhấn chủ đạo trong thực đơn của quán"),
+    (re.compile(r"mặt hàng ghi nhận duy nhất là", re.I), "thức uống chủ đạo là"),
+    (re.compile(r"Món ghi nhận duy nhất của quán là", re.I), "Thức uống chủ đạo của quán là"),
+    (re.compile(r"món ghi nhận là", re.I), "món chính là"),
+    (re.compile(r"nhưng mô hình ghi nhận là nhà nghỉ", re.I), "nhưng hoạt động theo mô hình nhà nghỉ"),
+    (re.compile(r"Hai điểm được ghi nhận của nhà nghỉ này là", re.I), "Hai ưu điểm của nhà nghỉ này là"),
+    (re.compile(r"Phòng gần sông là điểm được ghi nhận của", re.I), "Không gian phòng gần sông là điểm nhấn của"),
 )
 _MOJIBAKE_FIXES: dict[str, str] = {
     "ho-truc-giang": (
@@ -292,20 +318,39 @@ def _drop_meta_sentences(text: str) -> str:
     return "\n\n".join(cleaned_paras).strip()
 
 
-_META_TRIGGER_RE = re.compile(r"hồ sơ|dữ liệu|tự khai|bổ sung|cập nhật|ghi nhận|thông tin", re.I)
+_META_TRIGGER_RE = re.compile(
+    r"hồ sơ|dữ liệu|tự khai|bổ sung|cập nhật|ghi nhận|thông tin|danh bạ|danh mục|chưa có|chưa rõ|mới rõ|mới xác định",
+    re.I,
+)
+
+
+def _enrich_short_description(s: str, d: str, attrs: dict | None) -> str:
+    cap = str((attrs or {}).get("image_caption") or "").strip()
+    if not cap or cap in d or cap in s:
+        return d
+    if not cap.endswith((".", "!", "?")):
+        cap += "."
+    if not d or d == s:
+        return f"{s}\n\n{cap}" if s else cap
+    if len(d) < 95:
+        return f"{d} {cap}"
+    return d
 
 
 def _clean_meta_boilerplate(e: dict) -> dict:
     s = str(e.get("summary") or "")
     d = str(e.get("description") or "")
-    if "cổ tự khai sơn" in s or not (_META_TRIGGER_RE.search(s) or _META_TRIGGER_RE.search(d)):
-        return e
-    new_s = _SUMMARY_META_RE.sub("", s).strip()
-    new_s = re.sub(r"\bghi trong hồ sơ(?: của)? quán\b", "chủ đạo của quán", new_s)
-    new_d = _DESC_SEMI_META_RE.sub("", d)
-    for pat, repl in _INLINE_META_SUBS:
-        new_d = pat.sub(repl, new_d)
-    new_d = _drop_meta_sentences(new_d) or new_s
+    new_s, new_d = s, d
+    if "cổ tự khai sơn" not in s and (_META_TRIGGER_RE.search(s) or _META_TRIGGER_RE.search(d)):
+        new_s = _SUMMARY_META_RE.sub("", s).strip()
+        new_s = re.sub(r"\bghi trong hồ sơ(?: của)? quán\b", "chủ đạo của quán", new_s)
+        new_d = _DESC_SEMI_META_RE.sub("", d)
+        for pat, repl in _INLINE_META_SUBS:
+            new_s = pat.sub(repl, new_s)
+            new_d = pat.sub(repl, new_d)
+        new_d = _drop_meta_sentences(new_d) or new_s
+    if e.get("type") != "place":
+        new_d = _enrich_short_description(new_s, new_d, e.get("attributes"))
     if new_s == s and new_d == d:
         return e
     return {**e, "summary": new_s, "description": new_d}
