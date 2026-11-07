@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 import threading as _threading
 from collections import OrderedDict
 from typing import Optional
@@ -68,10 +69,12 @@ if __package__:
     from .ai_disclosure import load_ai_disclosure
     from .image_descriptor import describe_entity_images
     from .media_policy import is_renderable_entity_descriptor
+    from .publication_status import PUBLISHED_V1_EXCLUSIONS
 else:
     from ai_disclosure import load_ai_disclosure
     from image_descriptor import describe_entity_images
     from media_policy import is_renderable_entity_descriptor
+    from publication_status import PUBLISHED_V1_EXCLUSIONS
 
 
 _GALLERY_DISCLOSURE = load_ai_disclosure()
@@ -127,9 +130,120 @@ def _apply_summary_fix(e: dict, sfix: dict | None) -> dict:
         return e
     out = dict(e)
     out["summary"] = sfix["verifiedSummary"]
-    if not out.get("description") or out.get("description") == sfix.get("currentSummary"):
+    if sfix.get("verifiedDescription") or not out.get("description") or out.get("description") == sfix.get("currentSummary"):
         out["description"] = sfix.get("verifiedDescription") or sfix["verifiedSummary"]
     return out
+
+
+_TRUNC_PRICE_END_RE = re.compile(
+    r"(?:Giá(?: bình dân| tham khảo| rẻ)?(?::\s*Khoảng)?\s+\d{1,3}|"
+    r"(?:Bình dân chợ|Bờ sông|Hiện đại bình dân|Cổ điển, dưới bóng cây lớn|Phố đêm sầm uất)\s+000)\.$"
+)
+_MOJIBAKE_FIXES: dict[str, str] = {
+    "ho-truc-giang": (
+        "Hồ Trúc Giang hình thành từ khoảng đầu thập niên 1930 ngay trung tâm thành phố Bến Tre, "
+        "trên khu đất từng bị đào lấy đất rồi tích nước thành hồ. Tên Trúc Giang gắn với giai đoạn "
+        "tỉnh lỵ Kiến Hòa, còn người dân quen gọi nơi này là Bờ Hồ. Đường dạo quanh hồ rợp bóng me tây "
+        "và phượng vĩ lâu năm; mùa hè, sắc phượng phản chiếu xuống mặt nước tạo khung cảnh rất riêng của "
+        "xứ dừa. Giữa hồ có nhà thủy tạ, ven bờ có ghế đá và lối đi bộ, buổi sáng thường có người tập thể dục, "
+        "chiều tối là điểm hẹn hóng mát. Phía tây hồ đặt tượng đồng Trần Văn Ơn, gần Đình An Hội, Chợ Bến Tre, "
+        "Bảo tàng Bến Tre và Chùa Viên Minh. Hồ mở cửa tự do, không thu phí; thời điểm dễ chịu nhất để dạo Bờ Hồ "
+        "là mùa khô từ tháng 11 đến tháng 4."
+    ),
+    "nha-hang-noi-ttc-ben-tre-ben-tre": (
+        "Nhà hàng nổi TTC Bến Tre phục vụ cá sông, tôm càng xanh và hải sản tươi sống trên bè nổi bên sông Hàm Luông. "
+        "Giá tham khảo: 100.000–200.000 đ/người. Giờ mở cửa: 10:00–22:00."
+    ),
+    "nha-hang-lang-be-ben-tre-ben-tre": (
+        "Nhà hàng Làng Bè Bến Tre phục vụ cá đồng, cá sông và tôm càng xanh trong không gian sông nước miệt vườn. "
+        "Giá tham khảo: 100.000–200.000 đ/người. Giờ mở cửa: 09:00–21:00."
+    ),
+    "hai-san-ngoc-hiep-binh-dai-ben-tre": (
+        "Hải Sản Ngọc Hiệp Bình Đại phục vụ cua biển, tôm biển, mực và bạch tuộc tươi sống từ vùng biển Bình Đại. "
+        "Giá tham khảo: 150.000–300.000 đ/người. Giờ mở cửa: 09:00–20:00."
+    ),
+    "nha-hang-hai-san-song-tra-binh-dai-ben-tre": (
+        "Nhà hàng Hải Sản Sông Trà ở Bình Đại phục vụ cá sông, tôm càng xanh, cua đồng và tép bạc từ sông Trà. "
+        "Giá tham khảo: 100.000–250.000 đ/người. Giờ mở cửa: 10:00–21:00."
+    ),
+    "con-cu": (
+        "Điểm tham quan nằm trong khu vực biển Ba Động thuộc xã Nhị Long, từng được quy hoạch phát triển du lịch sinh thái "
+        "ven biển với dải cồn cát tự nhiên và thảm thực vật ngập mặn phong phú."
+    ),
+    "agribank-chi-nhanh-vinh-long-vinh-long": (
+        "Cơ sở giao dịch chính của Agribank tại số 28 Hưng Đạo Vương, Phường Long Châu (Phường 1, TP. Vĩnh Long cũ), "
+        "cung cấp dịch vụ ngân hàng, tài chính và hệ thống ATM hỗ trợ thẻ quốc tế cho người dân và du khách."
+    ),
+}
+_PROSE_PATCHES: dict[str, tuple[str | None, str | None]] = {
+    "xuong-thu-cong-cocohand-vuon-dua-huu-co": (
+        "Cơ sở sản xuất tranh dừa thủ công mỹ nghệ Cocohand tại ấp Bình Đông 1, xã Hương Mỹ, kết hợp tham quan vườn dừa hữu cơ rộng hơn 11.000m².",
+        "Cơ sở sản xuất tranh dừa thủ công mỹ nghệ Cocohand tại ấp Bình Đông 1, xã Hương Mỹ, kết hợp tham quan vườn dừa hữu cơ rộng hơn 11.000m². Khuôn viên có tổ ong lấy mật truyền thống và ao cá, tạo cảnh quan miệt vườn đặc trưng.",
+    ),
+    "khu-du-lich-sinh-thai-sala": (
+        "Khu du lịch sinh thái rộng 20 ha tại xã Mỹ Thạnh Trung, tổng đầu tư hơn 40 tỷ đồng, cách trung tâm TP. Vĩnh Long khoảng 25 km.",
+        None,
+    ),
+    "com-chay-au-lac-vinh-long": (
+        "Quán cơm chay Âu Lạc bình dân trên đường Trần Văn Ơn, Phường Long Châu (Phường 1, TP. Vĩnh Long cũ).",
+        None,
+    ),
+    "cong-vien-29": (
+        None,
+        "Công viên rộng rãi nằm ở trung tâm Tân Quới với không gian xanh mát, nhiều cây xanh và hoa kiểng. Thường xuyên tổ chức các hoạt động văn hóa, thể thao và sinh hoạt cộng đồng.",
+    ),
+    "hai-dang-ba-dong": (
+        None,
+        "Ngọn hải đăng ở ấp Nhà Mát, Phường Trường Long Hòa — một trong những điểm tham quan tại khu vực biển Ba Động. Công trình mang giá trị lịch sử, cảnh quan biển và là điểm ngắm bình minh, chụp ảnh.",
+    ),
+    "chua-van-phuoc": (
+        None,
+        "Ngôi chùa tại Bến Tre được mệnh danh là 'tiên cảnh chốn trần gian', là điểm du lịch tâm linh và chiêm bái nổi tiếng giữa rừng ngập mặn Bình Đại.",
+    ),
+    "kem-baskin-robbins---sense-city": (
+        None,
+        "Chi nhánh kem và tráng miệng quốc tế tại tầng trệt Trung tâm thương mại Sense City, số 26A Trần Quốc Tuấn, Phường Bến Tre.",
+    ),
+    "festival-gach-gom-do-kinh-te-xanh-tinh-vinh-long-vinh-long": (
+        None,
+        "Giữa rừng lò gạch đỏ trăm tuổi dọc kinh Thầy Cai, Festival Gạch Gốm Đỏ – Kinh tế Xanh tỉnh Vĩnh Long lần I (16–23/11/2024) thắp sáng 'vương quốc' Mang Thít. Sân khấu nổi trên chiếc sà lan 3.000 tấn neo giữa làng nghề, hội chợ 700–800 gian hàng công thương – nông nghiệp – du lịch mở rộng ra đường Võ Văn Kiệt. Phó Thủ tướng Hồ Đức Phớc dự khai mạc; kỷ lục Việt Nam 102 món từ tàu hủ ky ra đời ngay tại đây. Festival gắn với Đề án Di sản đương đại Mang Thít quy mô 3.060 ha.",
+    ),
+    "lang-van-coffee": (
+        None,
+        "Quán cà phê tại Quốc Lộ 60, TP. Bến Tre với không gian sân vườn rộng rãi, thoáng mát, phục vụ đa dạng cà phê và thức uống giải khát.",
+    ),
+}
+
+
+def _apply_prose_patch(e: dict, eid: str) -> dict:
+    if eid not in _PROSE_PATCHES:
+        return e
+    s_patch, d_patch = _PROSE_PATCHES[eid]
+    out = dict(e)
+    if s_patch:
+        out["summary"] = s_patch
+    if d_patch:
+        out["description"] = d_patch
+    if eid == "kem-baskin-robbins---sense-city":
+        attrs = dict(out.get("attributes") or {})
+        if attrs.get("specialty") == "Ốc":
+            attrs["specialty"] = "Kem tươi, tráng miệng lạnh"
+            out["attributes"] = attrs
+    return out
+
+
+def _repair_corrupted_prose(e: dict) -> dict:
+    eid = str(e.get("id") or "")
+    if eid in _MOJIBAKE_FIXES and "?" in str(e.get("description") or ""):
+        e = {**e, "description": _MOJIBAKE_FIXES[eid]}
+    e = _apply_prose_patch(e, eid)
+    desc = str(e.get("description") or "").strip()
+    if desc and _TRUNC_PRICE_END_RE.search(desc):
+        attrs = e.get("attributes") or {}
+        price = attrs.get("price_range") or attrs.get("price") if isinstance(attrs, dict) else None
+        suffix = f" Giá tham khảo: {price}." if price else ""
+        e = {**e, "description": _TRUNC_PRICE_END_RE.sub("", desc).rstrip() + suffix}
+    return e
 
 
 def _apply_dossier_fix(e: dict, dfix: dict | None) -> dict:
@@ -153,14 +267,18 @@ def _apply_ground_truth_overlay(e: dict) -> dict:
     if not eid:
         return e
     e = _apply_summary_fix(e, _SUMMARY_FIXES.get(eid))
-    return _apply_dossier_fix(e, _DOSSIER_FIXES.get(eid))
+    e = _apply_dossier_fix(e, _DOSSIER_FIXES.get(eid))
+    return _repair_corrupted_prose(e)
 
 
 def _is_public(e: dict) -> bool:
     """Entity được hiển thị công khai (listing/homepage): loại entity provisional /
-    chưa kiểm chứng (auto-learned). Quarantine cho public display — KB chat vẫn dùng,
-    nhưng trang công khai KHÔNG show nội dung tự-học chưa duyệt (tránh cảm giác nghiệp dư)."""
-    return e.get("status") != "provisional" and e.get("verified") not in (False, 0)
+    chưa kiểm chứng (auto-learned) và các ID nằm trong PUBLISHED_V1_EXCLUSIONS."""
+    return (
+        e.get("status") != "provisional"
+        and e.get("verified") not in (False, 0)
+        and e.get("id") not in PUBLISHED_V1_EXCLUSIONS
+    )
 
 
 def _get_public_entity(entity_id: str) -> Optional[dict]:

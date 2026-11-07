@@ -346,11 +346,34 @@ def test_ground_truth_overlay_and_similar_reasons():
     import entity_read
     from entities import api as entities_api
 
+    assert public_api._is_public(_entity("prov-1", status="verified", verified=1)) is False
+    assert public_api._is_public(_entity("test-mutation-create", status=None, verified=True)) is False
+
     row = _entity(
         "p-hoa-thuan",
         type="place",
         summary="Phường Hòa Thuận thuộc tỉnh Vĩnh Long, sáp nhập từ Phường 5 (TP Trà Vinh) và xã Hòa Thuận (H.",
+        description="Phường Hòa Thuận thuộc tỉnh Vĩnh Long, sáp nhập từ Phường 5 (TP Trà Vinh) và xã Hòa Thuận (H. Châu Thành) của TP Trà Vinh + H. Châu Thành (TV).",
     )
     fixed = entity_read._apply_ground_truth_overlay(row)
     assert fixed["summary"].endswith("(huyện Châu Thành cũ).")
+    assert "Châu Thành (TV)" not in fixed["description"]
+
+    price_row = _entity(
+        "quan-chao-luon-ba-nam-cho-vinh-long",
+        type="restaurant",
+        description="Quán Cháo Lươn Bà Năm. Giá 50.",
+        attributes={"price_range": "50.000–120.000 đ/người"},
+    )
+    fixed_price = entity_read._apply_ground_truth_overlay(price_row)
+    assert fixed_price["description"].endswith("Giá tham khảo: 50.000–120.000 đ/người.")
+
+    mojibake_row = _entity(
+        "ho-truc-giang",
+        type="nature",
+        description="H? Tr?c Giang h?nh th?nh t? kho?ng ??u th?p ni?n 1930.",
+    )
+    fixed_mojibake = entity_read._apply_ground_truth_overlay(mojibake_row)
+    assert "?" not in fixed_mojibake["description"]
+    assert "Hồ Trúc Giang" in fixed_mojibake["description"]
     assert entities_api._similar_reason_vi("same_ward") == "Gần nhau trong cùng xã, phường"

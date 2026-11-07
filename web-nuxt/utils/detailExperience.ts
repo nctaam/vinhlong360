@@ -88,6 +88,13 @@ const BLANK_LINE_SPLIT_RE = /\n\s*\n/
 const WHITESPACE_RE = /\s+/g
 const H2_HEADING_RE = /^##\s+(.+)$/
 const H3_HEADING_RE = /^###\s+(.+)$/
+const REDUNDANT_META_STUB_RE = /^(?:\.+|Sản phẩm OCOP\s*\d?\s*sao\.?|(?:Vé(?: tham quan| vào cửa)?|Vào cửa|Miễn phí|Giá(?: phòng| tham khảo| rẻ| bình dân)?|Giờ(?: mở cửa)?|Mở cửa|Địa chỉ|Liên hệ|Đánh giá)\s*[:0-9A-Za-zÀ-ỹ.,–—/\s()-]*)$/i
+
+function isRedundantRemainderStub(rem: string): boolean {
+  if (!rem || rem.length <= 2) return true
+  if (rem.length > 65) return false
+  return REDUNDANT_META_STUB_RE.test(rem)
+}
 
 function normalizeSectionProse(s: unknown): string {
   return String(s ?? '').replace(WHITESPACE_RE, ' ').trim().toLowerCase()
@@ -143,7 +150,7 @@ export function parseDescriptionSections(description?: string | null, summary?: 
       const trimmedSummary = summary.trim()
       if (trimmedSummary && blocks[0]!.startsWith(trimmedSummary)) {
         const remainder = blocks[0]!.slice(trimmedSummary.length).trim()
-        if (remainder) {
+        if (remainder && !isRedundantRemainderStub(remainder)) {
           blocks[0] = remainder
         } else {
           blocks = blocks.slice(1)

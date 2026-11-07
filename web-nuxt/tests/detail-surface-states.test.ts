@@ -197,4 +197,11 @@ describe('detail dossier surface states', () => {
       'Đình còn giữ tấm biển cổ khắc ba chữ Tân Hoa Đình năm 1798.',
     ])
   })
+
+  it('collapses redundant metadata stubs left behind after stripping summary prefix', () => {
+    const summary = 'Sản phẩm cá phi ướp sả ớt đóng gói hút chân không của Cơ sở Chế biến Thủy sản Thanh Phước.'
+    expect(parseDescriptionSections(`${summary} Sản phẩm OCOP 3 sao.`, summary)).toEqual([])
+    expect(parseDescriptionSections(`${summary} Vé: Miễn phí. Giờ mở cửa: 7:00–17:00.`, summary)).toEqual([])
+    expect(parseDescriptionSections(`${summary} .`, summary)).toEqual([])
+  })
 })

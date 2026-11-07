@@ -26,7 +26,8 @@ function stripLeadingName(teaser: string, name: string): string {
 /** One-line story hook. '' when nothing usable. Provenance-prefixed for product/craft_village. */
 export function entityStoryTeaser(entity: Record<string, any>): string {
   const a = entity?.attributes || {}
-  let teaser = (a.hook || a.highlight || a.famous_for || a.signature_dish || '').toString().trim()
+  const rawHook = a.hook || a.highlight || a.famous_for || a.signature_dish || ''
+  let teaser = (Array.isArray(rawHook) ? rawHook[0] || '' : rawHook).toString().trim()
   if (!teaser) teaser = firstSentence(entity?.description || '')
   if (!teaser) teaser = (entity?.summary || '').toString().trim()
   if (!teaser) return ''

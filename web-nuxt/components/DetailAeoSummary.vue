@@ -84,7 +84,8 @@ const attrs = computed(() => (props.entity?.attributes as Record<string, any>) |
 const hasAttributes = computed(() => Boolean(props.entity?.attributes && Object.keys(attrs.value).length > 0))
 
 const quickSummary = computed(() => {
-  if (attrs.value.highlight) return String(attrs.value.highlight)
+  const hl = attrs.value.highlight
+  if (hl) return Array.isArray(hl) ? hl.join(' · ') : String(hl)
   if (attrs.value.famous_for) return String(attrs.value.famous_for)
   if (attrs.value.significance) return String(attrs.value.significance)
   if (!props.entity?.summary) return props.entity?.description || props.entity?.name || ''
