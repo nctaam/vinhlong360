@@ -337,6 +337,20 @@ def _enrich_short_description(s: str, d: str, attrs: dict | None) -> str:
     return d
 
 
+def _enrich_place_description(s: str, d: str, attrs: dict | None) -> str:
+    if d and d != s:
+        return d
+    if not isinstance(attrs, dict):
+        return d
+    cap = str(attrs.get("image_caption") or "").strip()
+    if cap and not cap.endswith((".", "!", "?")):
+        cap += "."
+    anchors = [str(a).strip() for a in (attrs.get("terroir_anchors") or []) if str(a).strip()]
+    anchor_sent = f"Điểm nhấn bản địa: {', '.join(anchors[:4])}." if anchors else ""
+    combined = " ".join(part for part in (cap, anchor_sent) if part).strip()
+    return combined or d
+
+
 def _clean_meta_boilerplate(e: dict) -> dict:
     s = str(e.get("summary") or "")
     d = str(e.get("description") or "")
@@ -349,7 +363,9 @@ def _clean_meta_boilerplate(e: dict) -> dict:
             new_s = pat.sub(repl, new_s)
             new_d = pat.sub(repl, new_d)
         new_d = _drop_meta_sentences(new_d) or new_s
-    if e.get("type") != "place":
+    if e.get("type") == "place":
+        new_d = _enrich_place_description(new_s, new_d, e.get("attributes"))
+    else:
         new_d = _enrich_short_description(new_s, new_d, e.get("attributes"))
     if new_s == s and new_d == d:
         return e

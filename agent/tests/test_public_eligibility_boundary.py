@@ -354,10 +354,16 @@ def test_ground_truth_overlay_and_similar_reasons():
         type="place",
         summary="Phường Hòa Thuận thuộc tỉnh Vĩnh Long, sáp nhập từ Phường 5 (TP Trà Vinh) và xã Hòa Thuận (H.",
         description="Phường Hòa Thuận thuộc tỉnh Vĩnh Long, sáp nhập từ Phường 5 (TP Trà Vinh) và xã Hòa Thuận (H. Châu Thành) của TP Trà Vinh + H. Châu Thành (TV).",
+        attributes={
+            "image_caption": "Không gian đô thị xanh mát tại Phường Hòa Thuận.",
+            "terroir_anchors": ["Bún nước lèo Trà Vinh", "Chùa Khmer cổ"],
+        },
     )
     fixed = entity_read._apply_ground_truth_overlay(row)
     assert fixed["summary"].endswith("(huyện Châu Thành cũ).")
     assert "Châu Thành (TV)" not in fixed["description"]
+    assert fixed["description"] != fixed["summary"]
+    assert "Điểm nhấn bản địa: Bún nước lèo Trà Vinh, Chùa Khmer cổ." in fixed["description"]
 
     price_row = _entity(
         "quan-chao-luon-ba-nam-cho-vinh-long",
