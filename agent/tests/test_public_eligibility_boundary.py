@@ -436,4 +436,8 @@ def test_ground_truth_overlay_and_similar_reasons():
     assert stop["note"] == "05:30 - 06:30"
     assert stop["placeId"] == "p-an-binh"
 
+    expanded = entity_read._expand_placeholder_stops([{"id": "placeholder-tour-p06-1", "time": "08:00"}])
+    assert len(expanded) == 3
+    assert expanded[0]["id"] == "lang-hoa-kieng-cai-mon-cho-lach"
+
     assert entities_api._similar_reason_vi("same_ward") == "Gần nhau trong cùng xã, phường"

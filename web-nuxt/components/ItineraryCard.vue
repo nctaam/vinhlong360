@@ -67,6 +67,10 @@ const ROVING = [
 const coverSrc = computed(() => {
   const explicit = props.itinerary.image || props.itinerary.cover
   if (typeof explicit === 'string' && explicit.trim()) return explicit.trim()
+  for (const stop of (props.itinerary.stops || [])) {
+    const descUrl = stop?.image_descriptors?.[0]?.url
+    if (typeof descUrl === 'string' && descUrl.trim()) return descUrl.trim()
+  }
   const text = `${props.itinerary.id || ''} ${props.itinerary.title || ''} ${props.itinerary.name || ''} ${props.itinerary.summary || ''}`.toLowerCase()
   if (text.includes('gốm') || text.includes('mang thít') || text.includes('mang-thit') || text.includes('làng nghề')) return '/img/entities/lo-gach-mang-thit.webp'
   if (text.includes('cù lao') || text.includes('an bình') || text.includes('an-binh') || text.includes('miệt vườn') || text.includes('trái cây')) return '/img/spread/cu-lao-an-binh-640.webp'

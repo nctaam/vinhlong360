@@ -515,14 +515,67 @@ def _extract_stop_tip(attrs: object) -> str:
     return ""
 
 
+_PLACEHOLDER_STOP_FIXES: dict[str, list[dict] | dict] = {
+    "placeholder-tour-p06-1": [
+        {"id": "lang-hoa-kieng-cai-mon-cho-lach", "time": "08:00", "note": "Thưởng lãm vương quốc hoa kiểng Cái Mơn – Chợ Lách rực rỡ sắc xuân"},
+        {"id": "lang-ong-tien-quan-thong-che-dieu-bat", "time": "10:30", "note": "Thắp hương cầu bình an đầu năm tại di tích Lăng Ông Trà Ôn"},
+        {"id": "cu-lao-an-binh", "time": "14:00", "note": "Du ngoạn sông nước và thưởng thức trái cây miệt vườn cù lao An Bình"},
+    ],
+    "placeholder-tour-p09-1": [
+        {"id": "lo-gach-mang-thit", "time": "07:30", "note": "Săn ảnh di sản vương quốc lò gạch gốm đỏ Mang Thít bên dòng Thầy Cai"},
+        {"id": "ao-ba-om", "time": "11:00", "note": "Góc máy nghệ thuật dưới tán sao, dầu cổ thụ hàng trăm năm quanh Ao Bà Om"},
+        {"id": "bien-ba-dong", "time": "16:00", "note": "Bắt trọn khoảnh khắc hoàng hôn và hàng điện gió vươn mình trên biển Ba Động"},
+    ],
+    "placeholder-tour-p10-2": {"id": "khu-du-lich-lan-vuong", "time": "10:00", "note": "Hoạt động team building chèo xuồng, tát mương bắt cá tại Khu du lịch Lan Vương"},
+    "placeholder-tour-p10-3": {"id": "keo-dua-mo-cay-dish", "time": "12:00", "note": "Thưởng thức ẩm thực xứ Dừa và trải nghiệm quy trình làm kẹo dừa thủ công"},
+    "placeholder-ben-tre-tong-tai-romantic-2day-001-1": {"id": "con-quy-song-tien-chau-thanh-ben-tre", "time": "Ngày 1 – 08:00 - 09:30", "note": "Đón gió sông Tiền và mở đầu hành trình khám phá tứ linh cù lao xứ Dừa"},
+    "placeholder-ben-tre-tong-tai-romantic-2day-001-6": {"id": "homestay-dua-ben-tre", "time": "Ngày 2 – 06:30 - 07:30", "note": "Đón bình minh tinh khôi rạng ngời giữa không gian vườn dừa yên tĩnh"},
+    "placeholder-ben-tre-tong-tai-romantic-2day-001-7": {"id": "banh-canh-ben-tre", "time": "Ngày 2 – 08:00 - 09:00", "note": "Điểm tâm sáng món ngon miệt vườn tại không gian ven sông lộng gió"},
+    "placeholder-ben-tre-tong-tai-romantic-2day-001-8": {"id": "du-lich-sinh-thai-miet-vuon-mo-cay-bac", "time": "Ngày 2 – 09:30 - 10:30", "note": "Dạo bước chụp ảnh lưu niệm bên rặng dừa xanh và vườn sinh thái"},
+    "placeholder-ben-tre-tong-tai-romantic-2day-001-9": {"id": "tom-cang-xanh-song-tien", "time": "Ngày 2 – 11:00 - 12:00", "note": "Thưởng thức lẩu tôm càng sông nấu chua ngọt thanh mát trước khi trả phòng"},
+    "placeholder-ben-tre-tong-tai-romantic-2day-001-12": {"id": "ben-pha-dinh-khao-vinh-long", "time": "Ngày 2 – 16:30 - 17:30", "note": "Vượt phà Đình Khao sang đất Vĩnh Long ngắm hoàng hôn buông trên sông Cổ Chiên"},
+    "placeholder-ben-tre-tong-tai-romantic-2day-001-13": {"id": "tuyen-song-co-chien-hoang-hon-bo-ke-vinh-long", "time": "Ngày 2 – 17:45 - 18:30", "note": "Kết thúc hành trình lãng mạn ngọt ngào bên bờ sông Cổ Chiên thơ mộng"},
+}
+
+
+def _expand_placeholder_stops(stops: list) -> list:
+    expanded = []
+    for stop in stops:
+        sid = _itinerary_stop_entity_id(stop)
+        fix = _PLACEHOLDER_STOP_FIXES.get(sid)
+        if isinstance(fix, list):
+            expanded.extend(dict(item) for item in fix)
+        elif isinstance(fix, dict):
+            merged = dict(stop) if isinstance(stop, dict) else {}
+            merged.update(fix)
+            merged.pop("entityId", None)
+            merged.pop("entity_id", None)
+            expanded.append(merged)
+        else:
+            expanded.append(stop)
+    return expanded
+
+
 def _clean_stop_note(stop: dict, stop_id: str, entity: dict) -> None:
     note = stop.get("note")
     if not stop_id or not isinstance(note, str):
         return
-    if stop_id not in note and "Điểm dừng chân trải nghiệm" not in note:
+    name = str(entity.get("name") or "").strip()
+    note_clean = note.strip()
+    is_redundant_name = bool(name and (note_clean == name or note_clean in name))
+    if stop_id not in note and "Điểm dừng chân trải nghiệm" not in note and not is_redundant_name:
         return
     tip = _extract_stop_tip(entity.get("attributes"))
-    stop["note"] = tip if tip else note.replace(stop_id, entity["name"])
+    if tip:
+        stop["note"] = tip
+    elif not is_redundant_name:
+        stop["note"] = note.replace(stop_id, name)
+
+
+def _attach_stop_cover(stop: dict, entity: dict) -> None:
+    descriptors = _gallery_editorial_images(entity)
+    if descriptors:
+        stop.setdefault("image_descriptors", descriptors[:1])
 
 
 def _enrich_itinerary_stop(stop: dict, stop_id: str, entity: dict) -> None:
@@ -542,17 +595,24 @@ def _enrich_itinerary_stop(stop: dict, stop_id: str, entity: dict) -> None:
             stop.setdefault("place_name", place["name"])
             if place.get("area"):
                 stop.setdefault("area", place["area"])
-    descriptors = _gallery_editorial_images(entity)
-    if descriptors:
-        stop.setdefault("image_descriptors", descriptors[:1])
+    _attach_stop_cover(stop, entity)
+
+
+def _resolve_stop_entities(stop_ids: list[str], public_entities: dict[str, dict] | None) -> dict[str, dict]:
+    if public_entities is None:
+        return _get_public_entities_batch(stop_ids)
+    missing = [sid for sid in stop_ids if sid not in public_entities]
+    if not missing:
+        return public_entities
+    return {**public_entities, **_get_public_entities_batch(missing)}
 
 
 def _public_itinerary_stops(
     stops: list, public_entities: dict[str, dict] | None = None, *, enrich: bool = False,
 ) -> list:
+    stops = _expand_placeholder_stops(stops)
     stop_ids = [sid for sid in (_itinerary_stop_entity_id(stop) for stop in stops) if sid]
-    if public_entities is None:
-        public_entities = _get_public_entities_batch(stop_ids)
+    public_entities = _resolve_stop_entities(stop_ids, public_entities)
     result = []
     for stop in stops:
         stop_id = _itinerary_stop_entity_id(stop)
@@ -563,6 +623,8 @@ def _public_itinerary_stops(
             _clean_stop_note(stop, stop_id, entity)
             if enrich:
                 _enrich_itinerary_stop(stop, stop_id, entity)
+            else:
+                _attach_stop_cover(stop, entity)
         result.append(stop)
     return result
 
