@@ -55,6 +55,8 @@ def test_policy_constants_are_exact():
         "test-mutation-create",
         "test-mutation-update",
         "cu-lao-dai-song-co-chien-vung-liem",
+        "xa-cai-ngang",
+        "xa-trung-thanh",
     }.issubset(PUBLISHED_V1_EXCLUSIONS)
     assert "prov-1" in PUBLISHED_V1_EXCLUSIONS
     assert PUBLICATION_REASON_ORDER == (

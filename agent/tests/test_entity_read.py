@@ -127,3 +127,24 @@ def test_public_api_dang_ky_listener_homepage():
 def test_invalidate_entity_cache_la_hook_tuong_thich():
     entity_read.invalidate_entity_cache("bat-ky")  # không được ném
     entity_read.invalidate_entity_cache(None)
+
+
+def test_clean_trailing_double_dot():
+    assert entity_read._clean_trailing_double_dot("Đặc sản tươi ngon..") == "Đặc sản tươi ngon."
+    assert entity_read._clean_trailing_double_dot("Đặc sản tươi ngon...") == "Đặc sản tươi ngon..."
+    assert entity_read._clean_trailing_double_dot("Đặc sản tươi ngon.") == "Đặc sản tươi ngon."
+
+
+def test_clean_place_summary():
+    s = "Phường Ba Tri thuộc huyện Ba Tri, tỉnh Vĩnh Long, ra đời khi..."
+    expected = "Phường Ba Tri thuộc tỉnh Vĩnh Long (khu vực Ba Tri cũ), ra đời khi..."
+    assert entity_read._clean_place_summary(s) == expected
+
+    s_cu = "Xã Thạnh Phước thuộc huyện Bình Đại (cũ), tỉnh Vĩnh Long, ra đời khi..."
+    expected_cu = "Xã Thạnh Phước thuộc tỉnh Vĩnh Long (khu vực Bình Đại cũ), ra đời khi..."
+    assert entity_read._clean_place_summary(s_cu) == expected_cu
+
+
+def test_is_public_excludes_stale_merger_communes():
+    assert entity_read._is_public({"id": "xa-cai-ngang", "verified": True}) is False
+    assert entity_read._is_public({"id": "xa-trung-thanh", "verified": True}) is False

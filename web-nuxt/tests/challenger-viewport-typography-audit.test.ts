@@ -97,7 +97,7 @@ describe("Adversarial Empirical Challenger: Mobile Ergonomics & Micro-Typography
     it("EntityCard.vue eliminates hyphens: auto and uses overflow-wrap: break-word & text-wrap: pretty", () => {
       const cardVue = readFileSync(resolve(root, "components/EntityCard.vue"), "utf8")
       const cardNameMatches = [...cardVue.matchAll(/\.card-name\s*\{([^}]+)\}/g)]
-      const activeCardNameRule = cardNameMatches[cardNameMatches.length - 1][1]
+      const activeCardNameRule = cardNameMatches[cardNameMatches.length - 1]![1]
       expect(activeCardNameRule).not.toContain("hyphens: auto")
       expect(activeCardNameRule).not.toContain("overflow-wrap: anywhere")
       expect(activeCardNameRule).toContain("overflow-wrap: break-word")

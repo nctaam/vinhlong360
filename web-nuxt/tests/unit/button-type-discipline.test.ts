@@ -18,7 +18,7 @@ function walkVueFiles(dir: string, acc: string[] = []): string[] {
 
 function extractTemplateWithoutComments(source: string): string {
   const match = /<template\b[^>]*>([\s\S]*?)<\/template>/i.exec(source)
-  const tpl = match ? match[1] : source
+  const tpl = (match && match[1]) ? match[1] : source
   return tpl.replace(/<!--[\s\S]*?-->/g, (comment) => comment.replace(/[^\n]/g, ' '))
 }
 

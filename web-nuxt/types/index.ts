@@ -132,6 +132,11 @@ export interface ItineraryStop {
   time?: string
   note?: string
   order?: number
+  placeId?: string
+  place_name?: string
+  area?: string
+  image?: string
+  image_descriptors?: ImageDescriptor[]
   coordinates?: Coordinates | [number, number] | null
 }
 

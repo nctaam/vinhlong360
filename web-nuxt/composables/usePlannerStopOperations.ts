@@ -24,7 +24,7 @@ export interface UsePlannerStopOperationsOptions {
   stopAnnounce: Ref<string>
 }
 
-const EMPTY_ROUTE_LEGS: NonNullable<RouteResult['legs']> = Object.freeze([])
+const EMPTY_ROUTE_LEGS: RouteLeg[] = []
 const RE_RESTRICTED_VEHICLE_ACCESS = /chỉ xe máy|không vào được ô tô|hẹp/iu
 
 function extractEntityAccessFact(entity: any): string | null {

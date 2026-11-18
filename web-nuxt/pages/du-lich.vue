@@ -226,6 +226,7 @@ const VI_DATE_FORMATTER = new Intl.DateTimeFormat('vi-VN', {
   year: 'numeric',
   timeZone: 'Asia/Ho_Chi_Minh',
 })
+const VI_COLLATOR = new Intl.Collator('vi-VN')
 </script>
 
 <script setup lang="ts">

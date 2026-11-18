@@ -399,6 +399,7 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 }
 /* Outdoor High-Contrast Mode */
 [data-outdoor-contrast="high"] .maplibregl-canvas {
+  filter: contrast(1.6) saturate(1.2) brightness(0.95);
   filter: var(--contrast-glare-map-filter, contrast(1.6) saturate(1.2) brightness(0.95));
 }
 [data-outdoor-contrast="high"] .map-locator-marker {

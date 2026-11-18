@@ -435,13 +435,15 @@ const ROUTE_AREA_COVER: Record<string, string> = {
   'lien-vung': '/img/spread/song-nuoc-640.webp',
 }
 function routeCover(r: RouteDef): string {
-  if (ROUTE_COVER_MAP[r.id]) return ROUTE_COVER_MAP[r.id]
-  const text = `${r.id} ${r.name}`.toLowerCase()
+  const customCover = ROUTE_COVER_MAP[r.id]
+  if (customCover) return customCover
+  const text = (r.id + ' ' + (r.name || '')).toLowerCase()
   if (text.includes('gốm') || text.includes('mang-thit') || text.includes('làng nghề')) return '/img/entities/lo-gach-mang-thit.webp'
   if (text.includes('cù lao') || text.includes('trái cây') || text.includes('an-binh')) return '/img/spread/cu-lao-an-binh-640.webp'
   if (text.includes('chùa') || text.includes('khmer')) return '/img/entities/chua-ang-angkorajaborey.webp'
   if (text.includes('sông') || text.includes('nước nổi')) return '/img/spread/song-nuoc-640.webp'
-  return ROUTE_AREA_COVER[r.area] || '/img/spread/cu-lao-an-binh-640.webp'
+  const areaCover = r.area ? ROUTE_AREA_COVER[r.area] : undefined
+  return areaCover || '/img/spread/cu-lao-an-binh-640.webp'
 }
 
 const previewRoute = ref<RouteDef | null>(null)

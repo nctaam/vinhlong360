@@ -20,6 +20,8 @@ PUBLISHED_V1_EXCLUSIONS = frozenset(
         "test-mutation-create",
         "test-mutation-update",
         "cu-lao-dai-song-co-chien-vung-liem",
+        "xa-cai-ngang",
+        "xa-trung-thanh",
     }
 ) | reviewed_removal_ids(Path(__file__).resolve().parents[1])
 PUBLICATION_REASON_ORDER = (
@@ -112,6 +114,8 @@ def decide_publication_candidate(
                 "test-mutation-create",
                 "test-mutation-update",
                 "cu-lao-dai-song-co-chien-vung-liem",
+        "xa-cai-ngang",
+        "xa-trung-thanh",
             }
         ) | reviewed_removal_ids(root or Path(__file__).resolve().parents[1])
     _validate_reviewed_exclusions(reviewed_exclusions)

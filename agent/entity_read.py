@@ -288,6 +288,74 @@ _PROSE_PATCHES: dict[str, tuple[str | None, str | None]] = {
         None,
         "Quán cà phê tại Quốc Lộ 60, TP. Bến Tre với không gian sân vườn rộng rãi, thoáng mát, phục vụ đa dạng cà phê và thức uống giải khát.",
     ),
+    "xa-hung-khanh-trung": (
+        "Xã Hưng Khánh Trung thuộc tỉnh Vĩnh Long (khu vực Chợ Lách cũ), hình thành từ việc sáp nhập xã Vĩnh Hòa và xã Hưng Khánh Trung B theo Nghị quyết 1687/NQ-UBTVQH15.",
+        None,
+    ),
+    "xa-cho-lach": (
+        "Xã Chợ Lách thuộc tỉnh Vĩnh Long (khu vực Chợ Lách cũ), ra đời khi TT Chợ Lách, xã Hòa Nghĩa và xã Long Thới nhập lại.",
+        None,
+    ),
+    "xa-an-phu-tan": (
+        "Xã An Phú Tân thuộc tỉnh Vĩnh Long (khu vực Cầu Kè cũ), ra đời khi xã Hòa Tân và xã An Phú Tân nhập lại.",
+        None,
+    ),
+    "cho-ben-tre": (
+        "Chợ Bến Tre tại phường An Hội là trái tim thương mại của xứ Dừa — nơi mùi thơm kẹo dừa Thanh Long, kẹo chuối ngào đường và mứt dừa non lan tỏa khắp các lối đi.",
+        None,
+    ),
+    "cu-lao-my-hoa": (
+        "Cù lao Mỹ Hòa nằm giữa dòng sông Hậu hiền hòa như một chiếc bè trái cây khổng lồ — nơi trồng giống bưởi Năm Roi trứ danh của Vĩnh Long.",
+        None,
+    ),
+    "cong-vien-an-hoi": (
+        "Công viên An Hội nằm ngay trên Đại lộ Đồng Khởi, trải dài như một dải lụa xanh mướt giữa trung tâm thành phố.",
+        None,
+    ),
+    "ba-nhi-bun-bo-hue-vinh-long": (
+        "Quán Ba Nhì tại số 258 Nguyễn Văn Thiệt, Phường 3, TP. Vĩnh Long, nổi tiếng với nước dùng xương bò hầm sả và mắm ruốc đậm đà phong vị miền Trung.",
+        None,
+    ),
+    "quan-nhau-san-vuon-tu-da-vinh-long": (
+        "Quán Nhậu Sân Vườn Tư Đa tại số 123/3 Tám Tháng Ba, Thanh Đức, chuyên các món đặc sản đồng quê Nam Bộ trong không gian sân vườn thoáng mát.",
+        None,
+    ),
+    "am-thuc-san-vuon-1985-vinh-long": (
+        "Ẩm Thực Sân Vườn 1985 tại TP. Vĩnh Long sở hữu không gian sân vườn cây xanh hoài cổ Nam Bộ, phục vụ các món ăn gia đình và ẩm thực truyền thống.",
+        None,
+    ),
+    "tiem-an-dong-khanh-vinh-long": (
+        "Tiệm Ăn Đồng Khánh tại số 49B Đường 2/9, Phường 1, TP. Vĩnh Long, nổi tiếng với món hủ tiếu khô sốt cà chua đặc trưng của người Hoa.",
+        None,
+    ),
+    "hu-tieu-nam-vang-99-vinh-long": (
+        "Quán Hủ Tiếu Nam Vang 99 tại số 182 Nguyễn Văn Thiệt, Phường 3, TP. Vĩnh Long, phục vụ hủ tiếu với nước dùng xương heo hầm ngọt thanh.",
+        None,
+    ),
+    "quan-thuan-phuc-vinh-long": (
+        "Quán Thuận Phúc tại số 135 Phạm Thái Bường, Phường 4, TP. Vĩnh Long, phục vụ đa dạng các món ăn gia đình và điểm tâm sáng.",
+        None,
+    ),
+    "hu-tieu-xua-va-nay-vinh-long": (
+        "Quán Hủ Tiếu Xưa và Nay tại số 1 Đường Mười Bốn Tháng Chín, Phường 5, TP. Vĩnh Long, nấu hủ tiếu theo hương vị truyền thống miền Tây.",
+        None,
+    ),
+    "hu-tieu-go-duyen-hai-tra-vinh": (
+        "Quán hủ tiếu gõ Duyên Hải tại trung tâm thị xã Duyên Hải, Trà Vinh (cũ), phục vụ hủ tiếu nước dùng hải sản tươi từ vùng duyên hải.",
+        None,
+    ),
+    "ca-tra": (
+        "Cá tra được nuôi phổ biến ở các vùng ven sông lớn của tỉnh Vĩnh Long và Bến Tre (cũ), là loài thủy sản nước ngọt mang giá trị kinh tế cao của đồng bằng.",
+        None,
+    ),
+    "mieu-quan-tien-hien-phan-cong-an": (
+        "Miếu quan tiền hiền Phan Công An nằm sát bờ sông Mỹ Thạnh, là di tích lịch sử - văn hóa ghi dấu công lao tiền nhân khai hoang mở cõi.",
+        None,
+    ),
+    "khach-san-vin-vinh-long": (
+        "Khách Sạn Vin Vĩnh Long tại PG2-08A và PG2-18 Phạm Thái Bường, Phường Phước Hậu, TP. Vĩnh Long, tiêu chuẩn 2 sao tiện nghi cho du khách.",
+        None,
+    ),
 }
 
 
@@ -351,6 +419,22 @@ def _enrich_place_description(s: str, d: str, attrs: dict | None) -> str:
     return combined or d
 
 
+def _clean_trailing_double_dot(desc: str) -> str:
+    if desc.endswith("..") and not desc.endswith("..."):
+        return desc[:-1]
+    return desc
+
+
+def _clean_place_summary(s: str) -> str:
+    if "thuộc huyện" not in s:
+        return s
+    return re.sub(
+        r"thuộc huyện ([^,]+?)(?:\s*\(cũ\))?,\s*tỉnh Vĩnh Long",
+        r"thuộc tỉnh Vĩnh Long (khu vực \1 cũ)",
+        s,
+    )
+
+
 def _clean_meta_boilerplate(e: dict) -> dict:
     s = str(e.get("summary") or "")
     d = str(e.get("description") or "")
@@ -364,6 +448,7 @@ def _clean_meta_boilerplate(e: dict) -> dict:
             new_d = pat.sub(repl, new_d)
         new_d = _drop_meta_sentences(new_d) or new_s
     if e.get("type") == "place":
+        new_s = _clean_place_summary(new_s)
         new_d = _enrich_place_description(new_s, new_d, e.get("attributes"))
     else:
         new_d = _enrich_short_description(new_s, new_d, e.get("attributes"))
@@ -377,7 +462,7 @@ def _repair_corrupted_prose(e: dict) -> dict:
     if eid in _MOJIBAKE_FIXES and "?" in str(e.get("description") or ""):
         e = {**e, "description": _MOJIBAKE_FIXES[eid]}
     e = _apply_prose_patch(e, eid)
-    desc = str(e.get("description") or "").strip()
+    desc = _clean_trailing_double_dot(str(e.get("description") or "").strip())
     if desc and _TRUNC_PRICE_END_RE.search(desc):
         attrs = e.get("attributes") or {}
         price = attrs.get("price_range") or attrs.get("price") if isinstance(attrs, dict) else None

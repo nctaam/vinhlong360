@@ -23,7 +23,7 @@
 defineProps<{
   seasonMonths: number[]
   seasonPeak: number[]
-  monthLabels: string[]
+  monthLabels: readonly string[] | string[]
   monthState: (month: number) => 'peak' | 'in' | 'none' | 'off'
   cycleMonth: (month: number) => void
 }>()
