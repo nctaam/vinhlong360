@@ -457,17 +457,35 @@ def _clean_meta_boilerplate(e: dict) -> dict:
     return {**e, "summary": new_s, "description": new_d}
 
 
+def _extract_ref_price(attrs: dict) -> str | None:
+    if not isinstance(attrs, dict):
+        return None
+    return attrs.get("price_range") or attrs.get("price")
+
+
+def _repair_trunc_price(desc: str, attrs: dict) -> str:
+    if not desc or not _TRUNC_PRICE_END_RE.search(desc):
+        return desc
+    price = _extract_ref_price(attrs)
+    suffix = f" Giá tham khảo: {price}." if price else ""
+    return _TRUNC_PRICE_END_RE.sub("", desc).rstrip() + suffix
+
+
+def _repair_mojibake(e: dict, eid: str) -> dict:
+    if eid in _MOJIBAKE_FIXES and "?" in str(e.get("description") or ""):
+        return {**e, "description": _MOJIBAKE_FIXES[eid]}
+    return e
+
+
 def _repair_corrupted_prose(e: dict) -> dict:
     eid = str(e.get("id") or "")
-    if eid in _MOJIBAKE_FIXES and "?" in str(e.get("description") or ""):
-        e = {**e, "description": _MOJIBAKE_FIXES[eid]}
+    e = _repair_mojibake(e, eid)
     e = _apply_prose_patch(e, eid)
-    desc = _clean_trailing_double_dot(str(e.get("description") or "").strip())
-    if desc and _TRUNC_PRICE_END_RE.search(desc):
-        attrs = e.get("attributes") or {}
-        price = attrs.get("price_range") or attrs.get("price") if isinstance(attrs, dict) else None
-        suffix = f" Giá tham khảo: {price}." if price else ""
-        e = {**e, "description": _TRUNC_PRICE_END_RE.sub("", desc).rstrip() + suffix}
+    attrs = e.get("attributes") if isinstance(e.get("attributes"), dict) else {}
+    cleaned = _clean_trailing_double_dot(str(e.get("description") or "").strip())
+    desc = _repair_trunc_price(cleaned, attrs)
+    if desc != (e.get("description") or ""):
+        e = {**e, "description": desc}
     return _clean_meta_boilerplate(e)
 
 

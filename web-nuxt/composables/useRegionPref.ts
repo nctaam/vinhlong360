@@ -40,6 +40,8 @@ export function useRegionPref() {
   // buttons to the wrong card in production and floods dev with mismatch warnings.
   if (import.meta.client) {
     onMounted(() => {
+      if (isLoggedIn.value) void preferences.refresh()
+
       if (hydrated.value) return
       hydrated.value = true
 
@@ -60,8 +62,6 @@ export function useRegionPref() {
       const safeVc = Number.isFinite(parsedVc) && parsedVc >= 0 ? parsedVc : 0
       visitCount.value = safeVc + 1
       try { localStorage.setItem(VISIT_KEY, String(visitCount.value)) } catch { /* quota */ }
-
-      if (isLoggedIn.value) void preferences.refresh()
     })
 
     if (!watcherBound.value) {

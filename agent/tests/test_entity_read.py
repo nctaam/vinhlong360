@@ -148,3 +148,7 @@ def test_clean_place_summary():
 def test_is_public_excludes_stale_merger_communes():
     assert entity_read._is_public({"id": "xa-cai-ngang", "verified": True}) is False
     assert entity_read._is_public({"id": "xa-trung-thanh", "verified": True}) is False
+
+def test_repair_corrupted_prose_double_dot():
+    res = entity_read._repair_corrupted_prose({'id': 'test-double-dot', 'description': 'Món ăn đậm đà bản sắc..'})
+    assert res['description'] == 'Món ăn đậm đà bản sắc.'

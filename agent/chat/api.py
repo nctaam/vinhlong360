@@ -694,7 +694,7 @@ def _tool_nearby_entities(args: dict) -> str:
 
 
 def _tool_ocop_products(args: dict) -> str:
-    area = knowledge.normalize_current_area(args.get("area"))
+    area = args.get("area")
     min_stars = args.get("min_stars", 3)
     category = args.get("category", "all")
     limit = args.get("limit", 12)
@@ -722,7 +722,7 @@ def _tool_ocop_products(args: dict) -> str:
 
 
 def _tool_accommodation_search(args: dict) -> str:
-    area = knowledge.normalize_current_area(args.get("area"))
+    area = args.get("area")
     acc_type = args.get("type", "all")
     family = args.get("family_friendly", False)
     limit = args.get("limit", 8)

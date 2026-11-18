@@ -595,6 +595,12 @@ def test_tool_accommodation_default_lists_only_accommodation(monkeypatch):
     }
 
 
+def test_tool_accommodation_search_area_filter_via_province_old(monkeypatch):
+    _install_accom_entities(monkeypatch)
+    out = json.loads(chat_api._tool_accommodation_search({"area": "tra-vinh"}))
+    assert [c["id"] for c in out] == ["hs-con-chim"]
+
+
 def test_tool_accommodation_type_filter(monkeypatch):
     _install_accom_entities(monkeypatch)
     out = json.loads(chat_api._tool_accommodation_search({"type": "hotel"}))
