@@ -508,13 +508,8 @@ def _gc_all_dicts() -> list:
 
 def _gc_ip_global(now: float) -> None:
     cutoff_global = now - _IP_GLOBAL_WINDOW * 2
-    for k in [k for k, ts in _ip_global.items() if not ts or now - ts[-1] > cutoff_global]:
+    for k in [k for k, ts in _ip_global.items() if not ts or ts[-1] < cutoff_global]:
         _ip_global.pop(k, None)
-
-
-def _gc_violations(now: float) -> None:
-    for k in [k for k, ts in _violations.items() if not ts or now - ts[-1] > _VIOLATION_DECAY]:
-        _violations.pop(k, None)
 
 
 def _gc_resource_access(now: float) -> None:
@@ -522,30 +517,9 @@ def _gc_resource_access(now: float) -> None:
         _resource_access.pop(k, None)
 
 
-def _gc_slow_rate_tracking(now: float) -> None:
-    for k in [k for k, ts in _slow_rate_tracking.items() if not ts or now - ts[-1] > _SLOW_RATE_WINDOW]:
-        _slow_rate_tracking.pop(k, None)
-
-
 def _gc_token_buckets(now: float) -> None:
     for k in [k for k, (_, t) in _token_buckets.items() if t < now - 3600]:
         _token_buckets.pop(k, None)
-
-
-def _gc_penalty_box(now: float) -> None:
-    for ip in [ip for ip, t in _penalty_box.items() if now >= t]:
-        _penalty_box.pop(ip, None)
-
-
-def _gc_penalty_violations(now: float) -> None:
-    for ip in [ip for ip, cnt in _penalty_violations.items()
-               if cnt <= 0 or ip not in _penalty_box]:
-        _penalty_violations.pop(ip, None)
-
-
-def _gc_sliding_counters(now: float) -> None:
-    for k in [k for k, v in _sliding_counters.items() if not v or v[-1][0] < now - 3600]:
-        _sliding_counters.pop(k, None)
 
 
 def gc_all() -> dict:
@@ -560,8 +534,8 @@ def gc_all() -> dict:
         _gc_slow_rate_tracking(now)
         _gc_token_buckets(now)
         _gc_penalty_box(now)
-        _gc_penalty_violations(now)
-        _gc_sliding_counters(now)
+        _gc_penalty_violations()
+        _gc_sliding_counters(now - 3600)
         after = sum(len(d) for d in _gc_all_dicts())
     return {"before": before, "after": after, "freed": before - after}
 
@@ -622,6 +596,9 @@ def _gc_penalty_box(now: float) -> None:
 
 
 def _gc_penalty_violations() -> None:
+    dead = [ip for ip, cnt in _penalty_violations.items() if cnt <= 0]
+    for ip in dead:
+        _penalty_violations.pop(ip, None)
     if len(_penalty_violations) > _MAX_KEYS:
         for k in list(_penalty_violations.keys())[: len(_penalty_violations) - _MAX_KEYS]:
             _penalty_violations.pop(k, None)

@@ -702,3 +702,22 @@ def test_homepage_score_uu_tien_bieu_tuong_di_san_vinh_long():
     }
     assert _homepage_score(e_mang_thit, 9) > _homepage_score(e_generic, 9)
 
+
+def test_list_areas_excludes_stale_merger_communes(monkeypatch):
+    import asyncio
+    from starlette.responses import Response
+    import public_api
+
+    rows = [
+        {"id": "xa-cai-ngang", "name": "Xã Cái Ngang", "type": "place", "level": "xa", "parentId": "vinh-long", "verified": True},
+        {"id": "xa-trung-thanh", "name": "Xã Trung Thành", "type": "place", "level": "xa", "parentId": "vinh-long", "verified": True},
+        {"id": "p-cai-von", "name": "Phường Cái Vồn", "type": "place", "level": "phuong", "parentId": "vinh-long", "verified": True},
+        {"id": "p-dong-thanh", "name": "Phường Đông Thành", "type": "place", "level": "phuong", "parentId": "vinh-long", "verified": True},
+    ]
+    monkeypatch.setattr(public_api.db, "all_entities", lambda: rows)
+    res = asyncio.run(public_api.list_areas(Response()))
+    ids = [p["id"] for p in res["areas"][0]["places"]]
+    assert "xa-cai-ngang" not in ids
+    assert "xa-trung-thanh" not in ids
+    assert ids == ["p-cai-von", "p-dong-thanh"]
+

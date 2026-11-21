@@ -103,3 +103,14 @@ def test_top_router_3_route_tri_thuc_len_app_top_level():
            if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
     for f in ("recommend_endpoint", "autocorrect_endpoint", "graph_endpoint"):
         assert f not in ten, f"server.py vẫn còn định nghĩa {f}"
+
+
+def test_count_public_entity_types_excludes_removed_and_applies_type_fixes():
+    rows = [
+        {"id": "prov-1", "type": "dish"},
+        {"id": "xa-cai-ngang", "type": "place"},
+        {"id": "tinh-binh-chay-vinh-long", "type": "dish"},
+        {"id": "banh-tet-tra-cuon", "type": "dish"},
+    ]
+    counted = {entry["type"]: entry["count"] for entry in entities_api._count_public_entity_types(rows)}
+    assert counted == {"restaurant": 1, "dish": 1}

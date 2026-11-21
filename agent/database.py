@@ -27,6 +27,13 @@ from threading import Lock
 
 from config import is_postgresql_url
 
+if __package__:
+    from .publication_status import PUBLISHED_V1_EXCLUSIONS as _PUBLISHED_V1_EXCLUSIONS
+else:
+    from publication_status import PUBLISHED_V1_EXCLUSIONS as _PUBLISHED_V1_EXCLUSIONS
+
+_PUBLIC_EXCLUDED_IDS: tuple[str, ...] = tuple(sorted(_PUBLISHED_V1_EXCLUSIONS))
+
 logger = logging.getLogger(__name__)
 
 
@@ -840,18 +847,95 @@ def _coord_normalize_latlng(lat: float, lng: float) -> list[float] | None:
     return None
 
 
-def _append_public_only(conditions: list) -> None:
+def _parse_type_override(item: object) -> tuple[str, str, str] | None:
+    if not isinstance(item, dict):
+        return None
+    eid, cur, ver = item.get("entityId"), item.get("currentType"), item.get("verifiedType")
+    return (eid, cur, ver) if (eid and cur and ver) else None
+
+
+def _load_public_type_overrides() -> tuple[tuple[str, str, str], ...]:
+    gt_path = Path(__file__).resolve().parent.parent / "outputs" / "ground-truth-9router-verification-2026-10-21.json"
+    if not gt_path.exists():
+        return ()
+    try:
+        payload = json.loads(gt_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ()
+    parsed = (_parse_type_override(item) for item in (payload.get("mistypedEntities") or []))
+    return tuple(row for row in parsed if row is not None)
+
+
+_PUBLIC_TYPE_OVERRIDES: tuple[tuple[str, str, str], ...] = _load_public_type_overrides()
+_PUBLIC_TYPE_OVERRIDE_BY_ID: dict[str, tuple[str, str]] = {
+    eid: (cur, ver) for eid, cur, ver in _PUBLIC_TYPE_OVERRIDES
+}
+
+
+def _apply_public_type_override(entity: dict) -> dict:
+    override = _PUBLIC_TYPE_OVERRIDE_BY_ID.get(entity.get("id") or "")
+    if override and entity.get("type") == override[0]:
+        entity["type"] = override[1]
+    return entity
+
+
+def _append_public_only(conditions: list, params: list | None = None, ph: str | None = None) -> None:
     conditions.append("(e.status IS NULL OR e.status != 'provisional')")
     conditions.append("(e.verified IS NULL OR e.verified != 0)")
+    if params is not None and ph and _PUBLIC_EXCLUDED_IDS:
+        placeholders = ", ".join([ph] * len(_PUBLIC_EXCLUDED_IDS))
+        conditions.append(f"e.id NOT IN ({placeholders})")
+        params.extend(_PUBLIC_EXCLUDED_IDS)
+
+
+def _group_moved_in(req_set: set[str]) -> dict[str, list[str]]:
+    grouped: dict[str, list[str]] = {}
+    for eid, cur, ver in _PUBLIC_TYPE_OVERRIDES:
+        if cur not in req_set and ver in req_set:
+            grouped.setdefault(cur, []).append(eid)
+    return grouped
+
+
+def _append_public_type_filter(conditions: list, params: list, ph: str,
+                               requested: list[str]) -> None:
+    req_set = set(requested)
+    moved_out = [eid for eid, cur, ver in _PUBLIC_TYPE_OVERRIDES if cur in req_set and ver not in req_set]
+    moved_in = _group_moved_in(req_set)
+
+    base_phs = ", ".join([ph] * len(requested))
+    base_cond = f"e.type = {ph}" if len(requested) == 1 else f"e.type IN ({base_phs})"
+    local_params: list = list(requested)
+    if moved_out:
+        out_phs = ", ".join([ph] * len(moved_out))
+        base_cond = f"({base_cond} AND e.id NOT IN ({out_phs}))"
+        local_params.extend(moved_out)
+    if not moved_in:
+        conditions.append(base_cond)
+        params.extend(local_params)
+        return
+    clauses = [base_cond]
+    for cur, eids in moved_in.items():
+        in_phs = ", ".join([ph] * len(eids))
+        clauses.append(f"(e.type = {ph} AND e.id IN ({in_phs}))")
+        local_params.append(cur)
+        local_params.extend(eids)
+    conditions.append("(" + " OR ".join(clauses) + ")")
+    params.extend(local_params)
 
 
 def _append_type_filter(conditions: list, params: list, ph: str,
-                        entity_types, entity_type) -> None:
+                        entity_types, entity_type, *, public_only: bool = False) -> None:
+    requested = list(entity_types) if entity_types else ([entity_type] if entity_type else [])
+    if not requested:
+        return
+    if public_only and _PUBLIC_TYPE_OVERRIDES:
+        _append_public_type_filter(conditions, params, ph, requested)
+        return
     if entity_types:
         placeholders = ", ".join([ph] * len(entity_types))
         conditions.append(f"e.type IN ({placeholders})")
         params.extend(entity_types)
-    elif entity_type:
+    else:
         conditions.append(f"e.type = {ph}")
         params.append(entity_type)
 
@@ -1976,8 +2060,8 @@ class Database:
         params = []
 
         if public_only:
-            _append_public_only(conditions)
-        _append_type_filter(conditions, params, ph, entity_types, entity_type)
+            _append_public_only(conditions, params, ph)
+        _append_type_filter(conditions, params, ph, entity_types, entity_type, public_only=public_only)
 
         if area:
             _append_area_filter(conditions, params, ph, self._use_pg, area)
@@ -2000,7 +2084,8 @@ class Database:
                 ORDER BY e.confidence DESC, e.id
                 LIMIT {ph} OFFSET {ph}
             """, params)
-            return [self._parse_entity(r) for r in rows]
+            entities = [self._parse_entity(r) for r in rows]
+            return [_apply_public_type_override(e) for e in entities] if public_only else entities
 
     _SORT_OPTIONS = {"newest", "name", "rating"}
 
@@ -2026,8 +2111,8 @@ class Database:
         conditions = ["e.type != 'place'"]
         params = []
         if public_only:
-            _append_public_only(conditions)
-        _append_type_filter(conditions, params, ph, entity_types, entity_type)
+            _append_public_only(conditions, params, ph)
+        _append_type_filter(conditions, params, ph, entity_types, entity_type, public_only=public_only)
         if area:
             _append_area_filter(conditions, params, ph, self._use_pg, area)
         if month is not None:
@@ -2044,7 +2129,8 @@ class Database:
                 SELECT e.* FROM entities e {join} WHERE {where}
                 ORDER BY {order} LIMIT {ph} OFFSET {ph}
             """, params)
-            return [self._parse_entity(r) for r in rows]
+            entities = [self._parse_entity(r) for r in rows]
+            return [_apply_public_type_override(e) for e in entities] if public_only else entities
 
     def count_entities_filtered(self, entity_type: str = None, area: str = None,
                                 q: str = None, entity_types: list[str] | None = None,
@@ -2057,8 +2143,8 @@ class Database:
         params = []
 
         if public_only:
-            _append_public_only(conditions)
-        _append_type_filter(conditions, params, ph, entity_types, entity_type)
+            _append_public_only(conditions, params, ph)
+        _append_type_filter(conditions, params, ph, entity_types, entity_type, public_only=public_only)
         if month is not None:
             conditions.append(self._month_condition())
             params.append(self._month_param(month))

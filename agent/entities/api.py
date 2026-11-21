@@ -80,7 +80,9 @@ else:
     from trust_policy import build_explanation, derive_freshness, derive_source_tier
 
 from entity_read import (
+    PUBLISHED_V1_EXCLUSIONS,
     _FULL_SCAN_LIMIT,
+    _TYPE_FIXES,
     _warn_if_scan_truncated,
     _err,
     _is_public,
@@ -561,25 +563,38 @@ async def get_collection_by_slug(slug: str, response: Response):
     return result
 
 
+def _count_public_entity_types(rows) -> list[dict]:
+    counts: Counter[str] = Counter()
+    for row in rows:
+        d = db._row_to_dict(row)
+        eid = d.get("id")
+        etype = d.get("type")
+        if not etype or eid in PUBLISHED_V1_EXCLUSIONS:
+            continue
+        tfix = _TYPE_FIXES.get(eid)
+        if tfix and etype == tfix.get("currentType"):
+            etype = tfix["verifiedType"]
+        counts[etype] += 1
+    return [{"type": t, "count": c} for t, c in counts.most_common()]
+
+
 @router.get("/entity-types", response_model=EntityTypesResponse,
             summary="List entity types",
             description="Returns all entity types with their counts, ordered by frequency. Cached for 1 hour.")
 async def entity_types(response: Response):
     """Trả số lượng entity CÔNG KHAI theo từng giá trị cột type, sắp giảm dần theo count.
 
-    Áp cùng luật công khai với các endpoint public khác (bỏ `provisional` và
-    `verified = 0`). Trước 2026-08-06 câu đếm chạy trên toàn bảng nên con số
-    hiển thị lớn hơn số entity người dùng thật sự xem được.
+    Áp cùng luật công khai với các endpoint public khác (bỏ `provisional`,
+    `verified = 0`, `PUBLISHED_V1_EXCLUSIONS` và chuẩn hoá `_TYPE_FIXES`).
     """
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     def _query():
         with db._conn() as conn:
             rows = db._fetchall(conn,
-                "SELECT type, COUNT(*) as count FROM entities e"
+                "SELECT id, type FROM entities e"
                 " WHERE (e.status IS NULL OR e.status != 'provisional')"
-                " AND (e.verified IS NULL OR e.verified != 0)"
-                " GROUP BY type ORDER BY count DESC", ())
-        return [{"type": d["type"], "count": d["count"]} for d in (db._row_to_dict(r) for r in rows)]
+                " AND (e.verified IS NULL OR e.verified != 0)", ())
+        return _count_public_entity_types(rows)
     result = await asyncio.to_thread(_query)
     return {"types": result, "total": sum(t["count"] for t in result)}
 

@@ -2153,3 +2153,48 @@ def test_pg_required_columns_only_names_columns_that_really_exist():
         "PG_REQUIRED_COLUMNS nêu cột KHÔNG có trong init.sql/migrations — "
         "Postgres sẽ từ chối khởi động: " + ", ".join(sorted(invented))
     )
+
+
+def test_public_only_excludes_published_exclusions_and_applies_type_overrides(isolated_sqlite_db):
+    db_inst = isolated_sqlite_db
+    db_inst.upsert_entity({
+        "id": "prov-1",
+        "type": "dish",
+        "name": "Quán thử nghiệm",
+        "summary": "Fixture bị loại khỏi mặt công khai.",
+        "status": "verified",
+        "verified": True,
+    })
+    db_inst.upsert_entity({
+        "id": "tinh-binh-chay-vinh-long",
+        "type": "dish",
+        "name": "Tịnh Bình Chay",
+        "summary": "Quán chay được hiệu đính sang restaurant.",
+        "status": "verified",
+        "verified": True,
+    })
+    db_inst.upsert_entity({
+        "id": "banh-xeo-test",
+        "type": "dish",
+        "name": "Bánh xèo thử nghiệm hợp lệ",
+        "summary": "Món ăn thật thuộc nhóm dish.",
+        "status": "verified",
+        "verified": True,
+    })
+
+    dish_rows = db_inst.list_entities(entity_type="dish", public_only=True)
+    assert [e["id"] for e in dish_rows] == ["banh-xeo-test"]
+    assert db_inst.count_entities_filtered(entity_type="dish", public_only=True) == 1
+
+    rest_rows = db_inst.list_entities(entity_type="restaurant", public_only=True)
+    assert [e["id"] for e in rest_rows] == ["tinh-binh-chay-vinh-long"]
+    assert rest_rows[0]["type"] == "restaurant"
+    assert db_inst.count_entities_filtered(entity_type="restaurant", public_only=True) == 1
+
+    search_rest = db_inst.search_entities(entity_type="restaurant", public_only=True)
+    assert [e["id"] for e in search_rest] == ["tinh-binh-chay-vinh-long"]
+    assert search_rest[0]["type"] == "restaurant"
+
+    admin_rows = db_inst.list_entities(entity_type="dish", public_only=False)
+    assert {e["id"] for e in admin_rows} == {"prov-1", "tinh-binh-chay-vinh-long", "banh-xeo-test"}
+    assert all(e["type"] == "dish" for e in admin_rows)

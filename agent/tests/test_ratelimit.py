@@ -61,6 +61,42 @@ def test_window_expiry(monkeypatch):
     check_rate("k", 1, 10)  # không raise
 
 
+def test_gc_all_cleans_expired_and_preserves_active_sliding_counters(monkeypatch):
+    ratelimit._reset()
+    now = 1_700_000_000.0
+    monkeypatch.setattr(ratelimit, "_now", lambda: now)
+
+    ratelimit._buckets["expired_bucket"] = [now - 7200]
+    ratelimit._ip_global["expired_ip"] = [now - 300]
+    ratelimit._ip_global["active_ip"] = [now - 5]
+    ratelimit._penalty_box["expired_pen"] = now - 10
+    ratelimit._penalty_box["active_pen"] = now + 100
+    ratelimit._penalty_violations["zero_pen"] = 0
+    ratelimit._penalty_violations["pending_pen"] = 1
+    ratelimit._sliding_counters["expired_sc"] = [(now - 7200, 1)]
+    ratelimit._sliding_counters["active_sc"] = [(now - 10, 2)]
+
+    result = ratelimit.gc_all()
+    assert isinstance(result, dict) and result["freed"] >= 4
+    assert "expired_bucket" not in ratelimit._buckets
+    assert "expired_ip" not in ratelimit._ip_global
+    assert "active_ip" in ratelimit._ip_global
+    assert "expired_pen" not in ratelimit._penalty_box
+    assert "active_pen" in ratelimit._penalty_box
+    assert "zero_pen" not in ratelimit._penalty_violations
+    assert ratelimit._penalty_violations.get("pending_pen") == 1
+    assert "expired_sc" not in ratelimit._sliding_counters
+    assert "active_sc" in ratelimit._sliding_counters
+
+
+def test_no_duplicate_top_level_functions_in_ratelimit():
+    import ast
+    src = (Path(__file__).resolve().parents[1] / "ratelimit.py").read_text(encoding="utf-8")
+    tree = ast.parse(src)
+    names = [n.name for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+    assert len(names) == len(set(names))
+
+
 # ── Endpoint: create_post bị chặn khi vượt limit ───────────────────────────
 @pg_only
 def test_create_post_rate_limited(monkeypatch):

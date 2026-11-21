@@ -1444,9 +1444,7 @@ async def list_areas(response: Response):
         # all_entities() và áp đúng luật công khai của _append_public_only.
         places = [
             e for e in db.all_entities()
-            if e.get("type") == "place"
-            and e.get("status") != "provisional"
-            and e.get("verified") is not False
+            if e.get("type") == "place" and _is_public(e)
         ]
         current_places = [p for p in places if _is_current_admin_child(p)]
         children = [
