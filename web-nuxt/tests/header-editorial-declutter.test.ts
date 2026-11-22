@@ -16,7 +16,7 @@ describe('Header Editorial De-clutter - Task 1: Compact Search Capsule', () => {
   it('enforces 32px height and non-truncating adaptive width in shell.css', () => {
     const css = readFileSync(resolve(__dirname, '../assets/css/shell.css'), 'utf8')
     expect(css).toMatch(/\.public-shell-search\s+input\s*\{[^}]*height:\s*32px;/)
-    expect(css).toMatch(/\.public-shell-search\s*\{[^}]*max-width:\s*252px;/)
+    expect(css).toMatch(/\.public-shell-search\s*\{[^}]*max-width:\s*272px;/)
   })
 })
 

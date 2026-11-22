@@ -214,8 +214,8 @@
 }
 
 .public-shell-search {
-  flex: 0 1 252px;
-  max-width: 252px;
+  flex: 0 1 272px;
+  max-width: 272px;
   margin-inline: 0;
   margin-inline-start: auto;
   transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
@@ -224,8 +224,8 @@
 }
 
 .public-shell-search:focus-within {
-  max-width: 276px;
-  flex-basis: 276px;
+  max-width: 296px;
+  flex-basis: 296px;
 }
 
 /* On Homepage Hero: gently collapse topbar search to prevent duplicate search collision with Hero Search Island */

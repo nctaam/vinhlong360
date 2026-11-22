@@ -30,7 +30,6 @@
       <div class="controls">
         <!-- Search row -->
         <div class="search-row">
-          <IconLine name="search" class="search-icon" aria-hidden="true" />
           <input
             v-model="q"
             type="search"

@@ -755,6 +755,8 @@
 [data-home-pilot="nocturne-b1"] .home-season-row__body {
   display: grid;
   gap: var(--space-1);
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 [data-home-pilot="nocturne-b1"] .home-season-row__body::before {
@@ -1116,11 +1118,11 @@
   }
 
   [data-home-pilot="nocturne-b1"] .hero-main > .hero-kicker { order: 1; }
-  [data-home-pilot="nocturne-b1"] .hero-main > :is(.hero-search-island, .hero-search) { order: 2; }
-  [data-home-pilot="nocturne-b1"] .hero-main > h1 { order: 3; }
-  [data-home-pilot="nocturne-b1"] .hero-main > .hero-sub { order: 4; }
+  [data-home-pilot="nocturne-b1"] .hero-main > h1 { order: 2; }
+  [data-home-pilot="nocturne-b1"] .hero-main > :is(.hero-lead, .hero-sub) { order: 3; }
+  [data-home-pilot="nocturne-b1"] .hero-main > :is(.hero-search-island, .hero-search) { order: 4; }
   [data-home-pilot="nocturne-b1"] .hero-main > .hero-nearby { order: 5; }
-  [data-home-pilot="nocturne-b1"] .hero-main > .hero-terroir-chips { order: 6; }
+  [data-home-pilot="nocturne-b1"] .hero-main > :is(.hero-quick-index, .hero-terroir-chips) { order: 6; }
 }
 
 @media (max-width: 64rem) {
@@ -1138,7 +1140,7 @@
 @media (max-width: 48rem) {
   [data-home-pilot="nocturne-b1"] .hero-inner {
     max-width: var(--maxw);
-    padding-block: var(--space-10);
+    padding-block: var(--space-6) var(--space-8);
   }
 
   [data-home-pilot="nocturne-b1"] .home-decision-ledger__link {
@@ -1299,7 +1301,7 @@
 
 [data-home-pilot="nocturne-b1"] .signal-lead-media {
   grid-area: unset;
-  inline-size: 200px;
+  inline-size: 140px;
   block-size: auto;              /* thuộc tính height của <img> thắng
                                     aspect-ratio nếu không đặt auto */
   aspect-ratio: 4 / 3;
@@ -1339,7 +1341,7 @@
 
 [data-home-pilot="nocturne-b1"] .signal-lead-disclosure {
   align-self: flex-start;
-  max-inline-size: 200px;
+  max-inline-size: 140px;
 }
 
 /* Ảnh AI của dự án chụp nền sáng; trên canvas tối chúng đo được 13–16,6:1 —
@@ -2661,6 +2663,54 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2) var(--space-4);
+}
+
+[data-home-pilot="nocturne-b1"] .hero-ac .search-kbd-hint {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: calc(var(--radius-control) - 2px);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  pointer-events: none;
+  z-index: var(--z-rel);
+}
+
+[data-home-pilot="nocturne-b1"] .hero-ac:focus-within .search-kbd-hint {
+  opacity: 0;
+}
+
+@media (max-width: 640px), (pointer: coarse) {
+  [data-home-pilot="nocturne-b1"] .hero-ac .search-kbd-hint {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  [data-home-pilot="nocturne-b1"] .hero .hero-ac {
+    flex-direction: row;
+  }
+
+  [data-home-pilot="nocturne-b1"] .hero .hero-ac::before {
+    left: 16px;
+  }
+
+  [data-home-pilot="nocturne-b1"] .hero .hero-ac input {
+    padding: var(--space-3h, 14px) var(--space-4) var(--space-3h, 14px) 44px;
+    font-size: var(--text-sm);
+  }
 }
 
 /* ═══════════════════════════════════════════════════

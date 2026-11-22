@@ -65,7 +65,7 @@
                 <span>Khám phá hồ sơ</span>
                 <IconLine name="arrow-right" aria-hidden="true" />
               </NuxtLink>
-              <NuxtLink :to="leadItem.mapTo" class="btn btn-outline" data-color-role="action-secondary">
+              <NuxtLink :to="leadItem.mapTo" class="btn home-curated-lead__map-btn">
                 <IconLine name="map" aria-hidden="true" />
                 <span>Mở bản đồ</span>
               </NuxtLink>
@@ -471,6 +471,19 @@ function onImgFallback(e: Event) {
 .home-curated-lead__actions .btn:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
+}
+
+.home-curated-lead__map-btn {
+  color: var(--surface-white);
+  background: rgba(var(--black-rgb), 0.56);
+  border: 1px solid rgba(var(--white-rgb), 0.45);
+  backdrop-filter: blur(8px);
+}
+
+.home-curated-lead__map-btn:hover {
+  background: rgba(var(--black-rgb), 0.74);
+  border-color: rgba(var(--white-rgb), 0.72);
+  color: var(--surface-white);
 }
 
 /* 38% Open Architectural Hairline Index */
