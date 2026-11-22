@@ -194,9 +194,9 @@ class DataRichSourceCheck(_DataJsonCheck):
 
 
 CANONICAL_JSON_HASHES = {
-    "fb7dd60376ffaca9ac0db49f6a86f74135cebcd889e081639c138aad8d2ad8f5",
+    "f5d1f51dd72f560baab9bf319de6778825009521098d8e0dbf647d186c0a36d1",
 }
-CANONICAL_DB_HASH = "2f6102026b106ff6904ebb8ed19dbd88afd8dfacb9cc9b481d1fa5c79770a810"
+CANONICAL_DB_HASH = "ebf326a4bfa02844676952a612f36a42287a7ca4a65af70a8498568b74c8b1b2"
 
 
 class DataStoreHashGuard:

@@ -94,13 +94,6 @@ EXPLICIT_CONTENT_FIXES: dict[str, dict[str, str]] = {
             "họp sớm bên sông lúc bình minh."
         ),
     },
-    "benh-vien-da-khoa-minh-duc-ben-tre-ben-tre": {
-        "summary": (
-            "Bệnh viện đa khoa tư nhân hoạt động 24/7 tại 44 Đoàn Hoàng Minh, phường Sơn Đông, "
-            "hỗ trợ đặt lịch khám và cấp cứu cho người dân cùng du khách."
-        ),
-        "address": "44 Đoàn Hoàng Minh, Phường Sơn Đông, tỉnh Vĩnh Long",
-    },
 }
 
 PLACEHOLDER_ITIN_REPLACEMENTS: dict[str, list[dict[str, str]]] = {
@@ -244,6 +237,7 @@ def _set_entity_field(row: dict[str, Any], up: dict[str, Any], field: str, val: 
     if not _non_empty(cleaned):
         return
     if row.get(field) != cleaned:
+        row[field] = cleaned
         up[field] = cleaned
     if is_attr and row["attrs"].get(field) != cleaned:
         row["attrs"][field] = cleaned

@@ -5489,7 +5489,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 #### [Bệnh viện Đa khoa Minh Đức Bến Tre](https://vinhlong360.vn/dia-diem/benh-vien-da-khoa-minh-duc-ben-tre-ben-tre)
 - **Mã ID**: `benh-vien-da-khoa-minh-duc-ben-tre-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: p-son-dong | **Tọa độ**: [10.2714, 106.3394]
 - **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
-- **Tóm lược**: Bệnh viện đa khoa tư nhân hoạt động 24/7 tại 44 Đoàn Hoàng Minh, phường Sơn Đông, hỗ trợ đặt lịch khám và cấp cứu cho người dân cùng du khách.
+- **Tóm lược**: Bệnh viện đa khoa tư nhân quy mô lớn tại số 333D Đoàn Hoàng Minh, Phường Sơn Đông, tiếp nhận cấp cứu 24/7 và khám chữa bệnh bảo hiểm y tế.
 
 #### [Bệnh viện Đa khoa Xuyên Á Vĩnh Long](https://vinhlong360.vn/dia-diem/benh-vien-da-khoa-xuyen-a-vinh-long-vinh-long)
 - **Mã ID**: `benh-vien-da-khoa-xuyen-a-vinh-long-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2615, 105.9405]
