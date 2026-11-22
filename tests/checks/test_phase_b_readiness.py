@@ -17,13 +17,13 @@ def test_phase_b_ground_truth_in_memory_readiness_and_hash_preservation():
 
     assert report["ok"] is True, f"Readiness errors: {report['errors']}"
     assert report["schemaVersion"] == 3
-    assert report["appliedDossiers"] == 34
-    assert report["appliedRuralCorrections"] == 126
-    assert report["appliedMistypedFixes"] == 21
-    assert report["appliedTruncatedSummaries"] == 20
+    assert report["appliedDossiers"] == 33
+    assert report["appliedRuralCorrections"] == 106
+    assert report["appliedMistypedFixes"] == 12
+    assert report["appliedTruncatedSummaries"] == 19
     assert report["appliedPlaceSelfFixes"] == 37
     assert report["duplicateClustersCatalogued"] == 16
-    assert report["totalEntitiesValidated"] == 1772
+    assert report["totalEntitiesValidated"] == 1433
     assert report["dataJsonSha256Preserved"] is True
     assert before_hash == after_hash
 

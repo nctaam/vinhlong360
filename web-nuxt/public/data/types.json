@@ -1,98 +1,80 @@
 [
   {
-    "type": "attraction",
-    "label": "Tham quan",
-    "emoji": "📸",
-    "count": 220
-  },
-  {
     "type": "product",
     "label": "Đặc sản",
     "emoji": "🎁",
-    "count": 219
+    "count": 196
+  },
+  {
+    "type": "attraction",
+    "label": "Tham quan",
+    "emoji": "📸",
+    "count": 182
   },
   {
     "type": "history",
     "label": "Di tích",
     "emoji": "🏛️",
-    "count": 195
-  },
-  {
-    "type": "restaurant",
-    "label": "Nhà hàng",
-    "emoji": "🍽️",
-    "count": 186
+    "count": 167
   },
   {
     "type": "accommodation",
     "label": "Lưu trú",
     "emoji": "🏨",
-    "count": 164
+    "count": 151
   },
   {
     "type": "nature",
     "label": "Thiên nhiên",
     "emoji": "🌿",
-    "count": 123
+    "count": 110
+  },
+  {
+    "type": "restaurant",
+    "label": "Nhà hàng",
+    "emoji": "🍽️",
+    "count": 109
   },
   {
     "type": "dish",
     "label": "Ẩm thực",
     "emoji": "🍜",
-    "count": 120
+    "count": 108
   },
   {
     "type": "craft_village",
     "label": "Làng nghề",
     "emoji": "🏺",
-    "count": 95
+    "count": 89
   },
   {
     "type": "experience",
     "label": "Trải nghiệm",
     "emoji": "🎯",
-    "count": 91
+    "count": 72
   },
   {
     "type": "event",
     "label": "Sự kiện",
     "emoji": "🎉",
-    "count": 67
-  },
-  {
-    "type": "facility",
-    "label": "Tiện ích",
-    "emoji": "🏢",
-    "count": 57
-  },
-  {
-    "type": "cafe",
-    "label": "Cà phê",
-    "emoji": "☕",
-    "count": 56
+    "count": 42
   },
   {
     "type": "person",
     "label": "Nhân vật",
     "emoji": "👤",
-    "count": 36
+    "count": 34
   },
   {
-    "type": "itinerary",
-    "label": "Lộ trình",
-    "emoji": "🗺️",
-    "count": 16
+    "type": "facility",
+    "label": "Tiện ích",
+    "emoji": "🏢",
+    "count": 30
   },
   {
-    "type": "organization",
-    "label": "Tổ chức",
-    "emoji": "🤝",
-    "count": 1
-  },
-  {
-    "type": "drink",
-    "label": "Thức uống",
-    "emoji": "🥤",
-    "count": 1
+    "type": "cafe",
+    "label": "Cà phê",
+    "emoji": "☕",
+    "count": 18
   }
 ]

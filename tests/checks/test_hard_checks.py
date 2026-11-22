@@ -407,8 +407,9 @@ def test_current_image_source_policy_revokes_batch_21_legacy_compatibility():
         if check.rule == "R10.6"
     )
 
-    assert result["count"] == 40
-    assert any("prov-1" in violation["msg"] for violation in result["violations"])
+    assert result["count"] == 26
+    assert not any("prov-1:" in violation["msg"] for violation in result["violations"])
+    assert any("chua-phat-ngoc-xa-loi" in violation["msg"] for violation in result["violations"])
 
 
 def test_banned_tailwind_in_web_nuxt(tmp_path):

@@ -75,7 +75,7 @@
             <span><strong>Trải nghiệm:</strong> Tự tay hái trái, tát mương bắt cá, đờn ca tài tử</span>
           </div>
         </div>
-        <NuxtLink to="/dia-diem/cu-lao-an-binh-long-ho" class="home-companion-card__link">
+        <NuxtLink to="/dia-diem/cu-lao-an-binh" class="home-companion-card__link">
           <span>Xem hướng dẫn khám phá Cù Lao An Bình</span>
           <IconLine name="arrow-right" aria-hidden="true" />
         </NuxtLink>
@@ -109,7 +109,7 @@
             <span><strong>Lưu ý di sản:</strong> Đi lại nhẹ nhàng, không leo trèo vòm gạch cổ</span>
           </div>
         </div>
-        <NuxtLink to="/dia-diem/lang-gom-mang-thit" class="home-companion-card__link">
+        <NuxtLink to="/dia-diem/lang-nghe-gom-do-mang-thit" class="home-companion-card__link">
           <span>Xem cẩm nang tham quan làng gốm di sản</span>
           <IconLine name="arrow-right" aria-hidden="true" />
         </NuxtLink>

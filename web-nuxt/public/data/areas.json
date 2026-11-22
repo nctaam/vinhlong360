@@ -2,21 +2,21 @@
   {
     "id": "vinh-long",
     "name": "Vĩnh Long",
-    "entity_count": 676
+    "entity_count": 539
   },
   {
     "id": "ben-tre",
     "name": "Bến Tre",
-    "entity_count": 503
+    "entity_count": 417
   },
   {
     "id": "tra-vinh",
     "name": "Trà Vinh",
-    "entity_count": 437
+    "entity_count": 330
   },
   {
     "id": "unknown",
     "name": "unknown",
-    "entity_count": 31
+    "entity_count": 22
   }
 ]

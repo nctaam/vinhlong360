@@ -206,7 +206,7 @@ const INTENT_ANCHORS: readonly IntentAnchor[] = [
         distance: '2.0 km từ bến phà',
         duration: '1 giờ',
         highlight: 'Một trong ba Văn Thánh Miếu đầu tiên của xứ Nam Kỳ lục tỉnh',
-        to: '/dia-diem/van-thanh-mieu-vinh-long',
+        to: '/dia-diem/van-thanh-mieu',
       },
       {
         title: 'Chùa Tiên Châu (Cù lao An Bình)',

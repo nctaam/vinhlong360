@@ -290,7 +290,7 @@ const CURATED_SUGGESTIONS = [
     title: 'Quần thể Lò gạch gốm đỏ Mang Thít & Kênh Thầy Cai',
     snippet: 'Hơn 1.000 lò nung gạch thủ công hình vòm tròn trải dài ven kênh, rực đỏ sắc đất phù sa dưới nắng sớm.',
     coords: '10.254° N, 105.972° E',
-    to: '/dia-diem/lang-gom-mang-thit',
+    to: '/dia-diem/lang-nghe-gom-do-mang-thit',
     tag: 'Đề cử UNESCO',
     sourceTitle: 'Sở VHTTDL Vĩnh Long',
   },
