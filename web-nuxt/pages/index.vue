@@ -10,32 +10,11 @@
     <!-- One editorial thesis: useful action first, one disclosed media dossier second. -->
     <div class="sr-only" role="region" data-home-section="context" aria-label="Ngữ cảnh khám phá">Khu vực khám phá: Vĩnh Long</div>
     <section class="hero" aria-label="Giới thiệu" data-home-section="editorial-lead">
-      <div class="hero-cinematic" aria-hidden="true">
-        <img
-          class="hero-cinematic__img"
-          src="/img/spread/song-nuoc.webp"
-          srcset="/img/spread/song-nuoc-640.webp 640w, /img/spread/song-nuoc-1024.webp 1024w, /img/spread/song-nuoc.webp 1920w"
-          sizes="100vw"
-          alt=""
-          width="1920"
-          height="1080"
-          loading="eager"
-          decoding="async"
-          @error="onHeroImgError"
-        >
-        <span class="hero-cinematic__scrim" />
-      </div>
       <div class="hero-inner">
         <div class="hero-main hero-enter">
-          <span class="hero-kicker" data-color-role="brand"><span class="hero-kicker-dot" aria-hidden="true"></span>{{ ss('homepage.hero_kicker', 'Xứ sở Cù lao · Đất lành phù sa Vĩnh Long') }}</span>
+          <span class="hero-kicker" data-color-role="brand">{{ ss('homepage.hero_kicker', 'Tỉnh Vĩnh Long thống nhất · 124 xã, phường') }}</span>
           <h1>{{ seasonalTagline }}</h1>
-          <p class="hero-sub">{{ heroSubtitle }}</p>
-          <div class="hero-cognitive-banner" role="region" aria-label="Khuyến nghị thời vụ lữ hành">
-            <div class="hero-cognitive-chip hero-cognitive-chip--fruit">
-              <IconLine name="leaf" class="hero-cognitive-chip__icon" aria-hidden="true" />
-              <span class="hero-cognitive-chip__fruit-text">{{ seasonalFruitHighlight }}</span>
-            </div>
-          </div>
+          <p class="hero-lead">{{ heroSubtitle }}</p>
           <div class="hero-search-island" role="search" aria-label="Tìm kiếm lữ hành">
             <SearchAutocomplete
               class="hero-search hero-ac"
@@ -44,22 +23,23 @@
             />
             <div class="hero-search-island__footer">
               <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" aria-hidden="true" /> Tìm quanh tôi</NuxtLink>
+              <span class="hero-season-note">
+                <IconLine name="leaf" aria-hidden="true" />
+                <span>{{ seasonalFruitHighlight }}</span>
+              </span>
             </div>
           </div>
-          <div class="hero-terroir-chips" role="region" aria-label="Gợi ý thực địa Vĩnh Long">
-            <span class="hero-terroir-chips__label">Rẽ lối lẹ</span>
-            <div class="hero-terroir-chips__list">
-              <NuxtLink
-                v-for="chip in HERO_TERROIR_CHIPS"
-                :key="chip.label"
-                :to="`/tim-kiem?q=${encodeURIComponent(chip.q)}`"
-                class="hero-terroir-chip"
-              >
-                <span class="hero-terroir-chip__thumb" :class="chip.thumbClass" aria-hidden="true" />
-                <span class="hero-terroir-chip__text">{{ chip.label }}</span>
-              </NuxtLink>
-            </div>
-          </div>
+          <nav class="hero-quick-index" aria-label="Lối tắt chuyên mục">
+            <NuxtLink
+              v-for="item in HERO_QUICK_LINKS"
+              :key="item.to"
+              :to="item.to"
+              class="hero-quick-link"
+            >
+              <span>{{ item.label }}</span>
+              <IconLine name="arrow-right" aria-hidden="true" />
+            </NuxtLink>
+          </nav>
         </div>
         <HomeFeatureDossier
           v-if="heroFeature"
@@ -82,22 +62,14 @@
       </div>
     </section>
 
-    <div class="home-river-divider" aria-hidden="true" />
-
     <HomeCuratedShowcase v-if="!homeFailed" />
-
-    <div class="home-river-divider" aria-hidden="true" />
 
     <HomeCulinaryTrail v-if="!homeFailed" />
 
-    <div class="home-river-divider" aria-hidden="true" />
-
     <HomeRiversideStays v-if="!homeFailed" />
-    <div class="home-river-divider" aria-hidden="true" />
 
     <div class="home-quick-decisions" data-home-section="quick-decisions">
-      <HomeIntentAnchors v-if="!homeFailed" />
-      <HomeDecisionLedger :entries="homePresentation.decisionEntries" class="sr-only" inert />
+      <HomeDecisionLedger :entries="homePresentation.decisionEntries" />
       <HomeCategoryIndex
         v-if="!homePending"
         :groups="homePresentation.categoryGroups"
@@ -106,13 +78,11 @@
       />
     </div>
 
-    <div class="home-river-divider" aria-hidden="true" />
-
     <CatalogAeoPlaque
       data-home-section="aeo-plaque"
       data-home-aeo-plaque
       title="Cẩm nang du lịch theo mùa"
-      kicker="Góc nhìn bản địa · Giải đáp nhanh"
+      kicker="Thông tin thực địa · Toàn tỉnh Vĩnh Long"
       accent="amber"
       icon="bulb"
       :entries="homeAeoEntries"
@@ -297,16 +267,16 @@
             <p class="community-seed-label">Gợi ý chủ đề người Vĩnh Long đang quan tâm:</p>
             <div class="community-seed-grid">
               <NuxtLink to="/cong-dong" class="community-seed-card">
-                <strong>Chèo SUP ngắm bình minh</strong>
-                <span>Khúc sông Cổ Chiên buổi sáng sớm</span>
+                <strong>Giờ phà &amp; đường đò ngang</strong>
+                <span>Cập nhật chuyến phà sáng qua các cù lao</span>
               </NuxtLink>
               <NuxtLink to="/cong-dong" class="community-seed-card">
-                <strong>Sầu riêng chín cây An Bình</strong>
-                <span>Nhận biết sầu riêng rụng không nhúng thuốc</span>
+                <strong>Mùa trái chín tại vườn</strong>
+                <span>Kinh nghiệm chọn vườn trái sạch cuối tuần</span>
               </NuxtLink>
               <NuxtLink to="/cong-dong" class="community-seed-card">
-                <strong>Lò gạch Thầy Kay hoàng hôn</strong>
-                <span>Góc chụp ánh sáng xuyên vòm gốm đỏ</span>
+                <strong>Quán quê ít người biết</strong>
+                <span>Góc ăn sáng bình dân khắp 124 xã, phường</span>
               </NuxtLink>
             </div>
           </div>
@@ -369,7 +339,6 @@ import { generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { useJourneyActions } from '~/composables/useJourneyActions'
 import HomeCategoryIndex from '~/components/home/HomeCategoryIndex.vue'
 import HomeDecisionLedger from '~/components/home/HomeDecisionLedger.vue'
-import HomeIntentAnchors from '~/components/home/HomeIntentAnchors.vue'
 import HomeFeatureDossier from '~/components/home/HomeFeatureDossier.vue'
 import HomeLocalBriefing from '~/components/home/HomeLocalBriefing.vue'
 import HomeCommunityFeed from '~/components/home/HomeCommunityFeed.vue'
@@ -383,32 +352,28 @@ import { describeEntityImages, describeEntityPlaceholder, isCanonicalLegacyEntit
 import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'
 import type { HomePresentationEntity } from '~/utils/homeNocturnePresentation'
 
-const HERO_TERROIR_CHIPS = [
-  { label: 'Cù lao An Bình', q: 'Cù lao An Bình', thumbClass: 'hero-chip-thumb--culao' },
-  { label: 'Lò gạch Mang Thít', q: 'Lò gạch Mang Thít', thumbClass: 'hero-chip-thumb--mangthit' },
-  { label: 'Chợ nổi Trà Ôn', q: 'Chợ nổi Trà Ôn', thumbClass: 'hero-chip-thumb--traon' },
-  { label: 'Sầu riêng Ri6', q: 'Sầu riêng Ri6', thumbClass: 'hero-chip-thumb--saurieng' },
-  { label: 'Chùa Phật Ngọc', q: 'Chùa Phật Ngọc Xá Lợi', thumbClass: 'hero-chip-thumb--phatngoc' },
+const HERO_QUICK_LINKS = [
+  { label: 'Du lịch & Di sản', to: '/du-lich' },
+  { label: 'Ẩm thực bản địa', to: '/am-thuc' },
+  { label: 'Lưu trú ven sông', to: '/luu-tru' },
+  { label: 'Bản đồ thực địa', to: '/ban-do' },
 ] as const
 
 const homeAeoEntries = [
   {
     heading: 'Mùa nước nổi & Miệt vườn (Tháng 8 – 10)',
-    tag: 'Sinh thái Cù lao',
-    coverSrc: '/img/spread/cu-lao-an-binh-640.webp',
-    text: 'Thời điểm vàng trải nghiệm sinh thái sông nước Cửu Long. Xuồng ba lá len lỏi dưới bóng dừa nước Cù Lao An Bình, thưởng thức cá linh non đầu mùa và trái cây chín cây thanh ngọt.',
+    tag: 'Khung giờ & xuồng',
+    text: 'Phù hợp đi rạch từ 06:30–09:00 trước nắng trưa; mang áo khoác mỏng và giày chống trượt khi lên xuống bến đò phù sa.',
   },
   {
     heading: 'Mùa di sản gốm & Hoa xuân (Tháng 1 – 3)',
-    tag: 'Di sản Mang Thít',
-    coverSrc: '/img/entities/lo-gach-mang-thit.webp',
-    text: 'Vương quốc gốm đỏ Mang Thít vào vụ nung đỏ lửa bên dòng Cổ Chiên. Tiết trời mát dịu đầu xuân thích hợp cho các chuyến điền dã di sản kiến trúc tâm linh, làng nghề truyền thống và hội hè bản địa.',
+    tag: 'Lịch trình khô ráo',
+    text: 'Nắng dịu đầu năm, đường đê dọc kênh rạch khô ráo thuận tiện chạy xe máy tham quan làng nghề và chợ hoa kiểng.',
   },
   {
     heading: 'Mùa trái cây rộ hè (Tháng 5 – 7)',
-    tag: 'Vườn trái cây rộ',
-    coverSrc: '/img/entities/nha-vuon-tu-hien.webp',
-    text: 'Mùa sầu riêng Ri6, chôm chôm Bình Hòa Phước và bưởi Năm Roi Bình Minh vào vụ thu hoạch rộ. Lữ khách tự tay hái trái chín tại vườn ven sông và thưởng thức bánh xèo hến cù lao.',
+    tag: 'Qua phà cuối tuần',
+    text: 'Nên qua phà cù lao trước 08:30 cuối tuần để tránh kẹt xe, đồng thời hỏi chủ vườn giá hái trái tại gốc trước khi vào thăm.',
   },
 ]
 import {
@@ -734,14 +699,6 @@ useSeoMeta({
 const homeSchema = computed(() => buildHomeSchemaGraph({
   upcomingEvents: upcomingEvents.value,
 }))
-
-function onHeroImgError(e: Event) {
-  const img = e.target as HTMLImageElement
-  if (img && !img.dataset.fallbackApplied) {
-    img.dataset.fallbackApplied = 'true'
-    img.src = '/img/spread/song-nuoc.webp'
-  }
-}
 
 useHead({
   link: [

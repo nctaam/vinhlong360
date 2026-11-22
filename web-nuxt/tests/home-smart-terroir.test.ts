@@ -8,20 +8,20 @@ describe('Homepage Smart Terroir Elevation & Ergonomics', () => {
   const dossierVue = readFileSync(resolve(__dirname, '../components/home/HomeFeatureDossier.vue'), 'utf8')
   const briefingVue = readFileSync(resolve(__dirname, '../components/home/HomeLocalBriefing.vue'), 'utf8')
 
-  it('renders contextual terroir search chips in the hero section', () => {
-    expect(indexVue).toContain('hero-terroir-chips')
-    expect(indexVue).toContain('Cù lao An Bình')
-    expect(indexVue).toContain('Lò gạch Mang Thít')
+  it('renders clean architectural quick-links in the hero section', () => {
+    expect(indexVue).toContain('hero-quick-index')
+    expect(indexVue).toContain('hero-quick-link')
+    expect(indexVue).not.toContain('hero-terroir-chips')
   })
 
-  it('provides haptic depression and spring physics for hero terroir chips', () => {
-    expect(homeCss).toContain('.hero-terroir-chip')
-    expect(homeCss).toMatch(/\.hero-terroir-chip:active\s*\{[^}]*transform:\s*scale\(\s*0\.96\s*\)/)
+  it('provides tactile active scale and smooth transition for hero quick links', () => {
+    expect(homeCss).toContain('.hero-quick-link')
+    expect(homeCss).toMatch(/\.hero-quick-link:active\s*\{[^}]*transform:\s*scale\(\s*0\.98\s*\)/)
   })
 
-  it('incorporates a Terroir Heritage Stamp in the Feature Dossier', () => {
-    expect(dossierVue).toContain('home-feature-dossier__stamp')
-    expect(dossierVue).toContain('Thổ nhưỡng di sản')
+  it('removes decorative Terroir Heritage Stamp pill from the Feature Dossier', () => {
+    expect(dossierVue).not.toContain('home-feature-dossier__stamp')
+    expect(dossierVue).not.toContain('Thổ nhưỡng di sản')
   })
 
   it('incorporates traditional river tide guidance in the Local Briefing', () => {
@@ -29,14 +29,13 @@ describe('Homepage Smart Terroir Elevation & Ergonomics', () => {
     expect(briefingVue).toContain('Nhịp nước sông Cửu Long')
   })
 
-  it('elevates hero search island and cognitive weather banner ambiance with liquid glass', () => {
-    expect(homeCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s*\.hero-cognitive-banner/)
+  it('keeps hero search container unboxed and pairs crisp seasonal fruit note', () => {
     expect(homeCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s*\.hero-search-island/)
-    expect(homeCss).toMatch(/\.hero-cognitive-chip:hover/)
+    expect(homeCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s*\.hero-season-note/)
   })
 
-  it('enforces tactile active scale on hero cognitive chips', () => {
-    expect(homeCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.hero-cognitive-chip:active\s*\{[^}]*transform:\s*scale\(0\.97\)/)
+  it('enforces tactile active scale on hero nearby discovery link', () => {
+    expect(homeCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.hero-nearby:active\s*\{[^}]*transform:\s*scale\(0\.97\)/)
   })
 })
 

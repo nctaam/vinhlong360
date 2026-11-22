@@ -30,22 +30,17 @@ describe('Editorial Artistry & Anti-List-Monotony Architecture', () => {
     expect(aeoPlaque).toContain('content: counter(aeo-note, decimal-leading-zero);')
   })
 
-  it('elevates HomeCulinaryTrail with staggered gallery triptych rhythm and sculptural Fraunces italic rank numerals', () => {
+  it('elevates HomeCulinaryTrail into a balanced 4-column light print gallery without jagged staggered cards', () => {
     const culinary = readWebFile('components/home/HomeCulinaryTrail.vue')
-    expect(culinary).toContain('.home-culinary-card:nth-child(2)')
-    expect(culinary).toContain('transform: translateY(var(--space-6));')
-    expect(culinary).toContain('font-family: var(--font-editorial-display);')
-    expect(culinary).toContain('font-style: italic;')
+    expect(culinary).toContain('grid-template-columns: repeat(4, minmax(0, 1fr));')
+    expect(culinary).not.toContain('transform: translateY(var(--space-6));')
   })
 
-  it('transforms HomeRiversideStays and HomeIntentAnchors sub-items into open architectural hairline ledgers without nested boxes', () => {
+  it('elevates HomeRiversideStays into a 58/42 horizontal split lookbook without redundant folk-exp clutter', () => {
     const stays = readWebFile('components/home/HomeRiversideStays.vue')
-    const anchors = readWebFile('components/home/HomeIntentAnchors.vue')
-    expect(stays).toContain('grid-template-columns: minmax(0, 1.38fr) minmax(0, 0.81fr) minmax(0, 0.81fr);')
-    expect(stays).toContain('counter-reset: folk-exp;')
-    expect(stays).toContain('content: counter(folk-exp, decimal-leading-zero);')
-    expect(anchors).toContain('counter-reset: persona-spot;')
-    expect(anchors).toContain('content: counter(persona-spot, decimal-leading-zero);')
+    expect(stays).toContain('grid-template-columns: minmax(0, 1.38fr) minmax(0, 1fr);')
+    expect(stays).toContain('.home-riverside-stays__companions')
+    expect(stays).not.toContain('folk-exp')
   })
 
   it('extends .grid--asymmetric magazine split-spread rhythm to OCOP, seasonal, regional, and ward catalogs', () => {

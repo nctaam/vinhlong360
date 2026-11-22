@@ -22,7 +22,7 @@
           <IconLine name="compass" aria-hidden="true" />
         </span>
         <span class="home-continuation__link-text">
-          <strong class="home-continuation__link-title">Khám phá 1.772 điểm đến</strong>
+          <strong class="home-continuation__link-title">Danh bạ điểm đến 124 xã, phường</strong>
           <span class="home-continuation__link-sub">Di sản, danh thắng & làng nghề miệt vườn</span>
         </span>
         <IconLine name="arrow-right" class="home-continuation__arrow" aria-hidden="true" />

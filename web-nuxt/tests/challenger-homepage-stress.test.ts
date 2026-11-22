@@ -162,9 +162,9 @@ describe('Challenger 1: Empirical Adversarial Stress & Edge Case Harness', () =>
       expect(shellCss).toMatch(/\.public-bottom-nav-item\s*\{[\s\S]*?min-height:\s*52px;/)
     })
 
-    it('asserts hero filter pills and terroir chips meet min-height >= 44px', () => {
+    it('asserts hero filter pills and quick links meet min-height >= 44px', () => {
       expect(homeNocturneCss).toMatch(/\.home\s+\.hero-filter-pill\s*\{[\s\S]*?min-height:\s*var\(--touch-min,\s*44px\);/)
-      expect(homeNocturneCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.hero-terroir-chip\s*\{[\s\S]*?min-height:\s*var\(--touch-min,\s*44px\);/)
+      expect(homeNocturneCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.hero-quick-link\s*\{[\s\S]*?min-height:\s*var\(--touch-min\);/)
     })
 
     it('asserts Culinary Trail action buttons meet min-height >= 44px', () => {

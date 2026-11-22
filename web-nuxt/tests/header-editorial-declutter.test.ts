@@ -13,10 +13,10 @@ describe('Header Editorial De-clutter - Task 1: Compact Search Capsule', () => {
     expect(wrapper.find('.search-kbd-hint').text()).toBe('/')
   })
 
-  it('enforces 32px height and compact adaptive width in shell.css', () => {
+  it('enforces 32px height and non-truncating adaptive width in shell.css', () => {
     const css = readFileSync(resolve(__dirname, '../assets/css/shell.css'), 'utf8')
     expect(css).toMatch(/\.public-shell-search\s+input\s*\{[^}]*height:\s*32px;/)
-    expect(css).toMatch(/\.public-shell-search\s*\{[^}]*max-width:\s*220px;/)
+    expect(css).toMatch(/\.public-shell-search\s*\{[^}]*max-width:\s*252px;/)
   })
 })
 

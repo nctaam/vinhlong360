@@ -7,11 +7,14 @@ import CatalogInterstitial from '../components/CatalogInterstitial.vue'
 describe('Phase 1 Remediation Audit Verification', () => {
   const root = resolve(process.cwd())
 
-  describe('DEF-UX-01: Hero Terroir Chips Dead Link Resolution', () => {
-    it('ensures hero terroir chips navigate to /tim-kiem?q= instead of dead 404 route /kham-pha?q=', () => {
+  describe('DEF-UX-01: Hero Quick Links Route Resolution', () => {
+    it('ensures hero quick links navigate to live canonical routes without dead 404 routes like /kham-pha?q=', () => {
       const indexVue = readFileSync(resolve(root, 'pages/index.vue'), 'utf8')
       expect(indexVue).not.toContain('/kham-pha?q=')
-      expect(indexVue).toContain("`/tim-kiem?q=${encodeURIComponent(chip.q)}`")
+      expect(indexVue).toContain("to: '/du-lich'")
+      expect(indexVue).toContain("to: '/am-thuc'")
+      expect(indexVue).toContain("to: '/luu-tru'")
+      expect(indexVue).toContain("to: '/ban-do'")
     })
   })
 

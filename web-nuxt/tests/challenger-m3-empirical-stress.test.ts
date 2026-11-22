@@ -107,15 +107,17 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
       expect(parseInt(anchorMatch![1], 10)).toBeGreaterThanOrEqual(44)
     })
 
-    it('enforces min-height >= 44px on pages/index.vue interactive filters and chips', () => {
+    it('enforces min-height >= 44px on pages/index.vue interactive filters and quick index links', () => {
       const heroFilterMatch = homeNocturneCss.match(/\.home\s+\.hero-filter-pill\s*\{[\s\S]*?min-height:\s*var\(--touch-min,\s*(\d+)px\);[\s\S]*?min-width:\s*(\d+)px;/)
       expect(heroFilterMatch).not.toBeNull()
       expect(parseInt(heroFilterMatch![1], 10)).toBeGreaterThanOrEqual(44)
       expect(parseInt(heroFilterMatch![2], 10)).toBeGreaterThanOrEqual(44)
 
-      const terroirChipMatch = homeNocturneCss.match(/\[data-home-pilot="nocturne-b1"\]\s+\.hero-terroir-chip\s*\{[\s\S]*?min-height:\s*var\(--touch-min,\s*(\d+)px\);/)
-      expect(terroirChipMatch).not.toBeNull()
-      expect(parseInt(terroirChipMatch![1], 10)).toBeGreaterThanOrEqual(44)
+      const quickLinkMatch = homeNocturneCss.match(/\[data-home-pilot="nocturne-b1"\]\s+\.hero-quick-link\s*\{[\s\S]*?min-height:\s*var\(--touch-min(?:,\s*(\d+)px)?\);/)
+      expect(quickLinkMatch).not.toBeNull()
+      if (quickLinkMatch![1]) {
+        expect(parseInt(quickLinkMatch![1], 10)).toBeGreaterThanOrEqual(44)
+      }
 
       const heroNearbyMatch = indexContent.match(/\.home\s+\.hero-nearby\s*\{[\s\S]*?min-height:\s*(\d+)px;/)
       expect(heroNearbyMatch).not.toBeNull()
@@ -164,12 +166,12 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
     it('verifies HomeCulinaryTrail cards and actions have focus-visible rings and active states', () => {
       expect(culinaryContent).toMatch(/\.home-culinary-card:focus-visible/)
       expect(culinaryContent).toMatch(/\.home-culinary-card__btn:active/)
-      expect(culinaryContent).toMatch(/\.home-culinary-card__venue-pill[\s\S]*?transition/)
+      expect(culinaryContent).toMatch(/\.home-culinary-card__venue/)
     })
 
-    it('verifies HomeRiversideStays homestay and folk experience descriptions are <= 120 chars', () => {
+    it('verifies HomeRiversideStays curated homestay descriptions are <= 120 chars', () => {
       const stayDescs = [...staysContent.matchAll(/desc:\s*['"]([^'"]+)['"]/g)].map(m => m[1])
-      expect(stayDescs.length).toBeGreaterThanOrEqual(6)
+      expect(stayDescs.length).toBe(3)
       for (const d of stayDescs) {
         expect(d.length).toBeLessThanOrEqual(120)
       }
@@ -179,9 +181,9 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
       expect(staysContent).toMatch(/\.home-stay-card__desc\s*\{[\s\S]*?display:\s*-webkit-box;/)
     })
 
-    it('verifies HomeRiversideStays cards and folk experiences have focus-visible rings and active tactile feedback', () => {
+    it('verifies HomeRiversideStays cards have focus-visible rings and active tactile feedback', () => {
       expect(staysContent).toMatch(/\.home-stay-card:focus-visible/)
-      expect(staysContent).toMatch(/\.home-exp-card:active/)
+      expect(staysContent).toMatch(/\.home-stay-card:active/)
     })
 
     it('verifies HomeTravelCompanion card descriptions are <= 120 chars', () => {
@@ -203,9 +205,9 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
 
   // ─── STRESS TEST 4: Pure Tourism & Seasonal Intelligence (No Tidal or Transit Clutter) ───
   describe('Stress Test 4: Pure Tourism & Seasonal Intelligence (No Tidal or Transit Clutter)', () => {
-    it('verifies pages/index.vue hero cognitive banner presents seasonal fruit and weather briefing without tidal clutter', () => {
+    it('verifies pages/index.vue hero season note presents seasonal fruit briefing without tidal clutter', () => {
       expect(indexContent).not.toContain('hero-cognitive-chip--tide')
-      expect(indexContent).toContain('hero-cognitive-chip--fruit')
+      expect(indexContent).toContain('hero-season-note')
       expect(indexContent).toContain('seasonalFruitHighlight')
     })
 

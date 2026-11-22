@@ -45,10 +45,6 @@
       </template>
       <template #meta>
         <span v-if="region">{{ region }}</span>
-        <span class="home-feature-dossier__stamp" title="Di sản đất phù sa & gốm đỏ Mang Thít">
-          <IconLine name="flame" aria-hidden="true" />
-          <span>Thổ nhưỡng di sản</span>
-        </span>
         <NuxtLink
           v-if="mapTo"
           :to="mapTo"

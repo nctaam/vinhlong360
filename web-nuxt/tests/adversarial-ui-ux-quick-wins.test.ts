@@ -6,11 +6,11 @@ const webRoot = resolve(__dirname, '..')
 const readWebFile = (relPath: string) => readFileSync(resolve(webRoot, relPath), 'utf8')
 
 describe('Adversarial UI/UX & Frontend Quick Wins (QW-53 to QW-62)', () => {
-  it('QW-53 & QW-57: index.vue serves responsive Hero srcset and marks sr-only link blocks as inert', () => {
+  it('QW-53 & QW-57: index.vue removes conflicting hero-cinematic backdrop, promotes HomeDecisionLedger publicly, and marks HomeLocalBriefing as inert', () => {
     const indexVue = readWebFile('pages/index.vue')
-    expect(indexVue).toContain('srcset="/img/spread/song-nuoc-640.webp 640w, /img/spread/song-nuoc-1024.webp 1024w, /img/spread/song-nuoc.webp 1920w"')
-    expect(indexVue).toContain('sizes="100vw"')
-    expect(indexVue).toContain('<HomeDecisionLedger :entries="homePresentation.decisionEntries" class="sr-only" inert />')
+    expect(indexVue).not.toContain('hero-cinematic')
+    expect(indexVue).toContain('<HomeDecisionLedger :entries="homePresentation.decisionEntries" />')
+    expect(indexVue).not.toContain('<HomeIntentAnchors')
     expect(indexVue).toContain('<HomeLocalBriefing class="sr-only" inert />')
     expect(indexVue).not.toContain('import HomeAtmosphereControl from')
     expect(indexVue).not.toContain('COGNITIVE CONTEXTUAL BANNER (ASTRONOMICAL TIDE & SEASONS)')
@@ -51,7 +51,7 @@ describe('Adversarial UI/UX & Frontend Quick Wins (QW-53 to QW-62)', () => {
     const riversideStays = readWebFile('components/home/HomeRiversideStays.vue')
     const suaThongTin = readWebFile('pages/yeu-cau/sua-thong-tin.vue')
 
-    expect(riversideStays).toContain('border-top: 1px solid var(--border-liquid-glass, var(--color-border));')
+    expect(riversideStays).toContain('border-top: 1px solid var(--color-border);')
     expect(suaThongTin).toContain('ref="receiptPanelRef"')
     expect(suaThongTin).toContain('tabindex="-1"')
     expect(suaThongTin).toContain('receiptPanelRef.value?.focus()')
@@ -88,9 +88,9 @@ describe('Adversarial UI/UX & Frontend Quick Wins (QW-53 to QW-62)', () => {
     expect(displaySettings).toContain('Phóng to cỡ chữ 125%')
     expect(displaySettings).toContain('Tiết kiệm dữ liệu')
     expect(displaySettings).not.toContain('Eco-Mode')
-    expect(riversideStays).toContain('Homestay ven sông')
-    expect(riversideStays).toContain('Trải nghiệm bản địa & di sản dân gian')
-    expect(riversideStays).toContain('home-stay-card__perks sr-only')
+    expect(riversideStays).toContain('Nhà vườn &amp; Đêm ven sông')
+    expect(riversideStays).not.toContain('FOLK_EXPERIENCES')
+    expect(riversideStays).not.toContain('home-stay-card__eco-badge')
     expect(communityFeed).toContain('Nhật ký lữ khách phương Nam')
     expect(offlinePanel).toContain('Lịch con nước thủy triều (tính toán ngoại tuyến)')
   })

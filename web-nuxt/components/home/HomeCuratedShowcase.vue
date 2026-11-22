@@ -1,23 +1,23 @@
 <template>
-  <section class="home-curated-showcase block reveal" aria-label="Chốn dừng chân đáng ghé Vĩnh Long" data-home-curated-showcase>
+  <section class="home-curated-showcase block reveal" aria-label="Bản đồ di sản hợp nhất Vĩnh Long" data-home-curated-showcase>
     <div class="home-curated-showcase__head section-head">
       <div class="sh-text">
         <span class="home-curated-showcase__eyebrow" data-color-role="brand">
           <IconLine name="landmark" aria-hidden="true" />
-          <span>Kỳ quan sông nước · Di sản sống</span>
+          <span>Di sản hợp nhất · Ba miền châu thổ</span>
         </span>
-        <h2 aria-label="Chốn dừng chân đáng ghé">Chốn dừng chân <em class="editorial-italic-accent" aria-hidden="true">đáng ghé</em></h2>
-        <p class="sh-sub">Những bến bờ sông nước, lò gạch nung đỏ rực và vựa cây trái rợp bóng phù sa đất Vĩnh Long.</p>
+        <h2>Bản đồ di sản hợp nhất</h2>
+        <p class="sh-sub">Những cổ tự Khmer, Văn Thánh Miếu và bến chợ nổi tiêu biểu trải dài khắp tỉnh Vĩnh Long thống nhất.</p>
       </div>
       <NuxtLink to="/du-lich" class="see-all">
-        <span>Khám phá 1.772 điểm đến</span>
+        <span>Toàn bộ điểm đến</span>
         <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" />
       </NuxtLink>
     </div>
 
-    <!-- Asymmetric Editorial Layout 62/38 Mosaic -->
+    <!-- Asymmetric Editorial Exhibition: 62% Monumental Plate + 38% Open Hairline Index -->
     <div class="home-curated-showcase__layout">
-      <!-- 62% Lead Heritage Showcase: Lò gạch Mang Thít (80% photo visual area) -->
+      <!-- 62% Lead Exhibition Plate: Chùa Âng (Trà Vinh cũ) -->
       <article class="home-curated-lead" data-curated-lead>
         <div class="home-curated-lead__media-container">
           <img
@@ -31,15 +31,8 @@
             @error="onImgFallback"
           >
           <div class="home-curated-lead__scrim" aria-hidden="true" />
-          
-          <div class="home-curated-lead__top-bar">
-            <!-- Terroir badge and capture time -->
-            <div class="home-curated-lead__badge">
-              <IconLine name="flame" aria-hidden="true" />
-              <span>{{ leadItem.terroir }} · {{ leadItem.badge }}</span>
-            </div>
 
-            <!-- Interactive Bookmark Button -->
+          <div class="home-curated-lead__top-bar">
             <button
               type="button"
               class="home-bookmark-btn"
@@ -59,21 +52,17 @@
                 <IconLine name="pin" aria-hidden="true" />
                 <span>{{ leadItem.location }}</span>
               </span>
-              <span class="home-curated-lead__coords" :title="`Tọa độ thực địa: ${leadItem.coordinates}`">
-                <IconLine name="compass" aria-hidden="true" />
-                <span>{{ leadItem.coordinates }}</span>
-              </span>
             </div>
 
             <h3 class="home-curated-lead__title">
               <NuxtLink :to="leadItem.to">{{ leadItem.title }}</NuxtLink>
             </h3>
-            
+
             <p class="home-curated-lead__desc">{{ leadItem.desc }}</p>
 
             <div class="home-curated-lead__actions">
               <NuxtLink :to="leadItem.to" class="btn btn-primary" data-color-role="action-primary">
-                <span>Khám phá di sản</span>
+                <span>Khám phá hồ sơ</span>
                 <IconLine name="arrow-right" aria-hidden="true" />
               </NuxtLink>
               <NuxtLink :to="leadItem.mapTo" class="btn btn-outline" data-color-role="action-secondary">
@@ -85,70 +74,54 @@
         </div>
       </article>
 
-      <!-- 38% Satellite Cards (2x2 Grid, Full-Bleed 100% Photo with Bottom Scrim) -->
-      <div class="home-curated-satellites">
+      <!-- 38% Open Architectural Hairline Index (4 rows, zero dark scrims, zero pills) -->
+      <div class="home-curated-satellites" role="list" aria-label="Chỉ mục di sản nổi bật">
         <article
-          v-for="item in satelliteItems"
+          v-for="(item, idx) in satelliteItems"
           :key="item.id"
           class="home-curated-satellite"
           data-curated-satellite
+          role="listitem"
         >
-          <!-- Full-Bleed Satellite Photo (100% of card) -->
-          <img
-            class="home-curated-satellite__img"
-            :src="item.coverSrc"
-            :alt="item.title"
-            width="480"
-            height="360"
-            loading="lazy"
-            decoding="async"
-            @error="onImgFallback"
-          >
-
-          <!-- Bottom Gradient Scrim -->
-          <div class="home-curated-satellite__scrim" aria-hidden="true" />
-
-          <!-- Floating Top Bar -->
-          <div class="home-curated-satellite__top">
-            <div class="home-curated-satellite__top-badges">
-              <span class="home-curated-satellite__terroir-badge">{{ item.terroir }}</span>
-            </div>
-
-            <!-- Satellite Bookmark Button -->
-            <button
-              type="button"
-              class="home-bookmark-btn home-bookmark-btn--sm"
-              :class="{ 'is-saved': isSaved(item.id) }"
-              :aria-label="isSaved(item.id) ? `Bỏ lưu ${item.title}` : `Lưu ${item.title}`"
-              :aria-pressed="isSaved(item.id)"
-              @click.prevent.stop="toggleBookmark(item)"
+          <NuxtLink :to="item.to" class="home-curated-satellite__thumb-wrap" tabindex="-1" aria-hidden="true">
+            <img
+              class="home-curated-satellite__img"
+              :src="item.coverSrc"
+              :alt="item.title"
+              width="208"
+              height="156"
+              loading="lazy"
+              decoding="async"
+              @error="onImgFallback"
             >
-              <IconLine :name="isSaved(item.id) ? 'heart' : 'bookmark'" aria-hidden="true" />
-              <span class="sr-only">{{ isSaved(item.id) ? 'Đã lưu' : 'Lưu điểm đến' }}</span>
-            </button>
-          </div>
+          </NuxtLink>
 
-          <!-- Overlaid Bottom Content (<= 25% card height) -->
-          <div class="home-curated-satellite__overlay">
+          <div class="home-curated-satellite__body">
             <div class="home-curated-satellite__meta">
-              <span class="home-curated-satellite__area">
-                <IconLine name="pin" aria-hidden="true" />
-                <span>{{ item.area }}</span>
-              </span>
-              <span v-if="item.coordinates" class="home-curated-satellite__coords" :title="`Tọa độ thực địa: ${item.coordinates}`">
-                <IconLine name="compass" aria-hidden="true" />
-                <span>{{ item.coordinates }}</span>
-              </span>
+              <span class="home-curated-satellite__num">0{{ idx + 1 }}</span>
+              <span class="home-curated-satellite__area">{{ item.area }}</span>
             </div>
             <h4 class="home-curated-satellite__title">
               <NuxtLink :to="item.to">{{ item.title }}</NuxtLink>
             </h4>
             <p class="home-curated-satellite__summary">{{ item.summary }}</p>
-            <NuxtLink :to="item.to" class="home-curated-satellite__link" :aria-label="`Xem trải nghiệm ${item.title}`">
-              <span>Xem trải nghiệm</span>
+            <NuxtLink :to="item.to" class="home-curated-satellite__link" :aria-label="`Xem hồ sơ ${item.title}`">
+              <span>Xem hồ sơ</span>
               <IconLine name="arrow-right" aria-hidden="true" />
             </NuxtLink>
           </div>
+
+          <button
+            type="button"
+            class="home-bookmark-btn home-bookmark-btn--sm"
+            :class="{ 'is-saved': isSaved(item.id) }"
+            :aria-label="isSaved(item.id) ? `Bỏ lưu ${item.title}` : `Lưu ${item.title}`"
+            :aria-pressed="isSaved(item.id)"
+            @click.prevent.stop="toggleBookmark(item)"
+          >
+            <IconLine :name="isSaved(item.id) ? 'heart' : 'bookmark'" aria-hidden="true" />
+            <span class="sr-only">{{ isSaved(item.id) ? 'Đã lưu' : 'Lưu điểm đến' }}</span>
+          </button>
         </article>
       </div>
     </div>
@@ -162,10 +135,7 @@ import { useFavorites } from '~/composables/useFavorites'
 interface CuratedLead {
   readonly id: string
   readonly title: string
-  readonly terroir: string
-  readonly badge: string
   readonly location: string
-  readonly coordinates: string
   readonly desc: string
   readonly coverSrc: string
   readonly to: string
@@ -175,9 +145,7 @@ interface CuratedLead {
 interface CuratedSatellite {
   readonly id: string
   readonly title: string
-  readonly terroir: string
   readonly area: string
-  readonly coordinates?: string
   readonly summary: string
   readonly coverSrc: string
   readonly to: string
@@ -196,58 +164,47 @@ function toggleBookmark(target: { id: string; title: string; coverSrc?: string }
 }
 
 const leadItem: CuratedLead = {
-  id: 'de-an-di-san-duong-dai-mang-thit',
-  title: 'Quần Thể Di Sản Lò Gạch Gốm Đỏ Mang Thít',
-  terroir: 'Đất nung Mang Thít',
-  badge: '16:30 – 17:45 · Hoàng hôn vòm gốm Kênh Thầy Cai',
-  location: 'Huyện Mang Thít, Vĩnh Long',
-  coordinates: "10°15'N · 105°58'E",
-  desc: 'Quần thể gần 900 vòm gốm tháp chuông đỏ rực dọc kênh Thầy Cai, di sản đương đại sống bên bờ Cổ Chiên.',
-  coverSrc: '/img/entities/lo-gach-mang-thit.webp',
-  to: '/dia-diem/lo-gach-mang-thit',
-  mapTo: '/ban-do?selected=lo-gach-mang-thit',
+  id: 'chua-ang',
+  title: 'Chùa Âng — Di tích kiến trúc Khmer bên Ao Bà Om',
+  location: 'Phường Long Đức · Trà Vinh (cũ)',
+  desc: 'Ngôi chùa Khmer cổ gần một thiên niên kỷ ẩn mình dưới tán dầu cổ thụ soi bóng xuống thắng cảnh Ao Bà Om.',
+  coverSrc: '/img/entities/chua-ang.webp',
+  to: '/dia-diem/chua-ang',
+  mapTo: '/ban-do?selected=chua-ang',
 }
 
 const satelliteItems: readonly CuratedSatellite[] = [
   {
-    id: 'cu-lao-an-binh',
-    title: 'Cù Lao An Bình & Vườn Trái Cây',
-    terroir: 'Xanh Cù Lao',
-    area: 'Long Hồ',
-    coordinates: "10°16'N · 105°59'E",
-    summary: 'Miệt vườn trái cây ngút ngàn, sầu riêng Ri6 chín bùi và rạch dừa nước thanh bình giữa sông Tiền.',
-    coverSrc: '/img/entities/cu-lao-an-binh.webp',
-    to: '/dia-diem/cu-lao-an-binh',
+    id: 'van-thanh-mieu',
+    title: 'Văn Thánh Miếu Vĩnh Long',
+    area: 'Phường Phước Hậu · Di tích quốc gia',
+    summary: 'Công trình Nho học phương Nam dựng năm 1864 bên rạch Long Hồ với hàng sao cổ thụ rợp bóng.',
+    coverSrc: '/img/entities/van-thanh-mieu.webp',
+    to: '/dia-diem/van-thanh-mieu',
   },
   {
-    id: 'cho-vinh-long',
-    title: 'Chợ Nổi & Phù Sa Sông Nước Cổ Chiên',
-    terroir: 'Phù Sa Cổ Chiên',
-    area: 'Trà Ôn · Long Hồ',
-    coordinates: "9°58'N · 105°55'E",
-    summary: 'Thương hồ sông Hậu họp chợ theo con nước sớm, rộn ràng cây bẹo mời chào sản vật vườn phù sa.',
-    coverSrc: '/img/entities/cho-vinh-long.webp',
-    to: '/dia-diem/cho-vinh-long',
+    id: 'cho-noi-tra-on',
+    title: 'Chợ nổi Trà Ôn lúc rạng sáng',
+    area: 'Xã Lục Sĩ Thành · Sông Hậu',
+    summary: 'Nếp thương hồ trăm năm họp chợ trên nhánh sông Hậu, rộn ràng ghe trái cây từ tinh mơ.',
+    coverSrc: '/img/entities/cho-noi-tra-on.webp',
+    to: '/dia-diem/cho-noi-tra-on',
   },
   {
-    id: 'van-thanh-mieu-vinh-long',
-    title: 'Văn Thánh Miếu & Chốn Cổ Tự Trầm Mặc',
-    terroir: 'Phù Sa Cổ Chiên',
-    area: 'TP. Vĩnh Long',
-    coordinates: "10°14'N · 105°58'E",
-    summary: 'Di tích Nho học phương Nam cổ kính bên dòng Long Hồ, lưu giữ hồn xưa và nếp văn hiến đất Vĩnh Long.',
-    coverSrc: '/img/entities/van-thanh-mieu-vinh-long.webp',
-    to: '/dia-diem/van-thanh-mieu-vinh-long',
+    id: 'chua-vam-ray',
+    title: 'Chùa Vàm Ray',
+    area: 'Xã Trà Cú · Trà Vinh (cũ)',
+    summary: 'Ngôi chùa Khmer mái tháp chạm trổ rực rỡ với tượng Phật nhập Niết Bàn quy mô lớn.',
+    coverSrc: '/img/entities/chua-vam-ray.webp',
+    to: '/dia-diem/chua-vam-ray',
   },
   {
-    id: 'lang-du-lich-cong-dong-cai-ngang',
-    title: 'Làng Du Lịch Sinh Thái Cái Ngang',
-    terroir: 'Xanh Cù Lao',
-    area: 'Tam Bình, Vĩnh Long',
-    coordinates: "10°05'N · 106°01'E",
-    summary: 'Bến xuồng ba lá, nếp nhà vườn rợp bóng dừa rực rỡ sắc hoa và trải nghiệm chèo thuyền miệt vườn.',
-    coverSrc: '/img/entities/lang-du-lich-cong-dong-cai-ngang.webp',
-    to: '/dia-diem/lang-du-lich-cong-dong-cai-ngang',
+    id: 'chua-tien-chau-tien-chau-tu',
+    title: 'Chùa Tiên Châu cổ tự',
+    area: 'Xã An Bình · Bãi Tiên',
+    summary: 'Di tích lịch sử kiến trúc từ thế kỷ XVIII bên dòng Cổ Chiên xanh mát bóng cây cù lao.',
+    coverSrc: '/img/entities/chua-tien-chau-tien-chau-tu.webp',
+    to: '/dia-diem/chua-tien-chau-tien-chau-tu',
   },
 ]
 
@@ -265,7 +222,7 @@ function onImgFallback(e: Event) {
   max-width: var(--maxw);
   margin-inline: auto;
   padding-inline: var(--space-5);
-  padding-block: clamp(var(--space-fib-4), 6vw, var(--space-fib-5));
+  padding-block: clamp(var(--space-8), 5vw, var(--space-12));
 }
 
 .home-curated-showcase__eyebrow {
@@ -283,33 +240,31 @@ function onImgFallback(e: Event) {
 .home-curated-showcase__layout {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-fib-4);
-  margin-block-start: var(--space-fib-4);
+  gap: var(--space-6);
+  margin-block-start: var(--space-6);
 }
 
 @media (min-width: 960px) {
   .home-curated-showcase__layout {
     grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: var(--space-8);
     align-items: stretch;
   }
 }
 
-/* 80% Lead Photo Mosaic Tile */
+/* 62% Lead Architectural Plate */
 .home-curated-lead {
   display: flex;
   flex-direction: column;
   background: var(--color-surface);
-  border: 1px solid var(--border-liquid-glass, var(--color-border));
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-surface);
   overflow: hidden;
-  box-shadow: var(--shadow-card-ambient);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: border-color 0.25s ease;
 }
 
 .home-curated-lead:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(var(--black-rgb), 0.12);
-  border-color: color-mix(in srgb, var(--mangthit-600) 45%, var(--color-border));
+  border-color: color-mix(in srgb, var(--color-brand) 45%, var(--color-border));
 }
 
 .home-curated-lead:active {
@@ -326,7 +281,7 @@ function onImgFallback(e: Event) {
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 520px;
+  min-height: clamp(22rem, 36vw, 31rem);
   overflow: hidden;
   background: var(--color-canvas);
   display: flex;
@@ -340,22 +295,21 @@ function onImgFallback(e: Event) {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .home-curated-lead:hover .home-curated-lead__img {
-  transform: scale(1.04);
+  transform: scale(1.03);
 }
 
+/* Calmed lower-third optical gradient only so sky and architecture breathe clean */
 .home-curated-lead__scrim {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(var(--black-rgb), 0.20) 0%,
-    transparent 28%,
-    rgba(var(--black-rgb), 0.35) 58%,
-    rgba(var(--black-rgb), 0.72) 78%,
+    transparent 45%,
+    rgba(var(--black-rgb), 0.52) 72%,
     rgba(var(--black-rgb), 0.88) 100%
   );
   pointer-events: none;
@@ -366,27 +320,8 @@ function onImgFallback(e: Event) {
   z-index: 2;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: var(--space-4);
-}
-
-.home-curated-lead__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1h) var(--space-3);
-  background: rgba(var(--black-rgb), 0.86);
-  color: var(--surface-white);
-  border: 1px solid var(--border-liquid-glass);
-  border-radius: var(--radius-pill, 9999px);
-  box-shadow: var(--shadow-card-ambient);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.02em;
-}
-
-.home-curated-lead__badge .line-icon {
-  color: var(--surface-white);
 }
 
 .home-bookmark-btn {
@@ -395,26 +330,25 @@ function onImgFallback(e: Event) {
   justify-content: center;
   min-width: 44px;
   min-height: 44px;
-  border-radius: 50%;
-  background: rgba(var(--black-rgb), 0.86);
+  border-radius: var(--radius-pill);
+  background: rgba(var(--black-rgb), 0.72);
   color: var(--surface-white);
-  border: 1px solid var(--border-liquid-glass);
-  box-shadow: var(--shadow-card-ambient);
+  border: 1px solid rgba(var(--white-rgb), 0.24);
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  flex-shrink: 0;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
               background-color 0.2s ease,
               color 0.2s ease;
 }
 
 .home-bookmark-btn:hover {
-  transform: scale(1.08);
-  color: var(--coral-error);
-  background: rgba(var(--black-rgb), 0.9);
+  transform: scale(1.06);
+  background: rgba(var(--black-rgb), 0.88);
 }
 
 .home-bookmark-btn:active {
-  transform: scale(0.92);
+  transform: scale(0.94);
 }
 
 .home-bookmark-btn:focus-visible {
@@ -423,18 +357,24 @@ function onImgFallback(e: Event) {
 }
 
 .home-bookmark-btn.is-saved {
-  color: var(--coral-error);
-  background: rgba(var(--black-rgb), 0.85);
-  border-color: color-mix(in srgb, var(--coral-error) 40%, transparent);
+  color: var(--surface-white);
+  background: var(--color-brand);
+  border-color: var(--color-brand);
 }
 
 .home-bookmark-btn--sm {
   min-width: 44px;
   min-height: 44px;
-  position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
-  z-index: 2;
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  align-self: flex-start;
+}
+
+.home-bookmark-btn--sm:hover {
+  background: var(--color-surface-subtle);
+  color: var(--color-brand);
+  border-color: var(--color-brand);
 }
 
 .home-curated-lead__overlay {
@@ -443,7 +383,7 @@ function onImgFallback(e: Event) {
   padding: var(--space-6);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
   color: var(--surface-white);
 }
 
@@ -451,32 +391,24 @@ function onImgFallback(e: Event) {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-2);
   font-size: var(--text-xs);
-  color: rgba(var(--white-rgb), 0.85);
 }
 
 .home-curated-lead__location {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  color: var(--surface-white);
+  color: var(--alluvial-gold);
   font-weight: var(--weight-bold);
-}
-
-.home-curated-lead__location .line-icon {
-  color: var(--surface-white);
-}
-
-.home-curated-lead__coords {
-  display: none !important;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
 }
 
 .home-curated-lead__title {
   margin: 0;
   font-family: var(--font-editorial);
-  font-size: clamp(var(--text-xl), 3vw, var(--text-2xl));
+  font-size: clamp(var(--text-xl), 2.8vw, var(--text-2xl));
   line-height: 1.25;
   text-wrap: balance;
   overflow-wrap: break-word;
@@ -485,20 +417,21 @@ function onImgFallback(e: Event) {
 .home-curated-lead__title a {
   color: var(--surface-white);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: opacity 0.2s ease;
 }
 
 .home-curated-lead__title a:hover {
-  color: var(--alluvial-gold);
+  opacity: 0.9;
 }
 
 .home-curated-lead__desc {
   margin: 0;
   font-size: var(--text-sm);
-  line-height: 1.55;
+  line-height: 1.5;
   text-wrap: pretty;
   overflow-wrap: break-word;
   color: rgba(var(--white-rgb), 0.92);
+  max-width: 52ch;
 }
 
 .home-curated-lead__actions {
@@ -519,7 +452,7 @@ function onImgFallback(e: Event) {
   font-weight: var(--weight-semibold);
   border-radius: var(--radius-control);
   text-decoration: none;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
 }
 
 .home-curated-lead__actions .btn .line-icon:last-child {
@@ -540,180 +473,125 @@ function onImgFallback(e: Event) {
   outline-offset: 2px;
 }
 
-/* 38% Satellite Cards */
+/* 38% Open Architectural Hairline Index */
 .home-curated-satellites {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-fib-3);
+  border-block-start: 1px solid var(--color-border);
 }
 
 @media (min-width: 640px) {
   .home-curated-satellites {
     grid-template-columns: repeat(2, 1fr);
+    gap: 0 var(--space-5);
   }
 }
 
-/* Full-Bleed Satellite Card (100% Photo visual area) */
+@media (min-width: 960px) {
+  .home-curated-satellites {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
 .home-curated-satellite {
-  position: relative;
-  min-height: 380px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: var(--color-canvas);
-  border: 1px solid var(--border-liquid-glass, var(--color-border));
-  border-radius: var(--radius-surface);
-  overflow: hidden;
-  box-shadow: var(--shadow-card-ambient);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  align-items: start;
+  padding-block: var(--space-4);
+  border-block-end: 1px solid var(--color-border);
+  background: transparent;
+  transition: background-color 0.2s ease;
 }
 
 .home-curated-satellite:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--mangthit-600) 40%, var(--color-border));
-  box-shadow: 0 6px 18px rgba(var(--black-rgb), 0.16);
-}
-
-.home-curated-satellite:active {
-  transform: scale(0.98);
+  background: color-mix(in srgb, var(--color-surface-subtle) 55%, transparent);
 }
 
 .home-curated-satellite:focus-visible {
   outline: 2px solid var(--color-focus);
-  outline-offset: 3px;
-  border-radius: var(--radius-surface);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
 }
 
-/* Photo fills 100% of card */
+.home-curated-satellite__thumb-wrap {
+  display: block;
+  width: 100px;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-control);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+}
+
 .home-curated-satellite__img {
-  position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 0;
+  display: block;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .home-curated-satellite:hover .home-curated-satellite__img {
-  transform: scale(1.04);
+  transform: scale(1.05);
 }
 
-/* Bottom Gradient Scrim Overlay */
-.home-curated-satellite__scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(var(--black-rgb), 0.20) 0%,
-    transparent 28%,
-    rgba(var(--black-rgb), 0.35) 58%,
-    rgba(var(--black-rgb), 0.72) 78%,
-    rgba(var(--black-rgb), 0.88) 100%
-  );
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* Floating Top Bar */
-.home-curated-satellite__top {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-3);
-}
-
-.home-curated-satellite__top-badges {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1h);
-  flex-wrap: wrap;
-}
-
-.home-curated-satellite__terroir-badge {
-  padding: 3px 8px;
-  background: rgba(var(--black-rgb), 0.86);
-  color: var(--alluvial-gold);
-  border: 1px solid var(--border-liquid-glass);
-  border-radius: var(--radius-pill, 9999px);
-  font-size: var(--text-2xs);
-  font-weight: var(--weight-semibold);
-  line-height: 1.35;
-  box-shadow: var(--shadow-card-ambient);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
-}
-
-.home-curated-satellite:hover .home-curated-satellite__terroir-badge {
-  transform: translateY(-1px);
-}
-
-/* Bottom Content Overlay (<= 25% card height) */
-.home-curated-satellite__overlay {
-  position: relative;
-  z-index: 2;
+.home-curated-satellite__body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1h);
-  padding: var(--space-4);
-  color: var(--surface-white);
+  gap: var(--space-1);
+  min-width: 0;
 }
 
 .home-curated-satellite__meta {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: baseline;
   gap: var(--space-2);
+  font-size: var(--text-2xs);
 }
 
-.home-curated-satellite__coords {
-  display: none !important;
+.home-curated-satellite__num {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-brand);
 }
 
 .home-curated-satellite__area {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: var(--text-2xs);
-  line-height: 1.35;
-  color: var(--surface-white);
+  color: var(--color-text-muted);
   font-weight: var(--weight-bold);
-}
-
-.home-curated-satellite__area .line-icon {
-  color: var(--surface-white);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
 }
 
 .home-curated-satellite__title {
   margin: 0;
   font-family: var(--font-editorial);
-  font-size: var(--text-sm);
-  line-height: 1.35;
+  font-size: var(--text-base);
+  line-height: 1.3;
   text-wrap: balance;
   overflow-wrap: break-word;
 }
 
 .home-curated-satellite__title a {
-  color: var(--surface-white);
+  color: var(--color-text);
   text-decoration: none;
-  text-shadow: 0 1px 3px rgba(var(--black-rgb), 0.5);
-  transition: opacity 0.2s ease;
+  transition: color 0.2s ease;
 }
 
 .home-curated-satellite__title a:hover {
-  opacity: 0.85;
+  color: var(--color-action);
 }
 
 .home-curated-satellite__summary {
   margin: 0;
   font-size: var(--text-xs);
-  color: var(--surface-white);
-  opacity: 0.9;
+  color: var(--color-text-muted);
   line-height: 1.45;
   text-wrap: pretty;
   overflow-wrap: break-word;
-  text-shadow: 0 1px 2px rgba(var(--black-rgb), 0.4);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -723,19 +601,14 @@ function onImgFallback(e: Event) {
 .home-curated-satellite__link {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
-  color: var(--surface-white);
+  color: var(--color-action);
   text-decoration: none;
-  text-shadow: 0 1px 2px rgba(var(--black-rgb), 0.4);
-  margin-top: auto;
-  min-height: var(--touch-min, 44px);
-  min-width: var(--touch-min, 44px);
-}
-
-.home-curated-satellite__link:hover {
-  opacity: 0.85;
+  min-height: 44px;
+  min-width: 44px;
+  margin-block-start: -4px;
 }
 
 .home-curated-satellite__link .line-icon {
@@ -751,16 +624,31 @@ function onImgFallback(e: Event) {
   transform: scale(0.96);
 }
 
-.home-curated-satellite__link:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
-  border-radius: var(--radius-control);
-}
-
+.home-curated-satellite__link:focus-visible,
 .home-curated-satellite__title a:focus-visible,
 .home-curated-lead__title a:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
   border-radius: var(--radius-control);
+}
+
+@media (max-width: 480px) {
+  .home-curated-satellite {
+    grid-template-columns: 84px minmax(0, 1fr) auto;
+    gap: var(--space-3);
+  }
+  .home-curated-satellite__thumb-wrap {
+    width: 84px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-curated-lead,
+  .home-curated-lead__img,
+  .home-curated-satellite__img,
+  .home-curated-lead__actions .btn .line-icon:last-child,
+  .home-curated-satellite__link .line-icon {
+    transition: none;
+  }
 }
 </style>

@@ -13,36 +13,39 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(indexVue).not.toMatch(/miền Tây|sông nước hữu tình|thiên đường|hidden gem|must-see|không thể bỏ lỡ|đắm chìm|hòa mình vào|điểm đến lý tưởng/)
   })
 
-  it('Task 1: Hero terroir chips and cognitive chips enforce tabular-nums numeric styling', () => {
-    expect(nocturneCss).toMatch(/font-variant-numeric:\s*tabular-nums/)
-    expect(nocturneCss).toContain('.hero-terroir-chip')
+  it('Task 1: Hero quick index enforces touch targets and plain editorial lead without cognitive pill clutter', () => {
+    expect(nocturneCss).toContain('.hero-quick-link')
+    expect(nocturneCss).toContain('.hero-lead')
+    expect(nocturneCss).not.toContain('.hero-cognitive-banner')
   })
 
-  it('Task 2: Culinary trail dishes display field coordinates and tabular prices', () => {
+  it('Task 2: Culinary trail dishes display verified dish slugs, tabular prices, and zero GPS clutter', () => {
     const culinaryVue = readFileSync(resolve(__dirname, '../components/home/HomeCulinaryTrail.vue'), 'utf8')
-    expect(culinaryVue).toContain('10°17\'N · 105°59\'E') // Cù lao An Bình
-    expect(culinaryVue).toContain('10°07\'N · 106°11\'E') // Cù lao Dài
-    expect(culinaryVue).toContain('home-culinary-card__coords')
+    expect(culinaryVue).toContain('bun-nuoc-leo-tra-vinh')
+    expect(culinaryVue).toContain('ca-tai-tuong-chien-xu')
+    expect(culinaryVue).toContain('banh-canh-bot-xat-ben-tre')
+    expect(culinaryVue).toContain('ca-loc-nuong-trui')
+    expect(culinaryVue).not.toContain('home-culinary-card__coords')
     expect(culinaryVue).toContain('home-culinary-card__price-badge')
-    expect(nocturneCss).toMatch(/\.home-culinary-card__price-badge[^{]*\{[^}]*font-variant-numeric:\s*tabular-nums/)
+    expect(culinaryVue).toMatch(/\.home-culinary-card__price-badge\s*\{[^}]*font-variant-numeric:\s*tabular-nums/)
   })
 
-  it('Task 3: Riverside homestays display field coordinates and streamlined metadata', () => {
+  it('Task 3: Riverside homestays display verified stay slugs, tabular prices, and streamlined metadata', () => {
     const staysVue = readFileSync(resolve(__dirname, '../components/home/HomeRiversideStays.vue'), 'utf8')
-    expect(staysVue).toContain("10°17'N · 105°59'E") // Út Trinh
-    expect(staysVue).toContain("10°05'N · 105°49'E") // Bình Minh
-    expect(staysVue).toContain("10°16'N · 105°59'E") // Ba Linh
-    expect(staysVue).toContain('home-stay-card__coords')
-    expect(nocturneCss).toMatch(/\.home-stay-card__price[^{]*\{[^}]*font-variant-numeric:\s*tabular-nums/)
+    expect(staysVue).toContain('homestay-ut-trinh')
+    expect(staysVue).toContain('mekong-riverside-homestay')
+    expect(staysVue).toContain('nha-dua-cocohome')
+    expect(staysVue).not.toContain('home-stay-card__coords')
+    expect(staysVue).toMatch(/\.home-stay-card__price\s*\{[^}]*font-variant-numeric:\s*tabular-nums/)
   })
 
-  it('Task 5: Curated showcase satellites display compass icon with field coordinates and tabular numbers', () => {
+  it('Task 5: Curated showcase satellites display architectural index numbering and verified Văn Thánh Miếu slug', () => {
     const showcaseVue = readFileSync(resolve(__dirname, '../components/home/HomeCuratedShowcase.vue'), 'utf8')
-    // Satellite coordinates must render compass icon
-    expect(showcaseVue).toMatch(/home-curated-satellite__coords[\s\S]*?<IconLine\s+name="compass"/)
-    // Verify tabular numeric group in home-nocturne.css
-    expect(nocturneCss).toMatch(/\.home-curated-satellite__coords/)
-    expect(nocturneCss).toMatch(/\.home-curated-lead__coords/)
+    expect(showcaseVue).toContain('home-curated-satellite__num')
+    expect(showcaseVue).toContain('/dia-diem/van-thanh-mieu')
+    expect(showcaseVue).not.toContain('van-thanh-mieu-vinh-long')
+    expect(showcaseVue).not.toContain('home-curated-satellite__coords')
+    expect(showcaseVue).toMatch(/\.home-curated-satellite__num\s*\{[^}]*font-variant-numeric:\s*tabular-nums/)
   })
 
   it('Task 6: AEO plaque entry titles and continuation quantitative labels enforce tabular numerics', () => {
@@ -54,10 +57,10 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(nocturneCss).toMatch(/\.home-continuation__link-title/)
   })
 
-  it('Task 7: Curated satellite cards maintain unobtrusive scrim allowing >= 75% photographic focus', () => {
+  it('Task 7: Curated satellite index renders open typographic rows without photographic scrim overlays', () => {
     const showcaseVue = readFileSync(resolve(__dirname, '../components/home/HomeCuratedShowcase.vue'), 'utf8')
     expect(showcaseVue).toContain('home-curated-satellite__title')
-    expect(showcaseVue).toMatch(/home-curated-satellite__overlay[\s\S]*?padding:\s*var\(--space-4\)/)
+    expect(showcaseVue).not.toContain('home-curated-satellite__scrim')
   })
 
   it('Task 8: Hero Feature Dossier coordinates consistently render compass icon', () => {
@@ -65,29 +68,25 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(dossierVue).toMatch(/home-feature-dossier__coords[\s\S]*?<IconLine\s+name="compass"/)
   })
 
-  it('Task 9: Hotline numbers, itinerary durations, and remaining coordinates enforce tabular numerics', () => {
+  it('Task 9: Hotline numbers and itinerary durations enforce tabular numerics while legacy product lead rules stay pruned', () => {
     expect(nocturneCss).toMatch(/\.home-hotline-btn__num/)
     expect(nocturneCss).toMatch(/\.home-continuation__link-sub/)
-    expect(nocturneCss).toMatch(/\.home-culinary-card__coords/)
-    expect(nocturneCss).toMatch(/\.home-stay-card__coords/)
     // Verify orphaned product lead name is pruned from heading balance group
     expect(nocturneCss).not.toMatch(/:is\([^)]*\.home-product-lead__name[^)]*\)/)
   })
 
-  it('Task 10: Culinary trail and riverside stays employ calmed photographic scrims', () => {
+  it('Task 10: Culinary trail and riverside stays employ un-scrimmed light-canvas print cards', () => {
     const culinaryVue = readFileSync(resolve(__dirname, '../components/home/HomeCulinaryTrail.vue'), 'utf8')
     const staysVue = readFileSync(resolve(__dirname, '../components/home/HomeRiversideStays.vue'), 'utf8')
 
-    // Both must use relaxed transparent mid-stop
-    expect(culinaryVue).toMatch(/home-culinary-card__scrim[\s\S]*?transparent 28%/)
-    expect(staysVue).toMatch(/home-stay-card__scrim[\s\S]*?transparent 28%/)
+    expect(culinaryVue).not.toContain('home-culinary-card__scrim')
+    expect(staysVue).not.toContain('home-stay-card__scrim')
   })
 
-  it('Task 11: Curated lead heritage card employs calmed optical photographic scrim', () => {
+  it('Task 11: Curated lead heritage card employs calmed lower-third optical scrim without pill badges', () => {
     const showcaseVue = readFileSync(resolve(__dirname, '../components/home/HomeCuratedShowcase.vue'), 'utf8')
-    // Must use relaxed transparent mid-stop instead of heavy 0.55 opacity at 50%
-    expect(showcaseVue).toMatch(/home-curated-lead__scrim[\s\S]*?transparent 28%/)
-    expect(showcaseVue).not.toMatch(/rgba\(var\(--black-rgb\),\s*0\.55\)\s*50%/)
+    expect(showcaseVue).toMatch(/home-curated-lead__scrim[\s\S]*?transparent 45%/)
+    expect(showcaseVue).not.toContain('home-curated-lead__badge')
   })
 
   it('Task 12: Hero Feature Dossier action link consistently renders arrow-right icon', () => {
@@ -177,9 +176,10 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(freshIndexVue).not.toContain('Tìm cù lao, lò gạch cổ')
     expect(freshNocturneCss).not.toContain('.hero-search-island__hint')
 
-    // 2. Hero subtitle has refined styling and dynamic computed fallback
+    // 2. Hero subtitle uses clean typographic lead without dark plate box
     expect(freshIndexVue).toMatch(/heroSubtitle\s*=\s*computed/)
-    expect(freshNocturneCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.hero-sub\s*\{[^}]*border-radius:\s*var\(--radius-control/)
+    expect(freshIndexVue).toContain('<p class="hero-lead">{{ heroSubtitle }}</p>')
+    expect(freshNocturneCss).toContain('.hero-lead {')
 
     // 3. Iconic entity image fallback enabled in heroFeatureDescriptor
     expect(freshIndexVue).toMatch(/describeEntityImages\(\{\s*id:\s*iconicId/)
@@ -249,9 +249,9 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(staysVue).not.toContain('readonly balconyHighlight: string')
     expect(staysVue).not.toContain('balconyHighlight:')
 
-    // 4. Hero Gateway: terroir chips label streamlined without trailing colon
-    expect(freshIndexVue).toContain('Rẽ lối lẹ</span>')
-    expect(freshIndexVue).not.toContain('Rẽ lối lẹ:</span>')
+    // 4. Hero Gateway: streamlined chapter quick index without colloquial "Rẽ lối lẹ" filler
+    expect(freshIndexVue).toContain('hero-quick-index')
+    expect(freshIndexVue).not.toContain('Rẽ lối lẹ')
   })
 
   it('Task 28: Folios II & III see-all links streamlined and HomeTravelPlanner decluttered', () => {
@@ -259,9 +259,9 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     const staysVue = readFileSync(resolve(__dirname, '../components/home/HomeRiversideStays.vue'), 'utf8')
     const plannerVue = readFileSync(resolve(__dirname, '../components/home/HomeTravelPlanner.vue'), 'utf8')
 
-    // 1. Folio II see-all: streamlined
-    expect(culinaryVue).toContain('120 món ngon di sản')
-    expect(culinaryVue).not.toContain('Xem trọn 120 món ngon di sản')
+    // 1. Folio II see-all: authentic regional culinary link
+    expect(culinaryVue).toContain('Khám phá ẩm thực Vĩnh Long')
+    expect(culinaryVue).not.toContain('120 món ngon di sản')
 
     // 2. Folio III stays see-all: streamlined
     expect(staysVue).toContain('164 nơi lưu trú')
@@ -286,24 +286,19 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(plannerVue).not.toContain('import FreshnessLine')
   })
 
-  it('Task 29: All field coordinates across homepage hidden to prevent visual clutter', () => {
+  it('Task 29: All field coordinates across homepage are removed or suppressed to prevent visual clutter', () => {
     const nocturneFresh = readFileSync(resolve(__dirname, '../assets/css/home-nocturne.css'), 'utf8')
-    // 1. Nocturne CSS suppresses all coordinate badges on homepage
+    // 1. Nocturne CSS suppresses feature dossier coordinates on homepage
     expect(nocturneFresh).toMatch(/\[data-home-pilot="nocturne-b1"\]\s*\.home-feature-dossier__coords[\s\S]*?display:\s*none\s*!important/)
-    expect(nocturneFresh).toMatch(/\.home-curated-lead__coords[\s\S]*?display:\s*none\s*!important/)
-    expect(nocturneFresh).toMatch(/\.home-curated-satellite__coords[\s\S]*?display:\s*none\s*!important/)
-    expect(nocturneFresh).toMatch(/\.home-culinary-card__coords[\s\S]*?display:\s*none\s*!important/)
-    expect(nocturneFresh).toMatch(/\.home-stay-card__coords[\s\S]*?display:\s*none\s*!important/)
 
-    // 2. Scoped component styles also suppress coords
+    // 2. Chapters I-III no longer carry redundant GPS coordinates in data models
     const showcaseVue = readFileSync(resolve(__dirname, '../components/home/HomeCuratedShowcase.vue'), 'utf8')
     const culinaryVue = readFileSync(resolve(__dirname, '../components/home/HomeCulinaryTrail.vue'), 'utf8')
     const staysVue = readFileSync(resolve(__dirname, '../components/home/HomeRiversideStays.vue'), 'utf8')
 
-    expect(showcaseVue).toMatch(/\.home-curated-lead__coords\s*\{[^}]*display:\s*none\s*!important/)
-    expect(showcaseVue).toMatch(/\.home-curated-satellite__coords\s*\{[^}]*display:\s*none\s*!important/)
-    expect(culinaryVue).toMatch(/\.home-culinary-card__coords\s*\{[^}]*display:\s*none\s*!important/)
-    expect(staysVue).toMatch(/\.home-stay-card__coords\s*\{[^}]*display:\s*none\s*!important/)
+    expect(showcaseVue).not.toContain('coordinates:')
+    expect(culinaryVue).not.toContain('coordinates:')
+    expect(staysVue).not.toContain('coordinates:')
   })
 })
 

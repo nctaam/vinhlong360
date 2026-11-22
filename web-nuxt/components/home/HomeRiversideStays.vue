@@ -1,13 +1,13 @@
 <template>
-  <section class="home-riverside-stays block reveal" aria-label="Nghỉ Dưỡng Homestay Ven Sông & Trải Nghiệm Điền Dã" data-home-riverside-stays>
+  <section class="home-riverside-stays block reveal" aria-label="Nhà vườn và Đêm ven sông Vĩnh Long" data-home-riverside-stays>
     <div class="home-riverside-stays__head section-head">
       <div class="sh-text">
         <span class="home-riverside-stays__eyebrow" data-color-role="brand">
           <IconLine name="home" aria-hidden="true" />
-          <span>Lưu trú sinh thái & Điền dã Nam Bộ</span>
+          <span>Lưu trú miệt vườn · Đêm ven sông</span>
         </span>
-        <h2>Homestay ven sông & <em class="editorial-italic-accent" aria-hidden="true">đêm trăng tài tử</em></h2>
-        <p class="sh-sub">Thức giấc giữa tiếng chim hót miệt vườn, cùng chủ nhà bơi xuồng hái trái cây và lắng nghe tiếng đàn kìm réo rắt bên bến sông Cổ Chiên.</p>
+        <h2>Nhà vườn &amp; Đêm ven sông</h2>
+        <p class="sh-sub">Nghỉ đêm dưới tán nhãn cù lao và rặng dừa Bến Tre, đón con nước sớm bên hiên gỗ Nam Bộ.</p>
       </div>
       <NuxtLink to="/luu-tru" class="see-all">
         <span>164 nơi lưu trú</span>
@@ -15,68 +15,79 @@
       </NuxtLink>
     </div>
 
-    <!-- Riverside Retreat Lookbook: 3 Featured Certified Homestays (Asymmetric Editorial Grid) -->
-    <div class="home-riverside-stays__stays-grid">
-      <article
-        v-for="(stay, index) in CURATED_HOMESTAYS"
-        :key="stay.id"
-        class="home-stay-card"
-        :class="{ 'home-stay-card--lead': index === 0 }"
-        data-homestay-card
-      >
-        <!-- Full-Bleed Homestay Photo (100% of card) -->
+    <!-- Tier 1: Horizontal 58/42 Architectural Lookbook Lead -->
+    <article class="home-stay-card home-stay-card--lead" data-homestay-card>
+      <NuxtLink :to="leadStay.to" class="home-stay-card__media" tabindex="-1" aria-hidden="true">
         <img
           class="home-stay-card__img"
-          :src="stay.coverSrc"
-          :alt="stay.name"
-          width="640"
-          height="360"
+          :src="leadStay.coverSrc"
+          :alt="leadStay.name"
+          width="800"
+          height="500"
           loading="lazy"
           decoding="async"
           @error="onImgFallback"
         >
+      </NuxtLink>
 
-        <!-- Bottom Gradient Scrim Overlay -->
-        <div class="home-stay-card__scrim" aria-hidden="true" />
-
-        <!-- Floating Top Badge -->
-        <div class="home-stay-card__top">
-          <div class="home-stay-card__top-left">
-            <span class="home-stay-card__terroir">{{ stay.terroir }}</span>
-            <span class="home-stay-card__badge">{{ stay.badge }}</span>
-          </div>
-          <span v-if="stay.ecoBadge" class="home-stay-card__eco-badge">
-            <IconLine name="shield-check" aria-hidden="true" />
-            <span>{{ stay.ecoBadge }}</span>
+      <div class="home-stay-card__body">
+        <div class="home-stay-card__meta">
+          <span class="home-stay-card__area">
+            <IconLine name="pin" aria-hidden="true" />
+            <span>{{ leadStay.area }}</span>
           </span>
+          <span class="home-stay-card__price">{{ leadStay.price }}</span>
         </div>
 
-        <!-- Overlaid Bottom Content (<= 25% card height) -->
-        <div class="home-stay-card__overlay">
+        <h3 class="home-stay-card__title">
+          <NuxtLink :to="leadStay.to">{{ leadStay.name }}</NuxtLink>
+        </h3>
+        <p class="home-stay-card__desc">{{ leadStay.desc }}</p>
+
+        <div class="home-stay-card__action">
+          <NuxtLink :to="leadStay.to" class="btn btn-outline" data-color-role="action-secondary">
+            <IconLine name="phone" aria-hidden="true" />
+            <span>Liên hệ & Đặt phòng</span>
+            <IconLine name="arrow-right" aria-hidden="true" />
+          </NuxtLink>
+        </div>
+      </div>
+    </article>
+
+    <!-- Tier 2: Twin Companion Split Prints (Zero Orphan Slots, Zero Floating Pills) -->
+    <div class="home-riverside-stays__companions">
+      <article
+        v-for="stay in companionStays"
+        :key="stay.id"
+        class="home-stay-card"
+        data-homestay-card
+      >
+        <NuxtLink :to="stay.to" class="home-stay-card__media" tabindex="-1" aria-hidden="true">
+          <img
+            class="home-stay-card__img"
+            :src="stay.coverSrc"
+            :alt="stay.name"
+            width="640"
+            height="400"
+            loading="lazy"
+            decoding="async"
+            @error="onImgFallback"
+          >
+        </NuxtLink>
+
+        <div class="home-stay-card__body">
           <div class="home-stay-card__meta">
             <span class="home-stay-card__area">
               <IconLine name="pin" aria-hidden="true" />
               <span>{{ stay.area }}</span>
             </span>
-            <span v-if="stay.coordinates" class="home-stay-card__coords" :title="`Tọa độ thực địa: ${stay.coordinates}`">
-              <span class="home-stay-card__coords-sep" aria-hidden="true">·</span>
-              <IconLine name="compass" aria-hidden="true" />
-              <span>{{ stay.coordinates }}</span>
-            </span>
-            <span class="home-stay-card__price"><strong>{{ stay.price }}</strong></span>
+            <span class="home-stay-card__price">{{ stay.price }}</span>
           </div>
 
           <h3 class="home-stay-card__title">
             <NuxtLink :to="stay.to">{{ stay.name }}</NuxtLink>
           </h3>
           <p class="home-stay-card__desc">{{ stay.desc }}</p>
-
-          <div class="home-stay-card__perks sr-only">
-            <span v-for="perk in stay.perks" :key="perk" class="home-stay-card__perk">
-              <IconLine name="check" aria-hidden="true" />
-              <span>{{ perk }}</span>
-            </span>
-          </div>
 
           <div class="home-stay-card__action">
             <NuxtLink :to="stay.to" class="btn btn-outline" data-color-role="action-secondary">
@@ -88,45 +99,6 @@
         </div>
       </article>
     </div>
-
-    <!-- Folk Art & Living Fieldwork Strip -->
-    <div class="home-riverside-stays__experiences">
-      <div class="home-riverside-stays__exp-header">
-        <h3 class="home-riverside-stays__exp-title">
-          <IconLine name="route" />
-          <span>Trải nghiệm bản địa & di sản dân gian</span>
-        </h3>
-      </div>
-
-      <div class="home-riverside-stays__exp-grid">
-        <div
-          v-for="exp in FOLK_EXPERIENCES"
-          :key="exp.title"
-          class="home-exp-card"
-        >
-          <div v-if="exp.coverSrc" class="home-exp-card__media">
-            <img
-              :src="exp.coverSrc"
-              :alt="exp.title"
-              class="home-exp-card__img"
-              width="400"
-              height="250"
-              loading="lazy"
-              decoding="async"
-              @error="onImgFallback"
-            >
-            <span v-if="exp.tag" class="home-exp-card__tag">{{ exp.tag }}</span>
-          </div>
-          <div class="home-exp-card__header">
-            <span class="home-exp-card__icon" aria-hidden="true">
-              <IconLine :name="exp.icon" />
-            </span>
-            <h4 class="home-exp-card__title">{{ exp.title }}</h4>
-          </div>
-          <p class="home-exp-card__desc">{{ exp.desc }}</p>
-        </div>
-      </div>
-    </div>
   </section>
 </template>
 
@@ -136,94 +108,45 @@ import IconLine from '~/components/IconLine.vue'
 interface CuratedHomestay {
   readonly id: string
   readonly name: string
-  readonly terroir: string
-  readonly badge: string
-  readonly ecoBadge: string
   readonly price: string
   readonly area: string
   readonly desc: string
-  readonly perks: readonly string[]
   readonly coverSrc: string
   readonly to: string
-  readonly coordinates: string
-}
-
-interface FolkExperience {
-  readonly title: string
-  readonly desc: string
-  readonly icon: string
-  readonly coverSrc?: string
-  readonly tag?: string
 }
 
 const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
   {
     id: 'homestay-ut-trinh',
-    name: 'Út Trinh Homestay (ASEAN Standard)',
-    terroir: 'Xanh Cù Lao',
-    badge: 'Chuẩn Homestay ASEAN',
-    ecoBadge: 'Chứng nhận Sinh Thái ASEAN',
-    price: 'Từ 650.000đ/đêm',
-    area: 'Xã Hòa Ninh, Cù Lao An Bình',
-    desc: 'Nhà rường gỗ quý cổ kính dưới bóng nhãn cù lao An Bình, trải nghiệm nấu bánh xèo và nghe đờn ca bến sông.',
-    perks: ['Cơm gia đình cù lao', 'Chèo xuồng mương rạch', 'Xe đạp làng quê'],
-    coverSrc: '/img/spread/cu-lao-an-binh.webp',
+    name: 'Homestay Út Trinh',
+    price: '450.000–850.000đ/đêm',
+    area: 'Xã An Bình · Cù lao sông Tiền',
+    desc: 'Nhà gỗ cổ giữa vườn nhãn cù lao với bữa cơm quê, đạp xe đường làng và đêm đờn ca.',
+    coverSrc: '/img/entities/homestay-ut-trinh.webp',
     to: '/dia-diem/homestay-ut-trinh',
-    coordinates: "10°17'N · 105°59'E",
   },
   {
     id: 'mekong-riverside-homestay',
     name: 'Mekong Riverside Homestay',
-    terroir: 'Phù Sa Cổ Chiên',
-    badge: 'View Sông Hậu Lộng Gió',
-    ecoBadge: 'Vườn sinh thái không rác thải',
-    price: 'Từ 450.000đ/đêm',
-    area: 'Thị xã Bình Minh, Vĩnh Long',
-    desc: 'Eco-lodge ven sông Hậu lộng gió, đón khách bằng cano riêng và ngắm hoàng hôn rực rỡ bên bến đò Bình Minh.',
-    perks: ['Bến đón cano riêng', 'Câu cá bờ sông', 'Ngắm hoàng hôn sông Hậu'],
-    coverSrc: '/img/spread/song-nuoc.webp',
+    price: '600.000–1.200.000đ/đêm',
+    area: 'Phường Bình Minh · Vĩnh Long',
+    desc: 'Khu nghỉ ven sông đón khách bằng tàu gỗ, tầm nhìn thẳng ra bến phù sa xanh mát.',
+    coverSrc: '/img/entities/mekong-riverside-homestay.webp',
     to: '/dia-diem/mekong-riverside-homestay',
-    coordinates: "10°05'N · 105°49'E",
   },
   {
-    id: 'ba-linh-homestay',
-    name: 'Ba Linh Homestay Cù Lao',
-    terroir: 'Xanh Cù Lao',
-    badge: 'Không Gian Vườn Cây Xưa',
-    ecoBadge: 'Nông nghiệp hữu cơ tuần hoàn',
-    price: 'Từ 380.000đ/đêm',
-    area: 'Xã An Bình, Long Hồ',
-    desc: 'Nhà vườn truyền thống rợp bóng dừa nước, mâm cơm miệt vườn mẹ nấu và những đêm trăng thanh bình cù lao.',
-    perks: ['Vườn trái cây tự hái', 'Võng ngắm mương liếp', 'Đờn ca tài tử'],
-    coverSrc: '/img/entities/nha-vuon-tu-hien.webp',
-    to: '/dia-diem/ba-linh-homestay',
-    coordinates: "10°16'N · 105°59'E",
+    id: 'nha-dua-cocohome',
+    name: 'Nhà dừa CocoHome',
+    price: '350.000–600.000đ/đêm',
+    area: 'Xã Phú Phụng · Bến Tre (cũ)',
+    desc: 'Kiến trúc dựng hoàn toàn từ thân dừa già, mành tre đan tay và gian bếp ấm ánh đèn dầu.',
+    coverSrc: '/img/entities/nha-dua-cocohome.webp',
+    to: '/dia-diem/nha-dua-cocohome',
   },
 ]
 
-const FOLK_EXPERIENCES: readonly FolkExperience[] = [
-  {
-    title: 'Chèo xuồng ba lá mương liếp',
-    desc: 'Lướt nhẹ tay chèo dưới bóng mát rượi của những rặng bần chua và hàng dừa nước rạch An Bình trong lành.',
-    icon: 'route',
-    tag: 'Cù lao An Bình',
-    coverSrc: '/img/entities/cheo-xuong-ba-la.webp',
-  },
-  {
-    title: 'Dỡ chà & Tát mương bắt cá đồng',
-    desc: 'Mặc bộ bà ba mộc mạc, cùng người dân be bờ tát mương bắt cá lóc, cá trê rồi nướng trui rơm ngay tại vườn.',
-    icon: 'flame',
-    tag: 'KDL Vinh Sang',
-    coverSrc: '/img/entities/khu-du-lich-sinh-thai-miet-vuon-vinh-sang.webp',
-  },
-  {
-    title: 'Đêm Đờn ca tài tử Nam Bộ',
-    desc: 'Thưởng thức hòa tấu đàn kìm, đàn tranh và những bài bản ca tài tử mượt mà bên bến sông Cổ Chiên trăng thanh.',
-    icon: 'moon',
-    tag: 'Di sản sông Cổ Chiên',
-    coverSrc: '/img/entities/nha-gom-tu-buoi.webp',
-  },
-]
+const leadStay = CURATED_HOMESTAYS[0]!
+const companionStays = CURATED_HOMESTAYS.slice(1)
 
 function onImgFallback(e: Event) {
   const img = e.target as HTMLImageElement
@@ -239,7 +162,8 @@ function onImgFallback(e: Event) {
   max-width: var(--maxw);
   margin-inline: auto;
   padding-inline: var(--space-5);
-  padding-block: clamp(var(--space-fib-4), 6vw, var(--space-fib-5));
+  padding-block: clamp(var(--space-8), 5vw, var(--space-12));
+  border-top: 1px solid var(--color-border);
 }
 
 .home-riverside-stays__eyebrow {
@@ -254,49 +178,42 @@ function onImgFallback(e: Event) {
   margin-block-end: var(--space-2);
 }
 
-.home-riverside-stays__stays-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-fib-4);
-  margin-block-start: var(--space-fib-4);
-}
-
-@media (min-width: 960px) {
-  /* Asymmetric Panorama + Twin Portrait Architectural Row (prevents orphan 3rd card) */
-  .home-riverside-stays__stays-grid {
-    grid-template-columns: minmax(0, 1.38fr) minmax(0, 0.81fr) minmax(0, 0.81fr);
-    align-items: stretch;
-  }
-
-  .home-stay-card--lead {
-    grid-column: span 1;
-    min-height: 500px;
-  }
-}
-
-/* Full-Bleed Photographic Lookbook Card (100% photo visual area) */
+/* Lookbook Lead Horizontal Split (58/42) */
 .home-stay-card {
-  position: relative;
-  min-height: 480px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  background: var(--color-canvas);
-  border: 1px solid var(--border-liquid-glass, var(--color-border));
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-surface);
   overflow: hidden;
-  box-shadow: var(--shadow-card-ambient);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.25s ease;
+  transition: border-color 0.25s ease;
+}
+
+.home-stay-card--lead {
+  margin-block-start: var(--space-6);
+}
+
+@media (min-width: 860px) {
+  .home-stay-card--lead {
+    display: grid;
+    grid-template-columns: minmax(0, 1.38fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+}
+
+.home-riverside-stays__companions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: var(--space-6);
+  margin-block-start: var(--space-6);
 }
 
 .home-stay-card:hover {
-  transform: translateY(-3px);
-  border-color: color-mix(in srgb, var(--mangthit-600) 45%, var(--color-border));
-  box-shadow: 0 10px 24px rgba(var(--black-rgb), 0.16);
+  border-color: color-mix(in srgb, var(--color-brand) 45%, var(--color-border));
 }
 
 .home-stay-card:active {
-  transform: scale(0.98);
+  transform: scale(0.99);
 }
 
 .home-stay-card:focus-visible {
@@ -305,95 +222,44 @@ function onImgFallback(e: Event) {
   border-radius: var(--radius-surface);
 }
 
-/* Full-Bleed Image Fills 100% of Card */
+.home-stay-card__media {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--color-surface-subtle);
+}
+
+.home-stay-card--lead .home-stay-card__media {
+  height: 100%;
+}
+
 .home-stay-card__img {
-  position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
-  aspect-ratio: 16 / 9;
   object-fit: cover;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 0;
+  display: block;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .home-stay-card:hover .home-stay-card__img {
-  transform: scale(1.04);
+  transform: scale(1.03);
 }
 
-/* Gradient Scrim Overlay */
-.home-stay-card__scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(var(--black-rgb), 0.18) 0%,
-    transparent 28%,
-    rgba(var(--black-rgb), 0.35) 58%,
-    rgba(var(--black-rgb), 0.72) 78%,
-    rgba(var(--black-rgb), 0.88) 100%
-  );
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* Floating Top Badge */
-.home-stay-card__top {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-}
-
-.home-stay-card__top-left {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.home-stay-card__terroir,
-.home-stay-card__badge,
-.home-stay-card__eco-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  background: rgba(var(--black-rgb), 0.86);
-  color: var(--alluvial-gold);
-  border: 1px solid var(--border-liquid-glass);
-  border-radius: var(--radius-pill, 9999px);
-  box-shadow: var(--shadow-card-ambient);
-  font-size: var(--text-2xs);
-  font-weight: var(--weight-bold);
-  line-height: 1.35;
-}
-
-.home-stay-card__badge {
-  color: var(--surface-white); /* WCAG 2.2 AAA >= 11:1 compliant */
-}
-
-.home-stay-card__eco-badge {
-  gap: 4px;
-}
-
-.home-stay-card__eco-badge .line-icon {
-  color: var(--alluvial-gold);
-  font-size: var(--text-2xs);
-}
-
-/* Bottom Content Overlay (<= 25% card height) */
-.home-stay-card__overlay {
-  position: relative;
-  z-index: 2;
+.home-stay-card__body {
   padding: var(--space-5);
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
-  gap: var(--space-2h);
-  color: var(--surface-white);
+  gap: var(--space-2);
   min-width: 0;
+}
+
+@media (min-width: 860px) {
+  .home-stay-card--lead .home-stay-card__body {
+    padding: clamp(var(--space-6), 4vw, var(--space-8));
+    justify-content: center;
+  }
 }
 
 .home-stay-card__meta {
@@ -409,76 +275,75 @@ function onImgFallback(e: Event) {
 .home-stay-card__area {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: var(--surface-white);
+  gap: var(--space-1);
+  color: var(--color-text-muted);
   font-weight: var(--weight-bold);
-  min-width: 0;
-  flex: 1 1 auto;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
 }
 
 .home-stay-card__area .line-icon {
-  color: var(--surface-white);
-}
-
-.home-stay-card__coords {
-  display: none !important;
+  color: var(--color-brand);
 }
 
 .home-stay-card__price {
   font-variant-numeric: tabular-nums;
   font-size: var(--text-xs);
-  color: var(--alluvial-gold);
+  color: var(--color-brand);
   font-weight: var(--weight-bold);
-  flex-shrink: 0;
   white-space: nowrap;
 }
 
 .home-stay-card__title {
   margin: 0;
   font-family: var(--font-editorial);
-  font-size: var(--text-base);
-  line-height: 1.35;
-  text-wrap: pretty;
+  font-size: var(--text-xl);
+  line-height: 1.28;
+  text-wrap: balance;
   overflow-wrap: break-word;
-  min-width: 0;
+}
+
+.home-stay-card--lead .home-stay-card__title {
+  font-size: clamp(var(--text-xl), 2.5vw, var(--text-2xl));
 }
 
 .home-stay-card__title a {
-  color: var(--surface-white);
+  color: var(--color-text);
   text-decoration: none;
-  text-shadow: 0 1px 3px rgba(var(--black-rgb), 0.5);
-  transition: opacity 0.2s ease;
-  display: inline-block;
-  max-width: 100%;
+  transition: color 0.2s ease;
 }
 
 .home-stay-card__title a:hover {
-  opacity: 0.85;
+  color: var(--color-action);
+}
+
+.home-stay-card__title a:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
 }
 
 .home-stay-card__desc {
   margin: 0;
-  font-size: var(--text-xs);
-  color: var(--surface-white);
-  opacity: 0.9;
-  line-height: 1.45;
-  text-shadow: 0 1px 2px rgba(var(--black-rgb), 0.4);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-wrap: pretty;
-  min-width: 0;
 }
 
 .home-stay-card__action {
   margin-top: auto;
-  padding-top: var(--space-2);
+  padding-top: var(--space-3);
 }
 
 .home-stay-card__action .btn {
-  width: 100%;
+  width: fit-content;
   min-height: 44px;
+  padding: var(--space-2) var(--space-4);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -487,14 +352,14 @@ function onImgFallback(e: Event) {
   font-weight: var(--weight-semibold);
   border-radius: var(--radius-control);
   text-decoration: none;
-  background: var(--surface-white);
-  color: var(--mekong-ink);
-  border: 1px solid transparent;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  background: var(--color-action-surface);
+  color: var(--color-action);
+  border: 1px solid var(--color-action-border);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
 }
 
 .home-stay-card__action .btn:hover {
-  opacity: 0.95;
+  background: var(--color-action-surface-hover);
 }
 
 .home-stay-card__action .btn .line-icon:last-child {
@@ -515,161 +380,11 @@ function onImgFallback(e: Event) {
   outline-offset: 2px;
 }
 
-/* Folk Experiences Strip — Editorial Hairline Ledger (no nested card-in-card) */
-.home-riverside-stays__experiences {
-  margin-block-start: var(--space-fib-5);
-  padding-block-start: var(--space-5);
-  border-top: 1px solid var(--border-liquid-glass, var(--color-border));
-}
-
-.home-riverside-stays__exp-header {
-  margin-block-end: var(--space-4);
-}
-
-.home-riverside-stays__exp-title {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin: 0;
-  font-family: var(--font-editorial);
-  font-size: var(--text-base);
-  line-height: 1.3;
-  text-wrap: balance;
-  color: var(--color-brand);
-}
-
-.home-riverside-stays__exp-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-  gap: var(--space-6);
-  counter-reset: folk-exp;
-}
-
-.home-exp-card {
-  counter-increment: folk-exp;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-surface, 12px);
-  box-shadow: 0 4px 16px -4px rgba(var(--black-rgb), 0.04);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.home-exp-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--color-material-river);
-  box-shadow: 0 8px 24px -6px rgba(var(--black-rgb), 0.08);
-}
-
-.home-exp-card:active {
-  transform: scale(0.98);
-}
-
-.home-exp-card__media {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--radius-control, 8px);
-  aspect-ratio: 16 / 10;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-subtle);
-}
-
-.home-exp-card__img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  display: block;
-}
-
-.home-exp-card:hover .home-exp-card__img {
-  transform: scale(1.05);
-}
-
-.home-exp-card__tag {
-  position: absolute;
-  top: var(--space-2);
-  left: var(--space-2);
-  font-family: var(--font-sans);
-  font-size: var(--text-2xs);
-  font-weight: var(--weight-bold);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-caps);
-  color: var(--color-text);
-  background: rgba(var(--white-rgb), 0.88);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 0.15rem var(--space-2);
-  border-radius: var(--radius-control, 4px);
-  box-shadow: 0 2px 6px rgba(var(--black-rgb), 0.08);
-}
-
-:root.dark .home-exp-card__tag {
-  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
-}
-
-.home-exp-card__header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-top: var(--space-1);
-}
-
-.home-exp-card__header::before {
-  content: counter(folk-exp, decimal-leading-zero);
-  font-family: var(--font-editorial);
-  font-style: italic;
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  color: var(--color-material-river);
-}
-
-.home-exp-card__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: auto;
-  height: auto;
-  flex-shrink: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--color-material-river);
-  font-size: 1.15rem;
-  margin-block-start: 2px;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
-}
-
-.home-exp-card:hover .home-exp-card__icon {
-  transform: scale(1.08);
-  color: var(--color-brand);
-}
-
-.home-exp-card__content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.home-exp-card__title {
-  margin: 0;
-  font-family: var(--font-editorial);
-  font-size: clamp(1.04rem, 1.3vw, 1.18rem);
-  font-weight: var(--weight-semibold);
-  color: var(--color-text);
-  line-height: 1.3;
-  text-wrap: balance;
-  overflow-wrap: break-word;
-}
-
-.home-exp-card__desc {
-  margin: 0;
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  line-height: 1.5;
-  text-wrap: pretty;
-  overflow-wrap: break-word;
+@media (prefers-reduced-motion: reduce) {
+  .home-stay-card,
+  .home-stay-card__img,
+  .home-stay-card__action .btn .line-icon:last-child {
+    transition: none;
+  }
 }
 </style>

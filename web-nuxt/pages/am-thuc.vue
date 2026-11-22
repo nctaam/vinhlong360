@@ -7,75 +7,25 @@
       <div class="wake-hero-inner">
         <p class="wake-hero-eyebrow">TỈNH VĨNH LONG · ẨM THỰC BẢN ĐỊA &amp; ĐẶC SẢN MIỆT VƯỜN</p>
         <h1 class="wake-hero-title">Ẩm thực sông nước Cửu Long</h1>
-        <p class="wake-hero-sub">Cẩm nang 120 món ngon và địa chỉ ẩm thực chọn lọc — từ bún nước lèo, bánh xèo vịt xiêm đến lẩu cá linh bông điên điển mùa nước nổi.</p>
+        <p class="wake-hero-sub">Cẩm nang món ngon và đặc sản chọn lọc toàn tỉnh Vĩnh Long — từ bún nước lèo, bánh xèo vịt xiêm đến canh chua cá linh bông điên điển mùa nước nổi.</p>
       </div>
       <div v-if="allEntities.length" class="wake-hero-stats">
         <div class="stat-item">
           <CountUp :value="allEntities.length" class="stat-num" />
-          <span class="stat-label">món ẩm thực</span>
+          <span class="stat-label">món &amp; đặc sản</span>
         </div>
-        <div v-for="a in areaCounts" :key="a.key" class="stat-item">
-          <CountUp :value="a.count" class="stat-num" />
-          <span class="stat-label">{{ a.name }}</span>
+        <div v-if="dishCount" class="stat-item">
+          <CountUp :value="dishCount" class="stat-num" />
+          <span class="stat-label">món ăn bản địa</span>
+        </div>
+        <div v-if="productCount" class="stat-item">
+          <CountUp :value="productCount" class="stat-num" />
+          <span class="stat-label">đặc sản làm quà</span>
         </div>
       </div>
     </section>
 
-    <!-- Signature Dishes Triad -->
-    <section class="block band reveal">
-      <div class="sediment-head">
-        <h2>Ba phong vị ẩm thực sông nước</h2>
-      </div>
-      <p class="section-desc">Hương vị hình thành từ sự hòa quyện giữa văn hóa ẩm thực ba dân tộc Kinh - Khmer - Hoa và chu kỳ con nước Cửu Long.</p>
-      <div class="cuisine-triad">
-        <article class="cuisine-tile">
-          <div class="cuisine-tile-media">
-            <img src="/img/cat-am-thuc.webp" alt="Bún nước lèo và bún suông đặc sản Trà Vinh - Vĩnh Long" loading="lazy" decoding="async" width="360" height="225" />
-          </div>
-          <div class="cuisine-tile-icon" aria-hidden="true"><IconLine name="bowl" /></div>
-          <p class="cuisine-tile-kicker">Món nước đậm vị</p>
-          <h3 class="cuisine-tile-title">Bún nước lèo & Bún suông</h3>
-          <p class="cuisine-tile-body">Hương vị giao thoa Kinh - Khmer độc đáo: nước lèo nấu từ mắm bò hóc cùng củ ngải bún thanh mát, ăn kèm chả cá thát lát, heo quay da giòn và rau chuối bào non.</p>
-          <p class="cuisine-tile-tag">Đặc sản Trà Vinh & Vĩnh Long</p>
-        </article>
-        <article class="cuisine-tile">
-          <div class="cuisine-tile-media">
-            <img src="/img/spread/song-nuoc-640.webp" alt="Mùa nước nổi cá linh bông điên điển sông Cửu Long" loading="lazy" decoding="async" width="360" height="225" />
-          </div>
-          <div class="cuisine-tile-icon" aria-hidden="true"><IconLine name="sun" /></div>
-          <p class="cuisine-tile-kicker">Mùa nước nổi</p>
-          <h3 class="cuisine-tile-title">Canh chua cá linh & Bông điên điển</h3>
-          <p class="cuisine-tile-body">Tháng 8 đến tháng 11 âm lịch, cá linh non đầu mùa xương mềm béo ngậy nấu chua me dốt cùng bông điên điển vàng rực ven sông, gợi trọn hồn cốt đồng bằng.</p>
-          <p class="cuisine-tile-tag">Theo con nước tháng 8 - 11</p>
-        </article>
-        <article class="cuisine-tile">
-          <div class="cuisine-tile-media">
-            <img src="/img/spread/cu-lao-an-binh-640.webp" alt="Bánh xèo vịt xiêm củ hũ dừa miệt vườn cù lao" loading="lazy" decoding="async" width="360" height="225" />
-          </div>
-          <div class="cuisine-tile-icon" aria-hidden="true"><IconLine name="gift" /></div>
-          <p class="cuisine-tile-kicker">Miệt vườn cù lao</p>
-          <h3 class="cuisine-tile-title">Bánh xèo vịt xiêm củ hũ dừa</h3>
-          <p class="cuisine-tile-body">Vỏ bánh giòn tan đúc từ bột gạo ngâm cối đá hòa nước cốt dừa béo bùi, nhân vịt xiêm bằm xào củ hũ dừa ngọt thanh, cuộn cùng hơn 20 loại rau rừng vườn nhà.</p>
-          <p class="cuisine-tile-tag">Trải nghiệm nhà vườn Cù lao</p>
-        </article>
-      </div>
-    </section>
-
-    <!-- Editorial Prose -->
-    <section v-once class="page-article reveal">
-      <div class="sediment-head"><h2>Hồn cốt ẩm thực miệt vườn sông nước</h2></div>
-      <div class="editorial-body drop-cap">
-        <p>Ẩm thực châu thổ Cửu Long tại tỉnh Vĩnh Long thống nhất (với 124 xã, phường sau sáp nhập) là khúc biến tấu hài hòa giữa sản vật thiên nhiên hào sảng và bàn tay cần lao của cư dân ba dân tộc Kinh, Khmer, Hoa. Mỗi món ăn gắn liền với mùa vụ con nước: mùa nước nổi rộn ràng với mớ cá linh non, bông điên điển nở vàng bờ kinh; mùa gặt thơm lừng cá lóc nướng trui rơm rạ; và mùa nắng êm đềm với những chảo bánh xèo vịt xiêm củ hũ dừa giòn tan bên rặng dừa xanh mát.</p>
-      </div>
-      <CatalogInterstitial
-        fact="Ẩm thực Mekong Vĩnh Long hội tụ hơn 300 món ngon và đặc sản truyền thống, kết hợp gia vị tự nhiên độc bản như ngải bún, mắm đồng và củ hũ dừa, được ban biên tập tổng hợp và cập nhật liên tục."
-        icon-name="award"
-        variant="warm"
-        :links="[{ to: '/san-pham', label: 'Xem sản vật OCOP' }, { to: '/theo-mua', label: 'Ẩm thực theo mùa' }]"
-      />
-    </section>
-
-    <!-- Catalog Results Block -->
+    <!-- Catalog Results Block (Visual-first discovery directly under Hero) -->
     <section ref="gridSection" class="catalog-results block reveal" data-catalog-section="results" aria-label="Duyệt danh bạ ẩm thực">
       <div class="controls">
         <!-- Search row -->
@@ -98,8 +48,6 @@
             <IconLine name="x" aria-hidden="true" />
           </button>
         </div>
-
-
 
         <!-- Type filter pills (tactile pills >= 44x44px) -->
         <div class="chip-row wrap-mobile" role="group" aria-label="Lọc theo phân loại">
@@ -199,6 +147,60 @@
       </button>
     </section>
 
+    <!-- Signature Dishes Triad (Editorial context below results) -->
+    <section class="block band reveal">
+      <div class="sediment-head">
+        <h2>Ba phong vị ẩm thực sông nước</h2>
+      </div>
+      <p class="section-desc">Hương vị hình thành từ sự hòa quyện giữa văn hóa ẩm thực ba dân tộc Kinh - Khmer - Hoa và chu kỳ con nước Cửu Long.</p>
+      <div class="cuisine-triad">
+        <article class="cuisine-tile">
+          <div class="cuisine-tile-media">
+            <img src="/img/cat-am-thuc.webp" alt="Bún nước lèo và bún suông đặc sản Trà Vinh - Vĩnh Long" loading="lazy" decoding="async" width="360" height="225" />
+          </div>
+          <div class="cuisine-tile-icon" aria-hidden="true"><IconLine name="bowl" /></div>
+          <p class="cuisine-tile-kicker">Món nước đậm vị</p>
+          <h3 class="cuisine-tile-title">Bún nước lèo & Bún suông</h3>
+          <p class="cuisine-tile-body">Hương vị giao thoa Kinh - Khmer độc đáo: nước lèo nấu từ mắm bò hóc cùng củ ngải bún thanh mát, ăn kèm chả cá thát lát, heo quay da giòn và rau chuối bào non.</p>
+          <p class="cuisine-tile-tag">Đặc sản Trà Vinh & Vĩnh Long</p>
+        </article>
+        <article class="cuisine-tile">
+          <div class="cuisine-tile-media">
+            <img src="/img/spread/song-nuoc-640.webp" alt="Mùa nước nổi cá linh bông điên điển sông Cửu Long" loading="lazy" decoding="async" width="360" height="225" />
+          </div>
+          <div class="cuisine-tile-icon" aria-hidden="true"><IconLine name="sun" /></div>
+          <p class="cuisine-tile-kicker">Mùa nước nổi</p>
+          <h3 class="cuisine-tile-title">Canh chua cá linh & Bông điên điển</h3>
+          <p class="cuisine-tile-body">Tháng 8 đến tháng 11 âm lịch, cá linh non đầu mùa xương mềm béo ngậy nấu chua me dốt cùng bông điên điển vàng rực ven sông, gợi trọn hồn cốt đồng bằng.</p>
+          <p class="cuisine-tile-tag">Theo con nước tháng 8 - 11</p>
+        </article>
+        <article class="cuisine-tile">
+          <div class="cuisine-tile-media">
+            <img src="/img/spread/cu-lao-an-binh-640.webp" alt="Bánh xèo vịt xiêm củ hũ dừa miệt vườn cù lao" loading="lazy" decoding="async" width="360" height="225" />
+          </div>
+          <div class="cuisine-tile-icon" aria-hidden="true"><IconLine name="gift" /></div>
+          <p class="cuisine-tile-kicker">Miệt vườn cù lao</p>
+          <h3 class="cuisine-tile-title">Bánh xèo vịt xiêm củ hũ dừa</h3>
+          <p class="cuisine-tile-body">Vỏ bánh giòn tan đúc từ bột gạo ngâm cối đá hòa nước cốt dừa béo bùi, nhân vịt xiêm bằm xào củ hũ dừa ngọt thanh, cuộn cùng hơn 20 loại rau rừng vườn nhà.</p>
+          <p class="cuisine-tile-tag">Trải nghiệm nhà vườn Cù lao</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Editorial Prose -->
+    <section v-once class="page-article reveal">
+      <div class="sediment-head"><h2>Hồn cốt ẩm thực miệt vườn sông nước</h2></div>
+      <div class="editorial-body drop-cap">
+        <p>Ẩm thực châu thổ Cửu Long tại tỉnh Vĩnh Long thống nhất (với 124 xã, phường sau sáp nhập) là khúc biến tấu hài hòa giữa sản vật thiên nhiên hào sảng và bàn tay cần lao của cư dân ba dân tộc Kinh, Khmer, Hoa. Mỗi món ăn gắn liền với mùa vụ con nước: mùa nước nổi rộn ràng với mớ cá linh non, bông điên điển nở vàng bờ kinh; mùa gặt thơm lừng cá lóc nướng trui rơm rạ; và mùa nắng êm đềm với những chảo bánh xèo vịt xiêm củ hũ dừa giòn tan bên rặng dừa xanh mát.</p>
+      </div>
+      <CatalogInterstitial
+        fact="Ẩm thực Mekong Vĩnh Long hội tụ hơn 300 món ngon và đặc sản truyền thống, kết hợp gia vị tự nhiên độc bản như ngải bún, mắm đồng và củ hũ dừa, được ban biên tập tổng hợp và cập nhật liên tục."
+        icon-name="award"
+        variant="warm"
+        :links="[{ to: '/san-pham', label: 'Xem sản vật OCOP' }, { to: '/theo-mua', label: 'Ẩm thực theo mùa' }]"
+      />
+    </section>
+
     <!-- AEO Plaque — Culinary Guidance (placed below main dish grid for visual-first discovery) -->
     <CatalogAeoPlaque
       title="Chỉ dẫn Ẩm thực Bản địa Vĩnh Long — Hương vị sông Cửu Long"
@@ -221,7 +223,7 @@
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
-import { AREA_META, CURRENT_AREA_META } from '~/composables/useConstants'
+import { AREA_META } from '~/composables/useConstants'
 
 useReveal()
 
@@ -303,13 +305,8 @@ const allEntities = computed<Entity[]>(() => {
   return data.value?.entities || []
 })
 
-const areaCounts = computed(() => {
-  return Object.entries(CURRENT_AREA_META).map(([key, meta]) => ({
-    key,
-    name: meta.name,
-    count: allEntities.value.filter((e: Entity) => entityMatchesAreaScope(e, key)).length,
-  }))
-})
+const dishCount = computed(() => allEntities.value.filter((e: Entity) => e.type === 'dish').length)
+const productCount = computed(() => allEntities.value.filter((e: Entity) => e.type === 'product').length)
 
 const filtered = computed(() => {
   let list = allEntities.value

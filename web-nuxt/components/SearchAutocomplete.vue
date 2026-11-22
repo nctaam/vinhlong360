@@ -158,7 +158,7 @@ import type { Entity } from '~/types'
 import { TYPE_META } from '~/composables/useConstants'
 
 withDefaults(defineProps<{ placeholder?: string }>(), {
-  placeholder: 'Tìm đặc sản, trải nghiệm…',
+  placeholder: 'Tìm điểm đến, món ngon…',
 })
 
 const router = useRouter()

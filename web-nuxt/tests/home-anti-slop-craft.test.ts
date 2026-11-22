@@ -30,8 +30,8 @@ describe('Homepage Anti-AI-Slop Craftsmanship & Terroir Depth', () => {
     expect(homeCss).toContain('cubic-bezier(0.16, 1, 0.3, 1)')
   })
 
-  it('incorporates subtle radar pulse indicator for nearby discovery action', () => {
-    expect(homeCss).toContain('keyframes pulse')
+  it('eliminates infinite radar pulse animation gimmick on nearby discovery action', () => {
+    expect(homeCss).not.toContain('animation: pulse')
     expect(homeCss).toContain('.hero-nearby')
   })
 
@@ -59,10 +59,10 @@ describe('Homepage Anti-AI-Slop Craftsmanship & Terroir Depth', () => {
     expect(ocopVue).toMatch(/3\s*sao|4\s*sao|5\s*sao/i)
   })
 
-  it('eradicates AI sparkle icon from heritage stamp in HomeFeatureDossier', () => {
+  it('eradicates decorative heritage stamp pill and sparkles from HomeFeatureDossier', () => {
     const dossierVue = readFileSync(resolve(__dirname, '../components/home/HomeFeatureDossier.vue'), 'utf8')
     expect(dossierVue).not.toContain('name="sparkle"')
-    expect(dossierVue).toMatch(/name="(flame|leaf)"/)
+    expect(dossierVue).not.toContain('home-feature-dossier__stamp')
   })
 
   it('enforces platform-wide eradication of AI sparkles across all Vue files', () => {
