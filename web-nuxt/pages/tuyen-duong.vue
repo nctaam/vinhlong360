@@ -426,7 +426,7 @@ const ROUTE_COVER_MAP: Record<string, string> = {
   'vong-trai-cay-vinh-long': '/img/spread/cu-lao-an-binh-640.webp',
   'lang-nghe-mang-thit': '/img/entities/lo-gach-mang-thit.webp',
   'vong-mua-nuoc-noi': '/img/spread/song-nuoc-640.webp',
-  'chua-khmer-tra-vinh': '/img/entities/chua-ang-angkorajaborey.webp',
+  'chua-khmer-tra-vinh': '/img/entities/chua-ang.webp',
 }
 const ROUTE_AREA_COVER: Record<string, string> = {
   'vinh-long': '/img/area-vinh-long.webp',
@@ -440,7 +440,7 @@ function routeCover(r: RouteDef): string {
   const text = (r.id + ' ' + (r.name || '')).toLowerCase()
   if (text.includes('gốm') || text.includes('mang-thit') || text.includes('làng nghề')) return '/img/entities/lo-gach-mang-thit.webp'
   if (text.includes('cù lao') || text.includes('trái cây') || text.includes('an-binh')) return '/img/spread/cu-lao-an-binh-640.webp'
-  if (text.includes('chùa') || text.includes('khmer')) return '/img/entities/chua-ang-angkorajaborey.webp'
+  if (text.includes('chùa') || text.includes('khmer')) return '/img/entities/chua-ang.webp'
   if (text.includes('sông') || text.includes('nước nổi')) return '/img/spread/song-nuoc-640.webp'
   const areaCover = r.area ? ROUTE_AREA_COVER[r.area] : undefined
   return areaCover || '/img/spread/cu-lao-an-binh-640.webp'

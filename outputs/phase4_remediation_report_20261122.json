@@ -1,0 +1,42 @@
+{
+  "mode": "apply",
+  "backend": "sqlite",
+  "counts": {
+    "before_entities": 1433,
+    "after_entities": 1413,
+    "wave2_merged": 20,
+    "redirects_total": 140,
+    "ledger_addresses_applied": 676,
+    "dossiers_applied": 33,
+    "rural_place_fixes_applied": 102,
+    "mistyped_entities_fixed": 12,
+    "summaries_fixed": 23,
+    "place_self_ids_fixed": 37,
+    "itineraries_updated": 5,
+    "before_relationships": 10222,
+    "after_relationships": 10103
+  },
+  "merge_map": {
+    "banh-xeo-oc-gao-con-phu-da": "banh-xeo-oc-gao-phu-da",
+    "bao-tang-tinh-ben-tre": "bao-tang-ben-tre",
+    "bao-tang-tinh-vinh-long": "bao-tang-vinh-long",
+    "bun-mam-mien-tay": "bun-mam-vinh-long",
+    "buoi-da-xanh-cho-lach": "buoi-da-xanh",
+    "chua-tuyen-linh-mo-cay-nam": "chua-tuyen-linh",
+    "con-thanh-long-mo-cay-nam": "con-thanh-long",
+    "cong-vien-29-tan-quoi": "cong-vien-29",
+    "cu-lao-dai-vung-liem": "cu-lao-dai",
+    "cu-lao-may-tra-on": "cu-lao-may",
+    "di-tich-lich-su-cach-mang-cai-ngang": "khu-di-tich-cach-mang-cai-ngang",
+    "du-lich-sinh-thai-sala": "khu-du-lich-sinh-thai-sala",
+    "khu-du-lich-sinh-thai-con-thanh-long": "con-thanh-long",
+    "khu-du-lich-truong-huy-long-ho": "khu-du-lich-truong-huy",
+    "khu-luu-niem-thu-tuong-chinh-phu-vo-van-kiet": "khu-luu-niem-thu-tuong-vo-van-kiet",
+    "lang-ong-lang-ong-che-nguyen-van-ton": "lang-ong-tien-quan-thong-che-dieu-bat",
+    "mo-va-khu-luu-niem-nha-giao-vo-truong-toan": "mo-va-khu-luu-niem-vo-truong-toan",
+    "nguyen-van-ton-thach-duong": "tuong-quan-nguyen-van-ton",
+    "ruou-phu-le-ba-tri": "ruou-phu-le",
+    "san-chim-vam-ho-ba-tri": "san-chim-vam-ho"
+  },
+  "exempted": []
+}

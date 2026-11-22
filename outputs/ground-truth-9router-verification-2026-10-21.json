@@ -179,15 +179,15 @@
       }
     },
     {
-      "entityId": "san-chim-vam-ho-ba-tri",
+      "entityId": "san-chim-vam-ho",
       "name": "Sân chim Vàm Hồ (Ba Tri)",
       "issueType": "urban_fallback_placeId_error",
       "currentInDataJson": {
         "placeId": "p-ben-tre"
       },
       "verifiedGroundTruth": {
-        "placeId": "xa-tan-xuan",
-        "secondaryPlaceId": "xa-my-chanh-hoa",
+        "placeId": "xa-my-chanh-hoa",
+        "secondaryPlaceId": "xa-tan-xuan",
         "address": "Ven sông Ba Lai, địa bàn giáp ranh xã Tân Mỹ – Mỹ Hòa – Tân Xuân, huyện Ba Tri (nay là xã Tân Xuân & xã Mỹ Chánh Hòa, tỉnh Vĩnh Long)",
         "area_ha": "67,6 ha (khu bảo tồn rừng ngập mặn – chà là – đước đôi) / 89 ha (tổng khu sinh thái)",
         "sources": [
@@ -802,7 +802,7 @@
       ],
       "verifiedGroundTruth": {
         "placeId": "xa-ham-giang",
-        "address": "Ấp Vàm Ray, Xã Hàm Giang, tỉnh Vĩnh Long (xã Hàm Tân, huyện Trà Cú, tỉnh Trà Vinh cũ)",
+        "address": "Ấp Vàm Ray, Xã Hàm Giang, tỉnh Vĩnh Long (trước 07/2025: xã Hàm Tân, Trà Cú)",
         "lat": 9.6795,
         "lng": 106.2718,
         "summary": "Ngôi chùa Phật giáo Nam tông Khmer hơn 600 năm tuổi tại Xã Hàm Giang, nổi bật với kiến trúc Angkor thếp vàng lộng lẫy và tượng Phật Thích Ca nhập Niết bàn dài 54 m.",
@@ -829,7 +829,7 @@
       ],
       "verifiedGroundTruth": {
         "placeId": "xa-my-long",
-        "address": "Ấp Nhứt A, Xã Mỹ Long, tỉnh Vĩnh Long (xã Mỹ Long Bắc, huyện Cầu Ngang, tỉnh Trà Vinh cũ)",
+        "address": "Ấp Nhứt A, Xã Mỹ Long, tỉnh Vĩnh Long (trước 07/2025: xã Mỹ Long Bắc, Cầu Ngang)",
         "lat": 9.8184,
         "lng": 106.4562,
         "summary": "Ngôi cổ tự khởi dựng năm 1871 trên giồng cát Xã Mỹ Long — nơi thành lập Chi bộ Đảng Mỹ Long đầu tiên năm 1930 và là nơi trú ngụ của hàng ngàn cá thể dơi quạ.",
@@ -856,7 +856,7 @@
       ],
       "verifiedGroundTruth": {
         "placeId": "p-tieu-can",
-        "address": "Khóm 5, Phường Tiểu Cần, tỉnh Vĩnh Long (thị trấn Tiểu Cần, huyện Tiểu Cần, tỉnh Trà Vinh cũ)",
+        "address": "Khóm 5, Phường Tiểu Cần, tỉnh Vĩnh Long (trước 07/2025: Tiểu Cần)",
         "lat": 9.8132,
         "lng": 106.1885,
         "summary": "Di tích kiến trúc nghệ thuật cấp tỉnh (2020) khởi dựng năm 1897 tại Phường Tiểu Cần — nổi bật với mái ngói âm dương gắn gốm lưỡng long tranh châu và chạm khắc gỗ tinh xảo.",
@@ -883,7 +883,7 @@
       ],
       "verifiedGroundTruth": {
         "placeId": "xa-cho-lach",
-        "address": "Ấp An Hòa, Xã Chợ Lách, tỉnh Vĩnh Long (xã Long Thới, huyện Chợ Lách, tỉnh Bến Tre cũ)",
+        "address": "Ấp An Hòa, Xã Chợ Lách, tỉnh Vĩnh Long (trước 07/2025: xã Long Thới, Chợ Lách)",
         "phone": "0275 246 6789",
         "lat": 10.2285,
         "lng": 106.1742,
@@ -1027,12 +1027,6 @@
       "basis": "Xã Quới Thiện, huyện Vũng Liêm"
     },
     {
-      "entityId": "ruou-phu-le-ba-tri",
-      "currentPlaceId": "p-ben-tre",
-      "verifiedPlaceId": "xa-tan-xuan",
-      "basis": "Xã Phú Lễ nhập vào xã Tân Xuân (Ba Tri)"
-    },
-    {
       "entityId": "lang-nghe-nau-ruou-phu-le",
       "currentPlaceId": "p-ben-tre",
       "verifiedPlaceId": "xa-tan-xuan",
@@ -1079,12 +1073,6 @@
       "currentPlaceId": "p-phuoc-hau",
       "verifiedPlaceId": "xa-hoa-hiep",
       "basis": "Xã Hòa Thạnh nhập vào xã Hòa Hiệp (Tam Bình)"
-    },
-    {
-      "entityId": "banh-xeo-oc-gao-con-phu-da",
-      "currentPlaceId": "p-ben-tre",
-      "verifiedPlaceId": "xa-phu-phung",
-      "basis": "Cồn Phú Đa thuộc xã Vĩnh Bình, nhập vào xã Phú Phụng (Chợ Lách)"
     },
     {
       "entityId": "khu-du-lich-dai-loc",
@@ -1403,12 +1391,6 @@
       "currentPlaceId": "xa-cau-ngang",
       "verifiedPlaceId": "xa-vinh-kim",
       "basis": "Xã Vinh Kim, Cầu Ngang -> Xã Vinh Kim"
-    },
-    {
-      "entityId": "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao",
-      "currentPlaceId": "xa-long-hoa",
-      "verifiedPlaceId": "xa-hoa-minh",
-      "basis": "Xã Hòa Minh, Châu Thành -> Xã Hòa Minh"
     },
     {
       "entityId": "cho-hoa-tet",
@@ -1913,7 +1895,7 @@
       "entityId": "quan-che-ba-hai-cho-tra-vinh",
       "name": "Quán chè bà Hai - chợ Trà Vinh",
       "currentSummary": "Quán đặt tại Khu chợ trung tâm, đường Trần Phú, phường 3, TP.",
-      "verifiedSummary": "Quán chè truyền thống tại khu chợ trung tâm trên đường Trần Phú, Phường Trà Vinh — nổi tiếng với chè đậu trắng nước cốt dừa và chè bà ba.",
+      "verifiedSummary": "Quán chè truyền thống tại khu chợ trung tâm trên đường Trần Phú, Phường Trà Vinh — chuyên phục vụ chè đậu trắng nước cốt dừa và chè bà ba.",
       "verifiedDescription": "Quán chè Bà Hai tại khu chợ trung tâm trên đường Trần Phú, Phường Trà Vinh, tỉnh Vĩnh Long (Phường 3, TP. Trà Vinh cũ), chuyên phục vụ chè đậu trắng nước cốt dừa và chè bà ba truyền thống."
     },
     {

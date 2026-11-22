@@ -80,7 +80,7 @@ const titleId = `catalog-aeo-title-${instanceId}`
 
 const AEO_FALLBACK_COVERS: Record<string, string[]> = {
   amber: ['/img/cat-am-thuc.webp', '/img/cat-ocop.webp', '/img/spread/cu-lao-an-binh-640.webp'],
-  clay: ['/img/entities/lo-gach-mang-thit.webp', '/img/area-vinh-long.webp', '/img/entities/van-thanh-mieu-vinh-long.webp'],
+  clay: ['/img/entities/lo-gach-mang-thit.webp', '/img/area-vinh-long.webp', '/img/entities/van-thanh-mieu.webp'],
   leaf: ['/img/spread/cu-lao-an-binh-640.webp', '/img/area-ben-tre.webp', '/img/cat-du-lich.webp'],
   river: ['/img/spread/song-nuoc-640.webp', '/img/area-tra-vinh.webp', '/img/cat-lich-trinh.webp'],
   neutral: ['/img/area-vinh-long.webp', '/img/area-ben-tre.webp', '/img/area-tra-vinh.webp'],

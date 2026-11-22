@@ -200,7 +200,7 @@ const interestTintRgb = computed(() => INTEREST_TINT[interest] || 'var(--color-b
 const INTEREST_COVER: Record<string, string> = {
   'am-thuc': '/img/cat-am-thuc.webp',
   'lang-nghe': '/img/entities/lo-gach-mang-thit.webp',
-  'van-hoa': '/img/entities/chua-ang-angkorajaborey.webp',
+  'van-hoa': '/img/entities/chua-ang.webp',
   'thien-nhien': '/img/spread/cu-lao-an-binh-640.webp',
   'mua-sam': '/img/cat-ocop.webp',
 }

@@ -738,7 +738,7 @@ const PLANNER_TYPE_THUMBS: Record<string, string> = {
   product: '/img/cat-ocop.webp',
   craft_village: '/img/entities/lo-gach-mang-thit.webp',
   event: '/img/cat-le-hoi.webp',
-  history: '/img/entities/van-thanh-mieu-vinh-long.webp',
+  history: '/img/entities/van-thanh-mieu.webp',
   nature: '/img/spread/song-nuoc-640.webp',
   experience: '/img/spread/cu-lao-an-binh-640.webp',
 }

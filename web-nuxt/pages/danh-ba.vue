@@ -960,25 +960,25 @@ const GAZETTEER_THUMB_MAP: Record<string, string> = {
   'craft-banhtrang-lucsi': '/img/entities/banh-trang-cu-lao-may-lang-nghe-banh-trang.webp',
   'craft-tauhuky-myhoa': '/img/entities/lang-nghe-tau-hu-ky-my-hoa.webp',
   'craft-bakhanh-food': '/img/entities/bun-tuoi-sau-thanh.webp',
-  'dining-tan-tan-vinhlong': '/img/entities/quan-tan-tan.webp',
+  'dining-tan-tan-vinhlong': '/img/entities/tau-nha-hang-sai-gon-vinh-long.webp',
   'dining-phuong-thuy-vinhlong': '/img/entities/nha-hang-phuong-thuy.webp',
   'dining-bun-nuoc-leo-huong-tra': '/img/entities/bun-nuoc-leo-huong-tra-tra-vinh.webp',
   'dining-pho-hong-cuc-bentre': '/img/entities/quan-pho-sang-duong-tran-quoc-tuan-ben-tre.webp',
   'heritage-cai-ngang-tambinh': '/img/entities/khu-di-tich-cach-mang-cai-ngang.webp',
-  'heritage-vo-van-kiet-vungliem': '/img/entities/khu-luu-niem-thu-tuong-chinh-phu-vo-van-kiet.webp',
+  'heritage-vo-van-kiet-vungliem': '/img/entities/khu-luu-niem-thu-tuong-vo-van-kiet.webp',
   'heritage-phat-ngoc-xa-loi': '/img/entities/chua-phat-ngoc-xa-loi.webp',
-  'heritage-nguyen-van-ton-traon': '/img/entities/lang-ong-lang-ong-che-nguyen-van-ton.webp',
+  'heritage-nguyen-van-ton-traon': '/img/entities/lang-ong-tien-quan-thong-che-dieu-bat.webp',
   'heritage-bao-tang-ben-tre': '/img/entities/bao-tang-ben-tre.webp',
-  'dining-lau-tai-co-vinhlong': '/img/entities/quan-lau-tai-co.webp',
+  'dining-lau-tai-co-vinhlong': '/img/entities/lau-tai-co.webp',
   'heritage-tran-dai-nghia-tambinh': '/img/entities/khu-luu-niem-tran-dai-nghia.webp',
-  'heritage-dong-khoi-bentre': '/img/entities/khu-di-tich-dong-khoi-ben-tre.webp',
+  'heritage-dong-khoi-bentre': '/img/entities/khu-di-tich-dong-khoi.webp',
   'craft-banhphong-sondoc': '/img/entities/lang-nghe-banh-phong-son-doc.webp',
   'craft-banhtet-tracuon-haily': '/img/entities/banh-tet-tra-cuon.webp',
   'heritage-chua-tien-chau': '/img/entities/chua-tien-chau-tien-chau-tu.webp',
   'heritage-chua-phuoc-hau-tambinh': '/img/entities/chua-phuoc-hau-ngai-tu.webp',
   'heritage-con-phung-bentre': '/img/entities/con-phung-con-ong-dao-dua.webp',
-  'heritage-chua-hang-tra-vinh': '/img/entities/chua-hang.webp',
-  'heritage-van-thanh-mieu-vinhlong': '/img/entities/van-thanh-mieu-vinh-long.webp',
+  'heritage-chua-hang-tra-vinh': '/img/entities/chua-hang-kompong-chray.webp',
+  'heritage-van-thanh-mieu-vinhlong': '/img/entities/van-thanh-mieu.webp',
   'orchard-cocohome-anbinh': '/img/entities/nha-dua-cocohome.webp',
   'orchard-vinhsang-ecotour': '/img/entities/khu-du-lich-vinh-sang.webp',
   'orchard-buoinamroi-myhoa': '/img/entities/buoi-nam-roi-my-hoa.webp',
@@ -994,9 +994,9 @@ const GAZETTEER_THUMB_MAP: Record<string, string> = {
 function gazetteerThumb(id: string): string {
   if (GAZETTEER_THUMB_MAP[id]) return GAZETTEER_THUMB_MAP[id]
   if (id.includes('mangthit')) return '/img/entities/lo-gach-mang-thit.webp'
-  if (id.includes('van-thanh-mieu')) return '/img/entities/van-thanh-mieu-vinh-long.webp'
+  if (id.includes('van-thanh-mieu')) return '/img/entities/van-thanh-mieu.webp'
   if (id.startsWith('dining-')) return '/img/cat-am-thuc.webp'
-  if (id.startsWith('heritage-')) return '/img/entities/van-thanh-mieu-vinh-long.webp'
+  if (id.startsWith('heritage-')) return '/img/entities/van-thanh-mieu.webp'
   if (id.startsWith('orchard-')) return '/img/spread/cu-lao-an-binh-640.webp'
   if (id.startsWith('pier-')) return '/img/spread/song-nuoc-640.webp'
   return '/img/entities/lo-gach-mang-thit.webp'

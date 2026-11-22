@@ -63,7 +63,7 @@ const SPOTLIGHT_CATEGORY_IMAGES: Record<string, string> = {
   accommodation: '/img/cat-luu-tru.webp',
   event: '/img/cat-le-hoi.webp',
   nature: '/img/spread/song-nuoc-640.webp',
-  history: '/img/entities/van-thanh-mieu-vinh-long.webp',
+  history: '/img/entities/van-thanh-mieu.webp',
 }
 const bg = computed(() => {
   if (!pick.value || !meta.value) return ''

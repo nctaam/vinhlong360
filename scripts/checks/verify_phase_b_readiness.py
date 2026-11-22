@@ -78,8 +78,8 @@ def _apply_rural_correction(
     if verified_pid not in places_by_id:
         return [f"Rural correction {eid} target placeId not in places: {verified_pid}"]
     orig_pid = orig_by_id[eid].get("placeId")
-    if orig_pid != current_pid:
-        return [f"Rural correction {eid} currentPlaceId mismatch: expected {current_pid}, got {orig_pid}"]
+    if orig_pid not in (current_pid, verified_pid):
+        return [f"Rural correction {eid} currentPlaceId mismatch: expected {current_pid} or {verified_pid}, got {orig_pid}"]
     entities_by_id[eid]["placeId"] = verified_pid
     return []
 
@@ -92,9 +92,10 @@ def _apply_mistyped_entity(
     eid = item.get("entityId", "<missing>")
     if eid not in entities_by_id:
         return [f"Mistyped entityId not found: {eid}"]
-    if orig_by_id[eid].get("type") != item.get("currentType"):
+    verified_type = item.get("verifiedType")
+    if orig_by_id[eid].get("type") not in (item.get("currentType"), verified_type):
         return [f"Mistyped entity {eid} currentType mismatch"]
-    entities_by_id[eid]["type"] = item.get("verifiedType")
+    entities_by_id[eid]["type"] = verified_type
     return []
 
 
@@ -106,11 +107,11 @@ def _apply_truncated_summary(
     eid = item.get("entityId", "<missing>")
     if eid not in entities_by_id:
         return [f"Truncated summary entityId not found: {eid}"]
-    if orig_by_id[eid].get("summary") != item.get("currentSummary"):
-        return [f"Truncated summary {eid} currentSummary mismatch"]
     verified_summary = str(item.get("verifiedSummary") or "").strip()
     if not verified_summary:
         return [f"Truncated summary {eid} verifiedSummary is empty"]
+    if orig_by_id[eid].get("summary") not in (item.get("currentSummary"), verified_summary):
+        return [f"Truncated summary {eid} currentSummary mismatch"]
     entities_by_id[eid]["summary"] = verified_summary
     return []
 
@@ -123,11 +124,11 @@ def _apply_place_self_id(
     eid = item.get("entityId", "<missing>")
     if eid not in entities_by_id:
         return [f"Place self-ID entityId not found: {eid}"]
-    if orig_by_id[eid].get("placeId") != item.get("currentPlaceId"):
-        return [f"Place self-ID {eid} currentPlaceId mismatch"]
     verified_pid = item.get("verifiedPlaceId")
     if verified_pid != eid:
         return [f"Place self-ID {eid} verifiedPlaceId must equal entityId, got {verified_pid}"]
+    if orig_by_id[eid].get("placeId") not in (item.get("currentPlaceId"), verified_pid):
+        return [f"Place self-ID {eid} currentPlaceId mismatch"]
     entities_by_id[eid]["placeId"] = verified_pid
     return []
 
