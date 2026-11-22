@@ -904,13 +904,19 @@ def _remap_pg_references(cur, merge_pairs: list[tuple[str, str]]) -> None:
         cur.execute("UPDATE correction_items SET entity_id = %s WHERE entity_id = %s", (dst, src))
         cur.execute("UPDATE follows SET target_id = %s WHERE target_type = 'entity' AND target_id = %s", (dst, src))
         cur.execute("UPDATE featured_entities SET entity_id = %s WHERE entity_id = %s", (dst, src))
-        for tbl in ("user_visits", "saved_entities", "event_rsvp", "entity_ratings"):
+        for tbl in ("user_visits", "saved_entities", "event_rsvp"):
             cur.execute(
                 f"DELETE FROM {tbl} a WHERE entity_id = %s "
                 f"AND EXISTS (SELECT 1 FROM {tbl} b WHERE b.user_id = a.user_id AND b.entity_id = %s)",
                 (src, dst),
             )
             cur.execute(f"UPDATE {tbl} SET entity_id = %s WHERE entity_id = %s", (dst, src))
+        cur.execute(
+            "DELETE FROM entity_ratings WHERE entity_id = %s "
+            "AND EXISTS (SELECT 1 FROM entity_ratings b WHERE b.entity_id = %s)",
+            (src, dst),
+        )
+        cur.execute("UPDATE entity_ratings SET entity_id = %s WHERE entity_id = %s", (dst, src))
 
 
 def _apply_postgres(conn, plan: dict[str, Any]) -> None:
