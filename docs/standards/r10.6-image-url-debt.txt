@@ -28,10 +28,8 @@ benh-vien-da-khoa-tinh-vinh-long-vinh-long
 benh-vien-da-khoa-xuyen-a-vinh-long-vinh-long
 bi-cuon-ben-tre
 bo-da-xanh-ba-tri
-bo-nuong-la-lot
 bo-to-vinh-long
 bon-bon-cho-lach
-bun-bo-co-tam-cho-ben-tre-ben-tre
 bun-nuoc-leo---ly-thuong-kiet
 bun-nuoc-leo-huong-tra---pham-ngu-lao
 bun-rieu-cua-cho-mo-cay-ben-tre
@@ -50,11 +48,8 @@ ca-phe-song-tien-ben-ninh-kieu-vinh-long-vinh-long
 ca-phe-vuon-cau-khu-con-phung-con-phuoc-vinh-long
 ca-phe-vuon-dua-tra-vinh
 ca-phe-xua-tra-vinh
-ca-tai-tuong-chien-xu
 can-tho-hotel-transit
 canh-chua-ca-linh-bong-so-dua
-cha-gio-chay
-chao-ca-loc-rau-dang
 chao-cua-dong
 chao-long-ba-nam-cho-phuong-4-ben-tre
 che-ba-cam-khu-vuc-cho-ben-tre-ben-tre
@@ -68,18 +63,15 @@ chua-soc-tro
 chuot-dua-hap-com
 co-so-muoi-tom-va-mam-ba-dong-tra-vinh
 coco-happy-farm
-com-chay-au-lac-vinh-long
 com-chay-thanh-dam-vinh-long
 com-dua-com-trai-dua
 com-ga-bong-viet
-com-ga-xoi-mo-5-vi-ben-tre
 con-ngheu-bai-vang-bien-tra-vinh
 con-quy
 cong-an-tinh-vinh-long-vinh-long
 cong-ty-tnhh-mtv-quoc-thao
 cong-vien-giong-trom
 cu-lao-tan-quy-cang-long-tra-vinh
-cua-com-duyen-hai
 cua-hang-dac-san-dua-ben-tre-cong-ty-tnhh-dong-a-ben-tre
 cua-hang-dac-san-mien-tay-ba-bay-nem-vinh-long
 cua-hang-ocop-vinh-long-trung-tam-xuc-tien-thuong-mai-vinh-long
@@ -96,7 +88,6 @@ dinh-tien-thuy
 gao-huu-co-quang-tri-tra-vinh-st
 giai-dua-ghe-ngo-truyen-thong-tinh-ben-tre-ben-tre
 goi-cu-hu-dua-tom-thit
-goi-cuon-tom-thit
 goi-cuon-tom-thit-ba-hai-chau-thanh-ben-tre
 hai-chom-chom-an-binh
 hai-san-ngoc-hiep-binh-dai-ben-tre
@@ -126,12 +117,10 @@ lang-be---am-thuc-du-lich-sinh-thai
 lang-du-lich-cong-dong-cai-ngang
 lau-3-con-tep
 lau-bo-bay-map
-lau-tai-co
 le-gio-to-hung-vuong
 le-hoi-ba-chua-xu
 lua-gao-chat-luong-cao-tra-vinh
 malis-hotel-tra-vinh
-mam-tom-cha-vinh-long
 mat-hoa-dua
 mi-tau-dinh-phong-vinh-long
 mia-tra-vinh
@@ -141,7 +130,6 @@ mua-trai-cay-chin-roi
 my-cam-hotel
 nam-moi-xao
 nau-ruou-dua
-nem-nuong-thanh-binh-ben-tre
 nem-nuong-vinh-long
 ngay-hoi-trai-cay
 nha-co-huynh-thuy-le
@@ -240,10 +228,6 @@ thanh-that-cao-dai-ben-tre-ben-tre
 thu-hoach-dua-mo-cay
 tiem-an-dong-khanh-vinh-long
 tiem-banh-che-gan-chua-ang-angkor-borei-tra-vinh
-tinh-binh-chay-vinh-long
-tom-cang-xanh-nuong
-tom-cang-xanh-song-tien
-tom-rang-muoi-ot
 tra-vinh-palace-hotel
 ut-an---vuon-am-thuc
 vam-tac-thu-rung-ban-song-co-chien-tra-vinh
@@ -319,4 +303,3 @@ xa-trung-ngai
 xa-vinh-thanh
 xa-vinh-xuan
 xem-hat-boi
-xoi-vi-mien-tay

@@ -59,7 +59,7 @@ export function useWardDetailMap(options: UseWardDetailMapOptions) {
     map.addControl(new maplibregl.FullscreenControl(), 'top-right')
 
     // Ward center marker — popup mở mặc định
-    const centerPopup = new maplibregl.Popup({ offset: 25, closeOnClick: false })
+    const centerPopup = new maplibregl.Popup({ offset: 25, closeOnClick: false, focusAfterOpen: false })
       .setHTML(`<strong>${escapeHtml(currentPlace?.name || '')}</strong>`)
     new maplibregl.Marker({ color: 'var(--clay-600)', scale: 1.1 })
       .setLngLat([coords[1], coords[0]])

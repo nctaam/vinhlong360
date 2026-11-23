@@ -1813,7 +1813,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Lẩu Tài Có](https://vinhlong360.vn/dia-diem/lau-tai-co)
 - **Mã ID**: `lau-tai-co` | **Phân loại**: `restaurant` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2533, 105.9738]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Kêu một nồi lẩu cho cả bàn là kiểu ăn chủ đạo ở Lẩu Tài Có, số 66 Hưng Đạo Vương, phường 1, Vĩnh Long.
 
 #### [Nhà cổ Cai Cường](https://vinhlong360.vn/dia-diem/nha-co-cai-cuong)
@@ -1878,7 +1878,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Lẩu Mắm Bến Tre](https://vinhlong360.vn/dia-diem/lau-mam-ben-tre)
 - **Mã ID**: `lau-mam-ben-tre` | **Phân loại**: `restaurant` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2454, 106.4105]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Nồi lẩu mắm đậm đà với cá kèo, cá ba sa, tôm, mực, lươn, ba chỉ heo cùng rau đồng xanh mướt.
 
 #### [Chợ Nổi Trà Ôn](https://vinhlong360.vn/dia-diem/cho-noi-tra-on-dc)
@@ -2168,7 +2168,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Bánh tráng Mỹ Lồng](https://vinhlong360.vn/dia-diem/banh-trang-my-long)
 - **Mã ID**: `banh-trang-my-long` | **Phân loại**: `dish` | **Địa bàn**: xa-luong-phu | **Tọa độ**: [10.2433, 106.3753]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Trăm năm nay, hơn hai trăm hộ ở ấp Nghĩa Huấn xã Mỹ Thạnh vẫn ngâm nếp sáu tiếng, xay nhuyễn trộn nước cốt dừa Giồng Trôm rồi tráng mỏng trên khuôn vải căng nồi hơi — phơi phên tre ngoài nắng cho giòn tan, thơm ngậy mùi dừa nướng.
 
 #### [Ốc gạo Cù Lao Dài](https://vinhlong360.vn/dia-diem/oc-gao-cu-lao-dai)
@@ -2178,7 +2178,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Mắm tôm chà Gò Công (Tiền Giang)](https://vinhlong360.vn/dia-diem/mam-tom-cha-vinh-long)
 - **Mã ID**: `mam-tom-cha-vinh-long` | **Phân loại**: `dish` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2538, 105.9284]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Mắm tôm chà truyền thống chà nhuyễn, lọc lấy nước sánh đặc, vị mặn ngọt đậm đà.
 
 #### [Cá lóc nướng trui](https://vinhlong360.vn/dia-diem/ca-loc-nuong-trui)
@@ -2528,7 +2528,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Chuối Nướng Gia Truyền](https://vinhlong360.vn/dia-diem/chuoi-nuong-gia-truyen)
 - **Mã ID**: `chuoi-nuong-gia-truyen` | **Phân loại**: `restaurant` | **Địa bàn**: p-thanh-duc | **Tọa độ**: [10.2531, 105.9668]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Quán chuối nếp nướng than hồng gia truyền tại TP. Vĩnh Long từ năm 1990, nếp giòn vỏ dẻo lòng chan nước cốt dừa béo ngậy rắc mỡ hành thơm phức.
 
 #### [Út An - Vườn Ẩm Thực](https://vinhlong360.vn/dia-diem/ut-an---vuon-am-thuc)
@@ -4413,7 +4413,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Chùa Phật Ngọc Xá Lợi](https://vinhlong360.vn/dia-diem/chua-phat-ngoc-xa-loi)
 - **Mã ID**: `chua-phat-ngoc-xa-loi` | **Phân loại**: `attraction` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Kiến trúc hoành tráng pha trộn phong cách Á–Âu, chánh điện trang nghiêm với tượng Phật vàng cao 24m. Khách hành hương từ khắp ĐBSCL đến viếng quanh năm.
 
 #### [Cầu Mỹ Thuận](https://vinhlong360.vn/dia-diem/cau-my-thuan)
@@ -4838,7 +4838,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Cá tai tượng chiên xù](https://vinhlong360.vn/dia-diem/ca-tai-tuong-chien-xu)
 - **Mã ID**: `ca-tai-tuong-chien-xu` | **Phân loại**: `dish` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2539, 105.9722]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Món cá quen thuộc trên mâm cỗ miệt vườn cù lao Vĩnh Long, giá 150.000–250.000 đ/con cỡ 800g. Cá tai tượng nuôi trong ao, thịt trắng mịn, chiên giòn vàng rụm.
 
 #### [Một ngày làm nông dân Vĩnh Long](https://vinhlong360.vn/dia-diem/mot-ngay-lam-nong-dan)
@@ -4853,22 +4853,22 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Bánh xèo Vĩnh Long](https://vinhlong360.vn/dia-diem/banh-xeo-mien-tay)
 - **Mã ID**: `banh-xeo-mien-tay` | **Phân loại**: `dish` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.2764, 105.9933]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Bánh xèo đổ bằng bột gạo pha nước cốt dừa, vàng nghệ, giòn rụm — nhân tôm, thịt, giá, hẹ, đặc biệt có củ hủ dừa. Cuốn rau sống chấm nước mắm chua ngọt.
 
 #### [Gỏi cuốn tôm thịt](https://vinhlong360.vn/dia-diem/goi-cuon-tom-thit)
 - **Mã ID**: `goi-cuon-tom-thit` | **Phân loại**: `dish` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.2542, 105.9628]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Cuốn bánh tráng mỏng với tôm luộc, thịt ba chỉ, bún, rau sống, rau thơm miệt vườn.
 
 #### [Chả giò chay](https://vinhlong360.vn/dia-diem/cha-gio-chay)
 - **Mã ID**: `cha-gio-chay` | **Phân loại**: `dish` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9513, 106.3346]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Nhân khoai môn, nấm mèo, bún tàu, đậu hũ, cuốn bánh tráng chiên giòn vàng rụm. Thường gặp trong mâm cỗ chùa Khmer, ăn kèm nước chấm chay chua ngọt.
 
 #### [Cháo cá lóc rau đắng](https://vinhlong360.vn/dia-diem/chao-ca-loc-rau-dang)
 - **Mã ID**: `chao-ca-loc-rau-dang` | **Phân loại**: `dish` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.2542, 105.9628]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Cháo gạo nấu nhuyễn với cá lóc đồng phi lê tươi, ăn kèm rau đắng đất xắt nhỏ.
 
 #### [Đình Miếu Cồn Trứng](https://vinhlong360.vn/dia-diem/dinh-mieu-con-trung)
@@ -4883,22 +4883,22 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Tôm càng xanh nướng](https://vinhlong360.vn/dia-diem/tom-cang-xanh-nuong)
 - **Mã ID**: `tom-cang-xanh-nuong` | **Phân loại**: `dish` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.2542, 105.9628]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Tôm càng xanh sông Cổ Chiên con to, nướng muối ớt hoặc nướng mỡ hành trên bếp than.
 
 #### [Bánh canh Bến Tre](https://vinhlong360.vn/dia-diem/banh-canh-ben-tre)
 - **Mã ID**: `banh-canh-ben-tre` | **Phân loại**: `dish` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.0416, 106.5935]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Món bánh canh tôm thịt nước dừa đặc sản tại khu vực Bến Tre, kết hợp sợi bánh canh bột lọc dai trong với tôm đất ngọt và nước cốt dừa béo thanh.
 
 #### [Bò nướng lá lốt](https://vinhlong360.vn/dia-diem/bo-nuong-la-lot)
 - **Mã ID**: `bo-nuong-la-lot` | **Phân loại**: `dish` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Thịt bò bằm ướp sả ớt, cuộn trong lá lốt nướng than hồng thơm lừng.
 
 #### [Xôi vị Vĩnh Long](https://vinhlong360.vn/dia-diem/xoi-vi-mien-tay)
 - **Mã ID**: `xoi-vi-mien-tay` | **Phân loại**: `dish` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2539, 105.9722]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Xôi nếp dẻo rắc muối mè, đậu phộng rang, dừa nạo sợi, ăn kèm chả lụa hoặc gà xé.
 
 #### [Bánh xèo cù lao](https://vinhlong360.vn/dia-diem/banh-xeo-cu-lao)
@@ -4913,7 +4913,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Tôm rang muối ớt](https://vinhlong360.vn/dia-diem/tom-rang-muoi-ot)
 - **Mã ID**: `tom-rang-muoi-ot` | **Phân loại**: `dish` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.2539, 105.9722]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Tôm đất sông rang khô với muối hạt, ớt tươi, lá chanh thái chỉ.
 
 #### [Chè chuối nướng](https://vinhlong360.vn/dia-diem/che-chuoi-nuong)
@@ -6183,7 +6183,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Bún bò Cô Tám chợ Bến Tre](https://vinhlong360.vn/dia-diem/bun-bo-co-tam-cho-ben-tre-ben-tre)
 - **Mã ID**: `bun-bo-co-tam-cho-ben-tre-ben-tre` | **Phân loại**: `dish` | **Địa bàn**: xa-thanh-thoi | **Tọa độ**: [10.0528, 106.3146]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Quán bún. Chuyên Bún bò giò heo + chả cây. Nước dùng: Sả ớt, mắm ruốc Huế, nước dùng đỏ cay thơm. Bến Tre.
 
 #### [Đình Kỳ Hà](https://vinhlong360.vn/dia-diem/dinh-ky-ha)
@@ -6413,7 +6413,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Cơm Gà Xối Mỡ 5 Vị](https://vinhlong360.vn/dia-diem/com-ga-xoi-mo-5-vi-ben-tre)
 - **Mã ID**: `com-ga-xoi-mo-5-vi-ben-tre` | **Phân loại**: `dish` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.0528, 106.3146]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Chuyên Cơm gà xối mỡ giòn vàng, ăn kèm cơm trắng dẻo. Tại 306C Nguyễn Huệ, TP. Bến Tre. Giá 35. Nổi bật: Gà xối mỡ nóng giòn ngay lúc chiên xong. Quán bình dân, bàn ghế đơn giản, đông khách.
 
 #### [Gạo Tân Tiến](https://vinhlong360.vn/dia-diem/gao-tan-tien)
@@ -6753,12 +6753,12 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Tịnh Bình Chay](https://vinhlong360.vn/dia-diem/tinh-binh-chay-vinh-long)
 - **Mã ID**: `tinh-binh-chay-vinh-long` | **Phân loại**: `restaurant` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2539, 105.9722]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Quán chay Phật giáo Tịnh Bình tại số 110A Trần Đại Nghĩa, Phường Phước Hậu — chuyên bì cuốn chay, gỏi cuốn chay và lẩu chay thanh đạm.
 
 #### [Cơm Chay Âu Lạc](https://vinhlong360.vn/dia-diem/com-chay-au-lac-vinh-long)
 - **Mã ID**: `com-chay-au-lac-vinh-long` | **Phân loại**: `restaurant` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2539, 105.9722]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Quán cơm chay Âu Lạc bình dân trên đường Trần Văn Ơn, phường Long Châu, phục vụ thực đơn chay Nam Bộ thanh đạm vào buổi sáng và trưa.
 
 #### [Sông Cổ Chiên](https://vinhlong360.vn/dia-diem/song-co-chien-vinh-long)
@@ -6793,17 +6793,17 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Đuông Dừa](https://vinhlong360.vn/dia-diem/duong-dua)
 - **Mã ID**: `duong-dua` | **Phân loại**: `dish` | **Địa bàn**: p-phu-tan | **Tọa độ**: [10.2433, 106.3753]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Ấu trùng của bọ dừa (bọ cánh dương) sống trong phần mềm của thân cây dừa già — đặc sản Bến Tre kén người thưởng thức, thịt trắng ngần và béo ngậy.
 
 #### [Tép rang dừa](https://vinhlong360.vn/dia-diem/tep-rang-dua)
 - **Mã ID**: `tep-rang-dua` | **Phân loại**: `dish` | **Địa bàn**: p-phu-tuc | **Tọa độ**: [10.2918, 106.2990]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Món ăn đặc trưng của vùng xứ dừa Bến Tre, tép tươi được rang cùng cơm dừa nạo, tạo vị béo ngọt đặc trưng.
 
 #### [Nem nướng Thanh Bình](https://vinhlong360.vn/dia-diem/nem-nuong-thanh-binh-ben-tre)
 - **Mã ID**: `nem-nuong-thanh-binh-ben-tre` | **Phân loại**: `dish` | **Địa bàn**: p-an-hoi | **Tọa độ**: [10.2433, 106.3753]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Chuyên Nem nướng cuốn bánh tráng, nem lụi. Tại Khu vực gần bến phà Hàm Luông (cũ), TP. Bến Tre. Giá 30. Nem nướng than hồng thơm, cuốn bánh tráng mỏng với đồ chua và đậu phộng rang.
 
 #### [Đền thờ Lãnh binh Nguyễn Ngọc Thăng](https://vinhlong360.vn/dia-diem/den-tho-lanh-binh-nguyen-ngoc-thang)
@@ -6868,7 +6868,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Cua cốm (cua cơ bắp) Duyên Hải](https://vinhlong360.vn/dia-diem/cua-com-duyen-hai)
 - **Mã ID**: `cua-com-duyen-hai` | **Phân loại**: `dish` | **Địa bàn**: p-duyen-hai | **Tọa độ**: [10.0260, 106.2930]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Đặc sản nuôi trồng của Duyên Hải, là cua biển được thu hoạch đúng giai đoạn vừa lột vỏ.
 
 #### [Lễ hội Kỳ Yên](https://vinhlong360.vn/dia-diem/le-hoi-ky-yen)
@@ -6948,7 +6948,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Tôm càng xanh sông Tiền](https://vinhlong360.vn/dia-diem/tom-cang-xanh-song-tien)
 - **Mã ID**: `tom-cang-xanh-song-tien` | **Phân loại**: `dish` | **Địa bàn**: xa-quoi-dien | **Tọa độ**: [10.2433, 106.3753]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Tôm càng xanh nuôi tự nhiên trên sông Tiền và sông Hậu của Vĩnh Long có thịt chắc ngọt đặc biệt nhờ nguồn nước phù sa giàu dinh dưỡng.
 
 #### [Cồn Cù](https://vinhlong360.vn/dia-diem/con-cu)

@@ -18,10 +18,11 @@
 .bc-back:active { transform: scale(.93); transition-duration: .08s; }
 .bc-back:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dark .bc-back:hover { background: rgba(var(--white-rgb), .06); }
-.breadcrumb ol { flex: 1; min-width: 0; list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: nowrap; gap: var(--space-1); font-size: var(--text-xs); color: var(--muted); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; mask-image: linear-gradient(to right, black 85%, transparent); -webkit-mask-image: linear-gradient(to right, black 85%, transparent); }
+.breadcrumb ol { flex: 1; min-width: 0; list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: nowrap; align-items: center; gap: var(--space-1); font-size: var(--text-xs); color: var(--muted); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; mask-image: linear-gradient(to right, black 85%, transparent); -webkit-mask-image: linear-gradient(to right, black 85%, transparent); }
 .breadcrumb ol::-webkit-scrollbar { display: none; }
-.breadcrumb li { white-space: nowrap; flex-shrink: 0; }
-.breadcrumb li:last-child { color: var(--ink); font-weight: var(--weight-semibold); }
+.breadcrumb li { white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; }
+.breadcrumb li + li::before { content: "/"; margin-right: var(--space-1); color: var(--muted); opacity: .5; font-family: var(--font-editorial); font-size: .95em; }
+.breadcrumb li:last-child { color: var(--ink); font-weight: var(--weight-semibold); min-height: 44px; padding: var(--space-2) var(--space-1); }
 .breadcrumb a { color: var(--color-action); transition: color .3s var(--ease-out), text-decoration-color .25s var(--ease-out); min-height: 44px; display: inline-flex; align-items: center; padding: var(--space-2) var(--space-1); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 .breadcrumb a:hover { text-decoration-color: var(--color-action); }
 .breadcrumb a:active { opacity: .7; }
@@ -98,6 +99,7 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); }
 }
 
 @media (forced-colors: active) {
+  .breadcrumb li + li::before { color: GrayText; }
   .bc-back {
     border: 1px solid ButtonText;
     background: ButtonFace;

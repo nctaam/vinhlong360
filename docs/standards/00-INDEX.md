@@ -9,7 +9,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R10.schema | id duy nhất + type∈17 + trường bắt buộc + coords bbox | hard | check_data_schema | 0 | 10-data.md |
 | R10.hash | hash `web/data.json` versioned; DB local chỉ kiểm khi được yêu cầu tường minh | hard | check_data_schema | 0 | 10-data.md |
 | R10.5 | không bịa fact thực địa | checklist-ký | — | — | 10-data.md |
-| R10.6 | provenance ảnh: AI ghi nhãn; ảnh báo chí/tư liệu đủ quyền + tác giả + nguồn + giấy phép + URL; cấm stock/Wikimedia/UGC | hard-ratchet | check_banned_claims | 25 | 10-data.md |
+| R10.6 | provenance ảnh: AI ghi nhãn; ảnh báo chí/tư liệu đủ quyền + tác giả + nguồn + giấy phép + URL; cấm stock/Wikimedia/UGC | hard-ratchet | check_banned_claims | 0 | 10-data.md |
 | R10.7 | tên tỉnh §1.6 (whitelist per-occurrence) | hard-ratchet | check_tinh_cu | 0 | 10-data.md |
 | R10.3b | trường bắt buộc PER-TYPE (registry entity_schemas) | hard-ratchet | check_data_schema | 0 | 10-data.md |
 | R10.8 | RICH phải có source | hard-ratchet | check_data_schema | 0 | 10-data.md |

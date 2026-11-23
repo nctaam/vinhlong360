@@ -79,4 +79,22 @@ describe("Mốc 103: UI/UX Ergonomics, WCAG 2.2 Touch Targets & EmptyState Gover
     expect(lichTrinhId).not.toMatch(/<EmptyState\s+message=/)
     expect(taoLichTrinh).not.toMatch(/<EmptyState\s+message=/)
   })
+
+  it("assets/css/detail.css chừa khoảng đệm đáy trên desktop, bỏ cắt aspect-ratio mobile và rút gọn .dc-photo-credit một dòng", () => {
+    const detailCss = readFileSync(resolve(root, "assets/css/detail.css"), "utf8")
+    expect(detailCss).toMatch(/\.has-cover-img\s+\.dc-inner\s*\{\s*padding:\s*var\(--space-10\)\s+var\(--space-5\)\s+calc\(56px \+ var\(--space-6\)\)/)
+    expect(detailCss).toMatch(/@media\s*\(max-width:\s*768px\)\s*\{[\s\S]*?\.detail-cover\.has-cover-img\s*\{[\s\S]*?aspect-ratio:\s*auto;/)
+    expect(detailCss).toMatch(/\.detail-cover\s+\.dc-photo-credit\s+span\s*\{[\s\S]*?text-overflow:\s*ellipsis;[\s\S]*?white-space:\s*nowrap;/)
+  })
+
+  it("assets/css/detail-shared.css căn giữa dọc .breadcrumb ol và bổ sung dấu ngăn cách /", () => {
+    const sharedCss = readFileSync(resolve(root, "assets/css/detail-shared.css"), "utf8")
+    expect(sharedCss).toMatch(/\.breadcrumb\s+ol\s*\{[^}]*align-items:\s*center;/)
+    expect(sharedCss).toMatch(/\.breadcrumb\s+li\s*\+\s*li::before\s*\{[^}]*content:\s*"\/";/)
+  })
+
+  it("composables/useWardDetailMap.ts tắt focusAfterOpen trên centerPopup mở sẵn để không tự cuộn trang", () => {
+    const wardMapTs = readFileSync(resolve(root, "composables/useWardDetailMap.ts"), "utf8")
+    expect(wardMapTs).toMatch(/new maplibregl\.Popup\(\s*\{\s*offset:\s*25,\s*closeOnClick:\s*false,\s*focusAfterOpen:\s*false\s*\}\s*\)/)
+  })
 })
