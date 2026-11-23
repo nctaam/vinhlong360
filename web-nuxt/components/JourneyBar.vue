@@ -86,13 +86,19 @@ onUnmounted(() => {
     bottom: var(--shell-public-bottom-nav-reserved-height);
     z-index: var(--z-sticky);
   }
+  :global(body.has-journey-bar) {
+    --scroll-top-bottom: calc(var(--shell-public-bottom-nav-reserved-height) + 128px + env(safe-area-inset-bottom, 0px));
+  }
   :global(body.has-journey-bar .scroll-top) {
-    bottom: calc(var(--shell-public-bottom-nav-reserved-height) + 68px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(var(--shell-public-bottom-nav-reserved-height) + 128px + env(safe-area-inset-bottom, 0px));
   }
 }
 @media (max-width: 480px) {
+  :global(body.has-journey-bar) {
+    --scroll-top-bottom: calc(var(--shell-public-bottom-nav-reserved-height) + 148px + env(safe-area-inset-bottom, 0px));
+  }
   :global(body.has-journey-bar .scroll-top) {
-    bottom: calc(var(--shell-public-bottom-nav-reserved-height) + 106px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(var(--shell-public-bottom-nav-reserved-height) + 148px + env(safe-area-inset-bottom, 0px));
   }
 }
 

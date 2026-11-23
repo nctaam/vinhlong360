@@ -27,8 +27,8 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 <style scoped>
 .scroll-top {
   position: fixed;
-  bottom: var(--scroll-top-bottom, calc(90px + env(safe-area-inset-bottom)));
-  right: var(--space-5);
+  bottom: var(--scroll-top-bottom, calc(86px + env(safe-area-inset-bottom)));
+  right: calc(var(--space-6) + 2px + env(safe-area-inset-right));
   z-index: var(--z-floating);
   width: 44px;
   height: 44px;
@@ -65,5 +65,11 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 }
 @media (forced-colors: active) {
   .scroll-top { border: 1px solid ButtonText; background: Canvas; }
+}
+@media (max-width: 820px) {
+  .scroll-top {
+    bottom: var(--scroll-top-bottom, calc(var(--shell-public-bottom-nav-reserved-height) + 72px));
+    right: calc(var(--space-4) + 2px + env(safe-area-inset-right));
+  }
 }
 </style>

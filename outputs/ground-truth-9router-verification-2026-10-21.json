@@ -75,7 +75,7 @@
       },
       "verifiedGroundTruth": {
         "placeId": "xa-cai-nhum",
-        "address": "Khóm 3, xã Cái Nhum (thị trấn Cái Nhum cũ, huyện Mang Thít), tỉnh Vĩnh Long",
+        "address": "Khóm 3, xã Cái Nhum, tỉnh Vĩnh Long",
         "area_m2": 66801,
         "recognition": "Điểm du lịch chính thức theo QĐ 2011/QĐ-UBND ngày 30/8/2023; OCOP 4 sao",
         "sources": [
@@ -115,7 +115,7 @@
       "verifiedGroundTruth": {
         "placeId": "xa-tan-xuan",
         "mergerBasis": "Xã Tân Xuân hợp nhất từ xã Phú Lễ, xã Phước Ngãi và xã Tân Xuân thuộc huyện Ba Tri (Nghị quyết 1687/NQ-UBTVQH15)",
-        "address": "Ấp Phú Khương, xã Phú Lễ, huyện Ba Tri (nay là xã Tân Xuân, tỉnh Vĩnh Long)",
+        "address": "Ấp Phú Khương, xã Phú Lễ, Xã Tân Xuân, tỉnh Vĩnh Long",
         "foundingYear": "Khởi dựng năm 1826 (triều vua Minh Mạng), sắc phong năm 1852 (triều vua Tự Đức), xếp hạng Di tích kiến trúc nghệ thuật cấp Quốc gia năm 1993",
         "realImages": [
           "https://owa.bestprice.vn/images/articles/uploads/dinh-phu-le-54360d6391257.jpg",
@@ -153,7 +153,7 @@
       "verifiedGroundTruth": {
         "placeId": "xa-luong-phu",
         "mergerBasis": "Xã Lương Phú hợp nhất từ xã Mỹ Thạnh, xã Thuận Điền và xã Lương Phú thuộc huyện Giồng Trôm (Nghị quyết 1687/NQ-UBTVQH15)",
-        "address": "Ấp Nghĩa Huấn, xã Mỹ Thạnh, huyện Giồng Trôm (nay là xã Lương Phú, tỉnh Vĩnh Long)",
+        "address": "Ấp Nghĩa Huấn, xã Mỹ Thạnh, Xã Lương Phú, tỉnh Vĩnh Long",
         "heritage": "Di sản Văn hóa Phi vật thể Quốc gia (Quyết định 4069/QĐ-BVHTTDL ngày 30/10/2018)",
         "realImages": [
           "https://nongnghiephuuco.vn/stores/news_dataimages/2026/072026/09/09/ml320260709091306.png",
@@ -188,7 +188,7 @@
       "verifiedGroundTruth": {
         "placeId": "xa-my-chanh-hoa",
         "secondaryPlaceId": "xa-tan-xuan",
-        "address": "Ven sông Ba Lai, địa bàn giáp ranh xã Tân Mỹ – Mỹ Hòa – Tân Xuân, huyện Ba Tri (nay là xã Tân Xuân & xã Mỹ Chánh Hòa, tỉnh Vĩnh Long)",
+        "address": "Ven sông Ba Lai, Xã Mỹ Chánh Hòa & Xã Tân Xuân, tỉnh Vĩnh Long (trước 07/2025: Tân Mỹ – Mỹ Hòa – Tân Xuân)",
         "area_ha": "67,6 ha (khu bảo tồn rừng ngập mặn – chà là – đước đôi) / 89 ha (tổng khu sinh thái)",
         "sources": [
           {
@@ -219,7 +219,7 @@
       "verifiedGroundTruth": {
         "placeId": "xa-an-dinh",
         "mergerBasis": "Xã An Định hợp nhất từ xã Tân Trung, xã Minh Đức và xã An Định thuộc huyện Mỏ Cày Nam",
-        "address": "Ven rạch Tân Hương, ấp Tân Quới Đông B, xã Minh Đức, huyện Mỏ Cày Nam (nay là xã An Định, tỉnh Vĩnh Long)",
+        "address": "Ven rạch Tân Hương, ấp Tân Quới Đông B, xã Minh Đức, Xã An Định, tỉnh Vĩnh Long",
         "foundingYear": "1861 (năm Tân Dậu, triều vua Tự Đức thứ 14); nơi cụ Phó bảng Nguyễn Sinh Sắc từng dừng chân (1927–1929)",
         "sources": [
           {
@@ -259,7 +259,7 @@
       "verifiedGroundTruth": {
         "placeId": "xa-quoi-thien",
         "mergerBasis": "Xã Quới Thiện hợp nhất từ xã Thanh Bình và xã Quới Thiện (Cù lao Dài, huyện Vũng Liêm cũ)",
-        "address": "Ấp Thái Bình, xã Thanh Bình, cù lao Dài, huyện Vũng Liêm (nay là xã Quới Thiện, tỉnh Vĩnh Long)",
+        "address": "Ấp Thái Bình, xã Thanh Bình, cù lao Dài, Xã Quới Thiện, tỉnh Vĩnh Long",
         "realImages": [
           "https://baovinhlong.com.vn/file/e7837c027f6ecd14017ffa4e5f2a0e34/dataimages/201801/original/images2100866_BVL_a__9_.JPG?width=1024&height=-&type=resize"
         ],
@@ -287,7 +287,7 @@
       "verifiedGroundTruth": {
         "placeId": "xa-trung-ngai",
         "mergerBasis": "Xã Trung Ngãi hợp nhất từ xã Trung Thành Đông, xã Trung Nghĩa và xã Trung Ngãi thuộc huyện Vũng Liêm",
-        "address": "Ấp Phú Ân, xã Trung Nghĩa, huyện Vũng Liêm (nay là xã Trung Ngãi, tỉnh Vĩnh Long)",
+        "address": "Ấp Phú Ân, xã Trung Nghĩa, Xã Trung Ngãi, tỉnh Vĩnh Long",
         "sources": [
           {
             "domain": "vinhlongtourist.vn",
@@ -389,7 +389,7 @@
       "verifiedGroundTruth": {
         "placeId": "p-duyen-hai",
         "secondaryPlaceId": "xa-long-huu",
-        "address": "Phường Duyên Hải & xã Long Hữu (vùng biển Ba Động – thị xã Duyên Hải cũ), tỉnh Vĩnh Long",
+        "address": "Phường Duyên Hải & Xã Long Hữu (vùng biển Ba Động), tỉnh Vĩnh Long",
         "season": "Có quanh năm; thịt chắc và lớp gạch cốm đầy nhất vào mùa khô (tháng Giêng đến tháng 4–5 âm lịch)",
         "sources": [
           {
@@ -662,7 +662,7 @@
       ],
       "verifiedGroundTruth": {
         "placeId": "p-phuoc-hau",
-        "address": "Số 70 đường Trần Phú, Phường Phước Hậu, tỉnh Vĩnh Long (Phường 4, TP. Vĩnh Long cũ)",
+        "address": "Số 70 đường Trần Phú, Phường Phước Hậu, tỉnh Vĩnh Long",
         "lat": 10.2512,
         "lng": 105.9806,
         "summary": "Ngôi cổ tự Bắc tông khởi dựng năm 1906 tại số 70 Trần Phú, Phường Phước Hậu — hiện là Văn phòng Ban Trị sự Giáo hội Phật giáo Việt Nam tỉnh Vĩnh Long.",
@@ -690,7 +690,7 @@
       ],
       "verifiedGroundTruth": {
         "placeId": "p-phuoc-hau",
-        "address": "Khóm 1, Phường Phước Hậu, tỉnh Vĩnh Long (Phường 3, TP. Vĩnh Long cũ)",
+        "address": "Khóm 1, Phường Phước Hậu, tỉnh Vĩnh Long",
         "lat": 10.2478,
         "lng": 105.9695,
         "summary": "Ngôi đình thần cổ kính khởi dựng năm 1808 dưới triều Gia Long, dời về Phường Phước Hậu năm 1924 và xếp hạng Di tích lịch sử – văn hóa cấp tỉnh năm 2006.",
@@ -714,7 +714,7 @@
       ],
       "verifiedGroundTruth": {
         "placeId": "p-long-chau",
-        "address": "Số 64 đường 30 Tháng 4, Phường Long Châu, tỉnh Vĩnh Long (Phường 1, TP. Vĩnh Long cũ)",
+        "address": "Số 64 đường 30 Tháng 4, Phường Long Châu, tỉnh Vĩnh Long",
         "lat": 10.2546,
         "lng": 105.9752,
         "summary": "Ngôi miếu cổ của cộng đồng người Hoa khởi dựng cuối thế kỷ XIX trên đường 30 Tháng 4, Phường Long Châu, thờ Thiên Hậu Thánh Mẫu.",
@@ -742,7 +742,7 @@
       ],
       "verifiedGroundTruth": {
         "placeId": "p-thanh-duc",
-        "address": "Số 22 đường Nguyễn Chí Thanh, Phường Thanh Đức, tỉnh Vĩnh Long (Phường 5, TP. Vĩnh Long cũ)",
+        "address": "Số 22 đường Nguyễn Chí Thanh, Phường Thanh Đức, tỉnh Vĩnh Long",
         "lat": 10.2568,
         "lng": 105.9845,
         "summary": "Di tích lịch sử – văn hóa cấp quốc gia tại số 22 Nguyễn Chí Thanh, Phường Thanh Đức, do cộng đồng 7 phủ người Hoa xây dựng giai đoạn 1892–1909.",
@@ -774,7 +774,7 @@
       ],
       "verifiedGroundTruth": {
         "placeId": "p-phuoc-hau",
-        "address": "Số 301 đường Trần Phú, Phường Phước Hậu, tỉnh Vĩnh Long (Phường 4, TP. Vĩnh Long cũ)",
+        "address": "Số 301 đường Trần Phú, Phường Phước Hậu, tỉnh Vĩnh Long",
         "phone": "0270 3822 535",
         "lat": 10.2469,
         "lng": 105.9842,
@@ -911,7 +911,7 @@
       ],
       "verifiedGroundTruth": {
         "placeId": "xa-trung-ngai",
-        "address": "Ấp Phú Ân, Xã Trung Ngãi, tỉnh Vĩnh Long (huyện Vũng Liêm cũ)",
+        "address": "Ấp Phú Ân, Xã Trung Ngãi, tỉnh Vĩnh Long",
         "lat": 10.0846,
         "lng": 106.2128,
         "summary": "Khu nghỉ dưỡng ecolodge sinh thái bên nhánh sông Vũng Liêm – Cổ Chiên tại ấp Phú Ân, Xã Trung Ngãi, nổi bật với bungalow lá dừa mộc mạc và trải nghiệm chèo xuồng, đạp xe làng quê.",
@@ -943,7 +943,7 @@
       ],
       "verifiedGroundTruth": {
         "placeId": "p-tam-binh",
-        "address": "Ấp Mỹ Phú Tân, Phường Tam Bình, tỉnh Vĩnh Long (xã Mỹ Thạnh Trung, huyện Tam Bình cũ)",
+        "address": "Ấp Mỹ Phú Tân, Phường Tam Bình, tỉnh Vĩnh Long",
         "lat": 10.0715,
         "lng": 105.9862,
         "summary": "Khu du lịch sinh thái rộng 20 ha tại ấp Mỹ Phú Tân, Phường Tam Bình (xã Mỹ Thạnh Trung cũ), cách trung tâm đô thị Vĩnh Long khoảng 25 km với hai phân khu Sala Farm và Sala Amazing.",
@@ -974,7 +974,7 @@
       ],
       "verifiedGroundTruth": {
         "placeId": "p-nguyet-hoa",
-        "address": "Số 644 đường Võ Nguyên Giáp, Khóm 1, Phường Nguyệt Hóa, tỉnh Vĩnh Long (Phường 8, TP. Trà Vinh cũ)",
+        "address": "Số 644 đường Võ Nguyên Giáp, Khóm 1, Phường Nguyệt Hóa, tỉnh Vĩnh Long",
         "lat": 9.9189,
         "lng": 106.3374,
         "summary": "Quán bún suông gia truyền từ năm 1986 tại số 644 Võ Nguyên Giáp, Phường Nguyệt Hóa — nổi tiếng với chả tôm quết tay dai ngọt và nước lèo me tương hột đậm đà.",

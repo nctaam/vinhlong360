@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { clearNuxtData } from '#app'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { defineComponent, h, nextTick } from 'vue'
@@ -263,5 +265,15 @@ describe('HomeLocalBriefing — API chậm & hiệu năng', () => {
     const second = await mountBriefing()
     expect(apiFetchMock).toHaveBeenCalledTimes(1)
     expect(second.get('[data-weather-status]').attributes('data-weather-status')).toBe('measured')
+  })
+})
+
+describe('Nuxt Nitro routeRules — root proxy routes', () => {
+  it('khai báo proxy cho route gốc /weather, /chat, /feedback tránh 307 -> 502', () => {
+    const nuxtConfig = readFileSync(resolve(process.cwd(), 'nuxt.config.ts'), 'utf8')
+    for (const prefix of ['/weather', '/chat', '/feedback']) {
+      expect(nuxtConfig).toContain(`'${prefix}': { proxy: \`\${apiBase}${prefix}\` }`)
+      expect(nuxtConfig).toContain(`'${prefix}/**': { proxy: \`\${apiBase}${prefix}/**\` }`)
+    }
   })
 })

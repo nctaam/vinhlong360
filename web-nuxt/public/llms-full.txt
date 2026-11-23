@@ -208,7 +208,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Cấp cứu 115 Bến Tre](https://vinhlong360.vn/dia-diem/cap-cuu-115-ben-tre-ben-tre)
 - **Mã ID**: `cap-cuu-115-ben-tre-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: xa-thanh-thoi | **Tọa độ**: [10.0528, 106.3146]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Tổng đài cấp cứu y tế miễn phí toàn vùng Bến Tre — gọi 115 khi có tai nạn, đột quỵ, chấn thương nặng.
 
 #### [Chôm chôm Cầu Kè](https://vinhlong360.vn/dia-diem/chom-chom-cau-ke)
@@ -1468,7 +1468,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Xã Long Hữu](https://vinhlong360.vn/dia-diem/xa-long-huu)
 - **Mã ID**: `xa-long-huu` | **Phân loại**: `place` | **Địa bàn**: xa-long-huu | **Tọa độ**: [9.7039, 106.5329]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Hai xã cũ của thị xã Duyên Hải trước sắp xếp — Long Hữu và Hiệp Thạnh — nhập làm một thành xã Long Hữu, nay thuộc tỉnh Vĩnh Long.
 
 #### [Xã Long Thành](https://vinhlong360.vn/dia-diem/xa-long-thanh)
@@ -1478,7 +1478,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Xã Long Vĩnh](https://vinhlong360.vn/dia-diem/xa-long-vinh)
 - **Mã ID**: `xa-long-vinh` | **Phân loại**: `place` | **Địa bàn**: xa-long-vinh | **Tọa độ**: [9.5801, 106.3598]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Thuộc khu vực Trà Vinh của tỉnh Vĩnh Long, xã Long Vĩnh giữ nguyên địa giới sau đợt sắp xếp, không nhập thêm đơn vị nào.
 
 #### [Xã Lục Sĩ Thành](https://vinhlong360.vn/dia-diem/xa-luc-si-thanh)
@@ -1568,7 +1568,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Xã Phú Thuận](https://vinhlong360.vn/dia-diem/xa-phu-thuan)
 - **Mã ID**: `xa-phu-thuan` | **Phân loại**: `place` | **Địa bàn**: xa-phu-thuan | **Tọa độ**: [10.2797, 106.4853]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Xã Phú Thuận thuộc tỉnh Vĩnh Long, sáp nhập từ xã Long Định, xã Tam Hiệp và xã Phú Thuận của huyện Bình Đại.
 
 #### [Xã Phước Long](https://vinhlong360.vn/dia-diem/xa-phuoc-long)
@@ -1678,7 +1678,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Chợ Đại An](https://vinhlong360.vn/dia-diem/cho-dai-an)
 - **Mã ID**: `cho-dai-an` | **Phân loại**: `facility` | **Địa bàn**: xa-dai-an | **Tọa độ**: [9.6285, 106.2840]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Khu chợ truyền thống tại xã Đại An, huyện Trà Cú, là điểm đến văn hóa và ẩm thực đặc sắc của vùng.
 
 #### [Xã Tân Xuân](https://vinhlong360.vn/dia-diem/xa-tan-xuan)
@@ -1778,7 +1778,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Xã Vinh Kim](https://vinhlong360.vn/dia-diem/xa-vinh-kim)
 - **Mã ID**: `xa-vinh-kim` | **Phân loại**: `place` | **Địa bàn**: xa-vinh-kim | **Tọa độ**: [9.8555, 106.4422]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Từ vùng Cầu Ngang cũ, xã Vinh Kim ngày nay thuộc tỉnh Vĩnh Long, hình thành khi xã Vinh Kim cũ nhập chung với xã Kim Hòa.
 
 #### [Xã Vĩnh Thành](https://vinhlong360.vn/dia-diem/xa-vinh-thanh)
@@ -2333,12 +2333,12 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Khách Sạn Hoàng Khiêm](https://vinhlong360.vn/dia-diem/khach-san-hoang-khiem)
 - **Mã ID**: `khach-san-hoang-khiem` | **Phân loại**: `accommodation` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2542, 105.9628]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Khách sạn lưu trú tại số 88 đường Phạm Thái Bường, phường Phước Hậu, nhận khách từ 14:00 và trả phòng trước 12:00 với mức giá 300.000–600.000 đ/đêm.
 
 #### [Lọ Lem Homestay](https://vinhlong360.vn/dia-diem/lo-lem-homestay)
 - **Mã ID**: `lo-lem-homestay` | **Phân loại**: `accommodation` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.0663, 105.8344]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Homestay boutique tiện nghi tại phường Long Châu, mang đến không gian nghỉ dưỡng thanh lịch, ban công thoáng đãng và vị trí thuận tiện khám phá trung tâm thành phố.
 
 #### [Bến xe Miền Tây](https://vinhlong360.vn/dia-diem/ben-xe-mien-tay-hcm)
@@ -2468,7 +2468,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Bánh Nhật Ngọc](https://vinhlong360.vn/dia-diem/banh-nhat-ngoc)
 - **Mã ID**: `banh-nhat-ngoc` | **Phân loại**: `product` | **Địa bàn**: p-tan-hanh | **Tọa độ**: [10.2308, 105.9336]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Cơ sở sản xuất bánh đặc sản Vĩnh Long, chuyên các loại bánh truyền thống Vĩnh Long phục vụ du khách và người dân địa phương.
 
 #### [Bảo tàng văn hóa dân tộc Khmer](https://vinhlong360.vn/dia-diem/bao-tang-van-hoa-dan-toc-khmer)
@@ -2638,7 +2638,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Hồ Trúc Giang](https://vinhlong360.vn/dia-diem/ho-truc-giang)
 - **Mã ID**: `ho-truc-giang` | **Phân loại**: `nature` | **Địa bàn**: p-an-hoi | **Tọa độ**: [10.2386, 106.3782]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Có từ khoảng đầu thập niên 1930 ngay trung tâm thành phố Bến Tre, Hồ Trúc Giang rộng gần 2 ha là chỗ hẹn quen của dân xứ dừa — ai cũng gọi Bờ Hồ. Đường dạo trải đá quanh bờ rợp bóng cổ thụ, giữa hồ có nhà thủy tạ, chiều tà ghế đá ven nước luôn kín người hóng mát.
 
 #### [Vùng bưởi da xanh Châu Thành](https://vinhlong360.vn/dia-diem/vung-buoi-da-xanh-chau-thanh)
@@ -3648,7 +3648,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Cửa hàng đặc sản Mekong](https://vinhlong360.vn/dia-diem/cua-hang-dac-san-mekong)
 - **Mã ID**: `cua-hang-dac-san-mekong` | **Phân loại**: `attraction` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2520, 105.9734]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Cửa hàng đặc sản tại 92 Nguyễn Thị Minh Khai, phường Long Châu — trái cây tươi, bưởi sấy, kẹo dừa, mứt và quà tặng vùng ĐBSCL.
 
 #### [Điểm trưng bày OCOP Vĩnh Long](https://vinhlong360.vn/dia-diem/diem-trung-bay-ocop-vinh-long)
@@ -4133,7 +4133,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Khu du lịch sinh thái Sala](https://vinhlong360.vn/dia-diem/khu-du-lich-sinh-thai-sala)
 - **Mã ID**: `khu-du-lich-sinh-thai-sala` | **Phân loại**: `nature` | **Địa bàn**: p-tam-binh | **Tọa độ**: [10.2542, 105.9628]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Khu du lịch sinh thái rộng 20 ha tại xã Mỹ Thạnh Trung, tổng đầu tư hơn 40 tỷ đồng, cách phường Long Châu khoảng 25 km, nổi bật với hai phân khu Sala Farm và Sala Amazing.
 
 #### [Chùa Quan Âm Trà Ôn (Mái Ấm Quan Âm)](https://vinhlong360.vn/dia-diem/chua-quan-am-tra-on-mai-am-quan-am)
@@ -4388,7 +4388,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Bánh tét Trà Cuôn](https://vinhlong360.vn/dia-diem/banh-tet-tra-cuon)
 - **Mã ID**: `banh-tet-tra-cuon` | **Phân loại**: `product` | **Địa bàn**: xa-vinh-kim | **Tọa độ**: [9.9516, 106.3322]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Đặc sản di sản ẩm thực danh tiếng của ấp Trà Cuôn, xã Kim Hòa, huyện Cầu Ngang, đòn bánh nếp dẻo quánh ba màu nhân trứng muối, đậu xanh và thịt mỡ.
 
 #### [Đạp xe khám phá miệt vườn An Bình](https://vinhlong360.vn/dia-diem/dap-xe-miet-vuon)
@@ -5403,7 +5403,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Linga và Yoni Lưu Cừ II](https://vinhlong360.vn/dia-diem/linga-va-yoni-luu-cu-ii)
 - **Mã ID**: `linga-va-yoni-luu-cu-ii` | **Phân loại**: `history` | **Địa bàn**: xa-luu-nghiep-anh | **Tọa độ**: [9.7163, 106.1961]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Cặp hiện vật thờ tự Bà La Môn khai quật tại di tích Lưu Cừ II, được Thủ tướng Chính phủ ký quyết định công nhận là Bảo vật quốc gia.
 
 #### [Lầu Bà (Lầu Bà Cố Hỷ)](https://vinhlong360.vn/dia-diem/lau-ba-lau-ba-co-hy)
@@ -6038,7 +6038,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Homestay Làng Bè](https://vinhlong360.vn/dia-diem/homestay-lang-be)
 - **Mã ID**: `homestay-lang-be` | **Phân loại**: `accommodation` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.2539, 105.9722]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Mô hình homestay làng bè nổi độc đáo trên sông Tiền tại xã An Khánh, mang đến trải nghiệm nghỉ đêm bồng bềnh sóng nước và câu cá thư giãn.
 
 #### [KS nhà cổ Cầu Kè](https://vinhlong360.vn/dia-diem/ks-nha-co-cau-ke)
@@ -6523,7 +6523,7 @@ Thông tin hình ảnh dưới đây chỉ nêu loại minh họa hoặc bằng 
 
 #### [Năm Thành Homestay](https://vinhlong360.vn/dia-diem/nam-thanh-homestay)
 - **Mã ID**: `nam-thanh-homestay` | **Phân loại**: `accommodation` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.2649, 105.9666]
-- **Hình ảnh**: Chưa có ảnh đã xác minh nguồn gốc.
+- **Hình ảnh**: Minh họa AI — không phải ảnh chụp tại chỗ.
 - **Tóm lược**: Vườn trái cây vây quanh chỗ ngủ ở cù lao An Bình — Năm Thành Homestay, số 172/9 ấp Bình Lương, Vĩnh Long, giá 300.000–600.000 đồng/đêm.
 
 #### [Hoàn Mỹ Homestay](https://vinhlong360.vn/dia-diem/hoan-my-homestay)
