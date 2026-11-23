@@ -882,6 +882,7 @@ useHead({
 .compose-input {
   width: 100%; border: none; background: transparent; color: var(--ink);
   font-size: var(--text-base); line-height: var(--leading-relaxed);
+  field-sizing: content; height: auto; min-block-size: 3lh; max-block-size: 14lh;
   resize: none; outline: none; font-family: inherit; min-height: 44px; padding: 0;
 }
 .compose-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }

@@ -641,11 +641,16 @@ if (itinerary.value && !itinerary.value.error) {
   transition: transform .25s var(--ease-out-expo);
 }
 .day-arc-dot:hover { transform: translateX(-50%) scale(1.18); }
-.day-arc-dot:nth-child(2) { animation-delay: .18s; }
-.day-arc-dot:nth-child(3) { animation-delay: .22s; }
-.day-arc-dot:nth-child(4) { animation-delay: .26s; }
-.day-arc-dot:nth-child(5) { animation-delay: .30s; }
-.day-arc-dot:nth-child(n+6) { animation-delay: .34s; }
+@supports (animation-delay: calc(sibling-index() * 0.1s)) {
+  .day-arc-dot { animation-delay: min(calc(sibling-index() * 0.04s + 0.10s), 0.34s); }
+}
+@supports not (animation-delay: calc(sibling-index() * 0.1s)) {
+  .day-arc-dot:nth-child(2) { animation-delay: .18s; }
+  .day-arc-dot:nth-child(3) { animation-delay: .22s; }
+  .day-arc-dot:nth-child(4) { animation-delay: .26s; }
+  .day-arc-dot:nth-child(5) { animation-delay: .30s; }
+  .day-arc-dot:nth-child(n+6) { animation-delay: .34s; }
+}
 @keyframes dayArcDotIn { from { opacity: 0; transform: translateX(-50%) translateY(4px); } }
 .day-arc-dot-num { line-height: 1; }
 .day-arc-legend {

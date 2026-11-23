@@ -205,6 +205,7 @@
 <script setup lang="ts">
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describePostImages } from '~/utils/imageDescriptors'
+import { isImeComposing } from '~/utils/ime'
 
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Kiểm duyệt — Admin' })
@@ -405,6 +406,7 @@ const focusIdx = ref(-1)
 const focusedPost = computed(() => queue.value[focusIdx.value] || null)
 
 function onKeydown(e: KeyboardEvent) {
+  if (isImeComposing(e)) return
   if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'TEXTAREA') return
   if (e.key === 'j') { focusIdx.value = Math.min(focusIdx.value + 1, queue.value.length - 1); e.preventDefault(); nextTick(() => document.querySelector('.mod-focused')?.scrollIntoView({ block: 'nearest' })) }
   else if (e.key === 'k') { focusIdx.value = Math.max(focusIdx.value - 1, 0); e.preventDefault(); nextTick(() => document.querySelector('.mod-focused')?.scrollIntoView({ block: 'nearest' })) }

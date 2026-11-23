@@ -214,6 +214,125 @@ def _build_sparse_vectors(
     return vectors
 
 
+_BM25F_FIELD_SPECS: tuple[tuple[str, float, float], ...] = (
+    ("name", 3.0, 0.50),
+    ("tags_type", 2.0, 0.50),
+    ("summary", 1.0, 0.75),
+)
+_BM25F_K1 = 1.5
+_RRF_K = 60.0
+_TRIGRAM_MIN_SIM = 0.35
+
+
+def _char_trigrams(text: str) -> frozenset[str]:
+    """Build padded character 3-grams over Vietnamese-folded tokens for fuzzy recovery."""
+    folded = _strip_vietnamese_diacritics(normalize_vietnamese(text))
+    grams: set[str] = set()
+    for word in folded.split():
+        if len(word) < 3:
+            continue
+        padded = f" {word} "
+        for idx in range(len(padded) - 2):
+            grams.add(padded[idx : idx + 3])
+    return frozenset(grams)
+
+
+def _entity_field_texts(entity: dict) -> dict[str, str]:
+    """Extract structured searchable texts per BM25F field."""
+    tags = entity.get("tags") or []
+    tags_str = " ".join(str(t) for t in tags) if isinstance(tags, list) else str(tags)
+    summary = str(entity.get("summary") or "")
+    season = entity.get("season")
+    if season:
+        summary = f"{summary} mùa {season}".strip()
+    return {
+        "name": str(entity.get("name") or ""),
+        "tags_type": f"{entity.get('type') or ''} {tags_str}".strip(),
+        "summary": summary,
+    }
+
+
+def _accumulate_doc_bm25f(
+    eid: str,
+    fields: dict[str, list[str]],
+    avg_lens: dict[str, float],
+    bm25f_postings: dict[str, list[tuple[str, float]]],
+    bm25f_df: Counter,
+) -> None:
+    """Populate length-normalized BM25F postings for a single entity document."""
+    pseudo_tf: dict[str, float] = defaultdict(float)
+    for fname, weight, b_val in _BM25F_FIELD_SPECS:
+        toks = fields[fname]
+        if not toks:
+            continue
+        dl_norm = (1.0 - b_val) + b_val * (len(toks) / avg_lens[fname])
+        scale = weight / max(dl_norm, 0.25)
+        for tok, cnt in Counter(toks).items():
+            pseudo_tf[tok] += scale * cnt
+    for tok, ptf in pseudo_tf.items():
+        bm25f_postings[tok].append((eid, ptf))
+        bm25f_df[tok] += 1
+
+
+def _collect_field_postings(
+    entities: dict,
+) -> tuple[dict[str, list[tuple[str, float]]], dict[str, int], dict[str, frozenset[str]], dict[str, list[str]]]:
+    """Build sparse BM25F inverted postings and character 3-gram postings."""
+    per_doc_fields: dict[str, dict[str, list[str]]] = {}
+    field_totals: Counter = Counter()
+    doc_trigrams: dict[str, frozenset[str]] = {}
+    trigram_postings: dict[str, list[str]] = defaultdict(list)
+
+    for eid, entity in entities.items():
+        if entity.get("type") == "place":
+            continue
+        texts = _entity_field_texts(entity)
+        fields = {fname: tokenize(ftext) for fname, ftext in texts.items()}
+        per_doc_fields[eid] = fields
+        for fname, toks in fields.items():
+            field_totals[fname] += len(toks)
+        tri = _char_trigrams(f"{texts['name']} {texts['tags_type']}")
+        if tri:
+            doc_trigrams[eid] = tri
+            for gram in tri:
+                trigram_postings[gram].append(eid)
+
+    n_docs = max(len(per_doc_fields), 1)
+    avg_lens = {fname: max(field_totals[fname] / n_docs, 1.0) for fname, _, _ in _BM25F_FIELD_SPECS}
+    bm25f_postings: dict[str, list[tuple[str, float]]] = defaultdict(list)
+    bm25f_df: Counter = Counter()
+    for eid, fields in per_doc_fields.items():
+        _accumulate_doc_bm25f(eid, fields, avg_lens, bm25f_postings, bm25f_df)
+
+    return dict(bm25f_postings), dict(bm25f_df), doc_trigrams, dict(trigram_postings)
+
+
+def _score_trigram_candidates(
+    query: str,
+    trigram_postings: dict[str, list[str]],
+    doc_trigrams: dict[str, frozenset[str]],
+    excluded_ids: set[str],
+) -> dict[str, float]:
+    """Recover near-miss typo matches via asymmetric Tversky trigram similarity."""
+    q_tris = _char_trigrams(query)
+    if not q_tris or not trigram_postings:
+        return {}
+    overlap_counts: Counter = Counter()
+    for gram in q_tris:
+        for eid in trigram_postings.get(gram, ()):
+            if eid not in excluded_ids:
+                overlap_counts[eid] += 1
+    recovered: dict[str, float] = {}
+    q_len = len(q_tris)
+    for eid, inter in overlap_counts.items():
+        d_len = len(doc_trigrams.get(eid, ()))
+        denom = inter + 0.8 * max(0, q_len - inter) + 0.2 * min(max(0, d_len - inter), q_len)
+        sim = inter / denom if denom > 0 else 0.0
+        if sim >= _TRIGRAM_MIN_SIM:
+            recovered[eid] = round(min(0.45, 0.45 * sim), 4)
+    return recovered
+
+
 class TFIDFStore:
     """
     Local TF-IDF vector store for semantic search.
@@ -237,6 +356,11 @@ class TFIDFStore:
         self._postings_vec_len: int = 0
         self._texts: dict[str, str] = {}              # entity_id → source text
         self._doc_count: int = 0
+        # BM25F structured field postings & trigram fuzzy index
+        self._bm25f_postings: dict[str, list[tuple[str, float]]] = {}
+        self._bm25f_df: dict[str, int] = {}
+        self._doc_trigrams: dict[str, frozenset[str]] = {}
+        self._trigram_postings: dict[str, list[str]] = {}
 
     def _rebuild_postings(self) -> None:
         postings: dict[str, list[tuple[str, float]]] = defaultdict(list)
@@ -320,6 +444,12 @@ class TFIDFStore:
             self._texts = docs
             self._vectors = _build_sparse_vectors(doc_tokens, self._idf)
             self._rebuild_postings()
+            (
+                self._bm25f_postings,
+                self._bm25f_df,
+                self._doc_trigrams,
+                self._trigram_postings,
+            ) = _collect_field_postings(entities)
 
             self._save()
             return {
@@ -360,7 +490,7 @@ class TFIDFStore:
 
     def search(self, query: str, top_k: int = 10) -> list[dict]:
         """
-        Semantic search: TF-IDF query → cosine similarity against all entities.
+        Field-weighted BM25F + TF-IDF cosine search with 3-gram typo recovery.
 
         Returns: [{entity_id, score}, ...] sorted by score descending.
         """
@@ -374,26 +504,30 @@ class TFIDFStore:
             ):
                 self._rebuild_postings()
             query_vec = self._embed_query(query)
-            if query_vec is None:
-                return []
-            postings = self._postings
+            cos_scores = _score_cosine_query(query_vec, self._postings)
+            bm25f_scores = _score_bm25f_query(
+                tokenize(query), self._bm25f_postings, self._bm25f_df, self._doc_count
+            ) if self._bm25f_postings else {}
 
-            # Sparse cosine via inverted postings index:
-            # chỉ duyệt các entity thực sự chứa ít nhất 1 token của query.
-            acc: dict[str, float] = defaultdict(float)
-            for token, qw in query_vec.items():
-                posting_list = postings.get(token)
-                if posting_list:
-                    for eid, w in posting_list:
-                        acc[eid] += qw * w
-
-        scores = [
-            {"entity_id": eid, "score": round(sim, 4)}
-            for eid, sim in acc.items()
-            if sim > 0.01
-        ]
-        scores.sort(key=lambda x: x["score"], reverse=True)
-        return scores[:top_k]
+            merged_scores = _blend_retrieval_scores(bm25f_scores, cos_scores)
+            results = [
+                {"entity_id": eid, "score": sc}
+                for eid, sc in merged_scores.items()
+                if sc > 0.01
+            ]
+            results.sort(key=lambda x: x["score"], reverse=True)
+            if len(results) < top_k and self._trigram_postings:
+                matched_ids = {r["entity_id"] for r in results}
+                fuzzy = _score_trigram_candidates(
+                    query, self._trigram_postings, self._doc_trigrams, matched_ids
+                )
+                extra = [
+                    {"entity_id": eid, "score": round(min(0.25, sc * 0.55), 4)}
+                    for eid, sc in fuzzy.items()
+                ]
+                extra.sort(key=lambda x: x["score"], reverse=True)
+                results.extend(extra[: max(0, top_k - len(results))])
+            return results[:top_k]
 
     def stats(self) -> dict:
         with self._lock:
@@ -416,6 +550,85 @@ embedding_store = TFIDFStore()
 #  HYBRID SEARCH
 # ══════════════════════════════════════════════════
 
+def _score_cosine_query(
+    query_vec: dict[str, float] | None,
+    postings: dict[str, list[tuple[str, float]]],
+) -> dict[str, float]:
+    """Accumulate sparse cosine similarity scores from inverted postings."""
+    if not query_vec:
+        return {}
+    acc: dict[str, float] = defaultdict(float)
+    for token, qw in query_vec.items():
+        for eid, w in postings.get(token, ()):
+            acc[eid] += qw * w
+    return dict(acc)
+
+
+def _score_bm25f_query(
+    query_tokens: list[str],
+    bm25f_postings: dict[str, list[tuple[str, float]]],
+    bm25f_df: dict[str, int],
+    doc_count: int,
+) -> dict[str, float]:
+    """Compute normalized BM25F field-weighted scores across candidate docs."""
+    if not query_tokens or not bm25f_postings or doc_count <= 0:
+        return {}
+    acc: dict[str, float] = defaultdict(float)
+    for qt in dict.fromkeys(query_tokens):
+        plist = bm25f_postings.get(qt)
+        if not plist:
+            continue
+        df = bm25f_df.get(qt, 0)
+        idf = math.log((doc_count - df + 0.5) / (df + 0.5) + 1.0)
+        for eid, ptf in plist:
+            acc[eid] += idf * ((ptf * (_BM25F_K1 + 1.0)) / (_BM25F_K1 + ptf))
+    return {eid: raw / (raw + 2.0) for eid, raw in acc.items() if raw > 0.0}
+
+
+def _blend_retrieval_scores(
+    bm25f_scores: dict[str, float],
+    cos_scores: dict[str, float],
+) -> dict[str, float]:
+    """Combine normalized BM25F field scores and sparse TF-IDF cosine."""
+    if not bm25f_scores:
+        return {eid: round(sc, 4) for eid, sc in cos_scores.items()}
+    blended: dict[str, float] = {}
+    for eid in set(bm25f_scores) | set(cos_scores):
+        sc = 0.70 * bm25f_scores.get(eid, 0.0) + 0.30 * cos_scores.get(eid, 0.0)
+        blended[eid] = round(sc, 4)
+    return blended
+
+
+def _rrf_blend(
+    keyword_results: list[dict],
+    semantic_results: list[dict],
+    semantic_weight: float,
+) -> list[dict]:
+    """Fuse keyword and semantic ranked lists via Weighted RRF."""
+    kw = 1.0 - semantic_weight
+    sw = semantic_weight
+    kw_pos = max(len(keyword_results), 1)
+    keyword_ranks: dict[str, tuple[int, float]] = {}
+    for rank, e in enumerate(keyword_results, 1):
+        eid = e.get("id", e.get("entity_id", ""))
+        if eid and eid not in keyword_ranks:
+            keyword_ranks[eid] = (rank, 1.0 - ((rank - 1) / kw_pos))
+    semantic_ranks = {
+        r["entity_id"]: (rank, float(r.get("score") or 0.0))
+        for rank, r in enumerate(semantic_results, 1)
+    }
+
+    hybrid: list[dict] = []
+    for eid in set(keyword_ranks) | set(semantic_ranks):
+        kr, ks = keyword_ranks.get(eid, (0, 0.0))
+        sr, ss = semantic_ranks.get(eid, (0, 0.0))
+        rrf = (kw / (_RRF_K + kr) if kr else 0.0) + (sw / (_RRF_K + sr) if sr else 0.0)
+        score = rrf + 1e-4 * (kw * ks + sw * ss)
+        hybrid.append({"entity_id": eid, "hybrid_score": round(score, 6)})
+    hybrid.sort(key=lambda x: x["hybrid_score"], reverse=True)
+    return hybrid
+
+
 def hybrid_search(
     query: str,
     keyword_results: list[dict],
@@ -423,68 +636,35 @@ def hybrid_search(
     top_k: int = 10,
 ) -> list[dict]:
     """
-    Combine keyword search results with semantic search.
+    Combine keyword search results with semantic search using Weighted RRF.
 
     Args:
         query: user query string
         keyword_results: results from knowledge.search_entities()
-        semantic_weight: weight for semantic score (0-1). Keyword weight = 1 - semantic_weight.
+        semantic_weight: weight for semantic leg (0-1). Keyword weight = 1 - semantic_weight.
         top_k: number of results to return
 
     Returns: merged and re-ranked list of entities
     """
-    # Get semantic results
     semantic_results = embedding_store.search(query, top_k=top_k * 2)
-
     if not semantic_results:
-        # Fallback: semantic search unavailable, return keyword results as-is
         return keyword_results[:top_k]
 
-    # Build score maps
-    keyword_scores = {}
-    for i, e in enumerate(keyword_results):
-        eid = e.get("id", e.get("entity_id", ""))
-        # Normalize rank to 0-1 score (first result = 1.0)
-        keyword_scores[eid] = 1.0 - (i / max(len(keyword_results), 1))
-
-    semantic_scores = {}
-    for r in semantic_results:
-        semantic_scores[r["entity_id"]] = r["score"]
-
-    # Merge all candidate IDs
-    all_ids = set(keyword_scores.keys()) | set(semantic_scores.keys())
-
-    # Calculate hybrid scores
-    hybrid = []
-    kw = 1 - semantic_weight
-    sw = semantic_weight
-    for eid in all_ids:
-        ks = keyword_scores.get(eid, 0)
-        ss = semantic_scores.get(eid, 0)
-        score = kw * ks + sw * ss
-        hybrid.append({"entity_id": eid, "hybrid_score": round(score, 4),
-                        "keyword_score": round(ks, 4), "semantic_score": round(ss, 4)})
-
-    hybrid.sort(key=lambda x: x["hybrid_score"], reverse=True)
-
-    # Re-attach full entity data from keyword results
+    hybrid = _rrf_blend(keyword_results, semantic_results, semantic_weight)
     entity_map = {e.get("id", e.get("entity_id", "")): e for e in keyword_results}
-
-    merged = []
+    merged: list[dict] = []
     for h in hybrid[:top_k]:
         eid = h["entity_id"]
         if eid in entity_map:
             merged.append(entity_map[eid])
-        else:
-            # Entity found by semantic search but not keyword — fetch from knowledge
-            try:
-                import knowledge
-                e = knowledge.get_entity(eid)
-                if e:
-                    merged.append(e)
-            except Exception:
-                logger.debug("Could not fetch entity %s from knowledge", eid, exc_info=True)
-
+            continue
+        try:
+            import knowledge
+            entity = knowledge.get_entity(eid)
+            if entity:
+                merged.append(entity)
+        except Exception:
+            logger.debug("Could not fetch entity %s from knowledge", eid, exc_info=True)
     return merged
 
 

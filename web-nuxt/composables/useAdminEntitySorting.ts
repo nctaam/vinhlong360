@@ -28,7 +28,7 @@ export function useAdminEntitySorting<T extends Record<string, any>>(items: Ref<
     if (!sortKey.value) return items.value
     const k = sortKey.value
     const dir = sortDir.value === 'asc' ? 1 : -1
-    return [...items.value].sort((a, b) =>
+    return items.value.toSorted((a, b) =>
       VI_COLLATOR.compare(String(a[k] ?? ''), String(b[k] ?? '')) * dir,
     )
   })

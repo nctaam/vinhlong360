@@ -38,7 +38,6 @@
           <p>Quyết định khám phá</p>
           <h2 id="catalog-filter-title">Chọn cách khám phá</h2>
         </div>
-        <p>Chọn một nhịp đi, rồi tinh chỉnh loại và thời điểm trước khi đọc kết quả.</p>
       </header>
       <div class="mode-dial" role="group" aria-label="Chọn cách khám phá">
         <button

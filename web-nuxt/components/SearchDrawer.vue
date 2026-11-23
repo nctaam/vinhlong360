@@ -55,7 +55,7 @@
               placeholder="Tìm di sản, lò gạch, cù lao, món ngon…"
               aria-label="Nhập từ khóa tìm kiếm"
               enterkeyhint="search"
-              @keydown.enter="executeSearch"
+              @keydown.enter="onSearchEnter"
             />
             <button
               v-if="searchQuery.trim()"
@@ -231,6 +231,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { isImeComposing } from '~/utils/ime'
 
 const props = withDefaults(defineProps<{
   modelValue?: boolean
@@ -373,6 +374,12 @@ function closeDrawer() {
   emit('update:modelValue', false)
   emit('update:open', false)
   emit('close')
+}
+
+function onSearchEnter(e: KeyboardEvent) {
+  e.preventDefault()
+  if (isImeComposing(e)) return
+  executeSearch()
 }
 
 function executeSearch() {

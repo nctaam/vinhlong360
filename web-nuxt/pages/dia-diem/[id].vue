@@ -326,23 +326,23 @@
           <NuxtLink v-if="hasCoords" class="hl hl-action" data-color-role="action-secondary" data-contact-action="map" :to="mapUrl" :aria-label="`Xem ${entity.name} trên bản đồ`" @click="trackContact('map')"><IconLine name="map" aria-hidden="true" /> Bản đồ</NuxtLink>
         </div>
 
-        <!-- Editorial Dossier: Dải tóm lược thực địa nhanh -->
-        <div class="detail-at-a-glance" role="region" aria-label="Tóm lược thực địa">
-          <div class="dc-field-fact">
+        <!-- Editorial Dossier: Dải tóm lược thực địa nhanh (chỉ hiện trường có dữ liệu thực) -->
+        <div v-if="hasAtAGlanceFacts" class="detail-at-a-glance" role="region" aria-label="Tóm lược thực địa">
+          <div v-if="atAGlanceHours" class="dc-field-fact">
             <IconLine name="clock" aria-hidden="true" />
-            <span><strong>Giờ mở cửa:</strong> {{ entity.attributes?.hours || 'Mở cửa cả ngày' }}</span>
+            <span><strong>Giờ mở cửa:</strong> {{ atAGlanceHours }}</span>
           </div>
-          <div class="dc-field-fact">
+          <div v-if="atAGlanceFee" class="dc-field-fact">
             <IconLine name="ticket" aria-hidden="true" />
-            <span><strong>Vé tham quan:</strong> {{ entity.attributes?.admission || entity.attributes?.fee || 'Miễn phí' }}</span>
+            <span><strong>Vé tham quan:</strong> {{ atAGlanceFee }}</span>
           </div>
-          <div class="dc-field-fact">
+          <div v-if="atAGlanceBestTime" class="dc-field-fact">
             <IconLine name="sun" aria-hidden="true" />
-            <span><strong>Thời điểm đẹp:</strong> {{ entity.attributes?.best_time || seasonLabel || 'Sáng sớm & chiều mát' }}</span>
+            <span><strong>Thời điểm đẹp:</strong> {{ atAGlanceBestTime }}</span>
           </div>
-          <div v-if="entity.attributes?.transport || entity.attributes?.vehicle_access" class="dc-field-fact">
+          <div v-if="atAGlanceTransport" class="dc-field-fact">
             <IconLine name="car" aria-hidden="true" />
-            <span><strong>Di chuyển:</strong> {{ entity.attributes?.transport || entity.attributes?.vehicle_access }}</span>
+            <span><strong>Di chuyển:</strong> {{ atAGlanceTransport }}</span>
           </div>
         </div>
 
@@ -350,8 +350,8 @@
           {{ entity.summary }}
         </p>
 
-        <!-- Green Tourism Criteria badge -->
-        <div class="green-tourism-badge" data-green-tourism="vinhlong">
+        <!-- Green Tourism Criteria badge (chỉ áp dụng cho điểm sinh thái, thiên nhiên, trải nghiệm, làng nghề) -->
+        <div v-if="isGreenTourismEligible" class="green-tourism-badge" data-green-tourism="vinhlong">
           <VernacularGlyph name="green-lotus" class="gt-icon" aria-hidden="true" />
           <div class="gt-content">
             <strong class="gt-label">Tiêu chí Du lịch Xanh Vĩnh Long</strong>
@@ -847,9 +847,25 @@ const heroPlaceholderBg = computed(() =>
 // Oversized off-centre category motif glyph (same watermark system as EntityHeroPlaceholder)
 // so the no-photo hero reads as an intentional editorial cover, not a bare gradient.
 const heroMotifSvg = computed(() => generateCategoryIcon(typeMeta.value.cat))
-// Editorial dateline eyebrow: "{TYPE} · {AREA}" (area from the page's own resolver).
+// Editorial dateline eyebrow: region context only (typeMeta.label is already rendered by .dc-type-chip).
 const heroDateline = computed(() =>
-  areaName.value ? `${typeMeta.value.label} · ${areaName.value}` : typeMeta.value.label)
+  areaName.value && areaName.value !== entity.value?.place_name ? areaName.value : '')
+const atAGlanceHours = computed(() => entity.value?.attributes?.hours || '')
+const atAGlanceFee = computed(() => entity.value?.attributes?.admission || entity.value?.attributes?.fee || '')
+const atAGlanceBestTime = computed(() => entity.value?.attributes?.best_time || seasonLabel.value || '')
+const atAGlanceTransport = computed(() => entity.value?.attributes?.transport || entity.value?.attributes?.vehicle_access || '')
+const hasAtAGlanceFacts = computed(() => Boolean(
+  atAGlanceHours.value || atAGlanceFee.value || atAGlanceBestTime.value || atAGlanceTransport.value,
+))
+const GREEN_TOURISM_TYPES = new Set(['nature', 'attraction', 'experience', 'craft_village'])
+const isGreenTourismEligible = computed(() => {
+  const e = entity.value
+  if (!e) return false
+  if (GREEN_TOURISM_TYPES.has(e.type)) return true
+  const rawTags = (e as { tags?: unknown }).tags
+  const tags = Array.isArray(rawTags) ? rawTags : []
+  return tags.some((t: unknown) => /sinh[-_ ]?th[aá]i|eco|xanh|m[iị][eệ]t[-_ ]?v[uư][oơờ]n/i.test(String(t)))
+})
 // Cover-story hook (one line): highlight → famous_for → first sentence of description.
 const heroHook = computed(() => {
   if (!entity.value) return ''

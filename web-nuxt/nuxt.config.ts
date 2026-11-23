@@ -125,7 +125,7 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
       ],
       script: [
-        { innerHTML: "try{var d=document.documentElement,p=JSON.parse(localStorage.getItem('vl360-accessibility-profile')||'null')||{},s=[1,1.25,1.5,2].includes(p.textScale)?p.textScale:1,t=p.theme==='parchment'?'parchment':'nocturne',m=t==='parchment'?'light':'dark',n=p.density==='compact'?'compact':'comfortable';localStorage.setItem('vl360-color-mode',m);d.classList.remove('light','dark');d.classList.add(m);d.dataset.theme=t;d.dataset.density=n;d.style.setProperty('--a11y-text-scale',String(s));d.style.setProperty('--a11y-text-scale-percent',(s*100)+'%');if(localStorage.getItem('vl360_elder_mode')==='true'){d.setAttribute('data-reading-mode','elder');d.setAttribute('data-elder-mode','true')}if(localStorage.getItem('vl360_high_glare')==='true'){d.setAttribute('data-outdoor-contrast','high')}if(localStorage.getItem('vl360_eco_mode')==='true'){d.setAttribute('data-eco-mode','true');d.dataset.ecoMode='true'}}catch(_){ }", tagPosition: 'head' },
+        { innerHTML: "try{var d=document.documentElement,p=JSON.parse(localStorage.getItem('vl360-accessibility-profile')||'null')||{},s=[1,1.25,1.5,2].includes(p.textScale)?p.textScale:1,t=p.theme==='parchment'?'parchment':'nocturne',m=t==='parchment'?'light':'dark',n=p.density==='compact'?'compact':'comfortable';localStorage.setItem('vl360-color-mode',m);d.classList.remove('light','dark');d.classList.add(m);d.dataset.theme=t;d.dataset.density=n;d.style.setProperty('--a11y-text-scale',String(s));d.style.setProperty('--a11y-text-scale-percent',(s*100)+'%');var cm=document.querySelector('meta[name=\"color-scheme\"]');if(cm)cm.setAttribute('content',m);if(localStorage.getItem('vl360_elder_mode')==='true'){d.setAttribute('data-reading-mode','elder');d.setAttribute('data-elder-mode','true')}if(localStorage.getItem('vl360_high_glare')==='true'){d.setAttribute('data-outdoor-contrast','high')}if(localStorage.getItem('vl360_eco_mode')==='true'){d.setAttribute('data-eco-mode','true');d.dataset.ecoMode='true'}}catch(_){ }", tagPosition: 'head' },
         // Add `js` to <html> BEFORE first paint so the JS-gated .reveal rule
         // (html.js .reveal { opacity:0 }) only ever hides content when JS is
         // present — no flash-of-hidden, and full visibility when JS is off/slow.
@@ -224,7 +224,7 @@ export default defineNuxtConfig({
   vite: {
     build: {
       // Compress shared and route CSS as one graph so repeated design tokens
-      // are not paid for once per lazy chunk.
+      // are deduplicated in one gzip stream (R30.7 CSS budget <= 187 KiB gz).
       cssCodeSplit: false,
     },
     // MapLibre is loaded as same-origin split ESM assets by maplibre-loader;

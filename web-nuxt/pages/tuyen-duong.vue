@@ -602,12 +602,17 @@ useHead(() => {
   animation: railStopIn .4s var(--ease-out) both;
 }
 .rail-stop:last-child { margin-bottom: 0; }
-.rail-stop:nth-child(1) { animation-delay: 40ms; }
-.rail-stop:nth-child(2) { animation-delay: 80ms; }
-.rail-stop:nth-child(3) { animation-delay: 120ms; }
-.rail-stop:nth-child(4) { animation-delay: 160ms; }
-.rail-stop:nth-child(5) { animation-delay: 200ms; }
-.rail-stop:nth-child(n+6) { animation-delay: 240ms; }
+@supports (animation-delay: calc(sibling-index() * 0.1s)) {
+  .rail-stop { animation-delay: min(calc(sibling-index() * 40ms), 240ms); }
+}
+@supports not (animation-delay: calc(sibling-index() * 0.1s)) {
+  .rail-stop:nth-child(1) { animation-delay: 40ms; }
+  .rail-stop:nth-child(2) { animation-delay: 80ms; }
+  .rail-stop:nth-child(3) { animation-delay: 120ms; }
+  .rail-stop:nth-child(4) { animation-delay: 160ms; }
+  .rail-stop:nth-child(5) { animation-delay: 200ms; }
+  .rail-stop:nth-child(n+6) { animation-delay: 240ms; }
+}
 @keyframes railStopIn { from { opacity: 0; transform: translateY(4px); } }
 .rail-dot {
   position: absolute; left: 2px; top: 1px;
@@ -640,12 +645,17 @@ useHead(() => {
 }
 /* staggered entrance for route cards, tying into the batch signature rhythm */
 .route-grid > .route-card { animation: card-rise .55s var(--ease-out-expo) both; }
-.route-grid > .route-card:nth-child(1) { animation-delay: .02s; }
-.route-grid > .route-card:nth-child(2) { animation-delay: .06s; }
-.route-grid > .route-card:nth-child(3) { animation-delay: .10s; }
-.route-grid > .route-card:nth-child(4) { animation-delay: .14s; }
-.route-grid > .route-card:nth-child(5) { animation-delay: .18s; }
-.route-grid > .route-card:nth-child(n+6) { animation-delay: .22s; }
+@supports (animation-delay: calc(sibling-index() * 0.1s)) {
+  .route-grid > .route-card { animation-delay: min(calc((sibling-index() - 1) * 0.04s + 0.02s), 0.22s); }
+}
+@supports not (animation-delay: calc(sibling-index() * 0.1s)) {
+  .route-grid > .route-card:nth-child(1) { animation-delay: .02s; }
+  .route-grid > .route-card:nth-child(2) { animation-delay: .06s; }
+  .route-grid > .route-card:nth-child(3) { animation-delay: .10s; }
+  .route-grid > .route-card:nth-child(4) { animation-delay: .14s; }
+  .route-grid > .route-card:nth-child(5) { animation-delay: .18s; }
+  .route-grid > .route-card:nth-child(n+6) { animation-delay: .22s; }
+}
 .route-links { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .route-links .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
 .route-links .btn:active { transform: scale(.95); transition-duration: .08s; }

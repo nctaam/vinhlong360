@@ -1,4 +1,5 @@
 import type { Ref } from 'vue'
+import { isImeComposing } from '~/utils/ime'
 
 // @-mention dùng chung (composer cong-dong + ô bình luận bai-viet).
 // Quản lý dropdown gợi ý khi gõ "@..." và chèn mention vào `text`.
@@ -61,7 +62,13 @@ export function useMentionAutocomplete(
     if (!mentionOpen.value || !mentionResults.value.length) return false
     if (e.key === 'ArrowDown') { e.preventDefault(); mentionActive.value = (mentionActive.value + 1) % mentionResults.value.length; return true }
     if (e.key === 'ArrowUp') { e.preventDefault(); mentionActive.value = (mentionActive.value - 1 + mentionResults.value.length) % mentionResults.value.length; return true }
-    if (e.key === 'Enter') { e.preventDefault(); const item = mentionResults.value[mentionActive.value]; if (item) pick(item); return true }
+    if (e.key === 'Enter') {
+      if (isImeComposing(e)) return false
+      e.preventDefault()
+      const item = mentionResults.value[mentionActive.value]
+      if (item) pick(item)
+      return true
+    }
     if (e.key === 'Escape') { mentionOpen.value = false; return true }
     return false
   }

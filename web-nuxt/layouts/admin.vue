@@ -193,10 +193,21 @@ const currentWorkstreamLabel = computed(() => {
 })
 
 const isDark = ref(false)
+function applyAdminColorScheme(dark: boolean) {
+  document.documentElement.classList.toggle('dark', dark)
+  const meta = document.querySelector('meta[name="color-scheme"]')
+  if (meta) meta.setAttribute('content', dark ? 'dark' : 'light')
+}
 function toggleDark() {
   isDark.value = !isDark.value
-  document.documentElement.classList.toggle('dark', isDark.value)
+  applyAdminColorScheme(isDark.value)
   try { localStorage.setItem('theme', isDark.value ? 'dark' : 'light') } catch {}
+}
+function onAdminThemeStorage(e: StorageEvent) {
+  if (e.key !== 'theme') return
+  const dark = e.newValue === 'dark'
+  isDark.value = dark
+  applyAdminColorScheme(dark)
 }
 
 let badgeInterval: ReturnType<typeof setInterval> | undefined
@@ -204,6 +215,8 @@ function refreshBadgesWhenVisible() { if (!document.hidden) loadBadges() }
 onMounted(async () => {
   if (!user.value) await fetchMe()
   isDark.value = document.documentElement.classList.contains('dark')
+  applyAdminColorScheme(isDark.value)
+  window.addEventListener('storage', onAdminThemeStorage)
   loadBadges()
   badgeInterval = setInterval(refreshBadgesWhenVisible, 60_000)
   document.addEventListener('visibilitychange', refreshBadgesWhenVisible)
@@ -213,6 +226,7 @@ watch(() => route.fullPath, () => {
 })
 onUnmounted(() => {
   if (badgeInterval) clearInterval(badgeInterval)
+  window.removeEventListener('storage', onAdminThemeStorage)
   document.removeEventListener('visibilitychange', refreshBadgesWhenVisible)
 })
 

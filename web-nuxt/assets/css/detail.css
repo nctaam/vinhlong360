@@ -399,8 +399,8 @@
   .detail-aside { position: static; max-height: none; overflow-y: visible; margin-top: 0; padding-top: var(--space-5); border-top: .5px solid var(--line); }
   .detail-action-dock[data-detail-action-safe-area],
   .detail-action-dock {
-    margin-bottom: calc(var(--shell-public-bottom-nav-reserved-height, 64px) + 80px);
-    padding-bottom: max(var(--space-4), calc(var(--space-2) + env(safe-area-inset-bottom, 0px)));
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-2);
     position: relative;
     z-index: 20;
   }
@@ -408,6 +408,7 @@
     max-width: 100vw;
     overflow-x: clip;
     box-sizing: border-box;
+    padding-bottom: calc(var(--shell-public-bottom-nav-reserved-height, 64px) + 72px);
   }
 }
 @media (max-width: 768px) {

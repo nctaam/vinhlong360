@@ -282,3 +282,61 @@ def test_hybrid_search_respects_weights():
     # Both should return the keyword results as fallback
     assert len(r1) >= 1
     assert len(r2) >= 1
+
+
+def test_bm25f_prefers_name_match_over_summary_mention():
+    s = TFIDFStore()
+    s.build_index({
+        "summary-only": {
+            "name": "Cù lao An Bình",
+            "type": "attraction",
+            "summary": "Nổi tiếng với đặc sản bánh tét, thưởng thức bánh tét ngon mỗi dịp Tết bánh tét.",
+            "tags": ["sinh-thai"],
+        },
+        "exact-name": {
+            "name": "Bánh tét Trà Cuôn",
+            "type": "dish",
+            "summary": "Đặc sản nếp dẻo nổi tiếng của Trà Vinh.",
+            "tags": ["dac-san", "banh-tet"],
+        },
+    }, force=True)
+    results = s.search("banh tet", top_k=5)
+    assert len(results) == 2
+    assert results[0]["entity_id"] == "exact-name"
+
+
+def test_trigram_fallback_recovers_minor_typo():
+    s = TFIDFStore()
+    s.build_index({
+        "chua-ang": {
+            "name": "Chùa Âng Trà Vinh",
+            "type": "attraction",
+            "summary": "Ngôi chùa Khmer cổ kính soi bóng Ao Bà Om.",
+            "tags": ["khmer", "di-tich"],
+        },
+        "cho-noi": {
+            "name": "Bến phà Đình Khao",
+            "type": "experience",
+            "summary": "Cửa ngõ đường thủy qua sông Cổ Chiên.",
+            "tags": ["song-nuoc"],
+        },
+    }, force=True)
+    # Typo: "khmer" -> "khme", "chua" spelled without accents
+    results = s.search("khme trv", top_k=5)
+    assert any(r["entity_id"] == "chua-ang" for r in results)
+    assert s.search("xyzabc12345", top_k=5) == []
+
+
+def test_hybrid_search_rrf_boosts_consensus(sample_entities):
+    s = TFIDFStore()
+    s.build_index(sample_entities, force=True)
+    # "bun-nuoc-leo" is rank 2 in keyword_results AND rank 1 in semantic search for "bun nuoc leo",
+    # so RRF consensus should push it above a keyword-only rank 1 distractor.
+    keyword_results = [
+        {"id": "cam-sanh", "name": "Cam sanh Tam Binh"},
+        {"id": "bun-nuoc-leo", "name": "Bun nuoc leo"},
+    ]
+    from unittest.mock import patch
+    with patch("vector_search.embedding_store", s):
+        merged = hybrid_search("bun nuoc leo", keyword_results, semantic_weight=0.5, top_k=2)
+    assert merged[0]["id"] == "bun-nuoc-leo"

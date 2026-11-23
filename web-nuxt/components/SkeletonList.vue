@@ -33,11 +33,16 @@ withDefaults(defineProps<{ count?: number }>(), { count: 5 })
   background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet);
   animation: sklFade .45s var(--ease-out-expo) both;
 }
-.skl-row:nth-child(1) { animation-delay: 0s; }
-.skl-row:nth-child(2) { animation-delay: .06s; }
-.skl-row:nth-child(3) { animation-delay: .12s; }
-.skl-row:nth-child(4) { animation-delay: .18s; }
-.skl-row:nth-child(5) { animation-delay: .24s; }
+@supports (animation-delay: calc(sibling-index() * 0.1s)) {
+  .skl-row { animation-delay: min(calc((sibling-index() - 1) * 0.06s), 0.24s); }
+}
+@supports not (animation-delay: calc(sibling-index() * 0.1s)) {
+  .skl-row:nth-child(1) { animation-delay: 0s; }
+  .skl-row:nth-child(2) { animation-delay: .06s; }
+  .skl-row:nth-child(3) { animation-delay: .12s; }
+  .skl-row:nth-child(4) { animation-delay: .18s; }
+  .skl-row:nth-child(5) { animation-delay: .24s; }
+}
 .skl-badge {
   width: 56px; height: 56px; flex-shrink: 0; border-radius: 50%;
   background: linear-gradient(90deg, var(--bg-warm) 25%, var(--line, var(--sand-300)) 50%, var(--bg-warm) 75%);

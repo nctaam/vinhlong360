@@ -68,6 +68,7 @@ export function useCommunityQuoteAndComposer(options: CommunityQuoteAndComposerO
   }
 
   function autoGrow(e: Event) {
+    if (typeof CSS !== 'undefined' && typeof CSS.supports === 'function' && CSS.supports('field-sizing', 'content')) return
     const el = e.target as HTMLTextAreaElement
     el.style.height = 'auto'
     el.style.height = el.scrollHeight + 'px'

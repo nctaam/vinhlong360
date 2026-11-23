@@ -89,7 +89,7 @@ function exactKeys(value, expected, label, errorPrefix) {
     actual.push(key)
   }
   actual.sort()
-  const sortedExpected = [...expected].sort()
+  const sortedExpected = expected.toSorted()
   if (actual.join('\0') !== sortedExpected.join('\0')) {
     throw new Error(`${errorPrefix} ${label} keys mismatch`)
   }

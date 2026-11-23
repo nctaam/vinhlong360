@@ -193,7 +193,7 @@ function setRange(days: number) {
 }
 
 const sparkPoints = computed(() => {
-  const daily = (data.value.daily || []).slice().reverse()
+  const daily = (data.value.daily || []).toReversed()
   if (daily.length < 2) return ''
   const vals = daily.map(d => d.queries || 0)
   const max = Math.max(...vals, 1)

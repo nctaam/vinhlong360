@@ -27,7 +27,7 @@ import re
 from ocop import ocop_display_label
 import time
 import logging
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 from threading import Lock
 
@@ -321,6 +321,7 @@ class BM25:
         self._doc_tokens: dict[str, list[str]] = {}
         self._doc_lens: dict[str, int] = {}
         self._doc_tf: dict[str, Counter] = {}  # GĐ11.3: precompute TF/doc (bỏ Counter() mỗi query)
+        self._postings: dict[str, list[tuple[str, int]]] = {}  # token -> [(doc_id, tf)]
         self._avg_dl: float = 0.0
         self._df: dict[str, int] = {}   # document frequency per token
         self._N: int = 0                 # total number of documents
@@ -328,7 +329,7 @@ class BM25:
 
     def build_index(self, documents: dict[str, str]):
         """
-        Build BM25 index from document texts.
+        Build BM25 sparse inverted index from document texts.
 
         Args:
             documents: dict of doc_id -> text content
@@ -337,6 +338,7 @@ class BM25:
             self._doc_tokens = {}
             self._doc_lens = {}
             self._doc_tf = {}
+            postings: dict[str, list[tuple[str, int]]] = defaultdict(list)
             df: dict[str, int] = {}
             total_len = 0
 
@@ -344,13 +346,15 @@ class BM25:
                 tokens = _tokenize(text)
                 self._doc_tokens[doc_id] = tokens
                 self._doc_lens[doc_id] = len(tokens)
-                self._doc_tf[doc_id] = Counter(tokens)  # GĐ11.3: precompute 1 lần
+                tf_map = Counter(tokens)
+                self._doc_tf[doc_id] = tf_map
                 total_len += len(tokens)
 
-                unique = set(tokens)
-                for t in unique:
+                for t, freq in tf_map.items():
                     df[t] = df.get(t, 0) + 1
+                    postings[t].append((doc_id, freq))
 
+            self._postings = dict(postings)
             self._N = len(documents)
             self._avg_dl = total_len / max(self._N, 1)
             self._df = df
@@ -382,7 +386,7 @@ class BM25:
 
     def score(self, query: str, top_k: int = 10) -> list[dict]:
         """
-        Score all documents against query using BM25.
+        Score candidate documents against query via sparse inverted postings.
 
         Returns:
             list of {entity_id, score} sorted descending.
@@ -390,22 +394,33 @@ class BM25:
         if not self._built:
             return []
 
-        q_tokens = _tokenize(query)
+        q_tokens = list(dict.fromkeys(_tokenize(query)))
         if not q_tokens:
             return []
 
-        results: list[dict] = []
-
+        acc: dict[str, float] = defaultdict(float)
         with self._lock:
-            q_idfs = [(qt, self._idf(qt)) for qt in q_tokens]
-            for doc_id, doc_tf in self._doc_tf.items():  # GĐ11.3: dùng TF precompute
-                dl = self._doc_lens.get(doc_id, 0)
-                if dl == 0:
+            k1 = self.k1
+            k1_plus_1 = k1 + 1.0
+            base_len = 1.0 - self.b
+            avg_dl = max(self._avg_dl, 1.0)
+            for qt in q_tokens:
+                plist = self._postings.get(qt)
+                if not plist:
                     continue
-                s = self._score_doc(doc_tf, dl, q_idfs)
-                if s > 0.001:
-                    results.append({"entity_id": doc_id, "score": round(s, 4)})
+                idf = self._idf(qt)
+                for doc_id, tf in plist:
+                    dl = self._doc_lens.get(doc_id, 0)
+                    if dl <= 0:
+                        continue
+                    dl_norm = k1 * (base_len + self.b * (dl / avg_dl))
+                    acc[doc_id] += idf * ((tf * k1_plus_1) / (tf + dl_norm))
 
+        results = [
+            {"entity_id": doc_id, "score": round(s, 4)}
+            for doc_id, s in acc.items()
+            if s > 0.001
+        ]
         results.sort(key=lambda x: x["score"], reverse=True)
         return results[:top_k]
 
@@ -621,27 +636,53 @@ def _effective_weights(
     return w_bm25, w_sem, w_ctx
 
 
+def _rank_lookup(scores: dict[str, float]) -> dict[str, int]:
+    """Return 1-based rank per positive-scoring entity ID."""
+    ordered = sorted(
+        ((eid, s) for eid, s in scores.items() if s > 0),
+        key=lambda item: item[1],
+        reverse=True,
+    )
+    return {eid: rank for rank, (eid, _) in enumerate(ordered, 1)}
+
+
 def _compute_hybrid(
     all_ids, bm25_scores: dict, semantic_scores: dict, ctx_scores: dict,
     w_bm25, w_sem, w_ctx, keyword_scores: dict | None = None,
 ) -> list[dict]:
-    """Combine per-signal scores into hybrid rows (extracted verbatim)."""
+    """Combine per-signal scores via Weighted Reciprocal Rank Fusion (RRF)."""
+    r_bm25 = _rank_lookup(bm25_scores)
+    r_kw = _rank_lookup(keyword_scores or {})
+    r_sem = _rank_lookup(semantic_scores)
+    r_ctx = _rank_lookup(ctx_scores)
+    k_rrf = 60.0
+
     hybrid: list[dict] = []
     for eid in all_ids:
         bm25_val = bm25_scores.get(eid, 0)
+        sem_val = semantic_scores.get(eid, 0)
+        ctx_val = ctx_scores.get(eid, 0)
+
+        rrf = 0.0
+        if eid in r_bm25:
+            rrf += w_bm25 / (k_rrf + r_bm25[eid])
+        if eid in r_kw:
+            rrf += (0.25 * w_bm25) / (k_rrf + r_kw[eid])
+        if eid in r_sem:
+            rrf += w_sem / (k_rrf + r_sem[eid])
+        if eid in r_ctx:
+            rrf += w_ctx / (k_rrf + r_ctx[eid])
         if not bm25_val and keyword_scores:
             bm25_val = keyword_scores.get(eid, 0)
-        s = 0.0
-        s += w_bm25 * bm25_val
-        s += w_sem * semantic_scores.get(eid, 0)
-        s += w_ctx * ctx_scores.get(eid, 0)
+        linear = w_bm25 * bm25_val + w_sem * sem_val + w_ctx * ctx_val
+        s = rrf + 0.01 * linear
 
         hybrid.append({
             "entity_id": eid,
             "hybrid_score": round(s, 4),
             "bm25_score": round(bm25_val, 4),
-            "semantic_score": round(semantic_scores.get(eid, 0), 4),
-            "contextual_score": round(ctx_scores.get(eid, 0), 4),
+            "semantic_score": round(sem_val, 4),
+            "contextual_score": round(ctx_val, 4),
         })
     return hybrid
 

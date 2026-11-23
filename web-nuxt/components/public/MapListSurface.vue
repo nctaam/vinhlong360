@@ -118,6 +118,7 @@ import { entityPath } from '~/utils/routePaths'
 import { resolveFreshnessStatus, resolveRegionalAccent, resolveSourceTier } from '~/utils/regionalColor'
 import { normalizeCoords } from '~/composables/useCoords'
 import { useNDAMap, type NDAMapState } from '~/composables/useNDAMap'
+import { yieldToMain } from '~/utils/yieldToMain'
 
 type MapListResult = Entity & {
   lat?: number | string
@@ -267,7 +268,11 @@ function selectFromMarker(result: MapListResult, coordinates: [number, number]) 
   }
 }
 
+const MARKER_YIELD_BATCH = 30
+let markerSyncToken = 0
+
 function clearMarkers() {
+  markerSyncToken += 1
   for (const entry of markers.values()) entry.marker.remove()
   markers.clear()
 }
@@ -280,10 +285,14 @@ function syncMarkerSelection() {
   }
 }
 
-function syncMarkers() {
+async function syncMarkers() {
   if (!map || !maplibregl?.Marker) return
   clearMarkers()
-  for (const { result, coordinates } of mappableResults.value) {
+  const token = markerSyncToken
+  const items = mappableResults.value
+  for (let i = 0; i < items.length; i += 1) {
+    if (!active || token !== markerSyncToken) return
+    const { result, coordinates } = items[i]!
     const element = document.createElement('button')
     element.type = 'button'
     element.className = 'map-locator-marker'
@@ -296,7 +305,11 @@ function syncMarkers() {
       .setLngLat([coordinates[1], coordinates[0]])
       .addTo(map)
     markers.set(result.id, { marker, element })
+    if ((i + 1) % MARKER_YIELD_BATCH === 0 && i + 1 < items.length) {
+      await yieldToMain()
+    }
   }
+  if (!active || token !== markerSyncToken) return
   syncMarkerSelection()
 }
 

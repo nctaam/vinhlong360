@@ -303,7 +303,7 @@ export function telHref(phone?: string | null): string {
 export function linkifyContent(content: string, mentions?: Array<{ label?: string; id?: string; type?: string }>): string {
   let html = escapeHtml(content)
   if (Array.isArray(mentions) && mentions.length) {
-    const sorted = [...mentions].sort((a, b) => (b?.label?.length || 0) - (a?.label?.length || 0))
+    const sorted = mentions.toSorted((a, b) => (b?.label?.length || 0) - (a?.label?.length || 0))
     for (const m of sorted) {
       if (!m?.label || !m?.id || (m.type !== 'user' && m.type !== 'entity')) continue
       const href = m.type === 'user'

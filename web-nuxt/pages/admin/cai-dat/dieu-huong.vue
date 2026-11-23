@@ -97,9 +97,14 @@ onMounted(reload)
 /* ── Skeleton ── */
 .cs-skeleton { max-width: 640px; display: flex; flex-direction: column; gap: 2px; }
 .cs-skel-item { height: 58px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
-.cs-skel-item:nth-child(2) { animation-delay: .1s; }
-.cs-skel-item:nth-child(3) { animation-delay: .2s; }
-.cs-skel-item:nth-child(4) { animation-delay: .3s; }
+@supports (animation-delay: calc(sibling-index() * 0.1s)) {
+  .cs-skel-item { animation-delay: min(calc((sibling-index() - 1) * 0.1s), 0.3s); }
+}
+@supports not (animation-delay: calc(sibling-index() * 0.1s)) {
+  .cs-skel-item:nth-child(2) { animation-delay: .1s; }
+  .cs-skel-item:nth-child(3) { animation-delay: .2s; }
+  .cs-skel-item:nth-child(4) { animation-delay: .3s; }
+}
 
 .cs-save-row {
   display: flex; gap: var(--space-3); padding-top: var(--space-5);

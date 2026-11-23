@@ -405,7 +405,7 @@ function navigateSection(direction: 'next' | 'prev') {
   if (direction === 'next') {
     targetSection = sections.find(s => s.offsetTop > currentScroll)
   } else {
-    targetSection = [...sections].reverse().find(s => s.offsetTop < currentScroll - 120)
+    targetSection = sections.findLast(s => s.offsetTop < currentScroll - 120)
   }
 
   if (targetSection) {

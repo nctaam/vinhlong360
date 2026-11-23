@@ -252,7 +252,7 @@ export async function verifyServiceWorkerActivation(source) {
   await Promise.all(waits)
 
   const retained = [...cacheNames].sort()
-  const expectedRetained = [...CACHE_PURGE_DECLARATION.retained_cache_names].sort()
+  const expectedRetained = CACHE_PURGE_DECLARATION.retained_cache_names.toSorted()
   if (JSON.stringify(retained) !== JSON.stringify(expectedRetained) || claimCount !== 1) {
     throw new Error('service-worker cache purge activation verification failed')
   }

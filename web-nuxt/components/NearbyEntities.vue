@@ -35,14 +35,10 @@ const areaLabel = computed(() => AREA_META[props.area]?.name || props.area)
 const sameTypeLabel = computed(() => TYPE_META[props.entityType]?.label || props.entityType)
 
 function pickDiverseNearby(list: Entity[]): Entity[] {
-  const byType: Record<string, Entity[]> = {}
-  for (const e of list) {
-    if (!byType[e.type]) byType[e.type] = []
-    byType[e.type]!.push(e)
-  }
+  const byType = Object.groupBy(list, e => e.type)
   const picked: Entity[] = []
-  for (const type of Object.keys(byType)) {
-    picked.push(byType[type]![0]!)
+  for (const group of Object.values(byType)) {
+    if (group?.[0]) picked.push(group[0])
     if (picked.length >= 6) break
   }
   for (const e of list) {

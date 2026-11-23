@@ -195,6 +195,89 @@ def _score_area_match(
     return score, reasons
 
 
+def _extract_lat_lng(entity: dict) -> tuple[float, float] | None:
+    """Extract numeric (lat, lng) pair from entity coords/coordinates if valid."""
+    raw = entity.get("coordinates") or entity.get("coords")
+    lat = lng = None
+    if isinstance(raw, dict):
+        lat, lng = raw.get("lat"), raw.get("lng")
+    elif isinstance(raw, (list, tuple)) and len(raw) >= 2:
+        lat, lng = raw[0], raw[1]
+    else:
+        lat, lng = entity.get("lat"), entity.get("lng")
+    try:
+        flat, flng = float(lat), float(lng)
+    except (TypeError, ValueError):
+        return None
+    if not (-90.0 <= flat <= 90.0 and -180.0 <= flng <= 180.0):
+        return None
+    return flat, flng
+
+
+def _haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """Great-circle distance in kilometers between two WGS-84 points."""
+    r = 6371.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dp = math.radians(lat2 - lat1)
+    dl = math.radians(lng2 - lng1)
+    a = math.sin(dp / 2.0) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2.0) ** 2
+    return 2.0 * r * math.asin(min(1.0, math.sqrt(a)))
+
+
+def _score_geo_proximity(
+    source_coords: tuple[float, float] | None, candidate: dict
+) -> tuple[float, list[str]]:
+    """Exponential geo-proximity bonus (max +0.15 within 35km)."""
+    if source_coords is None:
+        return 0.0, []
+    cand_coords = _extract_lat_lng(candidate)
+    if cand_coords is None:
+        return 0.0, []
+    dist_km = _haversine_km(source_coords[0], source_coords[1], cand_coords[0], cand_coords[1])
+    if dist_km > 35.0:
+        return 0.0, []
+    return 0.15 * math.exp(-dist_km / 8.0), ["nearby_geo"]
+
+
+def _pair_redundancy(cand_a: dict, cand_b: dict) -> float:
+    """Measure content similarity in [0, 1] for Maximal Marginal Relevance."""
+    sim = 0.0
+    if cand_a.get("type") and cand_a.get("type") == cand_b.get("type"):
+        sim += 0.5
+    tags_a, tags_b = _get_tags(cand_a), _get_tags(cand_b)
+    if tags_a and tags_b:
+        inter = len(tags_a & tags_b)
+        sim += 0.3 * (inter / (len(tags_a) + len(tags_b) - inter))
+    wa, wb = _get_ward_id(cand_a), _get_ward_id(cand_b)
+    if wa and wb and wa == wb:
+        sim += 0.2
+    return sim
+
+
+def _mmr_select(
+    scored: list[tuple[float, dict, list[str]]],
+    limit: int,
+    lambda_param: float = 0.55,
+) -> list[tuple[float, dict, list[str]]]:
+    """Rerank top candidates with Maximal Marginal Relevance for diversity."""
+    if len(scored) <= 1 or limit <= 1:
+        return scored[:limit]
+    pool = list(scored[:max(limit * 4, 24)])
+    max_sc = max(pool[0][0], 1e-6)
+    selected: list[tuple[float, dict, list[str]]] = [pool.pop(0)]
+    while pool and len(selected) < limit:
+        best_idx = 0
+        best_mmr = -1e9
+        for idx, (sc, cand, _) in enumerate(pool):
+            max_sim = max(_pair_redundancy(cand, s[1]) for s in selected)
+            mmr = lambda_param * (sc / max_sc) - (1.0 - lambda_param) * max_sim
+            if mmr > best_mmr:
+                best_mmr = mmr
+                best_idx = idx
+        selected.append(pool.pop(best_idx))
+    return selected
+
+
 def _score_entity_candidate(
     eid: str,
     candidate: dict,
@@ -204,8 +287,9 @@ def _score_entity_candidate(
     source_ward: str | None,
     related_ids: set[str],
     entities: dict,
+    source_coords: tuple[float, float] | None = None,
 ) -> tuple[float, list[str]]:
-    """Score a single candidate against the source entity (content-based)."""
+    """Score a single candidate against the source entity (content + geo)."""
     score = 0.0
     reasons: list[str] = []
 
@@ -231,6 +315,11 @@ def _score_entity_candidate(
         score += W_RELATIONSHIP
         reasons.append("related")
 
+    # Factor 5: Geo proximity (Haversine decay)
+    geo_score, geo_reasons = _score_geo_proximity(source_coords, candidate)
+    score += geo_score
+    reasons.extend(geo_reasons)
+
     return score, reasons
 
 
@@ -243,20 +332,12 @@ def recommend_by_entity(
     """
     Given an entity the user is viewing, suggest similar/related ones.
 
-    Scoring factors (normalized to 0-1 each, then weighted):
-      - Same type:          0.3
-      - Shared tags:        0.3  (Jaccard-like)
-      - Same area:          0.2
+    Scoring factors (normalized, then diversified via MMR):
+      - Same type:           0.3
+      - Shared tags:         0.3  (Jaccard-like)
+      - Same area:           0.2  (+0.05 same ward)
       - Relationship exists: 0.2
-
-    Args:
-        entity_id: The ID of the entity being viewed.
-        entities: Dict mapping entity_id -> entity dict.
-        relationships: List of relationship dicts with 'from', 'to', 'type'.
-        limit: Max number of recommendations to return.
-
-    Returns:
-        List of dicts: [{"id", "name", "type", "score", "reason"}], sorted desc.
+      - Geo proximity:       0.15 * exp(-dist_km / 8) within 35km
     """
     source = entities.get(entity_id)
     if not source or not _is_content_entity(source):
@@ -266,6 +347,7 @@ def recommend_by_entity(
     source_area = _get_area(source, entities)
     source_type = source.get("type")
     source_ward = _get_ward_id(source)
+    source_coords = _extract_lat_lng(source)
 
     related_ids = _related_entity_ids(entity_id, relationships)
 
@@ -280,6 +362,7 @@ def recommend_by_entity(
         score, reasons = _score_entity_candidate(
             eid, candidate, source_type, source_tags,
             source_area, source_ward, related_ids, entities,
+            source_coords=source_coords,
         )
 
         if score > 0:
@@ -287,6 +370,7 @@ def recommend_by_entity(
 
     # Sort descending by score, then by confidence as tiebreaker
     scored.sort(key=lambda x: (x[0], x[1].get("confidence", 0)), reverse=True)
+    diversified = _mmr_select(scored, limit)
 
     return [
         {
@@ -296,7 +380,7 @@ def recommend_by_entity(
             "score": round(sc, 4),
             "reason": ", ".join(reasons),
         }
-        for sc, cand, reasons in scored[:limit]
+        for sc, cand, reasons in diversified
     ]
 
 

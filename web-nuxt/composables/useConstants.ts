@@ -109,10 +109,10 @@ export const FLOOD_MONTHS = [8, 9, 10, 11]
 // into these shared objects once at app init (see plugins/site-overrides.ts).
 // Pristine snapshots let re-applying be idempotent (restore base, then merge)
 // so a removed override reverts to the default on the next app load.
-const _TYPE_BASE = JSON.parse(JSON.stringify(TYPE_META)) as typeof TYPE_META
-const _AREA_BASE = JSON.parse(JSON.stringify(AREA_META)) as typeof AREA_META
-const _OFFICE_BASE = JSON.parse(JSON.stringify(OFFICE_KIND)) as typeof OFFICE_KIND
-const _INTEREST_BASE = JSON.parse(JSON.stringify(INTEREST_META)) as typeof INTEREST_META
+const _TYPE_BASE = structuredClone(TYPE_META) as typeof TYPE_META
+const _AREA_BASE = structuredClone(AREA_META) as typeof AREA_META
+const _OFFICE_BASE = structuredClone(OFFICE_KIND) as typeof OFFICE_KIND
+const _INTEREST_BASE = structuredClone(INTEREST_META) as typeof INTEREST_META
 
 function mergeInto(
   target: Record<string, any>,

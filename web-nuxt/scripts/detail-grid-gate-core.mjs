@@ -275,7 +275,7 @@ export async function cleanupOwnedProcessSet({
       continue
     }
     emptyStreak = 0
-    const ordered = [...candidates].sort((left, right) => (
+    const ordered = candidates.toSorted((left, right) => (
       (left.pid === rootPid ? 1 : 0) - (right.pid === rootPid ? 1 : 0)
     ))
     await terminateOwnedProcesses(ordered, {
@@ -1022,7 +1022,7 @@ async function terminateCapturedProcessTree(child, cleanupTimeoutMs, initialIden
 
   const captured = new Map(classification.owned.map(identity => [identity.pid + ':' + identity.startIdentity, identity]))
   try {
-    const terminationOrder = [...classification.owned].sort((left, right) => (left.pid === rootPid ? 1 : 0) - (right.pid === rootPid ? 1 : 0))
+    const terminationOrder = classification.owned.toSorted((left, right) => (left.pid === rootPid ? 1 : 0) - (right.pid === rootPid ? 1 : 0))
     await terminateExactProcessIdentities(terminationOrder, {
       marker: ownershipMarker,
       timeoutMs: Math.min(helperTimeoutMs, remainingDeadlineMs(deadline, 'captured process termination')),
@@ -1180,9 +1180,9 @@ export function runCaptured(command, args, options = {}) {
         cleanupError => {
           const error = new Error(
             basename(command) + ' timed out after ' + operationTimeoutMs + 'ms; cleanup failed: ' + cleanupError.message,
+            { cause: cleanupError },
           )
           error.cleanupVerified = false
-          error.cause = cleanupError
           error.capturedProcessIdentities = cleanupError.capturedProcessIdentities || []
           finish(reject, error)
         },

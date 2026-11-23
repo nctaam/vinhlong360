@@ -16,7 +16,7 @@
         @keydown.escape="open = false"
         @keydown.down.prevent="move(1)"
         @keydown.up.prevent="move(-1)"
-        @keydown.enter.prevent="go"
+        @keydown.enter.prevent="onInputEnter"
       />
       <!-- Tiêu điểm DOM không bao giờ rời ô nhập (mũi tên chỉ đổi biến `active`),
            nên nếu không có bộ combobox/listbox thì trạng thái "đang chọn mục nào"
@@ -55,6 +55,7 @@
 
 <script setup lang="ts">
 import { resolveAdminScopes } from '~/utils/adminAccess'
+import { isImeComposing } from '~/utils/ime'
 import {
   ADMIN_NAV_GROUPS,
   filterAdminNavGroups,
@@ -129,6 +130,11 @@ watch(active, () => {
 
 function move(d: number) {
   active.value = Math.max(0, Math.min(results.value.length - 1, active.value + d))
+}
+
+function onInputEnter(e: KeyboardEvent) {
+  if (isImeComposing(e)) return
+  go()
 }
 
 function go() {

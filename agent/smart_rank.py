@@ -8,7 +8,9 @@ Entities được hỏi nhiều → xếp hạng cao hơn.
 import json
 import logging
 import math
+import re
 import time
+import unicodedata
 from functools import lru_cache
 from ocop import is_ocop_certified
 from pathlib import Path
@@ -93,13 +95,55 @@ def _richness_bonus(summary_len: int, attrs: dict) -> float:
     return bonus
 
 
+_COMBINING_RE = re.compile(r"[\u0300-\u036f]")
+_WS_RE = re.compile(r"\s+")
+_QUERY_MATCH_WEIGHTS = {
+    "exact": 3.0,
+    "prefix": 2.2,
+    "contains": 1.5,
+    "fuzzy": 1.0,
+}
+
+
+@lru_cache(maxsize=2048)
+def _fold_text(text: str) -> str:
+    """Fold Vietnamese diacritics (including đ/Đ) to lowercase ASCII tokens."""
+    stripped = _COMBINING_RE.sub(
+        "", unicodedata.normalize("NFKD", text.replace("đ", "d").replace("Đ", "D"))
+    )
+    return _WS_RE.sub(" ", stripped.lower()).strip()
+
+
 def _query_match_bonus(q_match_level: str) -> float:
-    """Query match level (+3 exact, +1 fuzzy)."""
-    if q_match_level == "exact":
-        return 3.0
-    elif q_match_level == "fuzzy":
-        return 1.0
-    return 0.0
+    """Query match level (+3 exact, +2.2 prefix, +1.5 contains, +1 fuzzy)."""
+    return _QUERY_MATCH_WEIGHTS.get(q_match_level, 0.0)
+
+
+def _has_all_terms(text: str, terms: list[str]) -> bool:
+    return bool(terms) and all(term in text for term in terms)
+
+
+def _entity_body_text(entity: dict) -> str:
+    tags = entity.get("tags") or []
+    tags_text = " ".join(str(tag) for tag in tags)
+    return _fold_text(f"{entity.get('summary') or ''} {tags_text}")
+
+
+def _classify_query_match(entity: dict, query: str | None) -> str:
+    """Classify how well an entity matches a Vietnamese query string."""
+    qn = _fold_text(query.strip()) if query else ""
+    if not qn:
+        return "exact"
+    name = _fold_text(str(entity.get("name") or ""))
+    if name == qn:
+        return "exact"
+    if name.startswith(qn):
+        return "prefix"
+    terms = qn.split()
+    if qn in name or _has_all_terms(name, terms):
+        return "contains"
+    combined = f"{name} {_entity_body_text(entity)}".strip()
+    return "fuzzy" if (qn in combined or _has_all_terms(combined, terms)) else "none"
 
 
 _TYPE_BONUS = {
@@ -179,12 +223,12 @@ def smart_score(entity: dict, month: int = None, q_match_level: str = "exact") -
 
 def rank_entities(entities: list[dict], month: int = None, query: str = None) -> list[dict]:
     """
-    Re-rank a list of entities using smart scoring.
+    Re-rank a list of entities using smart scoring and Vietnamese query affinity.
     Returns entities sorted by smart_score descending.
     """
     scored = []
     for e in entities:
-        match_level = "exact"  # Assume they passed through search filter
+        match_level = _classify_query_match(e, query)
         s = smart_score(e, month=month, q_match_level=match_level)
         scored.append((s, e))
 

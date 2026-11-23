@@ -139,13 +139,13 @@ function readJsonFile(path, label) {
     source = readFileSync(path, 'utf8')
   }
   catch (error) {
-    throw new Error(`Unable to read ${label} at ${path}: ${error.message}`)
+    throw new Error(`Unable to read ${label} at ${path}: ${error.message}`, { cause: error })
   }
   try {
     return JSON.parse(source)
   }
   catch (error) {
-    throw new Error(`Invalid ${label} at ${path}: ${error.message}`)
+    throw new Error(`Invalid ${label} at ${path}: ${error.message}`, { cause: error })
   }
 }
 
@@ -160,7 +160,7 @@ function resolveRequiredPackage(requireFrom, id, label) {
     return requireFrom.resolve(id)
   }
   catch (error) {
-    throw new Error(`Unable to resolve ${label} (${id}): ${error.message}`)
+    throw new Error(`Unable to resolve ${label} (${id}): ${error.message}`, { cause: error })
   }
 }
 
@@ -189,7 +189,7 @@ function loadNuxtTool(name, expectedMajor) {
     return { module: nuxtRequire(name), version: packageJson.version, path: modulePath }
   }
   catch (error) {
-    throw new Error(`Unable to load Nuxt audit tool ${name} from ${modulePath}: ${error.message}`)
+    throw new Error(`Unable to load Nuxt audit tool ${name} from ${modulePath}: ${error.message}`, { cause: error })
   }
 }
 
@@ -198,7 +198,7 @@ function readRequiredText(path, source) {
     return readFileSync(path, 'utf8')
   }
   catch (error) {
-    throw new Error(`Unable to read audit source ${source}: ${error.message}`)
+    throw new Error(`Unable to read audit source ${source}: ${error.message}`, { cause: error })
   }
 }
 
@@ -208,7 +208,7 @@ function listFilesRecursively(directory, extension) {
     entries = readdirSync(directory, { withFileTypes: true })
   }
   catch (error) {
-    throw new Error(`Unable to enumerate audit directory ${directory}: ${error.message}`)
+    throw new Error(`Unable to enumerate audit directory ${directory}: ${error.message}`, { cause: error })
   }
   entries.sort((left, right) => left.name < right.name ? -1 : left.name > right.name ? 1 : 0)
   const files = []
@@ -230,7 +230,7 @@ function parseVueStyles(source, from) {
     parsed = parseVueSfc(source, { filename: from })
   }
   catch (error) {
-    throw new Error(`Unable to parse Vue SFC ${from}: ${error.message}`)
+    throw new Error(`Unable to parse Vue SFC ${from}: ${error.message}`, { cause: error })
   }
   if (parsed.errors.length > 0) {
     const message = parsed.errors.map(error => error instanceof Error ? error.message : String(error)).join('; ')
@@ -329,7 +329,7 @@ function parseStylesheet(source, from) {
     return postcss.parse(source, { from })
   }
   catch (error) {
-    throw new Error(`Unable to parse audit stylesheet ${from}: ${error.message}`)
+    throw new Error(`Unable to parse audit stylesheet ${from}: ${error.message}`, { cause: error })
   }
 }
 

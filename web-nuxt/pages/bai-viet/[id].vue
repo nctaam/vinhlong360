@@ -191,6 +191,7 @@
 
 <script setup lang="ts">
 import type { Comment, Post, User } from '~/types'
+import { isImeComposing } from '~/utils/ime'
 useReveal()
 const route = useRoute()
 const postId = computed(() => normalizeRouteParam(route.params.id))
@@ -246,7 +247,11 @@ function onCommentKeydown(e: KeyboardEvent) {
   const consumed = onMentionKeydown(e)
   if (consumed) return
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); submitComment(); return }
-  if (e.key === 'Enter') submitComment()
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    if (isImeComposing(e)) return
+    submitComment()
+  }
 }
 
 // ── Q&A: câu trả lời hay (chủ bài hỏi chọn) ──

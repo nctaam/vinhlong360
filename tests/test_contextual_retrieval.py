@@ -293,3 +293,37 @@ class TestOcopKhongLotVanXuoiThoVaoNguCanhLLM:
             "attributes": {"ocop_star": 4},
         }, relationships=[])
         assert "OCOP 4 sao" in text
+
+
+def test_bm25_inverted_postings_vietnamese_diacritic_insensitive():
+    b = BM25()
+    b.build_index({
+        "chua-ang": "Chùa Âng là ngôi chùa Khmer cổ ở Trà Vinh",
+        "cu-lao": "Cù lao An Bình nổi tiếng với vườn trái cây xanh mát",
+    })
+    assert b.score("chua khmer", top_k=3)[0]["entity_id"] == "chua-ang"
+    assert b.score("trai cay", top_k=3)[0]["entity_id"] == "cu-lao"
+
+
+def test_enhanced_hybrid_search_rrf_consensus(monkeypatch):
+    import contextual_retrieval as cr_mod
+
+    b = BM25()
+    b.build_index({
+        "chua-ang": "Chùa Âng Trà Vinh kiến trúc Khmer",
+        "other": "Địa điểm khác ở Vĩnh Long",
+    })
+    monkeypatch.setattr(cr_mod, "bm25", b)
+    keyword_results = [
+        {"id": "other", "name": "Other"},
+        {"id": "chua-ang", "name": "Chùa Âng"},
+    ]
+    ranked = enhanced_hybrid_search(
+        query="chua ang khmer",
+        keyword_results=keyword_results,
+        entities={item["id"]: item for item in keyword_results},
+        relationships=[],
+        rerank=False,
+        top_k=2,
+    )
+    assert ranked[0]["id"] == "chua-ang"

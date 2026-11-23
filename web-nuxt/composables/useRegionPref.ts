@@ -90,7 +90,7 @@ export function useRegionPref() {
   function sortByRegion<T extends { place_area?: string; area?: string }>(items: T[]): T[] {
     if (!region.value || region.value === 'all') return items
     const pref = region.value
-    return [...items].sort((a, b) => {
+    return items.toSorted((a, b) => {
       const aMatch = entityMatchesAreaScope(a, pref) ? 1 : 0
       const bMatch = entityMatchesAreaScope(b, pref) ? 1 : 0
       return bMatch - aMatch
@@ -100,7 +100,7 @@ export function useRegionPref() {
   function orderedAreaKeys(keys: string[]): string[] {
     if (!region.value || region.value === 'all') return keys
     const pref = region.value
-    return [...keys].sort((a, b) => {
+    return keys.toSorted((a, b) => {
       if (a === pref) return -1
       if (b === pref) return 1
       return 0

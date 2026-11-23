@@ -934,12 +934,17 @@ useHead(() => {
 }
 .saved-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4); margin-top: var(--space-2); }
 .saved-grid > * { animation: savedEnter .4s var(--ease-out) backwards; }
-.saved-grid > *:nth-child(1) { animation-delay: 0s; }
-.saved-grid > *:nth-child(2) { animation-delay: .06s; }
-.saved-grid > *:nth-child(3) { animation-delay: .12s; }
-.saved-grid > *:nth-child(4) { animation-delay: .18s; }
-.saved-grid > *:nth-child(5) { animation-delay: .24s; }
-.saved-grid > *:nth-child(6) { animation-delay: .3s; }
+@supports (animation-delay: calc(sibling-index() * 0.1s)) {
+  .saved-grid > * { animation-delay: min(calc((sibling-index() - 1) * 0.06s), 0.3s); }
+}
+@supports not (animation-delay: calc(sibling-index() * 0.1s)) {
+  .saved-grid > *:nth-child(1) { animation-delay: 0s; }
+  .saved-grid > *:nth-child(2) { animation-delay: .06s; }
+  .saved-grid > *:nth-child(3) { animation-delay: .12s; }
+  .saved-grid > *:nth-child(4) { animation-delay: .18s; }
+  .saved-grid > *:nth-child(5) { animation-delay: .24s; }
+  .saved-grid > *:nth-child(6) { animation-delay: .3s; }
+}
 @keyframes savedEnter { from { opacity: 0; transform: translateY(8px); } }
 .saved-cta { text-align: center; margin-top: var(--space-5); }
 .saved-cta .btn:active { transform: scale(.97); transition-duration: .08s; }

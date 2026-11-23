@@ -81,7 +81,7 @@ export function removePostFromLists(
   }
   return () => {
     // Chèn lại theo thứ tự index tăng dần để index cũ vẫn đúng sau mỗi lần chèn.
-    for (const { list, index, post } of [...removals].reverse()) {
+    for (const { list, index, post } of removals.toReversed()) {
       list.value.splice(Math.min(index, list.value.length), 0, post)
     }
   }

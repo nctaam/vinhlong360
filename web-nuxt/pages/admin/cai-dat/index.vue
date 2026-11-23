@@ -25,7 +25,7 @@
           class="cs-search-input"
           placeholder="Tìm danh mục cài đặt… (Ctrl+K)"
           aria-label="Tìm danh mục cài đặt"
-          @keydown.enter.prevent="gotoFirstMatch"
+          @keydown.enter.prevent="onSearchEnter"
           @keydown.esc="query = ''"
         />
         <span v-if="query" class="cs-search-count">{{ flatMatches.length }} kết quả</span>
@@ -87,6 +87,8 @@
 </template>
 
 <script setup lang="ts">
+import { isImeComposing } from '~/utils/ime'
+
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Cài đặt — Admin' })
 
@@ -144,6 +146,11 @@ const flatMatches = computed(() => {
   if (!q) return categories
   return categories.filter(c => normalize(`${c.title} ${c.desc}`).includes(q))
 })
+
+function onSearchEnter(e: KeyboardEvent) {
+  if (isImeComposing(e)) return
+  gotoFirstMatch()
+}
 
 function gotoFirstMatch() {
   const first = flatMatches.value[0]

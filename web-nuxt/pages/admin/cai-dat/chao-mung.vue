@@ -53,7 +53,7 @@ async function reload() {
   try {
     const r = await $fetch<any>('/admin-api/site-settings/onboarding', { headers: authHeaders() })
     const v = (r.settings || []).find((s: any) => s.key === 'onboarding')?.value
-    value.value = (v && typeof v === 'object' && Object.keys(v).length) ? v : JSON.parse(JSON.stringify(DEFAULT_ONBOARDING))
+    value.value = (v && typeof v === 'object' && Object.keys(v).length) ? v : structuredClone(DEFAULT_ONBOARDING)
   } catch { showToast('Không thể tải cài đặt', 'error') }
   loading.value = false
 }

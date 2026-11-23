@@ -100,10 +100,10 @@
   container: catalog-orientation / inline-size;
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(18rem, .6fr);
-  gap: var(--space-10);
+  gap: var(--space-8);
   align-items: end;
-  margin-block-end: var(--space-6);
-  padding: clamp(var(--space-8), 6vw, var(--space-14)) var(--space-6);
+  margin-block-end: var(--space-5);
+  padding: clamp(var(--space-6), 4.5vw, var(--space-10)) var(--space-6);
   border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-radius: var(--radius-surface, 16px);
   background-color: var(--color-surface);
@@ -224,7 +224,7 @@
   grid-template-columns: minmax(14rem, .7fr) minmax(0, 1.3fr);
   gap: var(--space-8);
   align-items: end;
-  margin-block-end: var(--space-6);
+  margin-block-end: var(--space-4);
 }
 
 [data-page-recipe="discovery"] .catalog-filter-ledger__header h2,
@@ -688,15 +688,25 @@
   transform: translateX(16px);
   animation: scrollRowIn .5s var(--ease-out-expo) forwards;
 }
-.reveal .scroll-row > *:nth-child(1) { animation-delay: 0s; }
-.reveal .scroll-row > *:nth-child(2) { animation-delay: .06s; }
-.reveal .scroll-row > *:nth-child(3) { animation-delay: .12s; }
-.reveal .scroll-row > *:nth-child(4) { animation-delay: .18s; }
-.reveal .scroll-row > *:nth-child(5) { animation-delay: .24s; }
-.reveal .scroll-row > *:nth-child(n+6) { animation-delay: .3s; }
+@supports (animation-delay: calc(sibling-index() * 0.1s)) {
+  .reveal .scroll-row > * { animation-delay: min(calc((sibling-index() - 1) * 0.06s), 0.3s); }
+}
+@supports not (animation-delay: calc(sibling-index() * 0.1s)) {
+  .reveal .scroll-row > *:nth-child(1) { animation-delay: 0s; }
+  .reveal .scroll-row > *:nth-child(2) { animation-delay: .06s; }
+  .reveal .scroll-row > *:nth-child(3) { animation-delay: .12s; }
+  .reveal .scroll-row > *:nth-child(4) { animation-delay: .18s; }
+  .reveal .scroll-row > *:nth-child(5) { animation-delay: .24s; }
+  .reveal .scroll-row > *:nth-child(n+6) { animation-delay: .3s; }
+}
 @keyframes scrollRowIn {
   from { opacity: 0; transform: translateX(16px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+.catalog-result-surface > .catalog-result-item:nth-child(n+7) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 360px;
 }
 
 /* ── Interest Nav (kham-pha page chips) ── */

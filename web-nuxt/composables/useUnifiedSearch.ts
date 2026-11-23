@@ -16,7 +16,7 @@ const FILTER_REMOVAL_ORDER = ['sort', 'distance', 'price', 'season', 'month', 't
 function filterWithoutLeastImportant(filters: FilterSet) {
   const keys = Object.keys(filters)
   if (!keys.length) return null
-  const key = FILTER_REMOVAL_ORDER.find(candidate => keys.includes(candidate)) || [...keys].sort().at(-1)!
+  const key = FILTER_REMOVAL_ORDER.find(candidate => keys.includes(candidate)) || keys.toSorted().at(-1)!
   const next = { ...filters }
   delete next[key]
   return next

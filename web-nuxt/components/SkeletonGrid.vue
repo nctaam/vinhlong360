@@ -29,12 +29,17 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
   overflow: hidden;
   animation: skFadeIn .45s var(--ease-out-expo) both;
 }
-.skeleton-card:nth-child(1) { animation-delay: 0s; }
-.skeleton-card:nth-child(2) { animation-delay: .06s; }
-.skeleton-card:nth-child(3) { animation-delay: .12s; }
-.skeleton-card:nth-child(4) { animation-delay: .18s; }
-.skeleton-card:nth-child(5) { animation-delay: .24s; }
-.skeleton-card:nth-child(6) { animation-delay: .3s; }
+@supports (animation-delay: calc(sibling-index() * 0.1s)) {
+  .skeleton-card { animation-delay: min(calc((sibling-index() - 1) * 0.06s), 0.3s); }
+}
+@supports not (animation-delay: calc(sibling-index() * 0.1s)) {
+  .skeleton-card:nth-child(1) { animation-delay: 0s; }
+  .skeleton-card:nth-child(2) { animation-delay: .06s; }
+  .skeleton-card:nth-child(3) { animation-delay: .12s; }
+  .skeleton-card:nth-child(4) { animation-delay: .18s; }
+  .skeleton-card:nth-child(5) { animation-delay: .24s; }
+  .skeleton-card:nth-child(6) { animation-delay: .3s; }
+}
 @keyframes skFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 /* Cover carries the same faint grain as the real Story Card's phù-sa placeholder
    (.cover-grain) — so the loading moment forecasts "editorial illustration",

@@ -173,15 +173,9 @@ export function useFavorites() {
 
   const count = computed(() => favorites.value.length)
 
-  const byType = computed(() => {
-    const groups: Record<string, FavoriteItem[]> = {}
-    for (const f of favorites.value) {
-      const key = f.type
-      if (!groups[key]) groups[key] = []
-      groups[key]!.push(f)
-    }
-    return groups
-  })
+  const byType = computed(() => (
+    { ...Object.groupBy(favorites.value, f => f.type) } as Record<string, FavoriteItem[]>
+  ))
 
   return { favorites, isSaved, toggle, remove, clear, count, byType }
 }

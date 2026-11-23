@@ -139,7 +139,7 @@ function exactKeys(value: Record<string, unknown>, expected: readonly string[], 
     actual.push(key)
   }
   actual.sort()
-  const sortedExpected = [...expected].sort()
+  const sortedExpected = expected.toSorted()
   if (actual.join('\0') !== sortedExpected.join('\0')) {
     throw new Error(`readiness manifest ${label} keys mismatch`)
   }

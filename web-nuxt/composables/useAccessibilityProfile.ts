@@ -114,6 +114,14 @@ export function applyAccessibilityProfile(profile: AccessibilityProfile, root: A
   setDatasetIfChanged(root.dataset, 'keyboardFirst', String(profile.keyboardFirst))
   root.style.setProperty('--a11y-text-scale', String(profile.textScale))
   root.style.setProperty('--a11y-text-scale-percent', `${profile.textScale * 100}%`)
+  const doc = (root as { ownerDocument?: Document | null }).ownerDocument ?? (typeof document !== 'undefined' ? document : null)
+  const schemeMeta = doc?.querySelector?.('meta[name="color-scheme"]')
+  if (schemeMeta) {
+    const targetScheme = profile.theme === 'parchment' ? 'light' : 'dark'
+    if (schemeMeta.getAttribute('content') !== targetScheme) {
+      schemeMeta.setAttribute('content', targetScheme)
+    }
+  }
 }
 
 function browserStorage(): AccessibilityStorage | null {
