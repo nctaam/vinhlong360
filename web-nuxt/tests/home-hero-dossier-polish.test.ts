@@ -26,7 +26,7 @@ describe('Home Hero & Feature Dossier Polish', () => {
 
   it('prioritizes iconic Vinh Long cultural heritage in Hero Dossier', () => {
     expect(indexVue).toContain('HERO_ICONIC_IDS')
-    expect(indexVue).toContain('de-an-di-san-duong-dai-mang-thit')
+    expect(indexVue).toContain('vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach')
     expect(indexVue).toContain('cu-lao-an-binh')
     expect(indexVue).toContain('cho-noi-tra-on')
     expect(indexVue).toContain('chua-tien-chau-tien-chau-tu')

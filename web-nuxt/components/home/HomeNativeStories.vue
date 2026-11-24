@@ -33,7 +33,7 @@
 
       <!-- Story 2 & 3: Right Stack -->
       <div class="home-native-stories__side">
-        <NuxtLink to="/dia-diem/de-an-di-san-duong-dai-mang-thit" class="home-story-card home-story-card--secondary">
+        <NuxtLink to="/dia-diem/vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach" class="home-story-card home-story-card--secondary">
           <img
             src="/img/spread/song-nuoc.webp"
             alt="Vườn dừa nước & phù sa Cổ Chiên"

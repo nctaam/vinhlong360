@@ -2250,33 +2250,17 @@ def test_tracked_data_uses_current_124_unit_roster() -> None:
     assert all(entity.get("placeId") not in stale_ids for entity in data["entities"])
 
 
-def test_remapped_hotel_uses_current_name_and_preserves_legacy_provenance() -> None:
+def test_remapped_hotel_pruned_and_ward_remains_covered() -> None:
     data = json.loads((ROOT / "web" / "data.json").read_text(encoding="utf-8"))
-    hotel = next(
-        entity for entity in data["entities"] if entity["id"] == "khach-san-tan-thanh-6"
-    )
-
-    assert {
-        "placeId": hotel["placeId"],
-        "summary": hotel["summary"],
-        "address": hotel["attributes"]["address"],
-        "description": hotel["description"],
-    } == {
-        "placeId": "p-vung-liem",
-        "summary": (
-            "Khách sạn 1 sao tại số 162 Nam Kỳ Khởi Nghĩa, Phường Vũng Liêm, "
-            "Vĩnh Long. Nguồn hiện có ghi theo tên cũ: xã Trung Thành."
-        ),
-        "address": (
-            "Số 162 Nam Kỳ Khởi Nghĩa, Phường Vũng Liêm "
-            "(nguồn hiện có ghi: xã Trung Thành)"
-        ),
-        "description": (
-            "Khách sạn 1 sao tại số 162 Nam Kỳ Khởi Nghĩa, Phường Vũng Liêm, "
-            "Vĩnh Long. Nguồn hiện có ghi theo tên cũ: xã Trung Thành.\n\n"
-            "Liên hệ: 0703979888."
-        ),
-    }
+    ids = {entity["id"] for entity in data["entities"]}
+    assert "khach-san-tan-thanh-6" not in ids
+    vung_liem_children = [
+        entity["id"]
+        for entity in data["entities"]
+        if entity.get("type") != "place" and entity.get("placeId") == "p-vung-liem"
+    ]
+    assert len(vung_liem_children) >= 1
+    assert "khu-luu-niem-thu-tuong-vo-van-kiet" in vung_liem_children
 
 
 def test_tracked_data_place_ids_resolve_or_are_declared_external_gateway() -> None:

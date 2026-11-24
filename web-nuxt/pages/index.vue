@@ -493,7 +493,7 @@ const heroSubtitle = computed(() => {
 const HERO_ELIGIBLE_TYPES = new Set(['attraction', 'experience', 'nature', 'craft_village', 'history', 'place'])
 
 const HERO_ICONIC_IDS = new Set([
-  'de-an-di-san-duong-dai-mang-thit',
+  'vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach',
   'lo-gach-mang-thit',
   'lang-nghe-gach-gom-mang-thit-vuong-quoc-do',
   'lang-gach-gom-mang-thit',

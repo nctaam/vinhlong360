@@ -981,14 +981,14 @@ const GAZETTEER_THUMB_MAP: Record<string, string> = {
   'heritage-van-thanh-mieu-vinhlong': '/img/entities/van-thanh-mieu.webp',
   'orchard-cocohome-anbinh': '/img/entities/nha-dua-cocohome.webp',
   'orchard-vinhsang-ecotour': '/img/entities/khu-du-lich-vinh-sang.webp',
-  'orchard-buoinamroi-myhoa': '/img/entities/buoi-nam-roi-my-hoa.webp',
+  'orchard-buoinamroi-myhoa': '/img/entities/buoi-nam-roi-binh-minh.webp',
   'orchard-saurieng-quoithien': '/img/entities/sau-rieng-ri6.webp',
   'orchard-chomchom-anbinh': '/img/entities/cu-lao-an-binh.webp',
   'orchard-camsanh-tambinh': '/img/entities/cam-sanh-tam-binh.webp',
   'pier-ferry-anbinh': '/img/entities/ben-pha-an-binh-vinh-long.webp',
   'pier-tourist-vinhlong': '/img/entities/ben-cang-hanh-khach-vinh-long.webp',
   'pier-ferry-dinhkhao': '/img/entities/ben-pha-dinh-khao-vinh-long.webp',
-  'pier-ferry-thaycai': '/img/entities/di-san-lo-gach-mang-thit-kenh-thay-cai.webp',
+  'pier-ferry-thaycai': '/img/entities/vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach.webp',
 }
 
 function gazetteerThumb(id: string): string {

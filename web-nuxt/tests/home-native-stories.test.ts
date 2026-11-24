@@ -78,7 +78,7 @@ describe('HomeNativeStories — Empirical Stress Testing', () => {
     expect(primary.attributes('href')).toBe('/dia-diem/cu-lao-an-binh')
 
     const secondary = wrapper.find('.home-story-card--secondary')
-    expect(secondary.attributes('href')).toBe('/dia-diem/de-an-di-san-duong-dai-mang-thit')
+    expect(secondary.attributes('href')).toBe('/dia-diem/vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach')
 
     const links = wrapper.findAll('a')
     expect(links.length).toBeGreaterThanOrEqual(3)

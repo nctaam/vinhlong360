@@ -159,7 +159,7 @@ const INTENT_ANCHORS: readonly IntentAnchor[] = [
     hint: 'Lò gạch gốm đỏ Mang Thít & làng đan lát',
     to: '/tim-kiem?q=l%C3%A0ng+ngh%E1%BB%81+g%E1%BB%91m',
     icon: 'vase',
-    avatarSrc: '/img/entities/de-an-di-san-duong-dai-mang-thit.webp',
+    avatarSrc: '/img/entities/vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach.webp',
     accent: 'mangthit',
     spots: [
       {
@@ -167,7 +167,7 @@ const INTENT_ANCHORS: readonly IntentAnchor[] = [
         distance: '12 km từ trung tâm',
         duration: '2–3 giờ',
         highlight: 'Hàng ngàn lò gạch cổ thế kỷ bên dòng kênh Thầy Cai trầm tích',
-        to: '/dia-diem/de-an-di-san-duong-dai-mang-thit',
+        to: '/dia-diem/vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach',
       },
       {
         title: 'Làng nghề gốm Vĩnh Long',
