@@ -11,13 +11,13 @@ Từ tháng 7-2025, ba địa bàn Vĩnh Long, Bến Tre và Trà Vinh đã **H�
 ## Toàn Văn Dữ Liệu Máy Đọc (Full Documentation)
 
 - **Bách khoa toàn thư tri thức máy đọc chi tiết**: [llms-full.txt](https://vinhlong360.vn/llms-full.txt)
-  (Chứa toàn bộ 1073 thực thể và trạng thái hình ảnh, 33 tuyến lộ trình, 124 xã/phường, lịch mùa vụ và lễ hội AEO).
+  (Chứa toàn bộ 995 thực thể và trạng thái hình ảnh, 33 tuyến lộ trình, 124 xã/phường, lịch mùa vụ và lễ hội AEO).
 
 ## Thống Kê Nền Tảng
 
-- **Tổng số thực thể dữ liệu**: 1073 điểm đến, di tích, ẩm thực, làng nghề, nhân vật, sản phẩm.
+- **Tổng số thực thể dữ liệu**: 995 điểm đến, di tích, ẩm thực, làng nghề, nhân vật, sản phẩm.
 - **Thực thể có bằng chứng ảnh tư liệu đầy đủ**: 0 thực thể (chỉ tính bộ quyền và nguồn đã kiểm chứng).
-- **Minh họa AI**: 37 thực thể; **minh họa đồ họa**: 0 thực thể.
+- **Minh họa AI**: 29 thực thể; **minh họa đồ họa**: 0 thực thể.
 - **Lộ trình du lịch liên vùng gợi ý**: 32 tuyến chuyên đề (1–3 ngày).
 - **Đơn vị hành chính cấp cơ sở**: 124 xã/phường.
 

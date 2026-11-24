@@ -963,7 +963,7 @@ const GAZETTEER_THUMB_MAP: Record<string, string> = {
   'dining-tan-tan-vinhlong': '/img/entities/tau-nha-hang-sai-gon-vinh-long.webp',
   'dining-phuong-thuy-vinhlong': '/img/entities/nha-hang-phuong-thuy.webp',
   'dining-bun-nuoc-leo-huong-tra': '/img/entities/bun-nuoc-leo-huong-tra-tra-vinh.webp',
-  'dining-pho-hong-cuc-bentre': '/img/entities/quan-pho-sang-duong-tran-quoc-tuan-ben-tre.webp',
+  'dining-pho-hong-cuc-bentre': '/img/entities/hu-tieu-chu-hien-ben-tre.webp',
   'heritage-cai-ngang-tambinh': '/img/entities/khu-di-tich-cach-mang-cai-ngang.webp',
   'heritage-vo-van-kiet-vungliem': '/img/entities/khu-luu-niem-thu-tuong-vo-van-kiet.webp',
   'heritage-phat-ngoc-xa-loi': '/img/entities/chua-phat-ngoc-xa-loi.webp',

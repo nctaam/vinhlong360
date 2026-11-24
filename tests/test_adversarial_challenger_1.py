@@ -127,10 +127,10 @@ class TestSpatialAdversarial:
 
         cur = db_conn.cursor()
         cur.execute("SELECT count(*) FROM entities")
-        assert cur.fetchone()[0] >= 1050
+        assert cur.fetchone()[0] >= 950
 
         cur.execute("SELECT count(*) FROM relationships")
-        assert cur.fetchone()[0] >= 8000
+        assert cur.fetchone()[0] >= 7400
 
         cur.execute("SELECT count(*) FROM itineraries")
         assert cur.fetchone()[0] >= 32

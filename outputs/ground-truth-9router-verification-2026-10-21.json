@@ -11,13 +11,13 @@
   "protectedInput": {
     "path": "web/data.json",
     "sha256": "8ac327de6c4f273c96efe99004f6a1858ba41af43799ebcdae5cd7f31316d92f",
-    "totalEntities": 1073,
+    "totalEntities": 995,
     "mutationStatus": "READ_ONLY_PRESERVED_FOR_PHASE_1_OWNER_GATE"
   },
   "summaryMetrics": {
-    "verifiedDossiersCount": 24,
-    "ruralPlaceIdCorrectionsCount": 83,
-    "mistypedEntitiesCount": 11,
+    "verifiedDossiersCount": 20,
+    "ruralPlaceIdCorrectionsCount": 74,
+    "mistypedEntitiesCount": 9,
     "truncatedSummaryFixesCount": 15,
     "placeSelfIdFixesCount": 37,
     "duplicateEntityClustersCount": 16,
@@ -63,42 +63,6 @@
             "domain": "xaloipagoda.com",
             "url": "https://xaloipagoda.com/phu-le-lang-que-hieu-hoc/",
             "title": "Phú Lễ làng quê hiếu học & rượu Phú Lễ — Xá Lợi"
-          }
-        ]
-      }
-    },
-    {
-      "entityId": "banh-trang-my-long",
-      "name": "Bánh tráng Mỹ Lồng",
-      "issueType": "wrong_commune_placeId_contradicting_summary",
-      "currentInDataJson": {
-        "placeId": "xa-giao-long",
-        "address": "Ấp Nghĩa Huấn, Xã Giao Long, tỉnh Vĩnh Long"
-      },
-      "verifiedGroundTruth": {
-        "placeId": "xa-luong-phu",
-        "mergerBasis": "Xã Lương Phú hợp nhất từ xã Mỹ Thạnh, xã Thuận Điền và xã Lương Phú thuộc huyện Giồng Trôm (Nghị quyết 1687/NQ-UBTVQH15)",
-        "address": "Ấp Nghĩa Huấn, xã Mỹ Thạnh, Xã Lương Phú, tỉnh Vĩnh Long",
-        "heritage": "Di sản Văn hóa Phi vật thể Quốc gia (Quyết định 4069/QĐ-BVHTTDL ngày 30/10/2018)",
-        "realImages": [
-          "https://nongnghiephuuco.vn/stores/news_dataimages/2026/072026/09/09/ml320260709091306.png",
-          "https://banhtrangthienthat.com/wp-content/uploads/2025/01/banh-trang-thien-that.jpg"
-        ],
-        "sources": [
-          {
-            "domain": "baotintuc.vn",
-            "url": "https://dantocmiennui.baotintuc.vn/my-long-lang-nghe-banh-trang-hon-100-nam-tuoi-vao-xuan-post1377114.html",
-            "title": "Mỹ Lồng làng nghề bánh tráng hơn 100 năm tuổi — Báo Tin Tức (TTXVN)"
-          },
-          {
-            "domain": "nongnghiephuuco.vn",
-            "url": "https://nongnghiephuuco.vn/banh-trang-my-long-banh-phong-son-doc-hon-xu-dua-ben-tre-trong-tung-san-pham-15751.html",
-            "title": "Bánh tráng Mỹ Lồng – Bánh phồng Sơn Đốc — Nông Nghiệp Hữu Cơ"
-          },
-          {
-            "domain": "vietnamplus.vn",
-            "url": "https://www.vietnamplus.vn/ben-tre-lang-nghe-banh-trang-hon-100-nam-tuoi-vao-xuan-post1008359.vnp",
-            "title": "Làng nghề bánh tráng Mỹ Lồng 100 năm — VietnamPlus"
           }
         ]
       }
@@ -315,35 +279,6 @@
       }
     },
     {
-      "entityId": "khach-san-khoi-hoa",
-      "name": "Khách sạn Khôi Hoa",
-      "issueType": "survey_placeholder_copy",
-      "currentInDataJson": {
-        "placeId": "p-binh-minh"
-      },
-      "verifiedGroundTruth": {
-        "placeId": "p-binh-minh",
-        "address": "Số 5115 (tổ 9), ấp Đông Hậu, Phường Bình Minh, tỉnh Vĩnh Long",
-        "phone": "0916 244 442",
-        "summary": "Khách sạn tiêu chuẩn 2 sao tại số 5115 ấp Đông Hậu, phường Bình Minh, trang bị Wi-Fi, bãi đỗ xe rộng rãi và dịch vụ ẩm thực, karaoke nội khu.",
-        "realImages": [
-          "https://dltm-cdn.vnptit3.vn/resources/portal//Images/VLG/superadminportal.vlg/L%c6%b0u%20tr%c3%ba/75.%20KS%20Kh%c3%b4i%20Hoa/636556844580684355_20170811_134149.jpg"
-        ],
-        "sources": [
-          {
-            "domain": "vinhlongtourist.vn",
-            "url": "https://vinhlongtourist.vn/iv/khachsankhoihoa",
-            "title": "Khách sạn Khôi Hoa Bình Minh — Vĩnh Long Tourist"
-          },
-          {
-            "domain": "wordpress.com",
-            "url": "https://khoihoakskaraoke.wordpress.com/",
-            "title": "Khách sạn – Karaoke Khôi Hoa Bình Minh"
-          }
-        ]
-      }
-    },
-    {
       "entityId": "com-chay-au-lac-vinh-long",
       "name": "Quán Cơm Chay Âu Lạc",
       "issueType": "mistyped_as_dish_and_truncated_summary",
@@ -371,33 +306,6 @@
       }
     },
     {
-      "entityId": "chao-ech-tran-nam",
-      "name": "Cháo Ếch Trần Nam",
-      "issueType": "province_root_placeId_and_mistyped_as_dish_and_survey_placeholder",
-      "currentInDataJson": {
-        "type": "dish",
-        "placeId": "vinh-long"
-      },
-      "verifiedGroundTruth": {
-        "recommendedType": "restaurant",
-        "placeId": "p-long-chau",
-        "address": "Đường Đinh Tiên Hoàng, Phường Long Châu, tỉnh Vĩnh Long",
-        "phone": "0938 937 027",
-        "hours": "16:30–21:30",
-        "summary": "Quán cháo ếch chiều tối trên đường Đinh Tiên Hoàng, phường Long Châu, mở cửa từ 16:30 đến 21:30 với mức giá bình dân 20.000–25.000 đ/phần.",
-        "realImages": [
-          "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwev7kz7mqcbb0"
-        ],
-        "sources": [
-          {
-            "domain": "foody.vn",
-            "url": "https://www.foody.vn/vinh-long/chao-ech-tran-nam",
-            "title": "Cháo Ếch Trần Nam Đinh Tiên Hoàng — Foody"
-          }
-        ]
-      }
-    },
-    {
       "entityId": "bun-nuoc-leo-cay-sung-tra-vinh",
       "name": "Quán Bún Nước Lèo Cây Sung",
       "issueType": "missing_verified_sources_and_real_image",
@@ -420,29 +328,6 @@
             "domain": "abay.vn",
             "url": "https://www.abay.vn/tin-tuc/say-long-dac-san-bun-nuoc-leo-o-tra-vinh.aspx",
             "title": "Đặc sản bún nước lèo Trà Vinh — Abay"
-          }
-        ]
-      }
-    },
-    {
-      "entityId": "com-ga-xoi-mo-5-vi-ben-tre",
-      "name": "Cơm gà xối mỡ 5 Vị Bến Tre",
-      "issueType": "missing_verified_sources_and_phone_r10_6",
-      "currentInDataJson": {
-        "placeId": "p-phu-khuong"
-      },
-      "verifiedGroundTruth": {
-        "placeId": "p-phu-khuong",
-        "address": "Số 306C đường Nguyễn Huệ, Phường Phú Khương, tỉnh Vĩnh Long",
-        "phone": "096 199 6147",
-        "realImages": [
-          "https://mia.vn/media/uploads/blog-du-lich/tong-hop-quan-com-ngon-tai-ben-tre-vua-re-vua-chat-luong-1665311752.jpg"
-        ],
-        "sources": [
-          {
-            "domain": "mia.vn",
-            "url": "https://mia.vn/cam-nang-du-lich/tong-hop-quan-com-ngon-tai-ben-tre-vua-re-vua-chat-luong-10757",
-            "title": "Cơm gà xối mỡ 5 Vị 306C Nguyễn Huệ — MIA.vn"
           }
         ]
       }
@@ -831,12 +716,6 @@
       "basis": "Huyện Bình Đại (nay là phường Bình Đại)"
     },
     {
-      "entityId": "khach-san-binh-dai",
-      "currentPlaceId": "p-ben-tre",
-      "verifiedPlaceId": "p-binh-dai",
-      "basis": "Thị trấn Bình Đại nhập vào phường Bình Đại"
-    },
-    {
       "entityId": "hai-san-ngoc-hiep-binh-dai-ben-tre",
       "currentPlaceId": "p-phu-khuong",
       "verifiedPlaceId": "p-binh-dai",
@@ -853,12 +732,6 @@
       "currentPlaceId": "p-tra-vinh",
       "verifiedPlaceId": "p-long-duc",
       "basis": "Đình Long Đức thuộc Phường Long Đức"
-    },
-    {
-      "entityId": "rach-cau-lau-vinh-long",
-      "currentPlaceId": "xa-nhon-phu",
-      "verifiedPlaceId": "p-long-chau",
-      "basis": "Rạch Cầu Lầu chảy qua khu phố cổ Phường 1 – Phường 2, TP. Vĩnh Long cũ -> Phường Long Châu"
     },
     {
       "entityId": "ca-chay-tra-on-rim-kho",
@@ -883,12 +756,6 @@
       "currentPlaceId": "xa-nhon-phu",
       "verifiedPlaceId": "p-tra-on",
       "basis": "Kênh Trà Ôn nối sông Hậu với vùng nội địa Trà Ôn -> Phường Trà Ôn"
-    },
-    {
-      "entityId": "rach-tra-ngoa-vinh-long",
-      "currentPlaceId": "xa-nhon-phu",
-      "verifiedPlaceId": "xa-tra-con",
-      "basis": "Rạch Trà Ngoa chảy qua khu vực Trà Côn (Trà Ôn) -> Xã Trà Côn"
     },
     {
       "entityId": "am-thuc-san-vuon-1985-vinh-long",
@@ -951,12 +818,6 @@
       "basis": "Số 3 Phạm Hùng, Phường 2, TP. Vĩnh Long -> Phường Long Châu"
     },
     {
-      "entityId": "cua-cung-hau-tra-vinh",
-      "currentPlaceId": "xa-nhi-long",
-      "verifiedPlaceId": "xa-my-long",
-      "basis": "Cửa biển Cung Hầu nơi sông Cổ Chiên đổ ra biển thuộc vùng Mỹ Long -> Xã Mỹ Long"
-    },
-    {
       "entityId": "song-hau-doan-cua-dinh-an-tra-vinh",
       "currentPlaceId": "xa-nhi-long",
       "verifiedPlaceId": "xa-dai-an",
@@ -985,12 +846,6 @@
       "currentPlaceId": "xa-nhi-long",
       "verifiedPlaceId": "p-tra-vinh",
       "basis": "Chợ trung tâm TP. Trà Vinh trên đường Điện Biên Phủ / Nguyễn Thị Minh Khai -> Phường Trà Vinh"
-    },
-    {
-      "entityId": "kenh-bong-bot-tra-vinh",
-      "currentPlaceId": "xa-nhi-long",
-      "verifiedPlaceId": "xa-an-phu-tan",
-      "basis": "Kênh Bông Bót thuộc hệ thống thủy lợi Cầu Kè (xã An Phú Tân) -> Xã An Phú Tân"
     },
     {
       "entityId": "nha-hang-song-que-tra-vinh-tra-vinh",
@@ -1039,12 +894,6 @@
       "currentPlaceId": "xa-nhi-long",
       "verifiedPlaceId": "p-tra-vinh",
       "basis": "Khu vực chùa Phật Học, đường Điện Biên Phủ, TP. Trà Vinh -> Phường Trà Vinh"
-    },
-    {
-      "entityId": "quan-banh-canh-ben-co-tra-vinh",
-      "currentPlaceId": "xa-nhi-long",
-      "verifiedPlaceId": "p-nguyet-hoa",
-      "basis": "Khu vực Bến Có, Nguyệt Hóa -> Phường Nguyệt Hóa"
     },
     {
       "entityId": "quan-chay-tinh-xa-ngoc-tra-vinh",
@@ -1107,28 +956,10 @@
       "basis": "Nhà sàn gỗ giữa vườn trái cây cù lao An Bình -> Xã An Bình"
     },
     {
-      "entityId": "vuon-trai-cay-be-sau",
-      "currentPlaceId": "p-long-chau",
-      "verifiedPlaceId": "xa-an-binh",
-      "basis": "Vườn trái cây trên cù lao An Bình -> Xã An Bình"
-    },
-    {
-      "entityId": "vuon-trai-cay-bi-bo",
-      "currentPlaceId": "p-long-chau",
-      "verifiedPlaceId": "xa-an-binh",
-      "basis": "Vườn trái cây tại cù lao An Bình -> Xã An Bình"
-    },
-    {
       "entityId": "vuon-trai-cay-6-tan",
       "currentPlaceId": "p-long-chau",
       "verifiedPlaceId": "xa-an-binh",
       "basis": "Vườn trái cây ở cù lao An Bình -> Xã An Bình"
-    },
-    {
-      "entityId": "vuon-trai-cay-tam-loc",
-      "currentPlaceId": "p-long-chau",
-      "verifiedPlaceId": "xa-an-binh",
-      "basis": "Vườn trái cây trên cù lao An Bình -> Xã An Bình"
     },
     {
       "entityId": "nha-co-cau-ke",
@@ -1249,13 +1080,6 @@
       "reason": ""
     },
     {
-      "entityId": "chao-ech-tran-nam",
-      "name": "Cháo Ếch Trần Nam",
-      "currentType": "dish",
-      "verifiedType": "restaurant",
-      "reason": ""
-    },
-    {
       "entityId": "quan-lau-ga-noi-nha-san",
       "name": "Quán Lẩu Gà Nòi Nhà Sàn",
       "currentType": "experience",
@@ -1268,13 +1092,6 @@
       "currentType": "experience",
       "verifiedType": "cafe",
       "reason": ""
-    },
-    {
-      "entityId": "com-nieu-nam-bo",
-      "name": "Cơm Niêu Nam Bộ",
-      "currentType": "experience",
-      "verifiedType": "restaurant",
-      "reason": "Quán ăn phục vụ cơm niêu và món ăn dân dã Nam Bộ"
     },
     {
       "entityId": "mi-tau-dinh-phong-vinh-long",
