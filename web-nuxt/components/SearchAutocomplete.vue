@@ -1,6 +1,6 @@
 <template>
   <div class="search-ac" :class="{ active: showDropdown }">
-    <form role="search" @submit.prevent="onSubmit">
+    <form @submit.prevent="onSubmit">
       <input
         ref="inputEl"
         v-model="query"

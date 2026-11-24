@@ -103,7 +103,7 @@ withDefaults(defineProps<{
   border-block-end: 1px solid var(--line);
   border-radius: 0;
   background: transparent;
-  overflow: hidden;
+  overflow: clip;
   transition: background-color 0.2s var(--ease-out);
 }
 

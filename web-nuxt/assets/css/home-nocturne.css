@@ -57,7 +57,7 @@
   line-height: var(--leading-snug, 1.35);
 }
 
-[data-home-pilot="nocturne-b1"] :is(.home-feature-dossier__coords, [data-geo-coordinates], .hero-cognitive-chip, .hero-terroir-chip, .home-culinary-card__price-badge, .home-culinary-card__rank, .home-culinary-card__coords, .home-stay-card__price, .home-stay-card__coords, .home-curated-lead__coords, .home-curated-satellite__coords, .home-curated-lead__badge, .catalog-aeo-plaque__entry-title, .home-continuation__link-title, .home-continuation__link-sub, .home-hotline-btn__num, .home-planner-stop__number, .home-planner-stop__time, .home-planner-tab-btn__badge, .see-all) {
+[data-home-pilot="nocturne-b1"] :is(.home-feature-dossier__coords, [data-geo-coordinates], .home-culinary-card__price-badge, .home-culinary-card__coords, .home-stay-card__price, .home-stay-card__coords, .home-curated-satellite__coords, .home-curated-lead__badge, .catalog-aeo-plaque__entry-title, .home-continuation__link-title, .home-continuation__link-sub, .home-hotline-btn__num, .home-planner-stop__number, .home-planner-stop__time, .home-planner-tab-btn__badge, .see-all) {
   font-variant-numeric: tabular-nums;
 }
 
@@ -418,7 +418,6 @@
 }
 
 [data-home-pilot="nocturne-b1"] .home-feature-dossier__coords,
-[data-home-pilot="nocturne-b1"] .home-curated-lead__coords,
 [data-home-pilot="nocturne-b1"] .home-curated-satellite__coords,
 [data-home-pilot="nocturne-b1"] .home-culinary-card__coords,
 [data-home-pilot="nocturne-b1"] .home-stay-card__coords {
@@ -1122,7 +1121,7 @@
   [data-home-pilot="nocturne-b1"] .hero-main > :is(.hero-lead, .hero-sub) { order: 3; }
   [data-home-pilot="nocturne-b1"] .hero-main > :is(.hero-search-island, .hero-search) { order: 4; }
   [data-home-pilot="nocturne-b1"] .hero-main > .hero-nearby { order: 5; }
-  [data-home-pilot="nocturne-b1"] .hero-main > :is(.hero-quick-index, .hero-terroir-chips) { order: 6; }
+  [data-home-pilot="nocturne-b1"] .hero-main > .hero-quick-index { order: 6; }
 }
 
 @media (max-width: 64rem) {
@@ -1955,56 +1954,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 [data-home-pilot="nocturne-b1"] .hero {
   position: relative;
   overflow: hidden;
-}
-
-[data-home-pilot="nocturne-b1"] .hero-cinematic {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-[data-home-pilot="nocturne-b1"] .hero-cinematic__img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 35%;
-  transform: scale(1);
-  transition: opacity 0.6s ease;
-}
-
-[data-home-pilot="nocturne-b1"] .hero-cinematic__scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    color-mix(in srgb, var(--color-canvas) 58%, transparent) 0%,
-    color-mix(in srgb, var(--color-canvas) 38%, transparent) 42%,
-    color-mix(in srgb, var(--color-canvas) 12%, transparent) 78%,
-    transparent 100%
-  ),
-  linear-gradient(
-    to bottom,
-    transparent 65%,
-    var(--color-canvas) 100%
-  );
-  pointer-events: none;
-}
-
-.dark [data-home-pilot="nocturne-b1"] .hero-cinematic__scrim {
-  background: linear-gradient(
-    105deg,
-    rgba(var(--black-rgb), 0.68) 0%,
-    rgba(var(--black-rgb), 0.44) 42%,
-    rgba(var(--black-rgb), 0.16) 78%,
-    transparent 100%
-  ),
-  linear-gradient(
-    to bottom,
-    transparent 65%,
-    var(--color-canvas) 100%
-  );
 }
 
 /* ═══════════════════════════════════════════════════

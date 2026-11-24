@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import PersonalizeSetupSheet from './PersonalizeSetupSheet.vue'
 import { mergeOnboarding, resolveOnboardingIcon } from '~/utils/onboardingContent'
 const { enabled: ff } = useFeature()
@@ -56,33 +56,18 @@ const LS_ONBOARDING = 'vl360_onboarding_seen'
 
 onMounted(() => {
   if (isLoggedIn.value) void maybePromptPersonalization()
-  else scheduleWelcome()
 })
 
 watch(() => isLoggedIn.value, (authenticated) => {
   if (authenticated) void maybePromptPersonalization()
-  else {
-    personalizeVisible.value = false
-    scheduleWelcome()
-  }
+  else personalizeVisible.value = false
 })
-
-let welcomeTimer: ReturnType<typeof setTimeout> | null = null
-
-function scheduleWelcome() {
-  if (welcomeTimer || localStorage.getItem(LS_ONBOARDING)) return
-  welcomeTimer = setTimeout(() => { visible.value = true }, 5000)
-}
 
 async function maybePromptPersonalization() {
   if (!ff('onboarding') || !ff('preference_ui_v1')) return
   const owner = user.value?.id
   if (!isLoggedIn.value || !owner) return
   visible.value = false
-  if (welcomeTimer) {
-    clearTimeout(welcomeTimer)
-    welcomeTimer = null
-  }
   const refreshed = await preferences.refresh()
   if (!refreshed || !isLoggedIn.value || user.value?.id !== owner) return
   const snapshot = preferences.snapshot.value
@@ -102,9 +87,11 @@ function dismiss() {
   if (import.meta.client) localStorage.setItem(LS_ONBOARDING, '1')
 }
 
-onUnmounted(() => {
-  if (welcomeTimer) clearTimeout(welcomeTimer)
-})
+function open() {
+  if (ff('onboarding')) visible.value = true
+}
+
+defineExpose({ open })
 </script>
 
 <style scoped>

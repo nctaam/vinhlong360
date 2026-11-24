@@ -96,9 +96,6 @@
 .dc-thumb-more:active { transform: scale(.93); transition-duration: .08s; }
 .dc-thumb-more:focus-visible { outline: 2px solid var(--text-on-dark); outline-offset: 2px; }
 
-/* Image credit */
-.dc-credit { position: absolute; bottom: var(--space-1); left: var(--space-5); z-index: 3; font-size: var(--text-2xs); color: rgba(var(--white-rgb), .78); font-style: italic; }
-
 .detail-body { max-width: var(--maxw); margin: 0 auto; padding: var(--space-6) var(--space-5) var(--space-8); display: grid; grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr); grid-template-areas: "main aside"; gap: var(--space-8); align-items: start; contain: layout style; }
 .detail-main { grid-area: main; min-width: 0; }
 .detail-main .lead { display: flow-root; font-size: var(--text-lg); margin-top: 0; line-height: var(--leading-relaxed); max-width: var(--measure-read); }
@@ -311,10 +308,6 @@
 .ns-action:active { transform: translateX(1px) scale(.97); transition-duration: .08s; }
 .ns-action:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
-/* ── Highlight tagline ── */
-.entity-highlight { margin: var(--space-5) 0 var(--space-3); padding: var(--space-2) 0 var(--space-2) var(--space-4); background: transparent; border: 0; border-inline-start: 2px solid var(--color-brand); border-radius: 0; }
-.entity-highlight p { margin: 0; font-family: var(--font-editorial); font-size: clamp(1.2rem, 1.05rem + .7vw, 1.6rem); font-style: italic; line-height: var(--leading-snug); color: var(--ink); text-wrap: balance; }
-
 /* ── Key Historical & Archival Facts — open numbered archival ledger ── */
 .detail-key-facts { margin-top: var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); }
 .key-facts-list { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: flex; flex-direction: column; gap: 0; counter-reset: archival-fact; border-block-start: 1px solid var(--line); }
@@ -438,7 +431,6 @@
   .detail-cover .dc-disclosure { left: var(--space-3); }
   .dc-photo-btn { bottom: var(--space-3); right: var(--space-3); padding: var(--space-1) var(--space-3); font-size: var(--text-xs); }
   .dc-thumbs { display: none; }
-  .dc-credit { display: none; }
 }
 /* Ultra-narrow: drop the map button so phone + Zalo stay full-width and legible
    without text wrap; emoji always visible to preserve meaning. */

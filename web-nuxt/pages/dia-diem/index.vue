@@ -10,7 +10,7 @@
         <span class="catalog-hero-icon almanac-compass" aria-hidden="true" v-html="COMPASS_SVG"></span>
         <div>
           <h1>Danh bạ địa điểm</h1>
-          <p>1.532 điểm đến được ban biên tập tổng hợp, từ cù lao giữa sông đến quầy hàng trong hẻm nhỏ khắp tỉnh Vĩnh Long hợp nhất (gồm các vùng Bến Tre, Trà Vinh trước 7-2025), không sót nơi nào.</p>
+          <p>Danh bạ điểm đến, đặc sản, làng nghề, lưu trú và di tích khắp tỉnh Vĩnh Long hợp nhất (gồm các vùng Bến Tre, Trà Vinh trước 7-2025), tổng hợp thực địa không sót nơi nào.</p>
         </div>
       </div>
       <div v-if="total" class="catalog-stats almanac-stats">
@@ -109,7 +109,7 @@
       </div>
 
       <CatalogInterstitial
-        fact="Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) có hơn 1.500 điểm đến, đặc sản và dịch vụ — từ cù lao xanh mát đến làng nghề trăm năm, được ban biên tập tổng hợp và cập nhật liên tục."
+        fact="Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) có hơn 1.400 điểm đến, đặc sản và dịch vụ — từ cù lao xanh mát đến làng nghề trăm năm, được ban biên tập tổng hợp và cập nhật liên tục."
         icon-name="chart"
         variant="warm"
         :links="[{ to: '/ban-do', label: 'Xem bản đồ' }, { to: '/du-lich', label: 'Du lịch sinh thái' }]"

@@ -19,7 +19,7 @@
       >
         Tỉnh Vĩnh Long
       </div>
-      <header class="public-shell-header" role="banner">
+      <header class="public-shell-header">
         <div class="public-shell-command-row">
           <NuxtLink class="brand" to="/" aria-label="Về trang chủ vinhlong360">
             <span class="logo">{{ brandSitePrefix }}<span class="dot">360</span></span>
@@ -38,7 +38,9 @@
             </NuxtLink>
           </nav>
 
-          <SearchAutocomplete class="topbar-search public-shell-search" />
+          <search class="topbar-search-landmark" aria-label="Tìm kiếm nhanh">
+            <SearchAutocomplete class="topbar-search public-shell-search" />
+          </search>
 
           <div class="auth-area">
             <ShellThemeModeControl />
@@ -105,7 +107,7 @@
       <SearchDrawer v-model:open="searchDrawerOpen" />
     </template>
 
-    <footer class="site-footer" role="contentinfo">
+    <footer class="site-footer">
       <div class="footer-inner">
         <div class="footer-top">
           <div class="footer-brand">

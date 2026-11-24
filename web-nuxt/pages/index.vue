@@ -15,7 +15,7 @@
           <span class="hero-kicker" data-color-role="brand">{{ ss('homepage.hero_kicker', 'Tỉnh Vĩnh Long thống nhất · 124 xã, phường') }}</span>
           <h1>{{ seasonalTagline }}</h1>
           <p class="hero-lead">{{ heroSubtitle }}</p>
-          <div class="hero-search-island" role="search" aria-label="Tìm kiếm lữ hành">
+          <search class="hero-search-island" aria-label="Tìm kiếm lữ hành">
             <SearchAutocomplete
               class="hero-search hero-ac"
               data-color-role="action-primary"
@@ -28,7 +28,7 @@
                 <span>{{ seasonalFruitHighlight }}</span>
               </span>
             </div>
-          </div>
+          </search>
           <nav class="hero-quick-index" aria-label="Lối tắt chuyên mục">
             <NuxtLink
               v-for="item in HERO_QUICK_LINKS"

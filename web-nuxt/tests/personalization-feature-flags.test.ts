@@ -180,13 +180,21 @@ describe('feature flag resilience', () => {
 })
 
 describe('preference_ui_v1 behavior', () => {
-  it('keeps ordinary onboarding for guests while hiding personalized setup', async () => {
+  it('suppresses intrusive guest auto-popup on load while keeping on-demand ordinary onboarding and hiding personalized setup', async () => {
     vi.useFakeTimers()
     authState.user.value = null
     authState.isLoggedIn.value = false
 
     const wrapper = await mountSuspended(OnboardingSheet, { attachTo: document.body })
     await vi.advanceTimersByTimeAsync(5000)
+    await flushUi()
+
+    expect(document.body.querySelector('[aria-label="Chào mừng đến vinhlong360"]')).toBeNull()
+    expect(document.body.querySelector('[aria-label="Thiết lập khu vực và sở thích"]')).toBeNull()
+
+    const sheetVm = wrapper.vm as unknown as { open?: () => void }
+    expect(typeof sheetVm.open).toBe('function')
+    sheetVm.open!()
     await flushUi()
 
     expect(document.body.querySelector('[aria-label="Chào mừng đến vinhlong360"]')).toBeTruthy()

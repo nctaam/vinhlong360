@@ -69,6 +69,18 @@ describe('CatalogAeoPlaque — Reusable Hub Answer Plaque', () => {
     expect(wrapper.attributes('data-material-accent')).toBe('river')
   })
 
+  it('renders closed <details> disclosure by default and fabricates zero stock fallback images', async () => {
+    const wrapper = await mount({
+      title: 'Cẩm nang tinh gọn',
+      entries: [
+        { heading: 'Điểm A', text: 'Nội dung thực địa ngắn gọn.' },
+      ],
+    })
+    const details = wrapper.get('details.catalog-aeo-plaque__details')
+    expect((details.element as HTMLDetailsElement).open).toBe(false)
+    expect(wrapper.find('img').exists()).toBe(false)
+  })
+
   it('strictly adheres to design tokens with zero raw hex in styles', () => {
     const filePath = resolve(__dirname, '../components/CatalogAeoPlaque.vue')
     const source = readFileSync(filePath, 'utf8')

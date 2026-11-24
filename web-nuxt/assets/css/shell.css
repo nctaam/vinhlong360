@@ -17,8 +17,30 @@
   background: color-mix(in srgb, var(--color-surface) 88%, transparent);
   -webkit-backdrop-filter: var(--glass-frosted-nav, saturate(1.2) blur(18px));
   backdrop-filter: var(--glass-frosted-nav, saturate(1.2) blur(18px));
-  transition: box-shadow var(--duration-normal) var(--ease-out), background-color var(--duration-normal) var(--ease-out);
+  transition: box-shadow var(--duration-normal) var(--ease-out), background-color var(--duration-normal) var(--ease-out), transform var(--duration-normal) var(--ease-out);
   padding-top: env(safe-area-inset-top, 0px);
+}
+
+.topbar-search-landmark {
+  display: contents;
+}
+
+:target {
+  scroll-margin-top: 4.5rem;
+}
+
+@supports (container-type: scroll-state) {
+  html {
+    container-type: scroll-state;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @container scroll-state((scrolled: bottom) and (scrollable: top)) {
+      .public-shell-chrome:not(:focus-within):not(:has(.public-shell-catalog.open)):not(:has(.display-settings-card)) {
+        transform: translateY(-100%);
+      }
+    }
+  }
 }
 
 .public-shell-chrome.scrolled {
@@ -1925,6 +1947,10 @@ html[data-reduced-motion="true"] .public-shell-catalog-button .line-icon {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .public-shell-chrome {
+    transition: none;
+    transform: none;
+  }
   .admin-shell .admin-sidebar {
     transition: none;
   }

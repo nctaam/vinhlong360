@@ -251,7 +251,7 @@ const updatedDate = '26/06/2026'
 const guideAeoEntries = [
   {
     heading: 'Khám phá & Lưu điểm không cần đăng ký',
-    text: 'Du khách tự do tra cứu 1.500+ địa điểm, xem chỉ đường, mùa vụ và lưu danh sách yêu thích trực tiếp vào trình duyệt cá nhân.',
+    text: 'Du khách tự do tra cứu danh bạ địa điểm, xem chỉ đường, mùa vụ và lưu danh sách yêu thích trực tiếp vào trình duyệt cá nhân.',
   },
   {
     heading: 'Công cụ lập lộ trình thông minh',

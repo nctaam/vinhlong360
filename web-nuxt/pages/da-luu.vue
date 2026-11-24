@@ -136,7 +136,7 @@
               <IconLine name="repeat" /> Xóa bộ lọc
             </button>
             <NuxtLink :to="savedQuery ? searchLink : '/dia-diem'" class="btn btn-primary btn-sm">
-              <IconLine name="compass" /> {{ savedQuery ? 'Tìm trên hệ thống' : 'Khám phá 1.500+ địa điểm' }}
+              <IconLine name="compass" /> {{ savedQuery ? 'Tìm trên hệ thống' : 'Khám phá danh bạ địa điểm' }}
             </NuxtLink>
             <NuxtLink v-if="!savedQuery" to="/du-lich" class="btn btn-ghost btn-sm">
               <IconLine name="calendar" /> Cẩm nang theo mùa

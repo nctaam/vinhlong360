@@ -207,6 +207,12 @@ export default defineNuxtConfig({
     '/kham-pha/am-thuc': { redirect: { to: '/am-thuc', statusCode: 301 } },
   },
 
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => tag === 'search',
+    },
+  },
+
   experimental: {
     viewTransition: true,
     defaults: {

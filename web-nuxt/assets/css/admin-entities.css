@@ -207,9 +207,8 @@
 .ent-history-item {
   display: flex; align-items: baseline; gap: var(--space-2);
   padding: var(--space-1) 0; font-size: .82rem;
-  border-bottom: .5px solid var(--line);
 }
-.ent-history-item:last-child { border-bottom: none; }
+.ent-history-item:not(:last-child) { border-bottom: .5px solid var(--line); }
 .ent-history-field { font-weight: 600; color: var(--ink); min-width: 70px; }
 .ent-history-arrow { color: var(--muted); flex-shrink: 0; }
 .ent-history-diff { display: inline-flex; align-items: baseline; gap: var(--space-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
