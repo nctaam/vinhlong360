@@ -26,43 +26,6 @@
   },
   "verifiedDossiers": [
     {
-      "entityId": "benh-vien-da-khoa-minh-duc-ben-tre-ben-tre",
-      "name": "Bệnh viện Đa khoa Minh Đức Bến Tre",
-      "issueType": "factual_address_and_duplicate_summary_error",
-      "currentInDataJson": {
-        "placeId": "p-son-dong",
-        "address": "44 Đoàn Hoàng Minh, Phường 6, Thành phố Bến Tre",
-        "summary": "Bệnh viện tư nhân tại 44 Đoàn Hoàng Minh, Phường 6, TP. Bến Tre. Khám nhanh hơn bệnh viện công, có dịch vụ đặt lịch trước. Phù hợp cho trường hợp không quá khẩn cấp. Hoạt động 24/7."
-      },
-      "verifiedGroundTruth": {
-        "placeId": "p-son-dong",
-        "address": "Số 333D đường Đoàn Hoàng Minh, Phường Sơn Đông, tỉnh Vĩnh Long (trước 07/2025: Phường 6)",
-        "phone": "0275 3836 666 | Hotline: 1900 0317",
-        "hours": "Cấp cứu 24/7; Khám ngoại trú: Sáng 07:00–11:00, Chiều 13:00–17:00",
-        "summary": "Bệnh viện đa khoa tư nhân quy mô lớn tại số 333D Đoàn Hoàng Minh, Phường Sơn Đông, tiếp nhận cấp cứu 24/7 và khám chữa bệnh bảo hiểm y tế.",
-        "realImages": [
-          "https://s3.mycloudz.vn/ivie/omre/d41c713e-a62e-4187-8080-572c914b5188_b80677ef-01a5-4bb9-940a-753a4fce7b9d.jpg"
-        ],
-        "sources": [
-          {
-            "domain": "benhvienminhduc.com",
-            "url": "https://benhvienminhduc.com/",
-            "title": "Bệnh viện Đa khoa Minh Đức Bến Tre — Trang chính thức"
-          },
-          {
-            "domain": "hellobacsi.com",
-            "url": "https://hellobacsi.com/care/benh-vien/benh-vien-da-khoa-minh-duc-3385/",
-            "title": "Bệnh viện Đa khoa Minh Đức — Hello Bacsi"
-          },
-          {
-            "domain": "ivie.vn",
-            "url": "https://ivie.vn/benh-vien-da-khoa-minh-duc-co-kham-bao-hiem-y-te-khong--0",
-            "title": "Thông tin khám BHYT Bệnh viện Đa khoa Minh Đức — IVIE"
-          }
-        ]
-      }
-    },
-    {
       "entityId": "khu-du-lich-somo-farm-cuu-long",
       "duplicateEntityId": "khu-du-lich-somo-farm-cuu-long",
       "name": "Khu du lịch Somo Farm Cửu Long",
@@ -297,31 +260,6 @@
         ],
         "realImages": [
           "https://dltm-cdn.vnptit3.vn/resources/portal/Images/VLG/adminportal_vlg/yem/2026/t10/8_10/n1_684163170.jpg"
-        ]
-      }
-    },
-    {
-      "entityId": "cau-lac-bo-don-ca-tai-tu-truong-xay-dung-mien-tay",
-      "name": "Câu lạc bộ đờn ca tài tử Trường Đại học Xây dựng Miền Tây",
-      "issueType": "wrong_ward_placeId_and_spurious_commercial_pricing",
-      "currentInDataJson": {
-        "placeId": "p-long-chau",
-        "price_range": "100.000–200.000 đ/người"
-      },
-      "verifiedGroundTruth": {
-        "placeId": "p-phuoc-hau",
-        "address": "Số 20B Phó Cơ Điều, Phường 3 (nay là Phường Phước Hậu), tỉnh Vĩnh Long",
-        "phone": "0270 3825 903",
-        "admission": "Sinh hoạt câu lạc bộ văn nghệ học thuật nội bộ của cán bộ, giảng viên và sinh viên",
-        "sources": [
-          {
-            "domain": "vinhlongtourist.vn",
-            "url": "https://vinhlongtourist.vn/vi/detailevents/?t=doi-net-ve-don-ca-tai-tu-vinh-long&id=event_10380",
-            "title": "Đôi nét về Đờn ca tài tử Vĩnh Long — Vĩnh Long Tourist"
-          }
-        ],
-        "realImages": [
-          "https://dltm-cdn.vnptit3.vn/resources/portal//Images/VLG/adminportal_vlg/su_kien/doi_net_ve_don_ca_tai_tu_vinh_long_359346700.jpg"
         ]
       }
     },
@@ -767,34 +705,6 @@
       }
     },
     {
-      "entityId": "benh-vien-da-khoa-tinh-vinh-long-vinh-long",
-      "name": "Bệnh viện Đa khoa tỉnh Vĩnh Long",
-      "currentDataJsonBugs": [
-        "placeId đang gán nhầm 'xa-trung-ngai' (huyện Vũng Liêm) và thiếu address/phone dù bệnh viện đặt tại 301 Trần Phú, Phường 4, TP. Vĩnh Long cũ (nay là Phường Phước Hậu)."
-      ],
-      "verifiedGroundTruth": {
-        "placeId": "p-phuoc-hau",
-        "address": "Số 301 đường Trần Phú, Phường Phước Hậu, tỉnh Vĩnh Long",
-        "phone": "0270 3822 535",
-        "lat": 10.2469,
-        "lng": 105.9842,
-        "summary": "Bệnh viện đa khoa tuyến tỉnh hạng I tại số 301 Trần Phú, Phường Phước Hậu, tỉnh Vĩnh Long — trung tâm khám chữa bệnh và cấp cứu 24/7. Điện thoại: 0270 3822 535.",
-        "sources": [
-          {
-            "domain": "nhathuoclongchau.com.vn",
-            "url": "https://nhathuoclongchau.com.vn/bai-viet/gioi-thieu-tong-quan-ve-benh-vien-da-khoa-vinh-long.html"
-          },
-          {
-            "domain": "doctogo.vn",
-            "url": "https://doctogo.vn/co-so-y-te/af09fc42-e91f-4f14-bf38-064508798ea7"
-          }
-        ],
-        "realImages": [
-          "https://cdn.nhathuoclongchau.com.vn/v1/static/benh_vien_da_khoa_Vinh_Long_1_3bb202891f.png"
-        ]
-      }
-    },
-    {
       "entityId": "chua-vam-ray",
       "name": "Chùa Vàm Ray (Wat Vàm Rây)",
       "currentDataJsonBugs": [
@@ -1165,12 +1075,6 @@
       "basis": "Cửa hàng đặc sản tại trung tâm TP. Vĩnh Long -> Phường Long Châu"
     },
     {
-      "entityId": "shop-luu-niem-ben-ninh-kieu-gian-hang-vinh-long-vinh-long",
-      "currentPlaceId": "xa-nhon-phu",
-      "verifiedPlaceId": "xa-an-binh",
-      "basis": "Gian hàng lưu niệm tại khu du lịch Cù lao An Bình -> Xã An Bình"
-    },
-    {
       "entityId": "kenh-tra-on-vinh-long",
       "currentPlaceId": "xa-nhon-phu",
       "verifiedPlaceId": "p-tra-on",
@@ -1235,12 +1139,6 @@
       "currentPlaceId": "xa-nhon-phu",
       "verifiedPlaceId": "p-thanh-duc",
       "basis": "Bến phà Đình Khao trên Quốc lộ 57 (Phường 5 / Thanh Đức) -> Phường Thanh Đức"
-    },
-    {
-      "entityId": "ben-xe-tra-on-tich-thien-vinh-long",
-      "currentPlaceId": "xa-nhon-phu",
-      "verifiedPlaceId": "p-tra-on",
-      "basis": "Bến xe Trà Ôn / Tích Thiện trên Quốc lộ 54 -> Phường Trà Ôn"
     },
     {
       "entityId": "quan-com-chay-lac-vien-vinh-long",
@@ -1393,22 +1291,10 @@
       "basis": "Xã Vinh Kim, Cầu Ngang -> Xã Vinh Kim"
     },
     {
-      "entityId": "cho-hoa-tet",
-      "currentPlaceId": "xa-phu-phung",
-      "verifiedPlaceId": "p-long-chau",
-      "basis": "Chợ hoa Tết ven sông TP. Vĩnh Long -> Phường Long Châu"
-    },
-    {
       "entityId": "quan-com-175-ben-tre",
       "currentPlaceId": "xa-quoi-dien",
       "verifiedPlaceId": "p-phu-khuong",
       "basis": "175 Đại lộ Đồng Khởi, TP. Bến Tre -> Phường Phú Khương"
-    },
-    {
-      "entityId": "ben-xe-vung-liem-vinh-long",
-      "currentPlaceId": "xa-hoa-hiep",
-      "verifiedPlaceId": "p-vung-liem",
-      "basis": "Bến xe Vũng Liêm trên Tỉnh lộ 902, trung tâm Vũng Liêm -> Phường Vũng Liêm"
     },
     {
       "entityId": "nha-co-cai-cuong",
@@ -1692,13 +1578,6 @@
       "currentType": "attraction",
       "verifiedType": "restaurant",
       "reason": "Quán bún nước lèo hải sản trong lồng chợ Ba Tri"
-    },
-    {
-      "entityId": "ca-phe-nha-co-vinh-long-khu-nha-co-huynh-thuy-le-vinh-long",
-      "name": "Cà phê Nhà Cổ Vĩnh Long (khu nhà cổ Huỳnh Thủy Lê)",
-      "currentType": "attraction",
-      "verifiedType": "cafe",
-      "reason": "Quán cà phê phong cách nhà cổ tại Phường Long Châu"
     }
   ],
   "duplicateEntityClusters": [
@@ -1876,20 +1755,6 @@
       "currentSummary": "Xã Trà Côn, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Nhơn Bình, xã Trà Côn và xã Tân Mỹ, một phần TT Tam Bình thuộc huyện Trà Ôn + H.",
       "verifiedSummary": "Xã Trà Côn thuộc tỉnh Vĩnh Long, hình thành từ sáp nhập xã Nhơn Bình, xã Trà Côn, xã Tân Mỹ (huyện Trà Ôn cũ) và một phần thị trấn Tam Bình (huyện Tam Bình cũ).",
       "verifiedDescription": "Xã Trà Côn thuộc tỉnh Vĩnh Long, hình thành từ sáp nhập xã Nhơn Bình, xã Trà Côn, xã Tân Mỹ (huyện Trà Ôn cũ) và một phần thị trấn Tam Bình (huyện Tam Bình cũ)."
-    },
-    {
-      "entityId": "ca-phe-nha-co-vinh-long-khu-nha-co-huynh-thuy-le-vinh-long",
-      "name": "Cà phê Nhà Cổ Vĩnh Long (khu nhà cổ Huỳnh Thủy Lê)",
-      "currentSummary": "Quán cà phê trong khu nhà cổ Huỳnh Thủy Lê, đường 1/5, phường 1 TP.",
-      "verifiedSummary": "Quán cà phê phong cách hoài cổ trên đường 1 Tháng 5, Phường Long Châu, tỉnh Vĩnh Long — phục vụ cà phê vợt, cà phê phin truyền thống từ 07:00 đến 21:00.",
-      "verifiedDescription": "Quán cà phê phong cách nhà cổ trên đường 1 Tháng 5, Phường Long Châu, tỉnh Vĩnh Long (Phường 1, TP. Vĩnh Long cũ), nổi bật với không gian hoài niệm và cà phê phin truyền thống."
-    },
-    {
-      "entityId": "ca-phe-song-tien-ben-ninh-kieu-vinh-long-vinh-long",
-      "name": "Cà phê Sông Tiền – bến Ninh Kiều Vĩnh Long",
-      "currentSummary": "Cà phê bên bờ sông Cổ Chiên, đường Trưng Nữ Vương, phường 1 TP.",
-      "verifiedSummary": "Quán cà phê ven bờ sông Cổ Chiên trên đường Trưng Nữ Vương, Phường Long Châu, tỉnh Vĩnh Long — tầm nhìn thoáng đãng ngắm ghe thuyền qua lại.",
-      "verifiedDescription": "Quán cà phê bên bờ sông Cổ Chiên trên đường Trưng Nữ Vương, Phường Long Châu, tỉnh Vĩnh Long (Phường 1, TP. Vĩnh Long cũ), sở hữu tầm nhìn sông nước thoáng mát."
     },
     {
       "entityId": "quan-che-ba-hai-cho-tra-vinh",

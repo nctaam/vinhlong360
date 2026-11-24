@@ -9,55 +9,55 @@
     "type": "attraction",
     "label": "Tham quan",
     "emoji": "📸",
-    "count": 173
+    "count": 154
   },
   {
     "type": "history",
     "label": "Di tích",
     "emoji": "🏛️",
-    "count": 162
+    "count": 151
   },
   {
     "type": "accommodation",
     "label": "Lưu trú",
     "emoji": "🏨",
-    "count": 151
+    "count": 142
   },
   {
     "type": "restaurant",
     "label": "Nhà hàng",
     "emoji": "🍽️",
-    "count": 119
+    "count": 126
   },
   {
     "type": "nature",
     "label": "Thiên nhiên",
     "emoji": "🌿",
-    "count": 106
+    "count": 97
   },
   {
     "type": "dish",
     "label": "Ẩm thực",
     "emoji": "🍜",
-    "count": 101
+    "count": 86
   },
   {
     "type": "craft_village",
     "label": "Làng nghề",
     "emoji": "🏺",
-    "count": 89
+    "count": 85
   },
   {
     "type": "experience",
     "label": "Trải nghiệm",
     "emoji": "🎯",
-    "count": 68
+    "count": 58
   },
   {
     "type": "event",
     "label": "Sự kiện",
     "emoji": "🎉",
-    "count": 42
+    "count": 34
   },
   {
     "type": "person",
@@ -66,15 +66,15 @@
     "count": 33
   },
   {
-    "type": "facility",
-    "label": "Tiện ích",
-    "emoji": "🏢",
-    "count": 30
-  },
-  {
     "type": "cafe",
     "label": "Cà phê",
     "emoji": "☕",
-    "count": 20
+    "count": 17
+  },
+  {
+    "type": "facility",
+    "label": "Tiện ích",
+    "emoji": "🏢",
+    "count": 7
   }
 ]

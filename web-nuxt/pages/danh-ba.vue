@@ -955,9 +955,9 @@ const gazetteerTabs = computed(() => [
 
 const GAZETTEER_THUMB_MAP: Record<string, string> = {
   'craft-mangthit-pottery': '/img/entities/lo-gach-mang-thit.webp',
-  'craft-nonla-longho': '/img/entities/lang-nghe-cham-non-la-long-ho.webp',
+  'craft-nonla-longho': '/img/entities/lang-nghe-dan-non-la-tt-long-ho.webp',
   'craft-lucbinh-ngaitu': '/img/entities/lang-dan-luc-binh-ngai-tu.webp',
-  'craft-banhtrang-lucsi': '/img/entities/banh-trang-cu-lao-may-lang-nghe-banh-trang.webp',
+  'craft-banhtrang-lucsi': '/img/entities/lang-nghe-banh-trang-nem-cu-lao-may.webp',
   'craft-tauhuky-myhoa': '/img/entities/lang-nghe-tau-hu-ky-my-hoa.webp',
   'craft-bakhanh-food': '/img/entities/bun-tuoi-sau-thanh.webp',
   'dining-tan-tan-vinhlong': '/img/entities/tau-nha-hang-sai-gon-vinh-long.webp',
