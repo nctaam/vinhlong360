@@ -57,6 +57,25 @@ export interface DefaultPublicTelemetryTransportOptions {
   Blob?: typeof Blob
 }
 
+export interface FetchLaterResultLike {
+  readonly activated: boolean
+}
+
+export type FetchLaterFn = (
+  url: string,
+  init: RequestInit & { activateAfter?: number },
+) => FetchLaterResultLike
+
+export interface BatchedPublicTelemetryTransportOptions extends DefaultPublicTelemetryTransportOptions {
+  fetchLater?: FetchLaterFn
+  batchWindowMs?: number
+  maxQueueSize?: number
+  maxPayloadBytes?: number
+  document?: Pick<Document, 'visibilityState' | 'addEventListener' | 'removeEventListener'>
+  setTimeout?: typeof setTimeout
+  clearTimeout?: typeof clearTimeout
+}
+
 const ROUTE_FAMILIES = new Set<PublicRouteFamily>(['home', 'catalog', 'search', 'detail', 'planner', 'community', 'settings', 'other'])
 const VIEWPORTS = new Set<PublicViewport>(['mobile', 'tablet', 'desktop'])
 const NETWORKS = new Set<ContextEnvelope['network']>(['online', 'degraded', 'offline'])
@@ -128,18 +147,136 @@ export function resolvePublicTelemetryEndpoint(input: unknown, origin: string): 
   }
 }
 
+function dispatchTelemetryPayload(
+  endpoint: string,
+  body: string,
+  options: DefaultPublicTelemetryTransportOptions,
+): void {
+  const beaconBody = options.Blob ? new options.Blob([body], { type: 'application/json' }) : body
+  if (options.sendBeacon?.(endpoint, beaconBody)) return
+  const pending = options.fetch?.(endpoint, { method: 'POST', body, headers: { 'content-type': 'application/json' }, keepalive: true })
+  if (pending && typeof (pending as Promise<unknown>).catch === 'function') {
+    void (pending as Promise<unknown>).catch(() => {})
+  }
+}
+
 export function createDefaultPublicTelemetryTransport(options: DefaultPublicTelemetryTransportOptions): PublicTelemetryTransport {
   return (event) => {
     if (options.config.public?.publicTelemetryEnabled !== true) return
     const endpoint = resolvePublicTelemetryEndpoint(options.config.public?.publicTelemetryEndpoint, options.origin)
     if (!endpoint) return
     try {
-      const body = JSON.stringify(event)
-      const beaconBody = options.Blob ? new options.Blob([body], { type: 'application/json' }) : body
-      if (options.sendBeacon?.(endpoint, beaconBody)) return
-      const pending = options.fetch?.(endpoint, { method: 'POST', body, headers: { 'content-type': 'application/json' }, keepalive: true })
-      if (pending && typeof (pending as Promise<unknown>).catch === 'function') {
-        void (pending as Promise<unknown>).catch(() => {})
+      dispatchTelemetryPayload(endpoint, JSON.stringify(event), options)
+    } catch {
+      // Observability is best-effort and must never block search, detail or planner.
+    }
+  }
+}
+
+export function createBatchedPublicTelemetryTransport(options: BatchedPublicTelemetryTransportOptions): PublicTelemetryTransport {
+  const endpoint = resolvePublicTelemetryEndpoint(options.config.public?.publicTelemetryEndpoint, options.origin)
+  if (options.config.public?.publicTelemetryEnabled !== true || !endpoint) {
+    return () => {}
+  }
+  const resolvedEndpoint: string = endpoint
+
+  const batchWindowMs = options.batchWindowMs ?? 10_000
+  const maxQueueSize = options.maxQueueSize ?? 50
+  const maxPayloadBytes = options.maxPayloadBytes ?? 48_000
+  const scheduleTimer = options.setTimeout ?? (typeof setTimeout === 'function' ? setTimeout : undefined)
+  const cancelTimer = options.clearTimeout ?? (typeof clearTimeout === 'function' ? clearTimeout : undefined)
+  const doc = options.document ?? (typeof document !== 'undefined' ? document : undefined)
+
+  const eventQueue: PublicTelemetryEvent[] = []
+  let queuedBytes = 2 // JSON array brackets []
+  let pendingResult: FetchLaterResultLike | null = null
+  let pendingController: AbortController | null = null
+  let flushTimer: ReturnType<typeof setTimeout> | null = null
+  let visibilityAttached = false
+
+  function detachVisibility() {
+    if (visibilityAttached && doc) {
+      doc.removeEventListener('visibilitychange', onVisibilityChange)
+      visibilityAttached = false
+    }
+  }
+
+  function resetQueue() {
+    eventQueue.length = 0
+    queuedBytes = 2
+    pendingResult = null
+    pendingController = null
+  }
+
+  function flushNow() {
+    if (flushTimer !== null && cancelTimer) {
+      cancelTimer(flushTimer)
+      flushTimer = null
+    }
+    detachVisibility()
+    if (!eventQueue.length) return
+    const body = JSON.stringify(eventQueue)
+    resetQueue()
+    try {
+      dispatchTelemetryPayload(resolvedEndpoint, body, options)
+    } catch {
+      // Best-effort flush must never disrupt the user session.
+    }
+  }
+
+  function onVisibilityChange() {
+    if (doc?.visibilityState === 'hidden') {
+      flushNow()
+    }
+  }
+
+  return (event) => {
+    try {
+      if (options.fetchLater && pendingResult?.activated) {
+        resetQueue()
+      }
+
+      const eventSize = JSON.stringify(event).length + (eventQueue.length ? 1 : 0)
+      if (eventQueue.length >= maxQueueSize || (eventQueue.length > 0 && queuedBytes + eventSize > maxPayloadBytes)) {
+        pendingController?.abort()
+        flushNow()
+      }
+
+      eventQueue.push(event)
+      queuedBytes += eventSize
+
+      if (options.fetchLater) {
+        pendingController?.abort()
+        pendingController = typeof AbortController === 'function' ? new AbortController() : null
+        try {
+          pendingResult = options.fetchLater(resolvedEndpoint, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(eventQueue),
+            signal: pendingController?.signal,
+            activateAfter: batchWindowMs,
+          })
+          return
+        } catch {
+          pendingController = null
+          pendingResult = null
+          flushNow()
+          return
+        }
+      }
+
+      if (!visibilityAttached && doc) {
+        doc.addEventListener('visibilitychange', onVisibilityChange)
+        visibilityAttached = true
+      }
+      if (flushTimer !== null && cancelTimer) {
+        cancelTimer(flushTimer)
+        flushTimer = null
+      }
+      if (doc?.visibilityState === 'hidden') {
+        flushNow()
+      } else if (scheduleTimer) {
+        flushTimer = scheduleTimer(flushNow, batchWindowMs)
       }
     } catch {
       // Observability is best-effort and must never block search, detail or planner.
@@ -147,17 +284,29 @@ export function createDefaultPublicTelemetryTransport(options: DefaultPublicTele
   }
 }
 
+const batchedTransports = new Map<string, PublicTelemetryTransport>()
+
 function defaultTransport(event: Readonly<PublicTelemetryEvent>): void {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') return
   try {
     const config = useRuntimeConfig() as PublicTelemetryRuntimeConfig
-    const transport = createDefaultPublicTelemetryTransport({
-      config,
-      origin: window.location.origin,
-      sendBeacon: typeof navigator.sendBeacon === 'function' ? navigator.sendBeacon.bind(navigator) : undefined,
-      fetch: typeof fetch === 'function' ? fetch : undefined,
-      Blob: typeof Blob === 'undefined' ? undefined : Blob,
-    })
+    const endpoint = String(config.public?.publicTelemetryEndpoint || '')
+    const enabled = config.public?.publicTelemetryEnabled === true
+    const key = `${window.location.origin}|${enabled}|${endpoint}`
+    let transport = batchedTransports.get(key)
+    if (!transport) {
+      const g = globalThis as typeof globalThis & { fetchLater?: FetchLaterFn }
+      transport = createBatchedPublicTelemetryTransport({
+        config,
+        origin: window.location.origin,
+        fetchLater: typeof g.fetchLater === 'function' ? g.fetchLater.bind(g) : undefined,
+        sendBeacon: typeof navigator.sendBeacon === 'function' ? navigator.sendBeacon.bind(navigator) : undefined,
+        fetch: typeof fetch === 'function' ? fetch : undefined,
+        Blob: typeof Blob === 'undefined' ? undefined : Blob,
+      })
+      if (batchedTransports.size >= 8) batchedTransports.clear()
+      batchedTransports.set(key, transport)
+    }
     transport(event)
   } catch {
     // Observability is best-effort and must never block search, detail or planner.

@@ -4,7 +4,9 @@ from autocorrect import (
     autocorrect,
     normalize_vietnamese,
     _levenshtein,
+    _damerau_levenshtein,
     _TOURISM_CORRECTIONS,
+    add_corrections,
     get_correction_count,
     load_entity_names,
     _apply_capitalization,
@@ -272,3 +274,42 @@ def test_autocorrect_already_correct_vietnamese():
     # so it might still correct if the normalized key matches.
     # This is expected behavior.
     assert isinstance(result["corrected"], str)
+
+
+# ── Damerau-Levenshtein, SymSpell & First-Word Dict Index ──
+
+
+def test_damerau_levenshtein_adjacent_transposition_and_abort():
+    assert _damerau_levenshtein("vinh long", "vihn long") == 1
+    assert _damerau_levenshtein("mang thit", "mang tiht") == 1
+    assert _damerau_levenshtein("vinh long", "zzzzzzzzzz", max_distance=2) > 2
+
+
+def test_symspell_entity_recovers_dist1_transposition_and_edit():
+    entities = {
+        "e1": {"name": "Cù lao An Bình", "type": "attraction"},
+        "e2": {"name": "Chợ nổi Trà Ôn", "type": "attraction"},
+        "e3": {"name": "Ao Bà Om", "type": "attraction"},
+    }
+    load_entity_names(entities)
+    # Transposition distance = 1 ("cu loa" vs "cu lao") recovered via SymSpell dist-1 index
+    res_swap = autocorrect("di cu loa an binh")
+    assert res_swap["was_corrected"] is True
+    assert "Cù lao An Bình" in res_swap["corrected"]
+    # Insertion/deletion distance = 1
+    res_del = autocorrect("ao ba o")
+    assert res_del["was_corrected"] is True
+    assert "Ao Bà Om" in res_del["corrected"]
+
+
+def test_add_corrections_rebuilds_first_word_inverted_index():
+    from autocorrect import _TOURISM_CORRECTIONS
+    key = "banh xeo cua dong"
+    try:
+        add_corrections({key: "bánh xèo cua đồng"})
+        res = autocorrect("an banh xeo cua dong")
+        assert res["was_corrected"] is True
+        assert "bánh xèo cua đồng" in res["corrected"]
+    finally:
+        _TOURISM_CORRECTIONS.pop(key, None)
+        add_corrections({})

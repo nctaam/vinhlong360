@@ -93,6 +93,9 @@ const faqItems: FaqEntry[] = [
 .fieldwork-faq__question-text{flex:1;line-height:1.4;text-wrap:pretty;overflow-wrap:break-word}
 .fieldwork-faq__icon{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--radius-pill,999px);background:color-mix(in srgb,var(--color-border) 40%,transparent);color:var(--color-text-muted);transition:transform .25s cubic-bezier(.16,1,.3,1),background-color .2s ease,color .2s ease}
 .fieldwork-faq__item[open] .fieldwork-faq__icon{transform:rotate(180deg);background:var(--mangthit-600);color:rgb(var(--white-rgb))}
+.fieldwork-faq__item::details-content{interpolate-size:allow-keywords;overflow:clip;contain:layout}
+.fieldwork-faq__item:not([open])::details-content{block-size:0}
+@media (prefers-reduced-motion:no-preference){.fieldwork-faq__item::details-content{transition:block-size,content-visibility,display;transition-duration:.28s;transition-timing-function:var(--ease-out-expo,ease-in-out);transition-behavior:allow-discrete}}
 .fieldwork-faq__answer{padding:var(--space-3) var(--space-5) var(--space-5);font-size:var(--text-sm);color:var(--color-text-muted);line-height:1.65;border-top:1px dashed color-mix(in srgb,var(--color-border) 40%,transparent);margin-top:var(--space-1)}
 .fieldwork-faq__answer p{margin:0 0 var(--space-2)}
 .fieldwork-faq__tips{display:flex;align-items:flex-start;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-radius:var(--radius-control,12px);background:color-mix(in srgb,var(--mangthit-600) 8%,transparent);color:var(--color-text);font-size:var(--text-xs);line-height:1.5}

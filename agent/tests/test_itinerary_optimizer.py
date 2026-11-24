@@ -6,6 +6,8 @@ from itineraries.itinerary_optimizer import (
     NoFeasibleRouteError,
     OptimizeOptions,
     RouteStop,
+    _prepare_stops,
+    _prune_beam_states,
     haversine_km,
     optimize_stop_order,
     project_onto_corridor,
@@ -157,3 +159,40 @@ def test_beam_solver_is_deterministic_for_twenty_stops():
     assert first.ordered_ids[0] == "start"
     assert first.ordered_ids[-1] == "end"
     assert first.backtrack_ratio == pytest.approx(0.0, abs=1e-9)
+
+
+def test_prune_beam_states_keeps_cheapest_per_mask_and_endpoint():
+    stops = [
+        stop("s0", 10.0, 106.0),
+        stop("s1", 10.0, 106.3),
+        stop("s2", 10.0, 106.6),
+        stop("s3", 10.0, 107.0),
+    ]
+    prepared, _ = _prepare_stops(stops)
+    expanded = [
+        (5.5, (0, 2, 1), 0b11, 1),
+        (2.1, (0, 2, 1), 0b11, 1),
+        (3.4, (0, 1, 2), 0b11, 2),
+    ]
+    pruned = _prune_beam_states(expanded, beam_width=2, prepared=prepared, destination_index=3)
+    assert len(pruned) == 2
+    assert {(s[2], s[3]): s[0] for s in pruned} == {(0b11, 1): 2.1, (0b11, 2): 3.4}
+
+
+def test_two_opt_uncrosses_figure_eight_tour_when_direction_relaxed():
+    stops = [
+        stop("a0", 10.00, 106.00),
+        stop("b1", 10.04, 106.02),
+        stop("c2", 10.00, 106.06),
+        stop("d3", 10.04, 106.06),
+        stop("e4", 10.02, 106.10),
+    ]
+    # Deliberately crossed middle order a0 -> c2 -> b1 -> d3 -> e4
+    crossed = [stops[0], stops[2], stops[1], stops[3], stops[4]]
+    result = optimize_stop_order(
+        crossed,
+        OptimizeOptions(strict_direction=False, exact_limit=0, beam_width=1),
+    )
+    assert result.distance_after_km < result.distance_before_km
+    assert result.ordered_ids[0] == "a0"
+    assert result.ordered_ids[-1] == "e4"

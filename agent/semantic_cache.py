@@ -137,6 +137,8 @@ class SemanticMatcher:
         self._owners: dict[str, str] = {}
         # token -> document frequency (number of queries containing this token)
         self._df: Counter = Counter()
+        self._norms: dict[str, float] = {}
+        self._postings: dict[str, set[str]] = {}
         self._doc_count: int = 0
         self.replacements: int = 0
 
@@ -184,45 +186,56 @@ class SemanticMatcher:
 
     # ── index management ──
 
+    def _remove_unlocked(self, key: str) -> bool:
+        """Remove *key* and clean up DF/norm/posting entries; caller holds self._lock."""
+        old_vec = self._vectors.pop(key, None)
+        self._texts.pop(key, None)
+        self._owners.pop(key, None)
+        self._norms.pop(key, None)
+        if not old_vec:
+            return False
+        for token in old_vec:
+            self._df[token] = max(0, self._df.get(token, 1) - 1)
+            postings = self._postings.get(token)
+            if postings is not None:
+                postings.discard(key)
+                if not postings:
+                    self._postings.pop(token, None)
+        self._doc_count = max(0, self._doc_count - 1)
+        return True
+
     def add(self, key: str, query: str, owner_key: str = ""):
         """Add a query to the matcher index."""
         with self._lock:
-            if key in self._vectors:
-                # Remove the old document first; otherwise every cache overwrite
-                # inflates document frequency and progressively corrupts IDF.
-                old_vec = self._vectors.pop(key)
-                for token in set(old_vec):
-                    self._df[token] = max(0, self._df.get(token, 1) - 1)
-                self._doc_count = max(0, self._doc_count - 1)
+            if self._remove_unlocked(key):
                 self.replacements += 1
-                self._texts.pop(key, None)
-                self._owners.pop(key, None)
             vec = self._vectorize(query)
             if not vec:
                 return
+            norm = math.sqrt(sum(w * w for w in vec.values()))
+            if norm <= 0.0:
+                return
             self._vectors[key] = vec
+            self._norms[key] = norm
             self._texts[key] = query
             self._owners[key] = owner_key
-            # Update document frequency
+            # Update document frequency and inverted posting index
             for token in set(vec.keys()):
                 self._df[token] += 1
+                self._postings.setdefault(token, set()).add(key)
             self._doc_count += 1
 
     def remove(self, key: str):
         """Remove a query from the matcher index."""
         with self._lock:
-            vec = self._vectors.pop(key, None)
-            self._texts.pop(key, None)
-            self._owners.pop(key, None)
-            if vec:
-                for token in set(vec.keys()):
-                    self._df[token] = max(0, self._df.get(token, 1) - 1)
-                self._doc_count = max(0, self._doc_count - 1)
+            self._remove_unlocked(key)
 
     def rebuild(self, entries: Mapping[str, dict]) -> None:
         """Replace the in-memory index with a merged disk manifest."""
         with self._lock:
             self._vectors.clear()
+            self._norms.clear()
+            self._postings.clear()
             self._texts.clear()
             self._owners.clear()
             self._df.clear()
@@ -231,6 +244,20 @@ class SemanticMatcher:
                 query_text = entry.get("query", "") if isinstance(entry, dict) else ""
                 if query_text:
                     self.add(key, query_text, owner_key=entry.get("owner_key", ""))
+
+    def _accumulate_owner_dots(
+        self, qvec: dict[str, float], owner_key: str
+    ) -> dict[str, float]:
+        """Accumulate dot products over inverted postings for *owner_key*."""
+        dots: dict[str, float] = {}
+        owners = self._owners
+        vectors = self._vectors
+        postings = self._postings
+        for token, qweight in qvec.items():
+            for key in postings.get(token, ()):
+                if owners.get(key, "") == owner_key:
+                    dots[key] = dots.get(key, 0.0) + qweight * vectors[key][token]
+        return dots
 
     def find_similar(
         self,
@@ -241,7 +268,7 @@ class SemanticMatcher:
         """
         Find the cached query most similar to *query*.
 
-        Returns (cache_key, similarity) if similarity > threshold, else (None, 0.0).
+        Returns (cache_key, similarity) if similarity >= threshold, else (None, 0.0).
         """
         with self._lock:
             if not self._vectors:
@@ -250,14 +277,19 @@ class SemanticMatcher:
             qvec = self._vectorize(query)
             if not qvec:
                 return None, 0.0
+            q_norm = math.sqrt(sum(w * w for w in qvec.values()))
+            if q_norm <= 0.0:
+                return None, 0.0
 
+            dots = self._accumulate_owner_dots(qvec, owner_key)
             best_key: str | None = None
             best_sim = 0.0
-
-            for key, vec in self._vectors.items():
-                if self._owners.get(key, "") != owner_key:
+            norms = self._norms
+            for key, dot in dots.items():
+                doc_norm = norms.get(key, 0.0)
+                if doc_norm <= 0.0:
                     continue
-                sim = self._cosine_similarity(qvec, vec)
+                sim = dot / (q_norm * doc_norm)
                 if sim > best_sim:
                     best_sim = sim
                     best_key = key

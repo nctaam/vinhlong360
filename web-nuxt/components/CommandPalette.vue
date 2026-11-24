@@ -56,6 +56,7 @@
 <script setup lang="ts">
 import { resolveAdminScopes } from '~/utils/adminAccess'
 import { isImeComposing } from '~/utils/ime'
+import { foldVietnamese, scoreVietnameseQuery } from '~/utils/vietnameseSearch'
 import {
   ADMIN_NAV_GROUPS,
   filterAdminNavGroups,
@@ -67,7 +68,6 @@ interface PaletteItem {
   label: string
   to: string
   hint: string
-  search: string
 }
 
 const open = ref(false)
@@ -76,11 +76,6 @@ const active = ref(0)
 const paletteRef = ref<HTMLElement | null>(null)
 const { user } = useAuth()
 useModalA11y(open, paletteRef, { onClose: () => { open.value = false } })
-
-const DIACRITICS_RE = /[\u0300-\u036f]/g
-function removeDiacritics(s: string): string {
-  return s.normalize('NFD').replace(DIACRITICS_RE, '').replace(/[đĐ]/g, 'd').toLowerCase()
-}
 
 function targetToUrl(target: AdminNavItem['to']): string {
   if (typeof target === 'string') return target
@@ -94,7 +89,6 @@ function toPaletteItem(item: AdminNavItem, hint: string): PaletteItem {
     label: item.label,
     to: targetToUrl(item.to),
     hint,
-    search: removeDiacritics(`${item.label} ${hint}`),
   }
 }
 
@@ -114,10 +108,20 @@ const pages = computed<PaletteItem[]>(() => {
 })
 
 const results = computed(() => {
-  const raw = query.value.trim()
+  const raw = foldVietnamese(query.value)
   if (!raw) return pages.value
-  const tokens = removeDiacritics(raw).split(/\s+/).filter(Boolean)
-  return pages.value.filter(p => tokens.every(t => p.search.includes(t)))
+  return pages.value
+    .map((item, idx) => ({
+      item,
+      idx,
+      score: scoreVietnameseQuery(raw, [
+        { text: item.label, weight: 3 },
+        { text: item.hint, weight: 1 },
+      ]),
+    }))
+    .filter(entry => entry.score > 0)
+    .toSorted((a, b) => (b.score - a.score) || (a.idx - b.idx))
+    .map(entry => entry.item)
 })
 const emptySuggestions = computed(() => pages.value.slice(0, 4).map(page => page.label).join(', '))
 

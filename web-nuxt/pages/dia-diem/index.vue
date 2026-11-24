@@ -1,6 +1,6 @@
 <template>
   <section class="page dd-page" data-color-system="tri-region-v1">
-    <span class="almanac-progress" aria-hidden="true"><span class="almanac-progress-fill" :style="{ transform: `scaleY(${scrollProgress})` }"></span></span>
+    <span class="almanac-progress" aria-hidden="true"><span class="almanac-progress-fill" :style="isScrollCssDriven ? undefined : { transform: `scaleY(${scrollProgress})` }"></span></span>
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Địa điểm' }]" :json-ld="true" />
 
     <!-- Almanac hero — bến đò signboard: horizon wash + hand-drawn route line -->
@@ -219,9 +219,8 @@ function scrollToGrid() {
 }
 
 // Scroll-linked river-tick — desktop-only wayfinding cue in the page gutter,
-// reuses the shared useScrollProgress() engine (already powers SedimentThread
-// elsewhere); no new scroll-listener logic invented here.
-const { progress: scrollProgress } = useScrollProgress()
+// reuses CSS Scroll-Driven Animations when supported and falls back to useScrollProgress().
+const { progress: scrollProgress, isCssDriven: isScrollCssDriven } = useScrollProgress({ cssDriven: true })
 
 const typeFilter = ref<string>(typeof route.query.type === 'string' ? route.query.type : 'all')
 const areaFilter = ref<string>(typeof route.query.area === 'string' ? route.query.area : 'all')
@@ -698,6 +697,19 @@ useHead(() => ({
   position: absolute; inset: 0; transform-origin: top; transform: scaleY(0);
   background: linear-gradient(180deg, var(--color-material-river) 0%, var(--color-material-amber) 52%, var(--color-material-clay) 100%);
   transition: transform .1s linear;
+}
+@keyframes almanacProgressY {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .almanac-progress-fill {
+      transition: none;
+      animation: almanacProgressY linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
 }
 .dark .almanac-progress-fill { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 @media (min-width: 1200px) { .almanac-progress { display: block; } }

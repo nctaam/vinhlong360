@@ -464,6 +464,29 @@ def _finish_beam_path(
     return best[1]
 
 
+def _prune_beam_states(
+    expanded: list[_BeamState],
+    beam_width: int,
+    prepared: list[_PreparedStop],
+    destination_index: int,
+) -> list[_BeamState]:
+    """Keep only the dominant path per (mask, last_index), then keep top beam_width."""
+    best_by_key: dict[tuple[int, int], _BeamState] = {}
+    for candidate in expanded:
+        cost, path, mask, last_index = candidate
+        key = (mask, last_index)
+        incumbent = best_by_key.get(key)
+        if incumbent is None or _prefer_candidate(cost, path, (incumbent[0], incumbent[1])):
+            best_by_key[key] = candidate
+    deduped = list(best_by_key.values())
+    deduped.sort(
+        key=lambda state: _beam_state_priority(
+            state, prepared, destination_index
+        )
+    )
+    return deduped[:beam_width]
+
+
 def _solve_beam(
     prepared: list[_PreparedStop],
     options: OptimizeOptions,
@@ -480,12 +503,9 @@ def _solve_beam(
         )
         if not expanded:
             raise NoFeasibleRouteError("Không tìm thấy thứ tự điểm dừng hợp lệ")
-        expanded.sort(
-            key=lambda state: _beam_state_priority(
-                state, prepared, destination_index
-            )
+        states = _prune_beam_states(
+            expanded, options.beam_width, prepared, destination_index
         )
-        states = expanded[:options.beam_width]
 
     return _finish_beam_path(
         states,
@@ -495,6 +515,14 @@ def _solve_beam(
         options,
         corridor_length_km,
     )
+
+
+def _two_opt_candidates(path: tuple[int, ...]):
+    """Yield 2-opt segment reversals of length >= 3 between fixed endpoints."""
+    stop_count = len(path)
+    for start in range(1, stop_count - 3):
+        for end in range(start + 3, stop_count):
+            yield path[:start] + path[start:end][::-1] + path[end:]
 
 
 def _local_candidates(path: tuple[int, ...]):
@@ -518,6 +546,8 @@ def _local_candidates(path: tuple[int, ...]):
         for destination in range(1, len(remainder)):
             yield remainder[:destination] + segment + remainder[destination:]
 
+    yield from _two_opt_candidates(path)
+
 
 def _improve_path(
     path: tuple[int, ...],
@@ -527,7 +557,7 @@ def _improve_path(
 ) -> tuple[int, ...]:
     best_path = path
     best_cost = _path_cost(path, prepared, corridor_length_km)
-    for _ in range(4):
+    for _ in range(16):
         improved_path = best_path
         improved_cost = best_cost
         for candidate in _local_candidates(best_path):

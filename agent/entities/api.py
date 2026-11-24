@@ -23,6 +23,7 @@ xử (`router` — gói này có router riêng; `logger`; `_rollout_enabled`).
 from __future__ import annotations
 
 import asyncio
+import heapq
 import json
 import math
 import re
@@ -1246,6 +1247,58 @@ async def get_similar_entities(
     return {"entity_id": entity_id, "similar": result}
 
 
+def _extract_lat_lng(coords: object) -> tuple[float, float] | None:
+    if not coords or not isinstance(coords, (list, tuple)) or len(coords) < 2:
+        return None
+    try:
+        return float(coords[0]), float(coords[1])
+    except (TypeError, ValueError):
+        return None
+
+
+def _select_nearby_entities(
+    center: list | tuple,
+    entities: list[dict],
+    *,
+    exclude_id: str,
+    radius_km: float,
+    limit: int,
+) -> list[dict]:
+    """Filter public entities within radius_km via lat/lng bounding box + heapq top-K."""
+    origin = _extract_lat_lng(center)
+    if origin is None:
+        return []
+    clat, clng = origin
+    dlat = radius_km / 110.5
+    max_lat_rad = math.radians(min(89.9, abs(clat) + dlat))
+    dlng = radius_km / (110.5 * max(math.cos(max_lat_rad), 0.01))
+    min_lat, max_lat = clat - dlat, clat + dlat
+    min_lng, max_lng = clng - dlng, clng + dlng
+    hits: list[tuple[float, dict]] = []
+    for e in entities:
+        if e["id"] == exclude_id:
+            continue
+        pt = _extract_lat_lng(e.get("coordinates"))
+        if pt is None:
+            continue
+        if not (min_lat <= pt[0] <= max_lat and min_lng <= pt[1] <= max_lng):
+            continue
+        dist = _haversine_km(center, e.get("coordinates"))
+        if dist <= radius_km:
+            hits.append((dist, e))
+    top_k = heapq.nsmallest(limit, hits, key=lambda item: item[0])
+    return [
+        {
+            "id": e["id"],
+            "name": e["name"],
+            "type": e.get("type"),
+            "distance_km": round(dist, 2),
+            "coordinates": e.get("coordinates"),
+        }
+        for dist, e in top_k
+    ]
+
+
 @router.get("/entities/{entity_id}/nearby",
             summary="Get nearby entities",
             description="Returns entities within a given radius (km) of the specified entity, sorted by distance. Optionally filtered by entity type.")
@@ -1258,7 +1311,8 @@ async def get_nearby_entities(
 ):
     """Trả entity công khai nằm trong bán kính radius_km quanh một entity, sắp theo khoảng cách.
 
-    Quét tối đa 3000 entity và tính khoảng cách haversine, lọc tuỳ chọn theo type.
+    Quét tối đa 3000 entity qua bounding-box sơ loại, tính khoảng cách haversine và lấy top-K
+    bằng heapq.nsmallest, lọc tuỳ chọn theo type.
     Entity gốc không tồn tại/không công khai → 404; entity gốc thiếu toạ độ hợp lệ →
     trả danh sách rỗng kèm message.
     """
@@ -1273,21 +1327,13 @@ async def get_nearby_entities(
     def _query():
         type_filters = [type] if type else None
         all_ents = db.list_entities(limit=3000, offset=0, public_only=True, entity_types=type_filters)
-        nearby = []
-        for e in all_ents:
-            if e["id"] == entity_id:
-                continue
-            dist = _haversine_km(center, e.get("coordinates"))
-            if dist <= radius_km:
-                nearby.append({
-                    "id": e["id"],
-                    "name": e["name"],
-                    "type": e.get("type"),
-                    "distance_km": round(dist, 2),
-                    "coordinates": e.get("coordinates"),
-                })
-        nearby.sort(key=lambda x: x["distance_km"])
-        return nearby[:limit]
+        return _select_nearby_entities(
+            center,
+            all_ents,
+            exclude_id=entity_id,
+            radius_km=radius_km,
+            limit=limit,
+        )
     result = await asyncio.to_thread(_query)
     return {"entity_id": entity_id, "nearby": result, "radius_km": radius_km}
 

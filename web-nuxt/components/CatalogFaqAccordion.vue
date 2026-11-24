@@ -162,6 +162,25 @@ withDefaults(defineProps<{
   color: var(--tri-region-material-accent, var(--color-brand));
 }
 
+.catalog-faq-item::details-content {
+  interpolate-size: allow-keywords;
+  overflow: clip;
+  contain: layout;
+}
+
+.catalog-faq-item:not([open])::details-content {
+  block-size: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .catalog-faq-item::details-content {
+    transition: block-size, content-visibility, display;
+    transition-duration: 0.28s;
+    transition-timing-function: var(--ease-out-expo, ease-in-out);
+    transition-behavior: allow-discrete;
+  }
+}
+
 .catalog-faq-answer {
   padding: 0 0 var(--space-4) var(--space-6);
 }

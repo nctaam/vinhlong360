@@ -662,13 +662,22 @@
 .section-desc { color: var(--muted); font-size: var(--text-sm); margin: calc(-1 * var(--space-2)) 0 var(--space-4); line-height: var(--leading-relaxed); }
 
 /* ── Scroll Row (horizontal card carousel — Apple-style momentum + snap) ── */
+@property --fade-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --fade-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
 .scroll-row {
   display: flex; gap: var(--space-4); overflow-x: auto; -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity; overscroll-behavior-x: contain;
+  scroll-padding-inline: 2.5rem;
   padding-bottom: var(--space-2);
   scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(to right, black 0%, black calc(100% - 40px), transparent 100%);
-  mask-image: linear-gradient(to right, black 0%, black calc(100% - 40px), transparent 100%);
 }
 .scroll-row::-webkit-scrollbar { display: none; }
 .scroll-row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-surface); }
@@ -677,9 +686,41 @@
   .scroll-row > * { flex: 0 0 220px; }
   .scroll-row { gap: var(--space-3); }
 }
-.scroll-row.scroll-end {
-  -webkit-mask-image: none;
-  mask-image: none;
+@supports (animation-timeline: scroll()) {
+  .scroll-row {
+    --fade-size: 2.5rem;
+    --fade-dir: right;
+    --fade-start-pos: 0;
+    --fade-end-pos: 100%;
+    mask:
+      linear-gradient(black, black) no-clip subtract,
+      linear-gradient(to var(--fade-dir), black, transparent) var(--fade-start-pos) 0 / var(--fade-start) 100% no-repeat no-clip,
+      linear-gradient(to var(--fade-dir), transparent, black) var(--fade-end-pos) 0 / var(--fade-end) 100% no-repeat no-clip;
+    animation: reveal-fade-start linear both, hide-fade-end linear both;
+    animation-timeline: scroll(self inline);
+    animation-range: 0 var(--fade-size), calc(100% - var(--fade-size)) 100%;
+  }
+  .scroll-row:dir(rtl) {
+    --fade-dir: left;
+    --fade-start-pos: 100%;
+    --fade-end-pos: 0;
+  }
+}
+@keyframes reveal-fade-start {
+  to { --fade-start: var(--fade-size); }
+}
+@keyframes hide-fade-end {
+  from { --fade-end: var(--fade-size); }
+}
+@supports not (animation-timeline: scroll()) {
+  .scroll-row {
+    -webkit-mask-image: linear-gradient(to right, black 0%, black calc(100% - 40px), transparent 100%);
+    mask-image: linear-gradient(to right, black 0%, black calc(100% - 40px), transparent 100%);
+  }
+  .scroll-row.scroll-end {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
 }
 
 /* Staggered entrance — cards slide in from right when .reveal parent triggers */

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import {
+  createBatchedPublicTelemetryTransport,
   createDefaultPublicTelemetryTransport,
   resolvePublicTelemetryEndpoint,
   sanitizePublicTelemetry,
@@ -171,7 +172,7 @@ describe('public telemetry privacy boundary', () => {
 
   it('keeps the default transport disabled until the public config explicitly enables it', () => {
     const sendBeacon = vi.fn(() => true)
-    const fetch = vi.fn(() => Promise.resolve({ ok: true }))
+    const fetch = vi.fn((_url: string, _init?: RequestInit) => Promise.resolve({ ok: true }))
     const transport = createDefaultPublicTelemetryTransport({
       config: { public: { publicTelemetryEnabled: false, publicTelemetryEndpoint: '/feedback/public-telemetry' } },
       origin: 'https://vinhlong360.vn',
@@ -188,7 +189,7 @@ describe('public telemetry privacy boundary', () => {
 
   it('uses sendBeacon when enabled and falls back to keepalive fetch when it declines', () => {
     const sendBeacon = vi.fn(() => false)
-    const fetch = vi.fn(() => Promise.resolve({ ok: true }))
+    const fetch = vi.fn((_url: string, _init?: RequestInit) => Promise.resolve({ ok: true }))
     const transport = createDefaultPublicTelemetryTransport({
       config: { public: { publicTelemetryEnabled: true, publicTelemetryEndpoint: '/feedback/public-telemetry' } },
       origin: 'https://vinhlong360.vn',
@@ -206,5 +207,89 @@ describe('public telemetry privacy boundary', () => {
       headers: { 'content-type': 'application/json' },
       keepalive: true,
     })
+  })
+
+  it('batches telemetry via fetchLater(), aborts prior signal, and resets after activation', () => {
+    const signals: AbortSignal[] = []
+    let resultState = { activated: false }
+    const fetchLater = vi.fn((_url: string, init: RequestInit & { activateAfter?: number }) => {
+      if (init.signal) signals.push(init.signal)
+      return resultState
+    })
+    const transport = createBatchedPublicTelemetryTransport({
+      config: { public: { publicTelemetryEnabled: true, publicTelemetryEndpoint: '/feedback/public-telemetry' } },
+      origin: 'https://vinhlong360.vn',
+      fetchLater,
+      batchWindowMs: 5000,
+    })
+
+    transport(defaultOutcome)
+    transport({ ...defaultOutcome, eventName: 'search-submitted', outcomeClass: 'result-shown' })
+
+    expect(fetchLater).toHaveBeenCalledTimes(2)
+    expect(signals[0]?.aborted).toBe(true)
+    expect(signals[1]?.aborted).toBe(false)
+    const secondCallInit = fetchLater.mock.calls[1]![1]
+    expect(secondCallInit.activateAfter).toBe(5000)
+    expect(JSON.parse(String(secondCallInit.body))).toHaveLength(2)
+
+    resultState.activated = true
+    transport({ ...defaultOutcome, eventName: 'planner-completed', outcomeClass: 'task-completed' })
+    expect(fetchLater).toHaveBeenCalledTimes(3)
+    const thirdBody = JSON.parse(String(fetchLater.mock.calls[2]![1].body))
+    expect(thirdBody).toHaveLength(1)
+    expect(thirdBody[0].eventName).toBe('planner-completed')
+  })
+
+  it('falls back safely inside try/catch when fetchLater() throws quota error and enforces queue bounds', () => {
+    const sendBeacon = vi.fn(() => true)
+    const fetchLater = vi.fn(() => {
+      throw new DOMException('QuotaExceededError', 'QuotaExceededError')
+    })
+    const transport = createBatchedPublicTelemetryTransport({
+      config: { public: { publicTelemetryEnabled: true, publicTelemetryEndpoint: '/feedback/public-telemetry' } },
+      origin: 'https://vinhlong360.vn',
+      fetchLater,
+      sendBeacon,
+      Blob,
+    })
+
+    expect(() => transport(defaultOutcome)).not.toThrow()
+    expect(sendBeacon).toHaveBeenCalledTimes(1)
+  })
+
+  it('debounces and flushes on visibilitychange hidden when fetchLater is unsupported', () => {
+    const listeners = new Map<string, () => void>()
+    const fakeDoc = {
+      visibilityState: 'visible' as DocumentVisibilityState,
+      addEventListener: (name: string, fn: EventListenerOrEventListenerObject) => {
+        listeners.set(name, fn as () => void)
+      },
+      removeEventListener: (name: string) => {
+        listeners.delete(name)
+      },
+    }
+    const fetch = vi.fn((_url: string, _init: RequestInit) => Promise.resolve({ ok: true }))
+    const sendBeacon = vi.fn(() => false)
+    const transport = createBatchedPublicTelemetryTransport({
+      config: { public: { publicTelemetryEnabled: true, publicTelemetryEndpoint: '/feedback/public-telemetry' } },
+      origin: 'https://vinhlong360.vn',
+      sendBeacon,
+      fetch,
+      document: fakeDoc,
+      batchWindowMs: 10_000,
+    })
+
+    transport(defaultOutcome)
+    transport({ ...defaultOutcome, eventName: 'search-recovered', outcomeClass: 'task-recovered' })
+    expect(fetch).not.toHaveBeenCalled()
+
+    fakeDoc.visibilityState = 'hidden'
+    listeners.get('visibilitychange')?.()
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    const [, init] = fetch.mock.calls[0]!
+    expect(init.keepalive).toBe(true)
+    expect(JSON.parse(String(init.body))).toHaveLength(2)
   })
 })

@@ -4,6 +4,18 @@
 
 /* Scroll reading progress — thin fixed bar at top */
 .scroll-progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: var(--color-action); transform-origin: left; z-index: var(--z-mobile-nav); pointer-events: none; will-change: transform; }
+@keyframes scrollProgressX {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .scroll-progress {
+      animation: scrollProgressX linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+}
 @media (prefers-reduced-motion: reduce) { .scroll-progress { display: none; } }
 
 .detail-cover { color: var(--text-on-dark); background: var(--cat-place); padding: var(--space-8) var(--space-5) var(--space-8); position: relative; overflow: hidden; }

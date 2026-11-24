@@ -327,6 +327,8 @@ const hasActiveFilters = computed(() => {
   return activeRegion.value !== 'all' || activeSeason.value !== 'all' || activeTide.value !== 'all' || searchQuery.value.trim() !== ''
 })
 
+import { scoreVietnameseQuery } from '~/utils/vietnameseSearch'
+
 const displayedSuggestions = computed(() => {
   let list = CURATED_SUGGESTIONS
 
@@ -339,13 +341,22 @@ const displayedSuggestions = computed(() => {
   if (activeTide.value !== 'all') {
     list = list.filter(item => item.tide === activeTide.value)
   }
-  if (searchQuery.value.trim()) {
-    const q = searchQuery.value.trim().toLowerCase()
-    list = list.filter(item =>
-      item.title.toLowerCase().includes(q) ||
-      item.snippet.toLowerCase().includes(q) ||
-      item.category.toLowerCase().includes(q)
-    )
+  const q = searchQuery.value.trim()
+  if (q) {
+    list = list
+      .map((item, idx) => ({
+        item,
+        idx,
+        score: scoreVietnameseQuery(q, [
+          { text: item.title, weight: 3 },
+          { text: item.category, weight: 2 },
+          { text: item.tag, weight: 1.5 },
+          { text: item.snippet, weight: 1 },
+        ]),
+      }))
+      .filter(entry => entry.score > 0)
+      .toSorted((a, b) => (b.score - a.score) || (a.idx - b.idx))
+      .map(entry => entry.item)
   }
 
   return list
@@ -483,6 +494,23 @@ onUnmounted(() => {
   box-shadow: var(--shadow-xl);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .search-drawer-sheet {
+    transition:
+      display,
+      opacity 0.24s var(--ease-out-expo, ease-out),
+      translate 0.28s var(--ease-out-expo, ease-out);
+    transition-behavior: allow-discrete;
+  }
+
+  @starting-style {
+    .search-drawer-sheet {
+      opacity: 0;
+      translate: 24px 0;
+    }
+  }
 }
 
 .search-drawer-header {

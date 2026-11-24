@@ -1,6 +1,6 @@
 <template>
   <section v-if="entity" class="page entity-detail entity-detail-page" data-color-system="tri-region-v1" data-page-recipe="detail" :data-material-accent="detailMaterialAccent">
-    <div class="scroll-progress" :style="{ transform: `scaleX(${progress})` }" aria-hidden="true" />
+    <div class="scroll-progress" :style="isCssDriven ? undefined : { transform: `scaleX(${progress})` }" aria-hidden="true" />
     <PageState
       v-if="!detailOnline"
       class="detail-offline-state"
@@ -608,7 +608,7 @@ interface DetailGalleryCarrier extends GalleryDescriptorCarrier {
 }
 
 useReveal()
-const { progress } = useScrollProgress()
+const { progress, isCssDriven } = useScrollProgress({ cssDriven: true })
 const { enabled: ff } = useFeature()
 const { get: ss } = useSiteSettings()
 

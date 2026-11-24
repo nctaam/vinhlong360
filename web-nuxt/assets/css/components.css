@@ -572,6 +572,10 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
   .topbar-search.search-ac { display: none !important; }
 }
 .ac-dropdown { position: absolute; top: 100%; left: 0; right: 0; margin-top: var(--space-2); background: var(--glass-bg-heavy); backdrop-filter: var(--glass-heavy); -webkit-backdrop-filter: var(--glass-heavy); border: .5px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-xl); z-index: var(--z-overlay); overflow: hidden; min-width: 280px; }
+@media (prefers-reduced-motion: no-preference) {
+  .ac-dropdown { transition: display, opacity .18s var(--ease-out, ease-out), translate .2s var(--ease-out, ease-out); transition-behavior: allow-discrete; }
+  @starting-style { .ac-dropdown { opacity: 0; translate: 0 -6px; } }
+}
 .ac-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); text-decoration: none; color: var(--ink); font-size: var(--text-sm); transition: background .3s; cursor: pointer; animation: acItemIn .2s var(--ease-out) both; }
 @supports (animation-delay: calc(sibling-index() * 0.1s)) {
   .ac-item { animation-delay: min(calc((sibling-index() - 1) * 0.03s), 0.12s); }

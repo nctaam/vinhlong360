@@ -21,6 +21,7 @@ from threading import Lock
 logger = logging.getLogger(__name__)
 
 _COMBINING_MARKS_RE = re.compile(r"[\u0300-\u036f]")
+_WORD_TOKEN_RE = re.compile(r"[a-z0-9']+")
 
 # ══════════════════════════════════════════════════
 #  VIETNAMESE NORMALIZATION
@@ -102,6 +103,48 @@ def _levenshtein(s1: str, s2: str, max_distance: int | None = None) -> int:
         if max_distance is not None and min(curr_row) > max_distance:
             return max_distance + 1
         prev_row = curr_row
+
+    return prev_row[len1]
+
+
+def _damerau_cell(
+    s1: str,
+    s2: str,
+    i: int,
+    j: int,
+    curr_row: list[int],
+    prev_row: list[int],
+    prev_prev: list[int] | None,
+) -> int:
+    cost = int(s1[i - 1] != s2[j - 1])
+    dist = min(curr_row[i - 1] + 1, prev_row[i] + 1, prev_row[i - 1] + cost)
+    if prev_prev is not None and i > 1 and j > 1:
+        if s1[i - 1] == s2[j - 2] and s1[i - 2] == s2[j - 1]:
+            return min(dist, prev_prev[i - 2] + 1)
+    return dist
+
+
+def _damerau_levenshtein(s1: str, s2: str, max_distance: int | None = None) -> int:
+    """Compute Optimal String Alignment (Damerau-Levenshtein) distance with early abort."""
+    if s1 == s2:
+        return 0
+    if len(s1) > len(s2):
+        s1, s2 = s2, s1
+    len1, len2 = len(s1), len(s2)
+    if max_distance is not None and (len2 - len1) > max_distance:
+        return max_distance + 1
+    if len1 == 0:
+        return len2
+
+    prev_prev: list[int] | None = None
+    prev_row = list(range(len1 + 1))
+    for j in range(1, len2 + 1):
+        curr_row = [j] + [0] * len1
+        for i in range(1, len1 + 1):
+            curr_row[i] = _damerau_cell(s1, s2, i, j, curr_row, prev_row, prev_prev)
+        if max_distance is not None and min(curr_row) > max_distance:
+            return max_distance + 1
+        prev_prev, prev_row = prev_row, curr_row
 
     return prev_row[len1]
 
@@ -343,13 +386,17 @@ _SORTED_NORM_KEYS: list[tuple[str, str, str]] = []
 # Normalized key → correction (for fast exact lookup)
 _NORM_LOOKUP: dict[str, str] = {}
 
+# Inverted index by leading token (preserves descending _SORTED_NORM_KEYS order)
+_DICT_BY_FIRST_WORD: dict[str, list[tuple[int, str, str, str]]] = {}
+_DICT_UNINDEXED: list[tuple[int, str, str, str]] = []
+
 _init_lock = Lock()
 _initialized = False
 
 
 def _init_lookups():
-    """Pre-compute lookup tables from the correction dictionary."""
-    global _SORTED_KEYS, _SORTED_NORM_KEYS, _NORM_LOOKUP, _initialized
+    """Pre-compute lookup tables and first-word inverted index from dictionary."""
+    global _SORTED_KEYS, _SORTED_NORM_KEYS, _NORM_LOOKUP, _DICT_BY_FIRST_WORD, _DICT_UNINDEXED, _initialized
     with _init_lock:
         if _initialized:
             return
@@ -362,16 +409,33 @@ def _init_lookups():
         _SORTED_NORM_KEYS = [
             (key, normalize_vietnamese(key), val) for key, val in _SORTED_KEYS
         ]
-        # Build normalized lookup: normalize both key and value's
-        # normalized form so we can match input that already has diacritics
+        # Build normalized lookup + leading-word inverted index
         _NORM_LOOKUP = {}
-        for key, norm_key, val in _SORTED_NORM_KEYS:
+        by_word: dict[str, list[tuple[int, str, str, str]]] = {}
+        unindexed: list[tuple[int, str, str, str]] = []
+        for idx, (key, norm_key, val) in enumerate(_SORTED_NORM_KEYS):
             _NORM_LOOKUP[norm_key] = val
-            # Also store the key as-is (it should already be normalized,
-            # but be safe)
             if key != norm_key:
                 _NORM_LOOKUP[key] = val
+            lead = _WORD_TOKEN_RE.match(norm_key)
+            entry = (idx, key, norm_key, val)
+            if lead:
+                by_word.setdefault(lead.group(0), []).append(entry)
+            else:
+                unindexed.append(entry)
+        _DICT_BY_FIRST_WORD = by_word
+        _DICT_UNINDEXED = unindexed
         _initialized = True
+
+
+def _candidate_dict_entries(text_norm: str) -> list[tuple[str, str, str]]:
+    """Return longest-first dictionary entries whose leading word appears in *text_norm*."""
+    tokens = set(_WORD_TOKEN_RE.findall(text_norm))
+    picked: list[tuple[int, str, str, str]] = list(_DICT_UNINDEXED)
+    for tok in tokens:
+        picked.extend(_DICT_BY_FIRST_WORD.get(tok, ()))
+    picked.sort(key=lambda item: item[0])
+    return [(k, nk, val) for _, k, nk, val in picked]
 
 
 # Initialize on import
@@ -386,14 +450,15 @@ _entity_names: list[str] = []
 _entity_names_normalized: list[tuple[str, str]] = []  # (normalized, original)
 _entity_by_len: dict[int, list[tuple[str, str]]] = {}
 _entity_exact_map: dict[str, str] = {}
+_entity_deletes: dict[str, list[tuple[str, str]]] = {}
 _entity_norm_list_id: int | None = None
 _entity_norm_list_len: int = 0
 _entity_lock = Lock()
 
 
 def _ensure_entity_buckets() -> None:
-    """Ensure length-bucketed and exact-match indexes are synced with _entity_names_normalized."""
-    global _entity_by_len, _entity_exact_map, _entity_norm_list_id, _entity_norm_list_len
+    """Ensure length-bucketed, exact-match, and SymSpell 1-delete indexes stay synced."""
+    global _entity_by_len, _entity_exact_map, _entity_deletes, _entity_norm_list_id, _entity_norm_list_len
     if (
         _entity_norm_list_id == id(_entity_names_normalized)
         and _entity_norm_list_len == len(_entity_names_normalized)
@@ -401,11 +466,17 @@ def _ensure_entity_buckets() -> None:
         return
     by_len: dict[int, list[tuple[str, str]]] = {}
     exact_map: dict[str, str] = {}
+    deletes: dict[str, list[tuple[str, str]]] = {}
     for norm_name, orig_name in _entity_names_normalized:
         by_len.setdefault(len(norm_name), []).append((norm_name, orig_name))
         exact_map.setdefault(norm_name, orig_name)
+        for pos in range(len(norm_name)):
+            deletes.setdefault(
+                norm_name[:pos] + norm_name[pos + 1:], []
+            ).append((norm_name, orig_name))
     _entity_by_len = by_len
     _entity_exact_map = exact_map
+    _entity_deletes = deletes
     _entity_norm_list_id = id(_entity_names_normalized)
     _entity_norm_list_len = len(_entity_names_normalized)
 
@@ -439,20 +510,51 @@ def load_entity_names(entities: dict):
         _ensure_entity_buckets()
 
 
+def _symspell_span_edits(span: str) -> str | None:
+    """Probe single-char deletion from *span* and single-char substitution in entity table."""
+    span_len = len(span)
+    for pos in range(span_len):
+        sub_del = span[:pos] + span[pos + 1:]
+        exact = _entity_exact_map.get(sub_del)
+        if exact is not None:
+            return exact
+        for norm_name, orig_name in _entity_deletes.get(sub_del, ()):
+            if len(norm_name) == span_len:
+                return orig_name
+    return None
+
+
+def _symspell_dist1_match(span: str) -> str | None:
+    """O(|span|) SymSpell + transposition lookup for exact edit-distance 1 entity match."""
+    if span in _entity_deletes:
+        return _entity_deletes[span][0][1]
+    for pos in range(len(span) - 1):
+        if span[pos] != span[pos + 1]:
+            swapped = span[:pos] + span[pos + 1] + span[pos] + span[pos + 2:]
+            exact = _entity_exact_map.get(swapped)
+            if exact is not None:
+                return exact
+    return _symspell_span_edits(span)
+
+
 def _best_entity_in_buckets(
     span: str,
     max_distance: int,
     best_dist: int,
     best_name: str | None,
 ) -> tuple[int, str | None]:
-    """Scan length-compatible entity buckets and update (best_dist, best_name)."""
+    """Probe exact/SymSpell-1D index then scan length-compatible buckets with OSA distance."""
     exact = _entity_exact_map.get(span)
     if exact is not None:
         return 0, exact
+    if max_distance >= 1 and best_dist > 1:
+        dist1 = _symspell_dist1_match(span)
+        if dist1 is not None:
+            return 1, dist1
     span_len = len(span)
     for target_len in range(max(1, span_len - max_distance), span_len + max_distance + 1):
         for norm_name, orig_name in _entity_by_len.get(target_len, ()):
-            dist = _levenshtein(span, norm_name, max_distance=best_dist - 1)
+            dist = _damerau_levenshtein(span, norm_name, max_distance=best_dist - 1)
             if dist < best_dist:
                 best_dist = dist
                 best_name = orig_name
@@ -660,7 +762,7 @@ def _apply_dictionary_corrections(text: str) -> tuple[str, list[dict]]:
     # to prevent overlapping replacements.
     corrected_positions: set[int] = set()
 
-    for _key, norm_key, replacement in _SORTED_NORM_KEYS:
+    for _key, norm_key, replacement in _candidate_dict_entries(text_norm):
         if norm_key not in text_norm:
             continue
 

@@ -1,7 +1,20 @@
-export function useScrollProgress() {
-  const progress = ref(0)
+export interface UseScrollProgressOptions {
+  cssDriven?: boolean
+}
 
-  if (!import.meta.client) return { progress }
+export function useScrollProgress(options: UseScrollProgressOptions = {}) {
+  const progress = ref(0)
+  const isCssDriven = Boolean(
+    options.cssDriven
+    && import.meta.client
+    && typeof CSS !== 'undefined'
+    && typeof CSS.supports === 'function'
+    && CSS.supports('animation-timeline', 'scroll()'),
+  )
+
+  if (!import.meta.client || isCssDriven) {
+    return { progress, isCssDriven }
+  }
 
   let rafId = 0
 
@@ -25,5 +38,5 @@ export function useScrollProgress() {
     if (rafId) cancelAnimationFrame(rafId)
   })
 
-  return { progress }
+  return { progress, isCssDriven: false }
 }

@@ -1,5 +1,8 @@
 export function useScrollFade() {
   if (!import.meta.client) return
+  if (typeof CSS !== 'undefined' && typeof CSS.supports === 'function' && CSS.supports('animation-timeline', 'scroll()')) {
+    return
+  }
 
   const route = useRoute()
   const cleanups: Array<() => void> = []
