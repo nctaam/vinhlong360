@@ -1,23 +1,42 @@
 import { computed, onMounted, watch } from 'vue'
 import { usePersonalizationPreferences } from './usePersonalizationPreferences'
 import type { PreferenceRegionChoice, PreferenceSnapshot } from '~/types/personalization'
-import { entityMatchesAreaScope } from '~/utils/safe'
+import {
+  PROVINCE_CANONICAL_AREA_SLUG,
+  PROVINCE_CANONICAL_REGION_ID,
+  PROVINCE_CONFIG,
+  PROVINCE_STORAGE_PREFIX,
+} from '../utils/provinceConfig'
+import { entityMatchesAreaScope } from '../utils/safe'
 
-const STORAGE_KEY = 'vl360-region-pref'
-const VISIT_KEY = 'vl360-visit-count'
+const STORAGE_KEY = `${PROVINCE_STORAGE_PREFIX}-region-pref`
+const VISIT_KEY = `${PROVINCE_STORAGE_PREFIX}-visit-count`
 
-export type RegionSlug = 'vinh-long' | 'ben-tre' | 'tra-vinh' | 'all'
+export type RegionSlug = string
 
-const API_REGIONS: Record<'vinh-long', PreferenceRegionChoice> = {
-  'vinh-long': { id: 'province-vl', label: 'Vĩnh Long', scope: 'province' },
+const CANONICAL_SLUG = PROVINCE_CANONICAL_AREA_SLUG
+const LEGACY_REGION_IDS = new Set(PROVINCE_CONFIG.areas.legacyRegionIds)
+const LEGACY_REGION_LABELS = new Set(PROVINCE_CONFIG.areas.legacyRegionLabels)
+const LEGACY_AREA_SLUGS = new Set(
+  PROVINCE_CONFIG.areas.items
+    .map(item => item.slug)
+    .filter(slug => slug !== CANONICAL_SLUG),
+)
+
+const API_REGIONS: Record<string, PreferenceRegionChoice> = {
+  [CANONICAL_SLUG]: {
+    id: PROVINCE_CANONICAL_REGION_ID,
+    label: PROVINCE_CONFIG.identity.provinceName,
+    scope: 'province',
+  },
 }
 
 function regionFromSnapshot(snapshot: PreferenceSnapshot): RegionSlug {
   if ((snapshot.location_source === 'gps' || snapshot.location_source === 'ip') && !snapshot.location_enabled) return 'all'
-  if (snapshot.region_id === 'province-vl') return 'vinh-long'
-  if (snapshot.region_id === 'province-bt' || snapshot.region_id === 'province-tv') return 'vinh-long'
-  if (snapshot.region_label === 'Vĩnh Long') return 'vinh-long'
-  if (snapshot.region_label === 'Bến Tre' || snapshot.region_label === 'Trà Vinh') return 'vinh-long'
+  if (snapshot.region_id === PROVINCE_CANONICAL_REGION_ID) return CANONICAL_SLUG
+  if (snapshot.region_id && LEGACY_REGION_IDS.has(snapshot.region_id)) return CANONICAL_SLUG
+  if (snapshot.region_label === PROVINCE_CONFIG.identity.provinceName) return CANONICAL_SLUG
+  if (snapshot.region_label && LEGACY_REGION_LABELS.has(snapshot.region_label)) return CANONICAL_SLUG
   return 'all'
 }
 
@@ -52,11 +71,11 @@ export function useRegionPref() {
         rawVc = localStorage.getItem(VISIT_KEY) || '0'
       } catch { /* storage blocked */ }
 
-      if (stored === 'ben-tre' || stored === 'tra-vinh') {
-        cachedRegion.value = 'vinh-long'
-        try { localStorage.setItem(STORAGE_KEY, 'vinh-long') } catch { /* quota */ }
+      if (stored && LEGACY_AREA_SLUGS.has(stored)) {
+        cachedRegion.value = CANONICAL_SLUG
+        try { localStorage.setItem(STORAGE_KEY, CANONICAL_SLUG) } catch { /* quota */ }
       }
-      else if (stored === 'vinh-long' || stored === 'all') cachedRegion.value = stored
+      else if (stored === CANONICAL_SLUG || stored === 'all') cachedRegion.value = stored
 
       const parsedVc = Number.parseInt(rawVc, 10)
       const safeVc = Number.isFinite(parsedVc) && parsedVc >= 0 ? parsedVc : 0
@@ -73,11 +92,11 @@ export function useRegionPref() {
   }
 
   async function setRegion(slug: RegionSlug) {
-    const normalizedSlug: 'vinh-long' | 'all' = slug === 'ben-tre' || slug === 'tra-vinh' ? 'vinh-long' : slug
+    const normalizedSlug = slug === 'all' ? 'all' : CANONICAL_SLUG
     if (isLoggedIn.value) {
       const choice = normalizedSlug === 'all'
         ? { id: null, label: 'Toàn tỉnh', scope: 'all' as const }
-        : API_REGIONS[normalizedSlug]
+        : API_REGIONS[normalizedSlug]!
       await preferences.setRegion(choice)
       return
     }

@@ -83,10 +83,12 @@ def _is_individual_actor_ref(value: str) -> bool:
     return value.startswith("person:") and len(value) > len("person:") and value[7:].replace("-", "").replace("_", "").isalnum()
 
 from privacy_policy import load_privacy_policy
+from province_config import load_province_config
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 _PRIVACY_POLICY = load_privacy_policy()
+_PROVINCE = load_province_config()
 
 
 class Settings(BaseSettings):
@@ -111,7 +113,7 @@ class Settings(BaseSettings):
 
     # ── Security ──
     ADMIN_API_KEY: str = ""
-    CORS_ORIGINS: str = "http://localhost:8360,http://localhost:3000,https://vinhlong360.vn"
+    CORS_ORIGINS: str = f"http://localhost:8360,http://localhost:3000,{_PROVINCE.site_url}"
     JWT_SECRET: str = ""
     CSRF_SECRET: str = ""
     CHAT_OWNER_SECRET: str = ""
@@ -120,7 +122,7 @@ class Settings(BaseSettings):
     # ── SMS (eSMS) ──
     ESMS_API_KEY: str = ""
     ESMS_SECRET: str = ""
-    ESMS_BRANDNAME: str = "VinhLong360"
+    ESMS_BRANDNAME: str = _PROVINCE.esms_brandname
 
     # ── Bots ──
     TELEGRAM_BOT_TOKEN: str = ""

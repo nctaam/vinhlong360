@@ -28,8 +28,10 @@ from threading import Lock
 from config import is_postgresql_url
 
 if __package__:
+    from .province_config import ProvinceConfigError, load_province_config
     from .publication_status import PUBLISHED_V1_EXCLUSIONS as _PUBLISHED_V1_EXCLUSIONS
 else:
+    from province_config import ProvinceConfigError, load_province_config
     from publication_status import PUBLISHED_V1_EXCLUSIONS as _PUBLISHED_V1_EXCLUSIONS
 
 _PUBLIC_EXCLUDED_IDS: tuple[str, ...] = tuple(sorted(_PUBLISHED_V1_EXCLUSIONS))
@@ -414,8 +416,19 @@ def escape_like(s: str) -> str:
 # khác (dongthap360/cantho360/...) PHẢI đặt env REGION_BBOX, nếu không guard sẽ null-hoá
 # TOÀN BỘ toạ độ của tỉnh đó.
 REGION_BBOX_ENV = "REGION_BBOX"
-_DEFAULT_REGION_BBOX = (9.2, 10.65, 105.6, 106.95)  # lat_min, lat_max, lng_min, lng_max
+_FALLBACK_REGION_BBOX = (9.2, 10.65, 105.6, 106.95)  # lat_min, lat_max, lng_min, lng_max
+try:
+    _DEFAULT_REGION_BBOX = load_province_config().ingest_bbox_tuple
+except ProvinceConfigError:
+    _DEFAULT_REGION_BBOX = _FALLBACK_REGION_BBOX
 _REGION_BBOX_CACHE: tuple[str, tuple[float, float, float, float]] | None = None
+
+
+def _province_default_bbox() -> tuple[float, float, float, float]:
+    try:
+        return load_province_config().ingest_bbox_tuple
+    except ProvinceConfigError:
+        return _DEFAULT_REGION_BBOX
 
 
 def _parse_region_bbox(raw: str) -> tuple[float, float, float, float] | None:
@@ -435,7 +448,7 @@ def _parse_region_bbox(raw: str) -> tuple[float, float, float, float] | None:
 
 
 def region_bbox() -> tuple[float, float, float, float]:
-    """Bbox đang áp dụng: env REGION_BBOX nếu hợp lệ, không thì mặc định Vĩnh Long.
+    """Bbox đang áp dụng: env REGION_BBOX nếu hợp lệ, không thì theo config tỉnh.
 
     Đọc env mỗi lần gọi (có cache theo chuỗi thô) thay vì chốt lúc import: guard này
     chạy trong upsert nên test/ops đổi env phải ăn ngay, không cần reload module.
@@ -443,16 +456,17 @@ def region_bbox() -> tuple[float, float, float, float]:
     global _REGION_BBOX_CACHE
     raw = os.environ.get(REGION_BBOX_ENV, "").strip()
     if not raw:
-        return _DEFAULT_REGION_BBOX
+        return _province_default_bbox()
     if _REGION_BBOX_CACHE is not None and _REGION_BBOX_CACHE[0] == raw:
         return _REGION_BBOX_CACHE[1]
     parsed = _parse_region_bbox(raw)
     if parsed is None:
+        default_bbox = _province_default_bbox()
         logger.warning(
             "%s=%r sai định dạng (cần 'lat_min,lat_max,lng_min,lng_max') → dùng mặc định %s",
-            REGION_BBOX_ENV, raw, _DEFAULT_REGION_BBOX,
+            REGION_BBOX_ENV, raw, default_bbox,
         )
-        parsed = _DEFAULT_REGION_BBOX
+        parsed = default_bbox
     _REGION_BBOX_CACHE = (raw, parsed)
     return parsed
 

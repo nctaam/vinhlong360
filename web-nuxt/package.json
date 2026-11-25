@@ -11,6 +11,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare && node scripts/copy-maplibre-worker.mjs",
     "test": "vitest run",
+    "test:core": "vitest run --config vitest.core.config.ts",
+    "test:province": "vitest run --config vitest.province.config.ts",
     "test:data": "vitest run --config vitest.data.config.ts",
     "smoke:e2e": "node ../scripts/smoke_e2e_chrome.mjs",
     "typecheck": "nuxt typecheck",

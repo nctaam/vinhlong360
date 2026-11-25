@@ -29,8 +29,13 @@ from pinned_http import (
     PinnedHTTPClient,
     RedirectPolicyError,
 )
+if __package__:
+    from .province_config import load_province_config
+else:
+    from province_config import load_province_config
 
 logger = logging.getLogger(__name__)
+_PROVINCE = load_province_config()
 
 # ── Config ──
 
@@ -38,7 +43,7 @@ WEATHER_API_KEY = os.environ.get("WEATHER_API_KEY", "")
 WEATHER_CACHE_TTL = 1800  # 30 minutes
 WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"
 WEATHER_ORIGIN = "https://api.openweathermap.org"
-WEATHER_USER_AGENT = "vinhlong360-weather/1.0"
+WEATHER_USER_AGENT = _PROVINCE.weather_user_agent
 
 _WEATHER_EGRESS_POLICY = EgressPolicy(
     max_encoded_bytes=64 * 1024,
@@ -51,12 +56,9 @@ _WEATHER_EGRESS_POLICY = EgressPolicy(
 )
 _PINNED_HTTP = PinnedHTTPClient()
 
-# Coordinates for 3 areas
-AREA_COORDS = {
-    "vinh-long": {"lat": 10.2537, "lon": 105.9722, "name": "Vĩnh Long"},
-    "ben-tre":   {"lat": 10.2415, "lon": 106.3759, "name": "Bến Tre"},
-    "tra-vinh":  {"lat": 9.9347,  "lon": 106.3455, "name": "Trà Vinh"},
-}
+# Coordinates for configured province sub-regions
+AREA_COORDS = dict(_PROVINCE.area_coords)
+_DEFAULT_AREA = _PROVINCE.primary_area_slug
 
 
 # ══════════════════════════════════════════════════
@@ -94,7 +96,7 @@ def _format_weather_payload(data: dict, cache_key: str, coords: dict) -> dict:
     }
 
 
-def get_weather(area: str = "vinh-long") -> dict | None:
+def get_weather(area: str = _DEFAULT_AREA) -> dict | None:
     """
     Lấy thời tiết hiện tại cho 1 area.
 
@@ -103,7 +105,7 @@ def get_weather(area: str = "vinh-long") -> dict | None:
         wind_speed_ms, icon, rain_mm, suggestion
     }
     """
-    cache_key = area if area in AREA_COORDS else "vinh-long"
+    cache_key = area if area in AREA_COORDS else _DEFAULT_AREA
     hit = _get_cached_weather(cache_key, area)
     if hit is not None:
         return hit
@@ -176,7 +178,7 @@ def _fallback_weather(area: str) -> dict:
     month = datetime.now(_VN_TZ).month
     # Mùa mưa: 5-11, mùa khô: 12-4
     is_rainy = 5 <= month <= 11
-    coords = AREA_COORDS.get(area, AREA_COORDS["vinh-long"])
+    coords = AREA_COORDS.get(area, AREA_COORDS[_DEFAULT_AREA])
 
     return {
         "area": area,
@@ -341,7 +343,7 @@ def get_upcoming_events(days_ahead: int = 30, area: str = None) -> list[dict]:
 #  REALTIME CONTEXT FOR AGENT
 # ══════════════════════════════════════════════════
 
-def get_realtime_context(area: str = "vinh-long") -> str:
+def get_realtime_context(area: str = _DEFAULT_AREA) -> str:
     """
     Build realtime context string for injection into agent prompt.
     Combines weather + events.

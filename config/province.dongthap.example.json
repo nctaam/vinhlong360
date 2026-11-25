@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "slug": "dongthap360",
+    "provinceSlug": "dong-thap",
+    "provinceId": "province-dt",
+    "provinceName": "Đồng Tháp",
+    "provinceFullName": "Tỉnh Đồng Tháp",
+    "brandName": "dongthap360",
+    "brandDisplayName": "DongThap360",
+    "logoSuffix": ".vn",
+    "domain": "dongthap360.vn",
+    "siteUrl": "https://dongthap360.vn",
+    "contactEmail": "lienhe@dongthap360.vn",
+    "zaloHandle": "dongthap360",
+    "twitterHandle": "@dongthap360",
+    "esmsBrandname": "DongThap360",
+    "storagePrefix": "dt360",
+    "weatherUserAgent": "dongthap360-weather/1.0",
+    "ogImagePath": "/img/og-default.jpg",
+    "tagline": "Khám phá tỉnh Đồng Tháp theo cách của người bản địa.",
+    "footerTagline": "Khám phá tỉnh Đồng Tháp\ntheo cách của người bản địa.",
+    "copyright": "© 2026 dongthap360",
+    "alternateName": "Khám phá tỉnh Đồng Tháp",
+    "seoTitle": "dongthap360 — Du lịch & Sản phẩm địa phương",
+    "seoDescription": "Cổng du lịch và sản phẩm địa phương tỉnh Đồng Tháp (hợp nhất từ Đồng Tháp và Tiền Giang cũ): sen Tháp Mười, làng hoa Sa Đéc, cù lao sông Tiền, OCOP và lịch trình gợi ý.",
+    "ogDescription": "Khám phá tỉnh Đồng Tháp sau sáp nhập (gồm Đồng Tháp và Tiền Giang cũ): sinh thái Tràm Chim, miệt vườn Cái Bè, OCOP, lưu trú và lịch trình gợi ý.",
+    "jsonLdDescription": "Nền tảng khám phá du lịch, OCOP và cộng đồng cho tỉnh Đồng Tháp — tỉnh hợp nhất từ Đồng Tháp và Tiền Giang cũ từ 7-2025",
+    "seedSeoDescription": "Cổng du lịch và sản phẩm địa phương Đồng Tháp: Tràm Chim, làng hoa Sa Đéc, cù lao sông Tiền, đặc sản OCOP và lịch trình gợi ý.",
+    "heroSubtitle": "Tìm điểm đến, món ngon, mùa hoa sen và lịch trình phù hợp cho chuyến đi Đồng Tháp hôm nay.",
+    "chatTitle": "Hỏi về Đồng Tháp",
+    "chatPlaceholder": "Hỏi gì đó về Đồng Tháp…",
+    "wardCount": 102,
+    "mergedDate": "7-2025",
+    "mergedFrom": ["Đồng Tháp", "Tiền Giang"],
+    "legacyProvinceNames": ["Tiền Giang"],
+    "terroirBasin": "Lưu vực Thủy thổ Đồng Tháp Mười & Cửa Tiền Giang",
+    "knowsAbout": [
+      "Du lịch Đồng Tháp",
+      "Vườn Quốc gia Tràm Chim",
+      "Làng hoa Sa Đéc",
+      "Chợ nổi & Miệt vườn Cái Bè",
+      "Đặc sản OCOP Đồng Tháp",
+      "Sen Tháp Mười & Hủ tiếu Mỹ Tho"
+    ]
+  },
+  "bounds": {
+    "schemaBbox": {
+      "lat": [10.0, 11.1],
+      "lng": [105.1, 106.95]
+    },
+    "ingestBbox": {
+      "lat": [10.05, 11.05],
+      "lng": [105.15, 106.9]
+    },
+    "spatialBox": "10.1 105.2 11.0 106.8"
+  },
+  "areas": {
+    "canonicalAreaSlug": "dong-thap",
+    "canonicalRegionId": "province-dt",
+    "legacyRegionIds": ["province-tg"],
+    "legacyRegionLabels": ["Tiền Giang"],
+    "currentProvinceAliases": [
+      "dong-thap",
+      "tien-giang",
+      "province-dt",
+      "province-tg"
+    ],
+    "multiRegionSlug": "lien-vung",
+    "multiRegionLabel": "Liên vùng Đồng Tháp - Tiền Giang",
+    "items": [
+      {
+        "slug": "dong-thap",
+        "name": "Đồng Tháp",
+        "emoji": "🪷",
+        "icon": "leaf",
+        "blurb": "Đất sen hồng: Tràm Chim mùa nước nổi, làng hoa Sa Đéc, quýt Lai Vung và chiếu Định Yên.",
+        "distance": "Trung tâm",
+        "hub": "P. Cao Lãnh / Sa Đéc",
+        "lat": 10.4592,
+        "lon": 105.6325,
+        "isPrimary": true
+      },
+      {
+        "slug": "tien-giang",
+        "name": "Tiền Giang",
+        "emoji": "🍉",
+        "icon": "fruit",
+        "blurb": "Thủ phủ trái cây sông Tiền: Cái Bè, cù lao Thới Sơn, hủ tiếu Mỹ Tho và biển Tân Thành Gò Công.",
+        "distance": "~75km",
+        "hub": "Mỹ Tho / Cái Bè",
+        "lat": 10.36,
+        "lon": 106.36,
+        "isPrimary": false
+      }
+    ],
+    "multiRegionMeta": {
+      "slug": "lien-vung",
+      "name": "Liên vùng",
+      "emoji": "🧭",
+      "icon": "compass",
+      "blurb": "Hành trình nối Đồng Tháp Mười với vùng miệt vườn sông Tiền ra tới cửa biển Gò Công.",
+      "distance": "Hành trình mở",
+      "hub": "Trục Sông Tiền"
+    }
+  },
+  "weather": {
+    "measurePoint": {
+      "area": "dong-thap",
+      "label": "điểm đo trung tâm Đồng Tháp",
+      "coordinates": [10.4592, 105.6325],
+      "asyncDataKey": "weather-dong-thap"
+    },
+    "rainySeasonMonths": [5, 6, 7, 8, 9, 10, 11],
+    "rainyClimateContext": "Tiết trời mùa mưa nhiệt đới (Tháng 5 - 11), mùa nước nổi về đồng sen Tháp Mười và Tràm Chim, thuận lợi ngắm sếu, chèo xuồng rừng tràm và miệt vườn.",
+    "dryClimateContext": "Tiết trời mùa nắng khô ráo (Tháng 12 - 4), rực rỡ mùa hoa Sa Đéc giáp Tết và thu hoạch trái cây miệt vườn sông Tiền."
+  },
+  "tide": {
+    "riverAzimuthSeaward": 125.0,
+    "riverAzimuthLandward": 305.0,
+    "meanStageMeters": 1.15,
+    "tau1Hours": 3.2,
+    "tau2Hours": 1.1,
+    "floodFlowDesc": "Triều dâng, nước từ cửa Tiểu đổ ngược lên sông Tiền",
+    "ebbFlowDesc": "Triều rút, dòng phù sa xuôi từ Cao Lãnh về Mỹ Tho ra biển",
+    "folkWisdom": "Nước rong rằm & mùng một, nước kém mùng bảy & hăm ba"
+  },
+  "emergencyHotlines": [
+    {
+      "id": "rescue-waterway",
+      "name": "Cứu nạn Giao thông & Đường thủy (xác minh trước launch)",
+      "phone": "114",
+      "tel_uri": "tel:114",
+      "service_scope": "Ứng cứu sự cố, tai nạn giao thông thủy bộ trên trục sông Tiền và vùng Đồng Tháp Mười.",
+      "badge": "Cứu nạn 114",
+      "priority": true
+    },
+    {
+      "id": "rescue-medical",
+      "name": "Cấp cứu Y tế 115",
+      "phone": "115",
+      "tel_uri": "tel:115",
+      "service_scope": "Điều phối cấp cứu y tế khẩn cấp trên toàn tỉnh Đồng Tháp.",
+      "badge": "Khẩn cấp 115",
+      "priority": true
+    },
+    {
+      "id": "rescue-police",
+      "name": "Công an Tỉnh (Phản ứng nhanh)",
+      "phone": "113",
+      "tel_uri": "tel:113",
+      "service_scope": "Bảo đảm an ninh trật tự và tiếp nhận hỗ trợ khẩn cấp cho người dân, du khách.",
+      "badge": "Trực ban 113",
+      "priority": false
+    }
+  ],
+  "contentGuards": {
+    "outOfProvincePatterns": ["Mang Thít", "Cầu Kè", "Trà Cú", "Ao Bà Om"],
+    "outOfProvinceMessage": "địa danh NGOÀI tỉnh (Vĩnh Long/Trà Vinh cũ) — kiểm xuất xứ (R10.9)"
+  },
+  "home": {
+    "curatedShowcase": {
+      "ariaLabel": "Bản đồ di sản hợp nhất Đồng Tháp",
+      "eyebrow": "Di sản hợp nhất · Từ Đồng Tháp Mười ra cửa biển",
+      "title": "Bản đồ di sản hợp nhất",
+      "subtitle": "Những sinh cảnh tràm cổ, làng hoa trăm tuổi và di tích văn hóa tiêu biểu trải dài khắp tỉnh Đồng Tháp thống nhất.",
+      "seeAllLabel": "Toàn bộ điểm đến",
+      "fallbackImage": "/img/spread/song-nuoc.webp",
+      "lead": {
+        "id": "vuon-quoc-gia-tram-chim",
+        "title": "Vườn Quốc gia Tràm Chim — Vùng đất ngập nước Ramsar",
+        "location": "Xã Tam Nông · Đồng Tháp",
+        "desc": "Sinh cảnh đặc trưng vùng Đồng Tháp Mười với rừng tràm, đồng năng kim và mùa nước nổi.",
+        "coverSrc": "/img/spread/song-nuoc.webp",
+        "to": "/dia-diem/vuon-quoc-gia-tram-chim",
+        "mapTo": "/ban-do?selected=vuon-quoc-gia-tram-chim"
+      },
+      "satellites": [
+        {
+          "id": "lang-hoa-sa-dec",
+          "title": "Làng hoa kiểng Sa Đéc",
+          "area": "Phường Sa Đéc · Vùng hoa trăm năm",
+          "summary": "Làng nghề trồng hoa giàn cao ven rạch Sa Nhiên rực rỡ suốt bốn mùa bên dòng sông Tiền.",
+          "coverSrc": "/img/spread/song-nuoc.webp",
+          "to": "/dia-diem/lang-hoa-sa-dec"
+        },
+        {
+          "id": "nha-co-huynh-thuy-le",
+          "title": "Nhà cổ Huỳnh Thủy Lê",
+          "area": "Phường Sa Đéc · Kiến trúc Đông Tây",
+          "summary": "Ngôi nhà cổ dựng năm 1895 kết hợp nét Nam Bộ truyền thống và phù điêu Pháp cổ kính.",
+          "coverSrc": "/img/spread/song-nuoc.webp",
+          "to": "/dia-diem/nha-co-huynh-thuy-le"
+        },
+        {
+          "id": "cho-noi-cai-be",
+          "title": "Chợ nổi & Làng cổ Đông Hòa Hiệp",
+          "area": "Xã Cái Bè · Tiền Giang (cũ)",
+          "summary": "Điểm giao thương sông nước lâu đời nối nhánh sông Tiền với những ngôi nhà vườn cổ.",
+          "coverSrc": "/img/spread/song-nuoc.webp",
+          "to": "/dia-diem/cho-noi-cai-be"
+        },
+        {
+          "id": "cu-lao-thoi-son",
+          "title": "Cù lao Thới Sơn",
+          "area": "Phường Mỹ Tho · Sông Tiền",
+          "summary": "Cồn xanh trĩu quả nhãn, chôm chôm cùng nghề nuôi ong mật và làm kẹo thủ công.",
+          "coverSrc": "/img/spread/song-nuoc.webp",
+          "to": "/dia-diem/cu-lao-thoi-son"
+        }
+      ]
+    },
+    "culinaryTrail": {
+      "ariaLabel": "Bếp quê Đồng Tháp",
+      "eyebrow": "Ký sự bếp quê · Hương sen & vị sông Tiền",
+      "title": "Bếp quê Đồng Tháp",
+      "subtitle": "Từ hủ tiếu Sa Đéc, hủ tiếu Mỹ Tho thanh ngọt đến cá lóc nướng lá sen non Tháp Mười.",
+      "seeAllLabel": "Khám phá ẩm thực Đồng Tháp",
+      "fallbackImage": "/img/cat-am-thuc.webp",
+      "dishes": [
+        {
+          "id": "hu-tieu-sa-dec",
+          "name": "Hủ tiếu Sa Đéc",
+          "origin": "Phường Sa Đéc · Đồng Tháp",
+          "reputableVenue": "Sợi bột gạo trắng dẻo thơm · nước lèo xương hầm trong thanh",
+          "priceRange": "30.000–45.000đ",
+          "coverSrc": "/img/cat-am-thuc.webp",
+          "to": "/dia-diem/hu-tieu-sa-dec",
+          "mapTo": "/ban-do?selected=hu-tieu-sa-dec"
+        },
+        {
+          "id": "hu-tieu-my-tho",
+          "name": "Hủ tiếu Mỹ Tho",
+          "origin": "Phường Mỹ Tho · Tiền Giang (cũ)",
+          "reputableVenue": "Sợi hủ tiếu dai giòn đặc trưng ăn kèm hải sản & thịt bằm",
+          "priceRange": "35.000–55.000đ",
+          "coverSrc": "/img/cat-am-thuc.webp",
+          "to": "/dia-diem/hu-tieu-my-tho",
+          "mapTo": "/ban-do?selected=hu-tieu-my-tho"
+        }
+      ]
+    },
+    "riversideStays": {
+      "ariaLabel": "Nhà vườn và Đêm ven sông Đồng Tháp",
+      "eyebrow": "Lưu trú miệt vườn · Mùa nước nổi",
+      "title": "Nhà vườn & Đêm ven sông",
+      "subtitle": "Nghỉ đêm giữa đồng sen Tháp Mười và vườn cây Cái Bè, đón sương sớm trên sông Tiền.",
+      "seeAllLabel": "Khám phá nơi lưu trú",
+      "fallbackImage": "/img/spread/song-nuoc.webp",
+      "stays": [
+        {
+          "id": "homestay-dong-sen-thap-muoi",
+          "name": "Nhà nghỉ Đồng Sen Tháp Mười",
+          "price": "400.000–750.000đ/đêm",
+          "area": "Xã Tháp Mười · Đồng Tháp",
+          "desc": "Chòi lá bên hồ sen nở sớm, phục vụ cơm đồng mùa nước nổi và đạp xe xuyên đồng.",
+          "coverSrc": "/img/spread/song-nuoc.webp",
+          "to": "/dia-diem/homestay-dong-sen-thap-muoi"
+        },
+        {
+          "id": "nha-vuon-cai-be",
+          "name": "Nhà vườn Đông Hòa Hiệp",
+          "price": "500.000–900.000đ/đêm",
+          "area": "Xã Cái Bè · Tiền Giang (cũ)",
+          "desc": "Nếp nhà gỗ ba gian giữa vườn vú sữa, bưởi xanh rợp bóng rạch nhỏ sông Tiền.",
+          "coverSrc": "/img/spread/song-nuoc.webp",
+          "to": "/dia-diem/nha-vuon-cai-be"
+        }
+      ]
+    }
+  },
+  "deploy": {
+    "appDir": "/opt/dongthap360",
+    "dbFilename": "dongthap360.db",
+    "agentService": "dt-agent",
+    "webService": "dt-nuxt",
+    "botService": "dt-bot",
+    "agentPort": 8360,
+    "webPort": 3000,
+    "defaultSshKey": "~/.ssh/dongthap_vps"
+  }
+}

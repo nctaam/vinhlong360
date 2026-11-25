@@ -13,6 +13,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { PROVINCE_CONFIG } from '../utils/provinceConfig'
 
 const root = resolve(process.cwd())
 const doc = (rel: string) => readFileSync(resolve(root, rel), 'utf8')
@@ -28,7 +29,8 @@ function sachTheo16(s: string): boolean {
 describe('§1.6 — bề mặt máy đọc phải nói đúng tỉnh hợp nhất', () => {
   it('meta description và og:description', () => {
     const cfg = doc('nuxt.config.ts')
-    const metas = [...cfg.matchAll(/content: '([^']*(?:Vĩnh Long)[^']*)'/g)].map(m => m[1]!)
+    expect(cfg).toContain('../config/province.config.json')
+    const metas = [PROVINCE_CONFIG.identity.seoDescription, PROVINCE_CONFIG.identity.ogDescription]
     expect(metas.length).toBeGreaterThan(0)
     for (const m of metas) {
       expect(sachTheo16(m), `chuỗi meta gọi tỉnh cũ mà không có dấu lịch sử: ${m}`).toBe(true)
@@ -37,8 +39,9 @@ describe('§1.6 — bề mặt máy đọc phải nói đúng tỉnh hợp nhấ
 
   it('JSON-LD của site nêu tỉnh hợp nhất, không liệt kê ba tỉnh', () => {
     const cfg = doc('nuxt.config.ts')
-    expect(cfg).toContain("'alternateName': 'Khám phá tỉnh Vĩnh Long'")
-    expect(cfg).not.toMatch(/Vĩnh Long – Bến Tre – Trà Vinh/)
+    expect(cfg).toContain('provinceIdentity.alternateName')
+    expect(PROVINCE_CONFIG.identity.alternateName).toBe('Khám phá tỉnh Vĩnh Long')
+    expect(PROVINCE_CONFIG.identity.jsonLdDescription).not.toMatch(/Vĩnh Long – Bến Tre – Trà Vinh/)
   })
 
   it('areaServed là MỘT đơn vị hành chính, không phải ba', () => {

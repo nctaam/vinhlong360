@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { PROVINCE_CONFIG } from '../utils/provinceConfig'
 
 const webRoot = resolve(__dirname, '..')
 const readWebFile = (relPath: string) => readFileSync(resolve(webRoot, relPath), 'utf8')
@@ -88,7 +89,8 @@ describe('Adversarial UI/UX & Frontend Quick Wins (QW-53 to QW-62)', () => {
     expect(displaySettings).toContain('Phóng to cỡ chữ 125%')
     expect(displaySettings).toContain('Tiết kiệm dữ liệu')
     expect(displaySettings).not.toContain('Eco-Mode')
-    expect(riversideStays).toContain('Nhà vườn &amp; Đêm ven sông')
+    expect(riversideStays).toContain('staysCfg.title')
+    expect(PROVINCE_CONFIG.home.riversideStays.title).toBe('Nhà vườn & Đêm ven sông')
     expect(riversideStays).not.toContain('FOLK_EXPERIENCES')
     expect(riversideStays).not.toContain('home-stay-card__eco-badge')
     expect(communityFeed).toContain('Nhật ký lữ khách phương Nam')

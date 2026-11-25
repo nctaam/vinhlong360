@@ -379,7 +379,7 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
       expect(seoHelpers).toContain("'@type': 'TouristTrip'")
       expect(seoHelpers).toContain("touristType: 'Sightseeing'")
       expect(seoHelpers).toContain("name: 'Lịch trình'")
-      expect(seoHelpers).toContain("name: `${itTitle} — vinhlong360`")
+      expect(seoHelpers).toContain('name: `${itTitle} — ${BRAND_NAME}`')
     })
   })
 

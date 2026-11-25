@@ -16,6 +16,7 @@
 
 import { ref, computed, onMounted, onUnmounted, getCurrentInstance, type Ref } from 'vue'
 import { solarToLunar, todayInVietnam, type LunarDate } from './useLunar'
+import { PROVINCE_CONFIG } from '../utils/provinceConfig'
 
 export type TidePhase = 'rong' | 'kem' | 'chuyen'
 export type WaterFlowState = 'nuoc_lon' | 'nuoc_rong_can' | 'nuoc_dung'
@@ -71,13 +72,14 @@ export interface BatteryCondition {
   watchIntervalMs: number
 }
 
-// ── Physical constants for Mekong River at Vĩnh Long (Mỹ Thuận / Cổ Chiên) ──
-const RIVER_AZIMUTH_SEAWARD = 135.0 // Northwest to Southeast dominant corridor (towards East Sea)
-const RIVER_AZIMUTH_LANDWARD = 315.0 // Reverse flood tide flow corridor
-const MEAN_STAGE_METERS = 1.10
+// ── Physical constants for configured hydrological basin ──
+const TIDE_CFG = PROVINCE_CONFIG.tide
+const RIVER_AZIMUTH_SEAWARD = TIDE_CFG.riverAzimuthSeaward
+const RIVER_AZIMUTH_LANDWARD = TIDE_CFG.riverAzimuthLandward
+const MEAN_STAGE_METERS = TIDE_CFG.meanStageMeters
 const SYNODIC_MONTH = 29.530588853
-const TAU_1 = 3.5 // Diurnal lag (hours)
-const TAU_2 = 1.2 // Semi-diurnal lag (hours)
+const TAU_1 = TIDE_CFG.tau1Hours
+const TAU_2 = TIDE_CFG.tau2Hours
 const TYPICAL_SAMPAN_SPEED_MS = 4.0 // ~14.4 km/h standard motorized river craft
 
 /**
@@ -141,13 +143,13 @@ export function calculateAstronomicalTide(date: Date = new Date()): TideCalculat
   if (dhdt > 0.15) {
     waterFlowState = 'nuoc_lon'
     waterFlowLabel = 'Nước lớn'
-    waterFlowDesc = 'Triều dâng, nước từ biển dồn vào sông Cổ Chiên'
+    waterFlowDesc = TIDE_CFG.floodFlowDesc
     currentAzimuth = RIVER_AZIMUTH_LANDWARD
     flowVelocity = Math.min(1.3, 0.6 + 0.7 * Math.min(1, dhdt / 0.5))
   } else if (dhdt < -0.15) {
     waterFlowState = 'nuoc_rong_can'
     waterFlowLabel = 'Nước ròng'
-    waterFlowDesc = 'Triều rút, dòng nước phù sa đổ mạnh ra biển'
+    waterFlowDesc = TIDE_CFG.ebbFlowDesc
     currentAzimuth = RIVER_AZIMUTH_SEAWARD
     flowVelocity = Math.min(1.5, 0.8 + 0.7 * Math.min(1, Math.abs(dhdt) / 0.5))
   }
@@ -164,7 +166,7 @@ export function calculateAstronomicalTide(date: Date = new Date()): TideCalculat
     dhdt: Math.round(dhdt * 1000) / 1000,
     flowVelocityMs: Math.round(flowVelocity * 100) / 100,
     currentAzimuth,
-    folkWisdom: 'Nước rong rằm & mùng một, nước kém mùng bảy & hăm ba',
+    folkWisdom: TIDE_CFG.folkWisdom,
   }
 }
 

@@ -1,16 +1,16 @@
 <template>
-  <section class="home-culinary-trail block reveal" aria-label="Bếp quê châu thổ Vĩnh Long" data-home-culinary-trail>
+  <section class="home-culinary-trail block reveal" :aria-label="culinaryCfg.ariaLabel" data-home-culinary-trail>
     <div class="home-culinary-trail__head section-head">
       <div class="sh-text">
         <span class="home-culinary-trail__eyebrow" data-color-role="brand">
           <IconLine name="bowl" aria-hidden="true" />
-          <span>Ký sự bếp quê · Ba vùng hợp vị</span>
+          <span>{{ culinaryCfg.eyebrow }}</span>
         </span>
-        <h2>Bếp quê châu thổ</h2>
-        <p class="sh-sub">Từ tô bún nước lèo ngải bún, nồi bánh canh vịt bột xắt đến cá đồng nướng rơm mùa nước nổi.</p>
+        <h2>{{ culinaryCfg.title }}</h2>
+        <p class="sh-sub">{{ culinaryCfg.subtitle }}</p>
       </div>
       <NuxtLink to="/am-thuc" class="see-all">
-        <span>Khám phá ẩm thực Vĩnh Long</span>
+        <span>{{ culinaryCfg.seeAllLabel }}</span>
         <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" />
       </NuxtLink>
     </div>
@@ -66,66 +66,18 @@
 
 <script setup lang="ts">
 import IconLine from '~/components/IconLine.vue'
+import { PROVINCE_CONFIG, type ProvinceCulinaryDish } from '~/utils/provinceConfig'
 
-interface CulinaryDish {
-  readonly id: string
-  readonly name: string
-  readonly origin: string
-  readonly reputableVenue: string
-  readonly priceRange: string
-  readonly coverSrc: string
-  readonly to: string
-  readonly mapTo: string
-}
+type CulinaryDish = ProvinceCulinaryDish
 
-const SIGNATURE_DISHES: readonly CulinaryDish[] = [
-  {
-    id: 'bun-nuoc-leo-tra-vinh',
-    name: 'Bún nước lèo Trà Vinh',
-    origin: 'Phường Trà Vinh · Trà Vinh (cũ)',
-    reputableVenue: 'Nước dùng mắm bò hóc · củ ngải bún · heo quay da giòn',
-    priceRange: '25.000–40.000đ',
-    coverSrc: '/img/entities/bun-nuoc-leo-tra-vinh.webp',
-    to: '/dia-diem/bun-nuoc-leo-tra-vinh',
-    mapTo: '/ban-do?selected=bun-nuoc-leo-tra-vinh',
-  },
-  {
-    id: 'ca-tai-tuong-chien-xu',
-    name: 'Cá tai tượng chiên xù',
-    origin: 'Phường Long Châu · Vĩnh Long',
-    reputableVenue: 'Cuốn bánh tráng mỏng với bún tươi, rau vườn & mắm nêm',
-    priceRange: '150.000–250.000đ',
-    coverSrc: '/img/entities/ca-tai-tuong-chien-xu.webp',
-    to: '/dia-diem/ca-tai-tuong-chien-xu',
-    mapTo: '/ban-do?selected=ca-tai-tuong-chien-xu',
-  },
-  {
-    id: 'banh-canh-bot-xat-ben-tre',
-    name: 'Bánh canh vịt bột xắt',
-    origin: 'Phường Bến Tre · Bến Tre (cũ)',
-    reputableVenue: 'Sợi bột gạo xắt tay nấu nước cốt dừa sánh mịn thịt vịt xiêm',
-    priceRange: '30.000–45.000đ',
-    coverSrc: '/img/entities/banh-canh-bot-xat-ben-tre.webp',
-    to: '/dia-diem/banh-canh-bot-xat-ben-tre',
-    mapTo: '/ban-do?selected=banh-canh-bot-xat-ben-tre',
-  },
-  {
-    id: 'ca-loc-nuong-trui',
-    name: 'Cá lóc nướng trui rơm đồng',
-    origin: 'Xã An Bình · Vĩnh Long',
-    reputableVenue: 'Nướng rơm khô giữ nguyên vị ngọt thịt, chấm muối ớt xanh',
-    priceRange: '80.000–150.000đ',
-    coverSrc: '/img/entities/ca-loc-nuong-trui.webp',
-    to: '/dia-diem/ca-loc-nuong-trui',
-    mapTo: '/ban-do?selected=ca-loc-nuong-trui',
-  },
-]
+const culinaryCfg = PROVINCE_CONFIG.home.culinaryTrail
+const SIGNATURE_DISHES: readonly CulinaryDish[] = culinaryCfg.dishes
 
 function onImgFallback(e: Event) {
   const img = e.target as HTMLImageElement
   if (img && !img.dataset.fallbackApplied) {
     img.dataset.fallbackApplied = 'true'
-    img.src = '/img/cat-am-thuc.webp'
+    img.src = culinaryCfg.fallbackImage
   }
 }
 </script>

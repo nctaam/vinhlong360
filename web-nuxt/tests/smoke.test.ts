@@ -4,6 +4,7 @@ import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { readFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { resolve } from 'node:path'
+import { AREA_META } from '../composables/useConstants'
 import { useAuth } from '../composables/useAuth'
 import SearchPage from '../pages/tim-kiem.vue'
 import { entityPath, normalizeRouteParam, notificationTargetPath, postPath, savedItemPath, userPath } from '../utils/routePaths'
@@ -1008,7 +1009,8 @@ describe('UserCP regressions', () => {
     const card = src('components/ItineraryCard.vue')
     const page = src('pages/lich-trinh/index.vue')
     const admin = src('pages/admin/lich-trinh.vue')
-    expect(constants).toContain("'lien-vung'")
+    expect(constants).toContain('PROVINCE_AREA_META')
+    expect(AREA_META['lien-vung']).toBeTruthy()
     expect(card).toContain('itineraryAreas')
     // Covers now use real per-area Mekong photos (AREA_PHOTO) with a deterministic
     // ROVING fallback for lien-vung / multi-region trips (was a flat 'lien-vung':'itinerary' map).

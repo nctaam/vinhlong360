@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { PROVINCE_CONFIG } from '../utils/provinceConfig'
 
 describe('Deep & Simple Homepage UI Refinements', () => {
   const indexVue = readFileSync(resolve(__dirname, '../pages/index.vue'), 'utf8')
@@ -21,10 +22,12 @@ describe('Deep & Simple Homepage UI Refinements', () => {
 
   it('Task 2: Culinary trail dishes display verified dish slugs, tabular prices, and zero GPS clutter', () => {
     const culinaryVue = readFileSync(resolve(__dirname, '../components/home/HomeCulinaryTrail.vue'), 'utf8')
-    expect(culinaryVue).toContain('bun-nuoc-leo-tra-vinh')
-    expect(culinaryVue).toContain('ca-tai-tuong-chien-xu')
-    expect(culinaryVue).toContain('banh-canh-bot-xat-ben-tre')
-    expect(culinaryVue).toContain('ca-loc-nuong-trui')
+    expect(culinaryVue).toContain('PROVINCE_CONFIG.home.culinaryTrail')
+    const dishIds = PROVINCE_CONFIG.home.culinaryTrail.dishes.map(d => d.id)
+    expect(dishIds).toContain('bun-nuoc-leo-tra-vinh')
+    expect(dishIds).toContain('ca-tai-tuong-chien-xu')
+    expect(dishIds).toContain('banh-canh-bot-xat-ben-tre')
+    expect(dishIds).toContain('ca-loc-nuong-trui')
     expect(culinaryVue).not.toContain('home-culinary-card__coords')
     expect(culinaryVue).toContain('home-culinary-card__price-badge')
     expect(culinaryVue).toMatch(/\.home-culinary-card__price-badge\s*\{[^}]*font-variant-numeric:\s*tabular-nums/)
@@ -32,9 +35,11 @@ describe('Deep & Simple Homepage UI Refinements', () => {
 
   it('Task 3: Riverside homestays display verified stay slugs, tabular prices, and streamlined metadata', () => {
     const staysVue = readFileSync(resolve(__dirname, '../components/home/HomeRiversideStays.vue'), 'utf8')
-    expect(staysVue).toContain('homestay-ut-trinh')
-    expect(staysVue).toContain('mekong-riverside-homestay')
-    expect(staysVue).toContain('nha-dua-cocohome')
+    expect(staysVue).toContain('PROVINCE_CONFIG.home.riversideStays')
+    const stayIds = PROVINCE_CONFIG.home.riversideStays.stays.map(s => s.id)
+    expect(stayIds).toContain('homestay-ut-trinh')
+    expect(stayIds).toContain('mekong-riverside-homestay')
+    expect(stayIds).toContain('nha-dua-cocohome')
     expect(staysVue).not.toContain('home-stay-card__coords')
     expect(staysVue).toMatch(/\.home-stay-card__price\s*\{[^}]*font-variant-numeric:\s*tabular-nums/)
   })
@@ -42,8 +47,10 @@ describe('Deep & Simple Homepage UI Refinements', () => {
   it('Task 5: Curated showcase satellites display architectural index numbering and verified Văn Thánh Miếu slug', () => {
     const showcaseVue = readFileSync(resolve(__dirname, '../components/home/HomeCuratedShowcase.vue'), 'utf8')
     expect(showcaseVue).toContain('home-curated-satellite__num')
-    expect(showcaseVue).toContain('/dia-diem/van-thanh-mieu')
-    expect(showcaseVue).not.toContain('van-thanh-mieu-vinh-long')
+    expect(showcaseVue).toContain('PROVINCE_CONFIG.home.curatedShowcase')
+    const satPaths = PROVINCE_CONFIG.home.curatedShowcase.satellites.map(s => s.to)
+    expect(satPaths).toContain('/dia-diem/van-thanh-mieu')
+    expect(satPaths).not.toContain('/dia-diem/van-thanh-mieu-vinh-long')
     expect(showcaseVue).not.toContain('home-curated-satellite__coords')
     expect(showcaseVue).toMatch(/\.home-curated-satellite__num\s*\{[^}]*font-variant-numeric:\s*tabular-nums/)
   })
@@ -260,12 +267,14 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     const plannerVue = readFileSync(resolve(__dirname, '../components/home/HomeTravelPlanner.vue'), 'utf8')
 
     // 1. Folio II see-all: authentic regional culinary link
-    expect(culinaryVue).toContain('Khám phá ẩm thực Vĩnh Long')
-    expect(culinaryVue).not.toContain('120 món ngon di sản')
+    expect(culinaryVue).toContain('culinaryCfg.seeAllLabel')
+    expect(PROVINCE_CONFIG.home.culinaryTrail.seeAllLabel).toBe('Khám phá ẩm thực Vĩnh Long')
+    expect(PROVINCE_CONFIG.home.culinaryTrail.seeAllLabel).not.toContain('120 món ngon di sản')
 
     // 2. Folio III stays see-all: streamlined
-    expect(staysVue).toContain('164 nơi lưu trú')
-    expect(staysVue).not.toContain('Xem toàn bộ 164 nơi lưu trú')
+    expect(staysVue).toContain('staysCfg.seeAllLabel')
+    expect(PROVINCE_CONFIG.home.riversideStays.seeAllLabel).toBe('164 nơi lưu trú')
+    expect(PROVINCE_CONFIG.home.riversideStays.seeAllLabel).not.toContain('Xem toàn bộ 164 nơi lưu trú')
 
     // 3. Folio III planner: see-all matches HomeContinuation exactly
     expect(plannerVue).toContain('16 lịch trình thong dong')

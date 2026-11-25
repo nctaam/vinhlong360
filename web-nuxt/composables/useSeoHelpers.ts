@@ -1,9 +1,13 @@
 import type { ImageDescriptor } from '../types/image'
 import { normalizeRenderableImageUrl } from '../utils/imageDescriptors'
+import { PROVINCE_CONFIG, PROVINCE_DEFAULT_OG, PROVINCE_SITE_URL } from '../utils/provinceConfig'
 import { entityPath, userPath } from '../utils/routePaths'
 
-export const SITE_URL = 'https://vinhlong360.vn'
-const DEFAULT_OG = `${SITE_URL}/img/og-default.jpg`
+export const SITE_URL = PROVINCE_SITE_URL
+const DEFAULT_OG = PROVINCE_DEFAULT_OG
+const BRAND_NAME = PROVINCE_CONFIG.identity.brandName
+const PROVINCE_NAME = PROVINCE_CONFIG.identity.provinceName
+const PROVINCE_FULL_NAME = PROVINCE_CONFIG.identity.provinceFullName
 
 export interface ImageMeta {
   ogImage?: string
@@ -197,8 +201,8 @@ const WEBSITE_SCHEMA_NODE: Readonly<Record<string, any>> = Object.freeze({
   '@type': 'WebSite',
   '@id': `${SITE_URL}/#website`,
   url: SITE_URL,
-  name: 'vinhlong360',
-  description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long.',
+  name: BRAND_NAME,
+  description: `Cổng du lịch và sản phẩm địa phương ${PROVINCE_NAME}.`,
   inLanguage: 'vi-VN',
   publisher: Object.freeze({ '@id': `${SITE_URL}/#organization` }),
 })
@@ -206,24 +210,17 @@ const WEBSITE_SCHEMA_NODE: Readonly<Record<string, any>> = Object.freeze({
 const ORGANIZATION_SCHEMA_NODE: Readonly<Record<string, any>> = Object.freeze({
   '@type': 'Organization',
   '@id': `${SITE_URL}/#organization`,
-  name: 'vinhlong360',
+  name: BRAND_NAME,
   url: SITE_URL,
   logo: `${SITE_URL}/icons/icon-512.png`,
-  description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long.',
+  description: `Cổng du lịch và sản phẩm địa phương ${PROVINCE_NAME}.`,
   inLanguage: 'vi-VN',
   areaServed: Object.freeze({
     '@type': 'AdministrativeArea',
-    name: 'Tỉnh Vĩnh Long',
+    name: PROVINCE_FULL_NAME,
     '@id': `${SITE_URL}/#province`,
   }),
-  knowsAbout: Object.freeze([
-    'Du lịch Vĩnh Long',
-    'Văn hóa Khmer',
-    'Đặc sản OCOP Vĩnh Long',
-    'Làng nghề gốm Mang Thít',
-    'Cù lao An Bình',
-    'Lễ hội truyền thống Vĩnh Long',
-  ]),
+  knowsAbout: Object.freeze([...PROVINCE_CONFIG.identity.knowsAbout]),
 })
 
 export function buildWebSiteSchema(): Record<string, any> {
@@ -442,7 +439,7 @@ export function buildEntityDetailSchemaGraph(options: EntityDetailSchemaOptions)
     '@type': 'WebPage',
     '@id': `${entityUrl}#webpage`,
     url: entityUrl,
-    name: `${e.name} — ${typeLabel} — vinhlong360`,
+    name: `${e.name} — ${typeLabel} — ${BRAND_NAME}`,
     description: e.summary || e.description,
     inLanguage: 'vi-VN',
     isPartOf: { '@id': `${SITE_URL}/#website` },
@@ -567,10 +564,10 @@ export function buildHomeSchemaGraph(options?: HomeSchemaOptions): Record<string
         eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
         location: {
           '@type': 'Place',
-          name: ev.place_name || 'Vĩnh Long',
+          name: ev.place_name || PROVINCE_NAME,
           address: {
             '@type': 'PostalAddress',
-            addressRegion: 'Vĩnh Long',
+            addressRegion: PROVINCE_NAME,
             addressCountry: 'VN',
           },
         },
@@ -579,7 +576,7 @@ export function buildHomeSchemaGraph(options?: HomeSchemaOptions): Record<string
     nodes.push({
       '@type': 'ItemList',
       '@id': `${SITE_URL}/#upcoming-events`,
-      name: 'Sự kiện sắp tới tại Vĩnh Long',
+      name: `Sự kiện sắp tới tại ${PROVINCE_NAME}`,
       numberOfItems: eventItems.length,
       itemListElement: eventItems,
     })
@@ -621,7 +618,7 @@ export function buildPostDetailSchemaGraph(options: PostDetailSchemaOptions): Re
     '@type': p.post_type === 'question' ? 'QAPage' : 'WebPage',
     '@id': `${postUrl}#webpage`,
     url: postUrl,
-    name: `${postTitle} — vinhlong360`,
+    name: `${postTitle} — ${BRAND_NAME}`,
     description: postDesc,
     inLanguage: 'vi-VN',
     isPartOf: { '@id': `${SITE_URL}/#website` },
@@ -689,8 +686,8 @@ export function buildPostDetailSchemaGraph(options: PostDetailSchemaOptions): Re
       ...(p.rating ? { reviewRating: { '@type': 'Rating', ratingValue: p.rating, bestRating: 5 } } : {}),
       itemReviewed: {
         '@type': 'TouristAttraction',
-        name: 'Địa điểm du lịch Vĩnh Long',
-        containedInPlace: { '@type': 'AdministrativeArea', name: 'Tỉnh Vĩnh Long' },
+        name: `Địa điểm du lịch ${PROVINCE_NAME}`,
+        containedInPlace: { '@type': 'AdministrativeArea', name: PROVINCE_FULL_NAME },
       },
     }
   } else {
@@ -747,7 +744,7 @@ export function buildItineraryDetailSchemaGraph(options: ItineraryDetailSchemaOp
     '@type': 'WebPage',
     '@id': `${itUrl}#webpage`,
     url: itUrl,
-    name: `${itTitle} — vinhlong360`,
+    name: `${itTitle} — ${BRAND_NAME}`,
     description: itDesc,
     inLanguage: 'vi-VN',
     isPartOf: { '@id': `${SITE_URL}/#website` },
@@ -776,8 +773,8 @@ export function buildItineraryDetailSchemaGraph(options: ItineraryDetailSchemaOp
     url: itUrl,
     spatialCoverage: {
       '@type': 'Place',
-      name: 'Tỉnh Vĩnh Long',
-      geo: { '@type': 'GeoShape', box: '9.8 105.8 10.4 106.7' },
+      name: PROVINCE_FULL_NAME,
+      geo: { '@type': 'GeoShape', box: PROVINCE_CONFIG.bounds.spatialBox },
     },
   }
 

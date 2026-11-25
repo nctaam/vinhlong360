@@ -1,0 +1,343 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "slug": "vinhlong360",
+    "provinceSlug": "vinh-long",
+    "provinceId": "province-vl",
+    "provinceName": "Vĩnh Long",
+    "provinceFullName": "Tỉnh Vĩnh Long",
+    "brandName": "vinhlong360",
+    "brandDisplayName": "VinhLong360",
+    "logoSuffix": ".vn",
+    "domain": "vinhlong360.vn",
+    "siteUrl": "https://vinhlong360.vn",
+    "contactEmail": "lienhe@vinhlong360.vn",
+    "zaloHandle": "vinhlong360",
+    "twitterHandle": "@vinhlong360",
+    "esmsBrandname": "VinhLong360",
+    "storagePrefix": "vl360",
+    "weatherUserAgent": "vinhlong360-weather/1.0",
+    "ogImagePath": "/img/og-default.jpg",
+    "tagline": "Khám phá tỉnh Vĩnh Long theo cách của người bản địa.",
+    "footerTagline": "Khám phá tỉnh Vĩnh Long\ntheo cách của người bản địa.",
+    "copyright": "© 2024–2026 vinhlong360",
+    "alternateName": "Khám phá tỉnh Vĩnh Long",
+    "seoTitle": "vinhlong360 — Du lịch & Sản phẩm địa phương",
+    "seoDescription": "Cổng du lịch và sản phẩm địa phương tỉnh Vĩnh Long (hợp nhất từ Vĩnh Long, Bến Tre, Trà Vinh cũ): miệt vườn, đặc sản theo mùa, OCOP, làng nghề, lịch trình gợi ý.",
+    "ogDescription": "Khám phá tỉnh Vĩnh Long sau sáp nhập (gồm Bến Tre và Trà Vinh cũ): du lịch miệt vườn, đặc sản OCOP, làng nghề, lưu trú và lịch trình gợi ý.",
+    "jsonLdDescription": "Nền tảng khám phá du lịch, OCOP và cộng đồng cho tỉnh Vĩnh Long — tỉnh hợp nhất từ Vĩnh Long, Bến Tre và Trà Vinh cũ từ 7-2025",
+    "seedSeoDescription": "Cổng du lịch và sản phẩm địa phương Vĩnh Long: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.",
+    "heroSubtitle": "Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp cho chuyến đi Vĩnh Long hôm nay.",
+    "chatTitle": "Hỏi về Vĩnh Long",
+    "chatPlaceholder": "Hỏi gì đó về Vĩnh Long…",
+    "wardCount": 124,
+    "mergedDate": "7-2025",
+    "mergedFrom": ["Vĩnh Long", "Bến Tre", "Trà Vinh"],
+    "legacyProvinceNames": ["Bến Tre", "Trà Vinh"],
+    "terroirBasin": "Lưu vực Thủy thổ Sông Tiền & Cổ Chiên (Vĩnh Long)",
+    "knowsAbout": [
+      "Du lịch Vĩnh Long",
+      "Văn hóa Khmer",
+      "Đặc sản OCOP Vĩnh Long",
+      "Làng nghề gốm Mang Thít",
+      "Cù lao An Bình",
+      "Lễ hội truyền thống Vĩnh Long"
+    ]
+  },
+  "bounds": {
+    "schemaBbox": {
+      "lat": [9.0, 10.6],
+      "lng": [105.6, 107.1]
+    },
+    "ingestBbox": {
+      "lat": [9.2, 10.65],
+      "lng": [105.6, 106.95]
+    },
+    "spatialBox": "9.8 105.8 10.4 106.7"
+  },
+  "areas": {
+    "canonicalAreaSlug": "vinh-long",
+    "canonicalRegionId": "province-vl",
+    "legacyRegionIds": ["province-bt", "province-tv"],
+    "legacyRegionLabels": ["Bến Tre", "Trà Vinh"],
+    "currentProvinceAliases": [
+      "vinh-long",
+      "ben-tre",
+      "tra-vinh",
+      "province-vl",
+      "province-bt",
+      "province-tv"
+    ],
+    "multiRegionSlug": "lien-vung",
+    "multiRegionLabel": "Liên vùng Vĩnh Long - Bến Tre - Trà Vinh",
+    "items": [
+      {
+        "slug": "vinh-long",
+        "name": "Vĩnh Long",
+        "emoji": "🍊",
+        "icon": "fruit",
+        "blurb": "Miệt vườn cam sành, khoai lang, bưởi Năm Roi và làng gốm Mang Thít.",
+        "distance": "Trung tâm",
+        "hub": "TP. Vĩnh Long",
+        "lat": 10.2537,
+        "lon": 105.9722,
+        "isPrimary": true
+      },
+      {
+        "slug": "ben-tre",
+        "name": "Bến Tre",
+        "emoji": "🥥",
+        "icon": "leaf",
+        "blurb": "Xứ dừa: kẹo dừa, mật hoa dừa, bưởi da xanh và những rẫy dừa bạt ngàn.",
+        "distance": "~35km",
+        "hub": "Cầu Cổ Chiên",
+        "lat": 10.2415,
+        "lon": 106.3759,
+        "isPrimary": false
+      },
+      {
+        "slug": "tra-vinh",
+        "name": "Trà Vinh",
+        "emoji": "🛕",
+        "icon": "landmark",
+        "blurb": "Văn hóa Khmer: ao Bà Om, chùa cổ, dừa sáp Cầu Kè và bún nước lèo.",
+        "distance": "~48km",
+        "hub": "QL53 / Ao Bà Om",
+        "lat": 9.9347,
+        "lon": 106.3455,
+        "isPrimary": false
+      }
+    ],
+    "multiRegionMeta": {
+      "slug": "lien-vung",
+      "name": "Liên vùng",
+      "emoji": "🧭",
+      "icon": "compass",
+      "blurb": "Tuyến kết nối nhiều tiểu vùng văn hóa - sinh thái trên toàn tỉnh Vĩnh Long.",
+      "distance": "Hành trình mở",
+      "hub": "Tam giác Phù sa"
+    }
+  },
+  "weather": {
+    "measurePoint": {
+      "area": "vinh-long",
+      "label": "điểm đo trung tâm Vĩnh Long",
+      "coordinates": [10.2537, 105.9722],
+      "asyncDataKey": "weather-vinh-long"
+    },
+    "rainySeasonMonths": [5, 6, 7, 8, 9, 10, 11],
+    "rainyClimateContext": "Tiết trời mùa mưa nhiệt đới Tây Nam (Tháng 5 - 11), độ ẩm dồi dào, buổi sáng mát mẻ trong lành, thuận lợi du lịch đường sông và trải nghiệm miệt vườn.",
+    "dryClimateContext": "Tiết trời mùa nắng khô ráo (Tháng 12 - 4), gió chướng sông Tiền mát mẻ, lý tưởng cho khám phá làng nghề gốm đỏ và đạp xe cù lao."
+  },
+  "tide": {
+    "riverAzimuthSeaward": 135.0,
+    "riverAzimuthLandward": 315.0,
+    "meanStageMeters": 1.1,
+    "tau1Hours": 3.5,
+    "tau2Hours": 1.2,
+    "floodFlowDesc": "Triều dâng, nước từ biển dồn vào sông Cổ Chiên",
+    "ebbFlowDesc": "Triều rút, dòng nước phù sa đổ mạnh ra biển",
+    "folkWisdom": "Nước rong rằm & mùng một, nước kém mùng bảy & hăm ba"
+  },
+  "emergencyHotlines": [
+    {
+      "id": "rescue-waterway",
+      "name": "CSGT & Cứu nạn Đường thủy",
+      "phone": "0270 3822 305",
+      "tel_uri": "tel:+842703822305",
+      "service_scope": "Tuần tra sông Tiền & Cổ Chiên, cứu hộ sự cố đò phà và tàu thuyền du lịch 24/7.",
+      "badge": "Đường thủy 24/7",
+      "priority": true
+    },
+    {
+      "id": "rescue-medical",
+      "name": "Cấp cứu Y tế 115 & BV Đa khoa Tỉnh",
+      "phone": "115",
+      "tel_uri": "tel:115",
+      "service_scope": "Điều phối xe cấp cứu lưu động và tiếp nhận hỗ trợ y tế khẩn cấp toàn tỉnh.",
+      "badge": "Khẩn cấp 115",
+      "priority": true
+    },
+    {
+      "id": "rescue-police",
+      "name": "Công an Tỉnh (Phản ứng nhanh)",
+      "phone": "113",
+      "tel_uri": "tel:113",
+      "service_scope": "Bảo đảm an ninh trật tự, hỗ trợ du khách bị thất lạc hoặc gặp sự cố an ninh.",
+      "badge": "Trực ban 113",
+      "priority": false
+    },
+    {
+      "id": "rescue-ferry",
+      "name": "Điều phối Phà An Bình",
+      "phone": "0270 3822 514",
+      "tel_uri": "tel:+842703822514",
+      "service_scope": "Hỗ trợ phương tiện qua sông Cổ Chiên, giải quyết sự cố bến phà đêm ngày.",
+      "badge": "Vượt sông",
+      "priority": false
+    },
+    {
+      "id": "rescue-tourism",
+      "name": "Cứu hộ Du lịch Vĩnh Long 360",
+      "phone": "0270 3822 188",
+      "tel_uri": "tel:+842703822188",
+      "service_scope": "Hỗ trợ hướng dẫn thực địa, giải quyết khúc mắc dịch vụ và phản ánh du lịch.",
+      "badge": "Hỗ trợ du khách",
+      "priority": false
+    }
+  ],
+  "contentGuards": {
+    "outOfProvincePatterns": ["Cái Bè", "Lai Vung", "Định Yên"],
+    "outOfProvinceMessage": "địa danh NGOÀI tỉnh (Đồng Tháp/Tiền Giang cũ) — kiểm xuất xứ (R10.9)"
+  },
+  "home": {
+    "curatedShowcase": {
+      "ariaLabel": "Bản đồ di sản hợp nhất Vĩnh Long",
+      "eyebrow": "Di sản hợp nhất · Ba miền châu thổ",
+      "title": "Bản đồ di sản hợp nhất",
+      "subtitle": "Những cổ tự Khmer, Văn Thánh Miếu và bến chợ nổi tiêu biểu trải dài khắp tỉnh Vĩnh Long thống nhất.",
+      "seeAllLabel": "Toàn bộ điểm đến",
+      "fallbackImage": "/img/spread/song-nuoc.webp",
+      "lead": {
+        "id": "chua-ang",
+        "title": "Chùa Âng — Di tích kiến trúc Khmer bên Ao Bà Om",
+        "location": "Phường Long Đức · Trà Vinh (cũ)",
+        "desc": "Ngôi chùa Khmer cổ gần một thiên niên kỷ ẩn mình dưới tán dầu cổ thụ soi bóng xuống thắng cảnh Ao Bà Om.",
+        "coverSrc": "/img/entities/chua-ang.webp",
+        "to": "/dia-diem/chua-ang",
+        "mapTo": "/ban-do?selected=chua-ang"
+      },
+      "satellites": [
+        {
+          "id": "van-thanh-mieu",
+          "title": "Văn Thánh Miếu Vĩnh Long",
+          "area": "Phường Phước Hậu · Di tích quốc gia",
+          "summary": "Công trình Nho học phương Nam dựng năm 1864 bên rạch Long Hồ với hàng sao cổ thụ rợp bóng.",
+          "coverSrc": "/img/entities/van-thanh-mieu.webp",
+          "to": "/dia-diem/van-thanh-mieu"
+        },
+        {
+          "id": "cho-noi-tra-on",
+          "title": "Chợ nổi Trà Ôn lúc rạng sáng",
+          "area": "Xã Lục Sĩ Thành · Sông Hậu",
+          "summary": "Nếp thương hồ trăm năm họp chợ trên nhánh sông Hậu, rộn ràng ghe trái cây từ tinh mơ.",
+          "coverSrc": "/img/entities/cho-noi-tra-on.webp",
+          "to": "/dia-diem/cho-noi-tra-on"
+        },
+        {
+          "id": "chua-vam-ray",
+          "title": "Chùa Vàm Ray",
+          "area": "Xã Trà Cú · Trà Vinh (cũ)",
+          "summary": "Ngôi chùa Khmer mái tháp chạm trổ rực rỡ với tượng Phật nhập Niết Bàn quy mô lớn.",
+          "coverSrc": "/img/entities/chua-vam-ray.webp",
+          "to": "/dia-diem/chua-vam-ray"
+        },
+        {
+          "id": "chua-tien-chau-tien-chau-tu",
+          "title": "Chùa Tiên Châu cổ tự",
+          "area": "Xã An Bình · Bãi Tiên",
+          "summary": "Di tích lịch sử kiến trúc từ thế kỷ XVIII bên dòng Cổ Chiên xanh mát bóng cây cù lao.",
+          "coverSrc": "/img/entities/chua-tien-chau-tien-chau-tu.webp",
+          "to": "/dia-diem/chua-tien-chau-tien-chau-tu"
+        }
+      ]
+    },
+    "culinaryTrail": {
+      "ariaLabel": "Bếp quê châu thổ Vĩnh Long",
+      "eyebrow": "Ký sự bếp quê · Ba vùng hợp vị",
+      "title": "Bếp quê châu thổ",
+      "subtitle": "Từ tô bún nước lèo ngải bún, nồi bánh canh vịt bột xắt đến cá đồng nướng rơm mùa nước nổi.",
+      "seeAllLabel": "Khám phá ẩm thực Vĩnh Long",
+      "fallbackImage": "/img/cat-am-thuc.webp",
+      "dishes": [
+        {
+          "id": "bun-nuoc-leo-tra-vinh",
+          "name": "Bún nước lèo Trà Vinh",
+          "origin": "Phường Trà Vinh · Trà Vinh (cũ)",
+          "reputableVenue": "Nước dùng mắm bò hóc · củ ngải bún · heo quay da giòn",
+          "priceRange": "25.000–40.000đ",
+          "coverSrc": "/img/entities/bun-nuoc-leo-tra-vinh.webp",
+          "to": "/dia-diem/bun-nuoc-leo-tra-vinh",
+          "mapTo": "/ban-do?selected=bun-nuoc-leo-tra-vinh"
+        },
+        {
+          "id": "ca-tai-tuong-chien-xu",
+          "name": "Cá tai tượng chiên xù",
+          "origin": "Phường Long Châu · Vĩnh Long",
+          "reputableVenue": "Cuốn bánh tráng mỏng với bún tươi, rau vườn & mắm nêm",
+          "priceRange": "150.000–250.000đ",
+          "coverSrc": "/img/entities/ca-tai-tuong-chien-xu.webp",
+          "to": "/dia-diem/ca-tai-tuong-chien-xu",
+          "mapTo": "/ban-do?selected=ca-tai-tuong-chien-xu"
+        },
+        {
+          "id": "banh-canh-bot-xat-ben-tre",
+          "name": "Bánh canh vịt bột xắt",
+          "origin": "Phường Bến Tre · Bến Tre (cũ)",
+          "reputableVenue": "Sợi bột gạo xắt tay nấu nước cốt dừa sánh mịn thịt vịt xiêm",
+          "priceRange": "30.000–45.000đ",
+          "coverSrc": "/img/entities/banh-canh-bot-xat-ben-tre.webp",
+          "to": "/dia-diem/banh-canh-bot-xat-ben-tre",
+          "mapTo": "/ban-do?selected=banh-canh-bot-xat-ben-tre"
+        },
+        {
+          "id": "ca-loc-nuong-trui",
+          "name": "Cá lóc nướng trui rơm đồng",
+          "origin": "Xã An Bình · Vĩnh Long",
+          "reputableVenue": "Nướng rơm khô giữ nguyên vị ngọt thịt, chấm muối ớt xanh",
+          "priceRange": "80.000–150.000đ",
+          "coverSrc": "/img/entities/ca-loc-nuong-trui.webp",
+          "to": "/dia-diem/ca-loc-nuong-trui",
+          "mapTo": "/ban-do?selected=ca-loc-nuong-trui"
+        }
+      ]
+    },
+    "riversideStays": {
+      "ariaLabel": "Nhà vườn và Đêm ven sông Vĩnh Long",
+      "eyebrow": "Lưu trú miệt vườn · Đêm ven sông",
+      "title": "Nhà vườn & Đêm ven sông",
+      "subtitle": "Nghỉ đêm dưới tán nhãn cù lao và rặng dừa Bến Tre, đón con nước sớm bên hiên gỗ Nam Bộ.",
+      "seeAllLabel": "164 nơi lưu trú",
+      "fallbackImage": "/img/spread/song-nuoc.webp",
+      "stays": [
+        {
+          "id": "homestay-ut-trinh",
+          "name": "Homestay Út Trinh",
+          "price": "450.000–850.000đ/đêm",
+          "area": "Xã An Bình · Cù lao sông Tiền",
+          "desc": "Nhà gỗ cổ giữa vườn nhãn cù lao với bữa cơm quê, đạp xe đường làng và đêm đờn ca.",
+          "coverSrc": "/img/entities/homestay-ut-trinh.webp",
+          "to": "/dia-diem/homestay-ut-trinh"
+        },
+        {
+          "id": "mekong-riverside-homestay",
+          "name": "Mekong Riverside Homestay",
+          "price": "600.000–1.200.000đ/đêm",
+          "area": "Phường Bình Minh · Vĩnh Long",
+          "desc": "Khu nghỉ ven sông đón khách bằng tàu gỗ, tầm nhìn thẳng ra bến phù sa xanh mát.",
+          "coverSrc": "/img/entities/mekong-riverside-homestay.webp",
+          "to": "/dia-diem/mekong-riverside-homestay"
+        },
+        {
+          "id": "nha-dua-cocohome",
+          "name": "Nhà dừa CocoHome",
+          "price": "350.000–600.000đ/đêm",
+          "area": "Xã Phú Phụng · Bến Tre (cũ)",
+          "desc": "Kiến trúc dựng hoàn toàn từ thân dừa già, mành tre đan tay và gian bếp ấm ánh đèn dầu.",
+          "coverSrc": "/img/entities/nha-dua-cocohome.webp",
+          "to": "/dia-diem/nha-dua-cocohome"
+        }
+      ]
+    }
+  },
+  "deploy": {
+    "appDir": "/opt/vinhlong360",
+    "dbFilename": "vinhlong360.db",
+    "agentService": "vl-agent",
+    "webService": "vl-nuxt",
+    "botService": "vl-bot",
+    "agentPort": 8360,
+    "webPort": 3000,
+    "defaultSshKey": "~/.ssh/vinhlong_vps"
+  }
+}

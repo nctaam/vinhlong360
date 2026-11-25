@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import { createHash } from 'node:crypto'
+import { VERIFIED_EMERGENCY_HOTLINES } from '../server/utils/terroir/emergencyHotlines'
 
 const rootDir = resolve(__dirname, '../..')
 const webNuxtDir = resolve(__dirname, '..')
@@ -148,10 +149,12 @@ describe('Tier 1: Feature Coverage — R3: Smart Travel Planner & Traveler Live 
   })
 
   it('F3.3: contains verified civic emergency hotlines directory in server utilities', () => {
-    expect(emergencyHotlinesSrc).toContain('0270 3822 305')
-    expect(emergencyHotlinesSrc).toContain('0270 3822 188')
-    expect(emergencyHotlinesSrc).toContain('115')
-    expect(emergencyHotlinesSrc).toContain('113')
+    expect(emergencyHotlinesSrc).toContain('PROVINCE_CONFIG.emergencyHotlines')
+    const phones = VERIFIED_EMERGENCY_HOTLINES.map(h => h.phone)
+    expect(phones).toContain('0270 3822 305')
+    expect(phones).toContain('0270 3822 188')
+    expect(phones).toContain('115')
+    expect(phones).toContain('113')
   })
 
   it('F3.4: replaces raw pedology equations with practical river & weather guidance', () => {
@@ -524,7 +527,8 @@ describe('Tier 4: Real-World Workload Scenarios', () => {
     const utTrinh = entities.find(e => e.name.includes('Homestay Út Trinh') || e.name.includes('Út Trinh Homestay'))
     expect(utTrinh).toBeDefined()
 
-    expect(emergencyHotlinesSrc).toContain('0270 3822 305')
+    expect(emergencyHotlinesSrc).toContain('PROVINCE_CONFIG.emergencyHotlines')
+    expect(VERIFIED_EMERGENCY_HOTLINES.map(h => h.phone)).toContain('0270 3822 305')
   })
 
   it('Scenario 5: Degraded River Network Resilience (Graceful Collapse without Skeletons)', () => {

@@ -17,8 +17,28 @@ from pathlib import Path
 from .common import repo_root
 
 DATA_REL = "web/data.json"
-BBOX = {"lat": (9.0, 10.6), "lng": (105.6, 107.1)}  # tỉnh Vĩnh Long mới (siết từ validator cũ)
+_DEFAULT_BBOX = {"lat": (9.0, 10.6), "lng": (105.6, 107.1)}
 REQUIRED = ["id", "type", "name", "summary"]
+
+
+def _load_bbox(root: Path | None) -> dict[str, tuple[float, float]]:
+    if root is None:
+        return _DEFAULT_BBOX
+    cfg_path = root / "config" / "province.config.json"
+    if not cfg_path.exists():
+        return _DEFAULT_BBOX
+    try:
+        payload = json.loads(cfg_path.read_text(encoding="utf-8-sig"))
+        raw = payload["bounds"]["schemaBbox"]
+        return {
+            "lat": (float(raw["lat"][0]), float(raw["lat"][1])),
+            "lng": (float(raw["lng"][0]), float(raw["lng"][1])),
+        }
+    except (OSError, ValueError, KeyError, TypeError, IndexError):
+        return _DEFAULT_BBOX
+
+
+BBOX = _load_bbox(Path(__file__).resolve().parents[2])
 
 # agent/ của repo THẬT (không phụ thuộc root fixture — policy là logic thuần)
 _AGENT_DIR = str(Path(__file__).resolve().parents[2] / "agent")
@@ -74,8 +94,9 @@ class DataSchemaCheck:
     def _check_coords(self, e: dict, eid: str, violations: list) -> None:
         c = e.get("coordinates")
         if isinstance(c, dict) and c.get("lat") is not None:
+            bbox = _load_bbox(self.root)
             lat, lng = c.get("lat"), c.get("lng")
-            if not (BBOX["lat"][0] <= lat <= BBOX["lat"][1] and BBOX["lng"][0] <= lng <= BBOX["lng"][1]):
+            if not (bbox["lat"][0] <= lat <= bbox["lat"][1] and bbox["lng"][0] <= lng <= bbox["lng"][1]):
                 violations.append({"file": DATA_REL, "line": 0, "rule": self.rule,
                                    "msg": f"{eid}: coords ({lat},{lng}) ngoài bbox tỉnh"})
 

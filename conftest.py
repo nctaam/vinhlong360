@@ -44,3 +44,46 @@ def pytest_configure(config):
 
     sys.modules["agent.database"] = database
     agent.database = database
+
+
+PROVINCE_DATA_TEST_PATHS: frozenset[str] = frozenset({
+    "agent/tests/test_admin_mutations.py",
+    "agent/tests/test_adversarial_architecture_remediation.py",
+    "agent/tests/test_auto_learn_gaps.py",
+    "agent/tests/test_discover_province_gaps.py",
+    "agent/tests/test_kb_curation.py",
+    "agent/tests/test_knowledge.py",
+    "agent/tests/test_learn_loop.py",
+    "agent/tests/test_learn_loop_gaps.py",
+    "agent/tests/test_media_truth_manifest.py",
+    "agent/tests/test_ocop.py",
+    "agent/tests/test_phase16_coverage.py",
+    "agent/tests/test_phat_hien_tu_doc_code.py",
+    "agent/tests/test_public_api.py",
+    "agent/tests/test_resilience.py",
+    "agent/tests/test_seo.py",
+    "agent/tests/test_seo_breadcrumb_admin_unit.py",
+    "agent/tests/test_seo_structured.py",
+    "tests/test_adversarial_challenger_1.py",
+    "tests/test_backup_data.py",
+    "tests/test_coords_guard.py",
+    "tests/test_db_isolation_contract.py",
+    "tests/test_entity_status_migration_guardrails.py",
+    "tests/test_export_fe_data.py",
+    "tests/test_place_admin_code.py",
+    "tests/test_release_quality_gates.py",
+    "tests/test_runtime_place_mappings.py",
+    "tests/test_validate_data.py",
+})
+
+
+def pytest_collection_modifyitems(items):
+    """Tag province-dataset-coupled tests so core vs province suites run independently."""
+    marker = pytest.mark.province_data
+    for item in items:
+        try:
+            rel = Path(str(item.path)).resolve().relative_to(ROOT).as_posix()
+        except ValueError:
+            continue
+        if rel in PROVINCE_DATA_TEST_PATHS:
+            item.add_marker(marker)

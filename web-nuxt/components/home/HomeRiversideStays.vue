@@ -1,16 +1,16 @@
 <template>
-  <section class="home-riverside-stays block reveal" aria-label="Nhà vườn và Đêm ven sông Vĩnh Long" data-home-riverside-stays>
+  <section class="home-riverside-stays block reveal" :aria-label="staysCfg.ariaLabel" data-home-riverside-stays>
     <div class="home-riverside-stays__head section-head">
       <div class="sh-text">
         <span class="home-riverside-stays__eyebrow" data-color-role="brand">
           <IconLine name="home" aria-hidden="true" />
-          <span>Lưu trú miệt vườn · Đêm ven sông</span>
+          <span>{{ staysCfg.eyebrow }}</span>
         </span>
-        <h2>Nhà vườn &amp; Đêm ven sông</h2>
-        <p class="sh-sub">Nghỉ đêm dưới tán nhãn cù lao và rặng dừa Bến Tre, đón con nước sớm bên hiên gỗ Nam Bộ.</p>
+        <h2>{{ staysCfg.title }}</h2>
+        <p class="sh-sub">{{ staysCfg.subtitle }}</p>
       </div>
       <NuxtLink to="/luu-tru" class="see-all">
-        <span>164 nơi lưu trú</span>
+        <span>{{ staysCfg.seeAllLabel }}</span>
         <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" />
       </NuxtLink>
     </div>
@@ -104,46 +104,12 @@
 
 <script setup lang="ts">
 import IconLine from '~/components/IconLine.vue'
+import { PROVINCE_CONFIG, type ProvinceCuratedHomestay } from '~/utils/provinceConfig'
 
-interface CuratedHomestay {
-  readonly id: string
-  readonly name: string
-  readonly price: string
-  readonly area: string
-  readonly desc: string
-  readonly coverSrc: string
-  readonly to: string
-}
+type CuratedHomestay = ProvinceCuratedHomestay
 
-const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
-  {
-    id: 'homestay-ut-trinh',
-    name: 'Homestay Út Trinh',
-    price: '450.000–850.000đ/đêm',
-    area: 'Xã An Bình · Cù lao sông Tiền',
-    desc: 'Nhà gỗ cổ giữa vườn nhãn cù lao với bữa cơm quê, đạp xe đường làng và đêm đờn ca.',
-    coverSrc: '/img/entities/homestay-ut-trinh.webp',
-    to: '/dia-diem/homestay-ut-trinh',
-  },
-  {
-    id: 'mekong-riverside-homestay',
-    name: 'Mekong Riverside Homestay',
-    price: '600.000–1.200.000đ/đêm',
-    area: 'Phường Bình Minh · Vĩnh Long',
-    desc: 'Khu nghỉ ven sông đón khách bằng tàu gỗ, tầm nhìn thẳng ra bến phù sa xanh mát.',
-    coverSrc: '/img/entities/mekong-riverside-homestay.webp',
-    to: '/dia-diem/mekong-riverside-homestay',
-  },
-  {
-    id: 'nha-dua-cocohome',
-    name: 'Nhà dừa CocoHome',
-    price: '350.000–600.000đ/đêm',
-    area: 'Xã Phú Phụng · Bến Tre (cũ)',
-    desc: 'Kiến trúc dựng hoàn toàn từ thân dừa già, mành tre đan tay và gian bếp ấm ánh đèn dầu.',
-    coverSrc: '/img/entities/nha-dua-cocohome.webp',
-    to: '/dia-diem/nha-dua-cocohome',
-  },
-]
+const staysCfg = PROVINCE_CONFIG.home.riversideStays
+const CURATED_HOMESTAYS: readonly CuratedHomestay[] = staysCfg.stays
 
 const leadStay = CURATED_HOMESTAYS[0]!
 const companionStays = CURATED_HOMESTAYS.slice(1)
@@ -152,7 +118,7 @@ function onImgFallback(e: Event) {
   const img = e.target as HTMLImageElement
   if (img && !img.dataset.fallbackApplied) {
     img.dataset.fallbackApplied = 'true'
-    img.src = '/img/spread/song-nuoc.webp'
+    img.src = staysCfg.fallbackImage
   }
 }
 </script>

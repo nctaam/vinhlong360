@@ -3,6 +3,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { PROVINCE_CONFIG } from '../utils/provinceConfig'
 
 const webNuxt = resolve(__dirname, '..')
 
@@ -144,11 +145,9 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
   // ─── STRESS TEST 3: Description Lengths Across All Cards (<= 120 chars / 2 lines) ───
   describe('Stress Test 3: Description Lengths and Line Clamping Across All Cards', () => {
     it('verifies HomeCuratedShowcase lead description and satellite summaries are <= 120 chars', () => {
-      const leadDescMatch = showcaseContent.match(/desc:\s*['"]([^'"]+)['"]/)
-      expect(leadDescMatch).not.toBeNull()
-      expect(leadDescMatch![1].length).toBeLessThanOrEqual(120)
+      expect(PROVINCE_CONFIG.home.curatedShowcase.lead.desc.length).toBeLessThanOrEqual(120)
 
-      const satSummaries = [...showcaseContent.matchAll(/summary:\s*['"]([^'"]+)['"]/g)].map(m => m[1])
+      const satSummaries = PROVINCE_CONFIG.home.curatedShowcase.satellites.map(s => s.summary)
       expect(satSummaries.length).toBe(4)
       for (const s of satSummaries) {
         expect(s.length).toBeLessThanOrEqual(120)
@@ -170,7 +169,7 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
     })
 
     it('verifies HomeRiversideStays curated homestay descriptions are <= 120 chars', () => {
-      const stayDescs = [...staysContent.matchAll(/desc:\s*['"]([^'"]+)['"]/g)].map(m => m[1])
+      const stayDescs = PROVINCE_CONFIG.home.riversideStays.stays.map(s => s.desc)
       expect(stayDescs.length).toBe(3)
       for (const d of stayDescs) {
         expect(d.length).toBeLessThanOrEqual(120)

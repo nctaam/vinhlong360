@@ -1,16 +1,16 @@
 <template>
-  <section class="home-curated-showcase block reveal" aria-label="Bản đồ di sản hợp nhất Vĩnh Long" data-home-curated-showcase>
+  <section class="home-curated-showcase block reveal" :aria-label="showcaseCfg.ariaLabel" data-home-curated-showcase>
     <div class="home-curated-showcase__head section-head">
       <div class="sh-text">
         <span class="home-curated-showcase__eyebrow" data-color-role="brand">
           <IconLine name="landmark" aria-hidden="true" />
-          <span>Di sản hợp nhất · Ba miền châu thổ</span>
+          <span>{{ showcaseCfg.eyebrow }}</span>
         </span>
-        <h2>Bản đồ di sản hợp nhất</h2>
-        <p class="sh-sub">Những cổ tự Khmer, Văn Thánh Miếu và bến chợ nổi tiêu biểu trải dài khắp tỉnh Vĩnh Long thống nhất.</p>
+        <h2>{{ showcaseCfg.title }}</h2>
+        <p class="sh-sub">{{ showcaseCfg.subtitle }}</p>
       </div>
       <NuxtLink to="/du-lich" class="see-all">
-        <span>Toàn bộ điểm đến</span>
+        <span>{{ showcaseCfg.seeAllLabel }}</span>
         <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" />
       </NuxtLink>
     </div>
@@ -131,25 +131,14 @@
 <script setup lang="ts">
 import IconLine from '~/components/IconLine.vue'
 import { useFavorites } from '~/composables/useFavorites'
+import {
+  PROVINCE_CONFIG,
+  type ProvinceCuratedLead,
+  type ProvinceCuratedSatellite,
+} from '~/utils/provinceConfig'
 
-interface CuratedLead {
-  readonly id: string
-  readonly title: string
-  readonly location: string
-  readonly desc: string
-  readonly coverSrc: string
-  readonly to: string
-  readonly mapTo: string
-}
-
-interface CuratedSatellite {
-  readonly id: string
-  readonly title: string
-  readonly area: string
-  readonly summary: string
-  readonly coverSrc: string
-  readonly to: string
-}
+type CuratedLead = ProvinceCuratedLead
+type CuratedSatellite = ProvinceCuratedSatellite
 
 const { isSaved, toggle } = useFavorites()
 
@@ -163,56 +152,15 @@ function toggleBookmark(target: { id: string; title: string; coverSrc?: string }
   })
 }
 
-const leadItem: CuratedLead = {
-  id: 'chua-ang',
-  title: 'Chùa Âng — Di tích kiến trúc Khmer bên Ao Bà Om',
-  location: 'Phường Long Đức · Trà Vinh (cũ)',
-  desc: 'Ngôi chùa Khmer cổ gần một thiên niên kỷ ẩn mình dưới tán dầu cổ thụ soi bóng xuống thắng cảnh Ao Bà Om.',
-  coverSrc: '/img/entities/chua-ang.webp',
-  to: '/dia-diem/chua-ang',
-  mapTo: '/ban-do?selected=chua-ang',
-}
-
-const satelliteItems: readonly CuratedSatellite[] = [
-  {
-    id: 'van-thanh-mieu',
-    title: 'Văn Thánh Miếu Vĩnh Long',
-    area: 'Phường Phước Hậu · Di tích quốc gia',
-    summary: 'Công trình Nho học phương Nam dựng năm 1864 bên rạch Long Hồ với hàng sao cổ thụ rợp bóng.',
-    coverSrc: '/img/entities/van-thanh-mieu.webp',
-    to: '/dia-diem/van-thanh-mieu',
-  },
-  {
-    id: 'cho-noi-tra-on',
-    title: 'Chợ nổi Trà Ôn lúc rạng sáng',
-    area: 'Xã Lục Sĩ Thành · Sông Hậu',
-    summary: 'Nếp thương hồ trăm năm họp chợ trên nhánh sông Hậu, rộn ràng ghe trái cây từ tinh mơ.',
-    coverSrc: '/img/entities/cho-noi-tra-on.webp',
-    to: '/dia-diem/cho-noi-tra-on',
-  },
-  {
-    id: 'chua-vam-ray',
-    title: 'Chùa Vàm Ray',
-    area: 'Xã Trà Cú · Trà Vinh (cũ)',
-    summary: 'Ngôi chùa Khmer mái tháp chạm trổ rực rỡ với tượng Phật nhập Niết Bàn quy mô lớn.',
-    coverSrc: '/img/entities/chua-vam-ray.webp',
-    to: '/dia-diem/chua-vam-ray',
-  },
-  {
-    id: 'chua-tien-chau-tien-chau-tu',
-    title: 'Chùa Tiên Châu cổ tự',
-    area: 'Xã An Bình · Bãi Tiên',
-    summary: 'Di tích lịch sử kiến trúc từ thế kỷ XVIII bên dòng Cổ Chiên xanh mát bóng cây cù lao.',
-    coverSrc: '/img/entities/chua-tien-chau-tien-chau-tu.webp',
-    to: '/dia-diem/chua-tien-chau-tien-chau-tu',
-  },
-]
+const showcaseCfg = PROVINCE_CONFIG.home.curatedShowcase
+const leadItem: CuratedLead = showcaseCfg.lead
+const satelliteItems: readonly CuratedSatellite[] = showcaseCfg.satellites
 
 function onImgFallback(e: Event) {
   const img = e.target as HTMLImageElement
   if (img && !img.dataset.fallbackApplied) {
     img.dataset.fallbackApplied = 'true'
-    img.src = '/img/spread/song-nuoc.webp'
+    img.src = showcaseCfg.fallbackImage
   }
 }
 </script>

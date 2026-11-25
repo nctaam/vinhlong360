@@ -9,6 +9,7 @@ trích dẫn là giọng của NGUỒN, không phải giọng biên tập của 
 """
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -25,9 +26,28 @@ FILLERS = [
     r"hòa mình vào",
     r"điểm đến lý tưởng",
 ]
-# Địa danh NGOÀI tỉnh Vĩnh Long mới hay bị gán nhầm (Đồng Tháp/Tiền Giang cũ).
-# Cái Mơn (Chợ Lách) là TRONG tỉnh — không nằm trong danh sách.
-OUT_OF_PROVINCE = [r"Cái Bè", r"Lai Vung", r"Định Yên"]
+_DEFAULT_OUT_OF_PROVINCE = [r"Cái Bè", r"Lai Vung", r"Định Yên"]
+_DEFAULT_OUT_OF_PROVINCE_MSG = "địa danh NGOÀI tỉnh (Đồng Tháp/Tiền Giang cũ) — kiểm xuất xứ (R10.9)"
+
+
+def _load_out_of_province(root: Path | None) -> tuple[list[str], str]:
+    if root is None:
+        return _DEFAULT_OUT_OF_PROVINCE, _DEFAULT_OUT_OF_PROVINCE_MSG
+    cfg_path = root / "config" / "province.config.json"
+    if not cfg_path.exists():
+        return _DEFAULT_OUT_OF_PROVINCE, _DEFAULT_OUT_OF_PROVINCE_MSG
+    try:
+        guards = json.loads(cfg_path.read_text(encoding="utf-8-sig")).get("contentGuards", {})
+        patterns = guards.get("outOfProvincePatterns")
+        message = guards.get("outOfProvinceMessage") or _DEFAULT_OUT_OF_PROVINCE_MSG
+        if isinstance(patterns, list) and all(isinstance(p, str) and p for p in patterns):
+            return [re.escape(p) for p in patterns], str(message)
+    except (OSError, ValueError, TypeError):
+        pass
+    return _DEFAULT_OUT_OF_PROVINCE, _DEFAULT_OUT_OF_PROVINCE_MSG
+
+
+OUT_OF_PROVINCE, _ = _load_out_of_province(Path(__file__).resolve().parents[2])
 
 DATA_REL = "web/data.json"
 
@@ -108,16 +128,17 @@ class VoiceCheck:
 
 
 def build_checks(root: Path | None = None) -> list:
+    out_patterns, out_msg = _load_out_of_province(root)
     return [
         VoiceCheck(
             name="content_fillers", level="soft-ratchet", rule="R50.2", patterns=FILLERS,
             fe_roots=["web-nuxt/pages", "web-nuxt/components", "web-nuxt/utils", "web-nuxt/composables", "agent/seo.py"],
-            msg="filler giọng generic — thay bằng đặc-thù Vĩnh Long (R50.2, playbook)", root=root,
+            msg="filler giọng generic — thay bằng đặc-thù bản địa (R50.2, playbook)", root=root,
         ),
         VoiceCheck(
-            name="out_of_province", level="soft-ratchet", rule="R10.9", patterns=OUT_OF_PROVINCE,
+            name="out_of_province", level="soft-ratchet", rule="R10.9", patterns=out_patterns,
             fe_roots=["web-nuxt/pages", "web-nuxt/components", "web-nuxt/utils"],
-            msg="địa danh NGOÀI tỉnh (Đồng Tháp/Tiền Giang cũ) — kiểm xuất xứ (R10.9)", root=root,
+            msg=out_msg, root=root,
         ),
     ]
 

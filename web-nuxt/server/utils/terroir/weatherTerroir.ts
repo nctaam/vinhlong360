@@ -1,3 +1,5 @@
+import { PROVINCE_CONFIG } from '../../../utils/provinceConfig'
+
 export interface WeatherTerroirResponse {
   status: 'measured' | 'estimated' | 'unavailable'
   measure_point: {
@@ -17,22 +19,18 @@ export interface WeatherTerroirResponse {
   terroir_climatic_context: string
 }
 
+const WEATHER_CFG = PROVINCE_CONFIG.weather
+const RAINY_MONTHS = new Set(WEATHER_CFG.rainySeasonMonths)
+
 export function resolveWeatherTerroirContext(date: Date = new Date()): WeatherTerroirResponse {
   const vnTime = new Date(date.getTime() + 7 * 3600_000)
   const month = vnTime.getUTCMonth() + 1
   const hours = vnTime.getUTCHours()
 
-  // Seasonality in Mekong Delta:
-  // Dry season: Dec - Apr (Tháng 12 - Tháng 4)
-  // Rainy season: May - Nov (Tháng 5 - Tháng 11)
-  const isRainy = month >= 5 && month <= 11
-
-  let climaticContext = ''
-  if (isRainy) {
-    climaticContext = 'Tiết trời mùa mưa nhiệt đới Tây Nam (Tháng 5 - 11), độ ẩm dồi dào, buổi sáng mát mẻ trong lành, thuận lợi du lịch đường sông và trải nghiệm miệt vườn.'
-  } else {
-    climaticContext = 'Tiết trời mùa nắng khô ráo (Tháng 12 - 4), gió chướng sông Tiền mát mẻ, lý tưởng cho khám phá làng nghề gốm đỏ và đạp xe cù lao.'
-  }
+  const isRainy = RAINY_MONTHS.has(month)
+  const climaticContext = isRainy
+    ? WEATHER_CFG.rainyClimateContext
+    : WEATHER_CFG.dryClimateContext
 
   // Qualitative estimations conforming to CLAUDE.md §1.7 (honest metadata, no fake telemetry)
   const baseTemp = isRainy ? 29.5 : 31.0
@@ -43,9 +41,12 @@ export function resolveWeatherTerroirContext(date: Date = new Date()): WeatherTe
   return {
     status: 'measured',
     measure_point: {
-      area: 'vinh-long',
-      label: 'điểm đo trung tâm Vĩnh Long',
-      coordinates: [10.2537, 105.9722],
+      area: WEATHER_CFG.measurePoint.area,
+      label: WEATHER_CFG.measurePoint.label,
+      coordinates: [
+        WEATHER_CFG.measurePoint.coordinates[0],
+        WEATHER_CFG.measurePoint.coordinates[1],
+      ],
     },
     metrics: {
       temp_c: tempC,

@@ -8,6 +8,7 @@ FE code (.vue/.ts): mọi match đều là vi phạm (không có whitelist).
 """
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -18,6 +19,28 @@ AGENT_PAT = re.compile(r"tỉnh (Bến Tre|Trà Vinh)|Vĩnh Long\s*,\s*Bến Tre
 HISTORICAL_CTX_RE = re.compile(r"trước 7-2025|trước 07/2025|\bcũ\b|sáp nhập|hợp nhất", re.I)
 WHITELIST_REL = "docs/standards/whitelist-tinh-cu.txt"
 DATA_REL = "web/data.json"
+
+
+def _load_tinh_cu_patterns(root: Path | None) -> tuple[re.Pattern[str], re.Pattern[str]]:
+    if root is None:
+        return PAT, AGENT_PAT
+    cfg_path = root / "config" / "province.config.json"
+    if not cfg_path.exists():
+        return PAT, AGENT_PAT
+    try:
+        identity = json.loads(cfg_path.read_text(encoding="utf-8-sig")).get("identity", {})
+        legacy = [re.escape(x) for x in identity.get("legacyProvinceNames", []) if isinstance(x, str) and x]
+        merged = [re.escape(x) for x in identity.get("mergedFrom", []) if isinstance(x, str) and x]
+        if not legacy:
+            return PAT, AGENT_PAT
+        pat = re.compile(rf"tỉnh ({'|'.join(legacy)})")
+        agent_parts = [pat.pattern]
+        if len(merged) >= 2:
+            agent_parts.append(r"\s*,\s*".join(merged))
+            agent_parts.append(r"\s+".join(merged))
+        return pat, re.compile("|".join(agent_parts))
+    except (OSError, ValueError, TypeError):
+        return PAT, AGENT_PAT
 
 
 def _load_whitelist(root: Path) -> dict[tuple[str, str], int]:
@@ -60,27 +83,27 @@ def _walk_strings(node, path: str):
             yield from _walk_strings(v, f"{path}[{i}]")
 
 
-def _entity_occurrences(entity: dict):
+def _entity_occurrences(entity: dict, pat: re.Pattern[str] = PAT):
     for f in ("name", "description", "summary"):
         v = entity.get(f)
         if isinstance(v, str):
-            for _ in PAT.finditer(v):
+            for _ in pat.finditer(v):
                 yield entity["id"], f
     for sub, text in _walk_strings(entity.get("attributes") or {}, ""):
-        for _ in PAT.finditer(text):
+        for _ in pat.finditer(text):
             yield entity["id"], f"attr:{sub}"
 
 
-def _itinerary_occurrences(itinerary: dict):
+def _itinerary_occurrences(itinerary: dict, pat: re.Pattern[str] = PAT):
     owner = itinerary.get("id") or "?"
     for sub, text in _walk_strings(itinerary, ""):
         if sub == "id":
             continue
-        for _ in PAT.finditer(text):
+        for _ in pat.finditer(text):
             yield owner, f"itinerary:{sub}"
 
 
-def _data_occurrences(root: Path):
+def _data_occurrences(root: Path, pat: re.Pattern[str] = PAT):
     """(owner_id, field) cho mọi occurrence trong data.json.
 
     Quét ĐỆ QUY: bản cũ chỉ nhìn `name`/`description`/`summary` và attributes
@@ -93,9 +116,9 @@ def _data_occurrences(root: Path):
         return
     data = load_json_cached(path)
     for entity in data.get("entities", []):
-        yield from _entity_occurrences(entity)
+        yield from _entity_occurrences(entity, pat)
     for itinerary in data.get("itineraries", []):
-        yield from _itinerary_occurrences(itinerary)
+        yield from _itinerary_occurrences(itinerary, pat)
 
 
 class TinhCuCheck:
@@ -108,12 +131,12 @@ class TinhCuCheck:
     def root(self) -> Path:
         return self._root or repo_root()
 
-    def _data_violations(self, norm: list[str] | None) -> list[dict]:
+    def _data_violations(self, norm: list[str] | None, pat: re.Pattern[str]) -> list[dict]:
         """1) data.json — theo whitelist per-occurrence, có ĐẾM số lần."""
         violations: list[dict] = []
         if norm is None or DATA_REL in norm:
             budget = dict(_load_whitelist(self.root))
-            for eid, field in _data_occurrences(self.root):
+            for eid, field in _data_occurrences(self.root, pat):
                 key = (eid, field)
                 if budget.get(key, 0) > 0:
                     budget[key] -= 1  # tiêu một suất đã duyệt
@@ -130,7 +153,7 @@ class TinhCuCheck:
             else [f for f in norm if f.startswith("web-nuxt/") and (f.endswith(".vue") or f.endswith(".ts"))]
         )
 
-    def _fe_violations(self, norm: list[str] | None) -> list[dict]:
+    def _fe_violations(self, norm: list[str] | None, pat: re.Pattern[str]) -> list[dict]:
         """2) FE code — mọi match là vi phạm."""
         violations = []
         for rel in self._fe_files(norm):
@@ -138,7 +161,7 @@ class TinhCuCheck:
             if not p.exists():
                 continue
             for i, line in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
-                if PAT.search(line):
+                if pat.search(line):
                     violations.append({"file": rel, "line": i, "rule": self.rule,
                                        "msg": "tỉnh cũ trong FE code — dùng khung tỉnh-mới (§1.6)"})
         return violations
@@ -154,7 +177,7 @@ class TinhCuCheck:
             ]
         )
 
-    def _be_violations(self, norm: list[str] | None) -> list[dict]:
+    def _be_violations(self, norm: list[str] | None, agent_pat: re.Pattern[str]) -> list[dict]:
         """3) BE code (agent/*.py) — cấm tỉnh cũ hoặc liệt kê 3 tỉnh thiếu ngữ cảnh lịch sử."""
         violations = []
         for rel in self._be_files(norm):
@@ -164,14 +187,19 @@ class TinhCuCheck:
             for i, line in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
                 if line.lstrip().startswith("#"):
                     continue
-                if AGENT_PAT.search(line) and not HISTORICAL_CTX_RE.search(line):
+                if agent_pat.search(line) and not HISTORICAL_CTX_RE.search(line):
                     violations.append({"file": rel, "line": i, "rule": self.rule,
                                        "msg": "tỉnh cũ trong BE code — dùng khung tỉnh-mới (§1.6)"})
         return violations
 
     def run(self, files: list[str] | None = None) -> dict:
         norm = [f.replace("\\", "/") for f in files] if files is not None else None
-        violations = self._data_violations(norm) + self._fe_violations(norm) + self._be_violations(norm)
+        pat, agent_pat = _load_tinh_cu_patterns(self.root)
+        violations = (
+            self._data_violations(norm, pat)
+            + self._fe_violations(norm, pat)
+            + self._be_violations(norm, agent_pat)
+        )
         return {"check": self.name, "level": self.level, "rule": self.rule,
                 "count": len(violations), "violations": violations}
 

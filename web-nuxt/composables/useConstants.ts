@@ -1,3 +1,8 @@
+import {
+  PROVINCE_AREA_META,
+  PROVINCE_CANONICAL_AREA_SLUG,
+} from '../utils/provinceConfig'
+
 export interface TypeMeta {
   emoji: string
   /** IconLine name — line-icon equivalent of `emoji` for template contexts. */
@@ -55,16 +60,11 @@ export interface AreaMeta {
   hub?: string
 }
 
-export const AREA_META: Record<string, AreaMeta> = {
-  'vinh-long': { name: 'Vĩnh Long', emoji: '🍊', icon: 'fruit', blurb: 'Miệt vườn cam sành, khoai lang, bưởi Năm Roi và làng gốm Mang Thít.', distance: 'Trung tâm', hub: 'TP. Vĩnh Long' },
-  'ben-tre': { name: 'Bến Tre', emoji: '🥥', icon: 'leaf', blurb: 'Xứ dừa: kẹo dừa, mật hoa dừa, bưởi da xanh và những rẫy dừa bạt ngàn.', distance: '~35km', hub: 'Cầu Cổ Chiên' },
-  'tra-vinh': { name: 'Trà Vinh', emoji: '🛕', icon: 'landmark', blurb: 'Văn hóa Khmer: ao Bà Om, chùa cổ, dừa sáp Cầu Kè và bún nước lèo.', distance: '~48km', hub: 'QL53 / Ao Bà Om' },
-  'lien-vung': { name: 'Liên vùng', emoji: '🧭', icon: 'compass', blurb: 'Tuyến kết nối nhiều tiểu vùng văn hóa - sinh thái trên toàn tỉnh Vĩnh Long.', distance: 'Hành trình mở', hub: 'Tam giác Phù sa' },
-}
+export const AREA_META: Record<string, AreaMeta> = { ...PROVINCE_AREA_META }
 
 // Current administrative scope; AREA_META retains legacy provenance labels for content rendering.
 export const CURRENT_AREA_META: Record<string, AreaMeta> = {
-  'vinh-long': AREA_META['vinh-long']!,
+  [PROVINCE_CANONICAL_AREA_SLUG]: AREA_META[PROVINCE_CANONICAL_AREA_SLUG]!,
 }
 
 // Interest landing pages (/kham-pha/<slug>). Overridable via metadata.interests.

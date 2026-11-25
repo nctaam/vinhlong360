@@ -1,6 +1,7 @@
 import { defineEventHandler, getQuery, setResponseHeader } from 'h3'
 import { sendProblemDetails } from '../../../utils/terroir/problemDetails'
 import { calculateAstronomicalTide } from '../../../utils/terroir/astronomicalTide'
+import { PROVINCE_SITE_URL } from '../../../../utils/provinceConfig'
 import {
   VERIFIED_WATER_ROUTES,
   calculateRoutePropulsion,
@@ -29,7 +30,7 @@ export default defineEventHandler((event) => {
     if (Number.isNaN(parsed.getTime())) {
       return sendProblemDetails(event, {
         status: 400,
-        type: 'https://vinhlong360.vn/problems/invalid-query-parameter',
+        type: `${PROVINCE_SITE_URL}/problems/invalid-query-parameter`,
         title: 'Invalid Query Parameter',
         detail: `Tham số 'departure_time' với giá trị '${raw}' không phải là chuỗi thời gian hợp lệ.`,
         code: 'TERROIR_INVALID_DEPARTURE_TIME',
@@ -45,7 +46,7 @@ export default defineEventHandler((event) => {
     if (!VALID_CRAFTS.has(rawCraft)) {
       return sendProblemDetails(event, {
         status: 400,
-        type: 'https://vinhlong360.vn/problems/invalid-query-parameter',
+        type: `${PROVINCE_SITE_URL}/problems/invalid-query-parameter`,
         title: 'Invalid Query Parameter',
         detail: `Loại phương tiện '${rawCraft}' không được hỗ trợ. Các loại được phép: sampan, canoe, kayak.`,
         code: 'TERROIR_UNSUPPORTED_CRAFT_TYPE',
@@ -64,7 +65,7 @@ export default defineEventHandler((event) => {
     if (!matched) {
       return sendProblemDetails(event, {
         status: 404,
-        type: 'https://vinhlong360.vn/problems/resource-not-found',
+        type: `${PROVINCE_SITE_URL}/problems/resource-not-found`,
         title: 'Resource Not Found',
         detail: `Không tìm thấy tuyến thủy lộ với mã '${routeId}'.`,
         code: 'TERROIR_ROUTE_NOT_FOUND',

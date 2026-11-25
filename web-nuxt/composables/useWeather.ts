@@ -23,27 +23,16 @@
  */
 
 import { apiFetch } from '~/utils/apiFetch'
+import { PROVINCE_CONFIG } from '../utils/provinceConfig'
 
 /**
- * Điểm đo duy nhất được dùng.
- *
- * CLAUDE.md §1.6: từ 07/2025 chỉ còn MỘT tỉnh Vĩnh Long (2 cấp: tỉnh → 124 xã/phường).
- * Backend vẫn khai `AREA_COORDS` theo ba tên tỉnh CŨ — `vinh-long` / `ben-tre` / `tra-vinh`
- * (agent/realtime.py:54-58) — và `GET /weather/all` (agent/server.py:4788-4792) trả cả ba kèm
- * `area_name` là "Bến Tre" / "Trà Vinh". Đó là các đơn vị hành chính KHÔNG CÒN TỒN TẠI.
- *
- * Hai quyết định kéo theo:
- *  1. KHÔNG BAO GIỜ gọi `/weather/all`, và không gọi `area=ben-tre` / `area=tra-vinh`.
- *  2. KHÔNG hiển thị `area_name` do API trả về. Nhãn địa bàn là hằng số của frontend
- *     (`LABEL` dưới đây). "Vĩnh Long" ở đây là tên tỉnh HIỆN TẠI nên hợp lệ; nhưng toạ độ
- *     10.2537/105.9722 là MỘT điểm (trung tâm tỉnh lỵ), không phải trung bình 124 xã/phường
- *     — nên nhãn nói "điểm đo", không nói "toàn tỉnh".
+ * Điểm đo duy nhất được dùng (đọc từ config/province.config.json).
  */
 export const WEATHER_MEASURE_POINT = Object.freeze({
   /** Khoá `area` gửi lên API. Là slug nội bộ của backend, không phải nhãn hiển thị. */
-  area: 'vinh-long',
+  area: PROVINCE_CONFIG.weather.measurePoint.area,
   /** Nhãn hiển thị — hằng số FE, KHÔNG lấy từ `area_name` của API. */
-  label: 'điểm đo trung tâm Vĩnh Long',
+  label: PROVINCE_CONFIG.weather.measurePoint.label,
 } as const)
 
 /**
@@ -189,7 +178,7 @@ export function classifyWeather(payload: unknown): WeatherReading {
  * qua các lần điều hướng SPA. `refresh()` thủ công vẫn đi thẳng, không qua cache.
  */
 const CLIENT_CACHE_TTL_MS = 10 * 60 * 1000
-const ASYNC_DATA_KEY = 'weather-vinh-long'
+const ASYNC_DATA_KEY = PROVINCE_CONFIG.weather.measurePoint.asyncDataKey
 
 let lastResolvedAt = 0
 let clockEpoch = 0

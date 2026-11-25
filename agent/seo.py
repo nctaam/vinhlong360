@@ -32,29 +32,26 @@ if __package__:
     from .index_policy import decide_entity
     from .launch_evidence import PolicyEvidence, current_policy_evidence
     from .media_policy import is_renderable_entity_descriptor
+    from .province_config import load_province_config
 else:
     from ai_disclosure import LoadedAiDisclosure, load_ai_disclosure
     from image_descriptor import ImageDescriptor, describe_entity_images
     from index_policy import decide_entity
     from launch_evidence import PolicyEvidence, current_policy_evidence
     from media_policy import is_renderable_entity_descriptor
+    from province_config import load_province_config
 
 router = APIRouter()
+_PROVINCE = load_province_config()
 
 DATA_PATH = Path(__file__).parent.parent / "web" / "data.json"
-SITE = "https://vinhlong360.vn"
+SITE = _PROVINCE.site_url
+_OWN_HOSTS = (_PROVINCE.domain.lower(), f"www.{_PROVINCE.domain.lower()}")
 AGGREGATE_RATING_MIN_COUNT = 3
 _JSONLD_DISCLOSURE = load_ai_disclosure()
 
-AREA_NAMES = {
-    "vinh-long": "Vĩnh Long",
-    "ben-tre": "Bến Tre",
-    "tra-vinh": "Trà Vinh",
-}
-ITINERARY_AREA_NAMES = {
-    **AREA_NAMES,
-    "lien-vung": "Liên vùng Vĩnh Long - Bến Tre - Trà Vinh",
-}
+AREA_NAMES = dict(_PROVINCE.area_names)
+ITINERARY_AREA_NAMES = dict(_PROVINCE.itinerary_area_names)
 
 # Tiền tố đơn vị hành chính cấp xã/phường (§1.6 CLAUDE.md). Giữ khớp với
 # PREFIX_PATTERN / PREFIX_LEVEL trong web-nuxt/utils/adminUnit.ts.
@@ -311,7 +308,7 @@ def _is_external_url(url: Any) -> bool:
     parsed = urlparse(url.strip())
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         return False
-    return (parsed.hostname or "").lower() not in ("vinhlong360.vn", "www.vinhlong360.vn")
+    return (parsed.hostname or "").lower() not in _OWN_HOSTS
 
 
 def _source_info(entity: dict[str, Any]) -> tuple[str | None, str | None]:

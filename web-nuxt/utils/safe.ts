@@ -1,6 +1,12 @@
 // Shared safety helpers (auto-imported by Nuxt from utils/).
 // P0-16/17/3: sanitize URLs, HTML, and tel: links before they reach href/innerHTML.
 
+import {
+  PROVINCE_CANONICAL_AREA_SLUG,
+  PROVINCE_CONFIG,
+  PROVINCE_CURRENT_ALIASES,
+  PROVINCE_SITE_URL,
+} from './provinceConfig'
 import { entityPath } from './routePaths'
 
 const HTTP_URL_RE = /^https?:\/\//i
@@ -50,15 +56,9 @@ export function getEntityArea(e: { place_area?: string; area?: string }): string
 }
 
 // Current province scope keeps legacy provenance buckets searchable while the
-// UI exposes only the canonical Vĩnh Long selector.
-const CURRENT_PROVINCE_ALIASES = new Set([
-  'vinh-long',
-  'ben-tre',
-  'tra-vinh',
-  'province-vl',
-  'province-bt',
-  'province-tv',
-])
+// UI exposes only the canonical province selector.
+const CURRENT_PROVINCE_ALIASES = PROVINCE_CURRENT_ALIASES
+const SITE_DOMAIN = PROVINCE_CONFIG.identity.domain
 
 function normalizeSlug(value: unknown): string {
   return String(value ?? '').trim().toLowerCase().replace(/_/g, '-')
@@ -66,11 +66,11 @@ function normalizeSlug(value: unknown): string {
 
 export function normalizeCurrentArea(value?: unknown): string {
   const slug = normalizeSlug(value)
-  return CURRENT_PROVINCE_ALIASES.has(slug) ? 'vinh-long' : slug
+  return CURRENT_PROVINCE_ALIASES.has(slug) ? PROVINCE_CANONICAL_AREA_SLUG : slug
 }
 
 export function isCurrentProvinceArea(value?: unknown): boolean {
-  return normalizeCurrentArea(value) === 'vinh-long'
+  return normalizeCurrentArea(value) === PROVINCE_CANONICAL_AREA_SLUG
 }
 
 /** Match a raw area/provenance value against a user-facing area scope. */
@@ -79,7 +79,7 @@ export function areaMatchesScope(value: unknown, scope: unknown): boolean {
   if (!target || target === 'all') return true
   const candidate = normalizeSlug(value)
   if (!candidate) return false
-  return target === 'vinh-long'
+  return target === PROVINCE_CANONICAL_AREA_SLUG
     ? CURRENT_PROVINCE_ALIASES.has(candidate)
     : candidate === target
 }
@@ -167,14 +167,14 @@ function appendIcsEvent(lines: string[], e: IcsEventInput, start: Date): void {
     `SUMMARY:${icsEscape(e.name)}`,
     `DESCRIPTION:${icsEscape((e.summary || '').slice(0, 200)).replace(/\r?\n/g, '\\n')}`,
     `LOCATION:${icsEscape(e.place_name)}`,
-    `URL:https://vinhlong360.vn${entityPath(e.id)}`,
+    `URL:${PROVINCE_SITE_URL}${entityPath(e.id)}`,
     'END:VEVENT',
   )
 }
 
 /** Build a complete VCALENDAR document; entries without a usable start date are skipped. */
 export function buildIcsCalendar(items: IcsEventInput[]): string {
-  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//vinhlong360.vn//VI']
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', `PRODID:-//${SITE_DOMAIN}//VI`]
   for (const e of items || []) {
     const start = parseCalendarDate(e?.dateStart)
     if (!start) continue
@@ -186,7 +186,7 @@ export function buildIcsCalendar(items: IcsEventInput[]): string {
 
 /** Download a multi-event .ics; no-op when nothing has a usable date. */
 export function downloadIcsBundle(items: IcsEventInput[], filename: string) {
-  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//vinhlong360.vn//VI']
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', `PRODID:-//${SITE_DOMAIN}//VI`]
   let count = 0
   for (const e of items || []) {
     const start = parseCalendarDate(e?.dateStart)

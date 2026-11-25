@@ -11,37 +11,44 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 
+if __package__:
+    from .province_config import load_province_config
+else:
+    from province_config import load_province_config
+
+_PROVINCE = load_province_config()
+
 DEFAULTS: dict[str, dict] = {
     # ── Branding ──
     "branding.site_name": {
-        "value": "vinhlong360",
+        "value": _PROVINCE.brand_name,
         "category": "branding", "label": "Tên trang", "input_type": "text",
         "description": "Tên hiển thị trên logo và tiêu đề",
     },
     "branding.tagline": {
-        "value": "Khám phá tỉnh Vĩnh Long theo cách của người bản địa.",
+        "value": _PROVINCE.tagline,
         "category": "branding", "label": "Slogan", "input_type": "textarea",
         "description": "Dòng mô tả ngắn dưới logo ở footer",
     },
     "branding.og_image": {
-        "value": "https://vinhlong360.vn/img/og-default.jpg",
+        "value": _PROVINCE.og_image_url,
         "category": "branding", "label": "Ảnh OG mặc định", "input_type": "url",
         "description": "Ảnh mặc định khi chia sẻ link (1536x1024)",
     },
     "branding.logo_suffix": {
-        "value": ".vn",
+        "value": _PROVINCE.logo_suffix,
         "category": "branding", "label": "Hậu tố logo", "input_type": "text",
         "description": "Phần .vn sau logo",
     },
 
     # ── SEO ──
     "seo.default_title": {
-        "value": "vinhlong360 — Du lịch & Sản phẩm địa phương",
+        "value": _PROVINCE.seo_title,
         "category": "seo", "label": "Tiêu đề mặc định", "input_type": "text",
         "description": "Title tag mặc định cho trang chủ",
     },
     "seo.default_description": {
-        "value": "Cổng du lịch và sản phẩm địa phương Vĩnh Long: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.",
+        "value": _PROVINCE.seed_seo_description,
         "category": "seo", "label": "Mô tả mặc định", "input_type": "textarea",
         "description": "Meta description mặc định",
     },
@@ -92,7 +99,7 @@ DEFAULTS: dict[str, dict] = {
 
     # ── Footer ──
     "footer.tagline": {
-        "value": "Khám phá tỉnh Vĩnh Long\ntheo cách của người bản địa.",
+        "value": _PROVINCE.footer_tagline,
         "category": "footer", "label": "Slogan footer", "input_type": "textarea",
         "description": "Dòng mô tả dưới logo footer",
     },
@@ -115,9 +122,8 @@ DEFAULTS: dict[str, dict] = {
                 {"to": "/huong-dan", "label": "Hướng dẫn sử dụng"},
             ]},
             {"title": "Khu vực", "links": [
-                {"to": "/khu-vuc/vinh-long", "label": "Vĩnh Long"},
-                {"to": "/khu-vuc/ben-tre", "label": "Bến Tre"},
-                {"to": "/khu-vuc/tra-vinh", "label": "Trà Vinh"},
+                {"to": f"/khu-vuc/{area.slug}", "label": area.name}
+                for area in _PROVINCE.areas
             ]},
             {"title": "Dành cho cơ sở", "links": [
                 {"to": "/lien-he?ref=claim", "label": "Đăng ký quản lý trang"},
@@ -128,7 +134,7 @@ DEFAULTS: dict[str, dict] = {
         "description": "Cấu trúc 4 cột footer (mảng JSON gồm title + links)",
     },
     "footer.copyright": {
-        "value": "© 2024–2026 vinhlong360",
+        "value": _PROVINCE.copyright,
         "category": "footer", "label": "Copyright", "input_type": "text",
         "description": "Dòng bản quyền cuối trang",
     },
@@ -157,7 +163,7 @@ DEFAULTS: dict[str, dict] = {
 
     # ── Homepage ──
     "homepage.hero_subtitle": {
-        "value": "Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp cho chuyến đi Vĩnh Long hôm nay.",
+        "value": _PROVINCE.hero_subtitle,
         "category": "homepage", "label": "Hero subtitle", "input_type": "textarea",
         "description": "Dòng mô tả dưới thanh tìm kiếm trang chủ",
     },
@@ -212,17 +218,17 @@ DEFAULTS: dict[str, dict] = {
 
     # ── Contact ──
     "contact.email": {
-        "value": "lienhe@vinhlong360.vn",
+        "value": _PROVINCE.contact_email,
         "category": "contact", "label": "Email liên hệ", "input_type": "text",
         "description": "Email chính hiển thị trên trang liên hệ",
     },
     "contact.zalo": {
-        "value": "vinhlong360",
+        "value": _PROVINCE.zalo_handle,
         "category": "contact", "label": "Zalo", "input_type": "text",
         "description": "Tên Zalo OA hoặc số điện thoại",
     },
     "contact.claim_email": {
-        "value": "lienhe@vinhlong360.vn",
+        "value": _PROVINCE.contact_email,
         "category": "contact", "label": "Email claim", "input_type": "text",
         "description": "Email nhận yêu cầu xác nhận quyền quản lý",
     },
@@ -251,12 +257,12 @@ DEFAULTS: dict[str, dict] = {
 
     # ── Chat widget ──
     "chat.title": {
-        "value": "Hỏi về Vĩnh Long",
+        "value": _PROVINCE.chat_title,
         "category": "chat", "label": "Tiêu đề chat", "input_type": "text",
         "description": "Tiêu đề hiển thị trên cửa sổ chat",
     },
     "chat.placeholder": {
-        "value": "Hỏi gì đó về Vĩnh Long…",
+        "value": _PROVINCE.chat_placeholder,
         "category": "chat", "label": "Placeholder chat", "input_type": "text",
         "description": "Placeholder cho ô nhập tin nhắn chat",
     },

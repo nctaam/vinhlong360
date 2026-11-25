@@ -3,6 +3,7 @@ import { sendProblemDetails } from '../../../utils/terroir/problemDetails'
 import { calculateAstronomicalTide } from '../../../utils/terroir/astronomicalTide'
 import { resolveSeasonalHarvest } from '../../../utils/terroir/seasonalHarvest'
 import { resolveWeatherTerroirContext } from '../../../utils/terroir/weatherTerroir'
+import { PROVINCE_CONFIG, PROVINCE_SITE_URL } from '../../../../utils/provinceConfig'
 import { VERIFIED_EMERGENCY_HOTLINES } from '../../../utils/terroir/emergencyHotlines'
 
 const CACHE_CONTROL_HEADER = 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400'
@@ -46,7 +47,7 @@ export default defineEventHandler((event) => {
     if (Number.isNaN(parsed.getTime())) {
       return sendProblemDetails(event, {
         status: 400,
-        type: 'https://vinhlong360.vn/problems/invalid-query-parameter',
+        type: `${PROVINCE_SITE_URL}/problems/invalid-query-parameter`,
         title: 'Invalid Query Parameter',
         detail: `Tham số 'date' với giá trị '${rawDateStr}' không phải là chuỗi thời gian ISO 8601 hợp lệ.`,
         code: 'TERROIR_INVALID_DATE_FORMAT',
@@ -67,7 +68,7 @@ export default defineEventHandler((event) => {
     api_version: '1.0.0',
     evaluated_at: new Date().toISOString(),
     local_time_vietnam: vnIso,
-    terroir_basin: 'Lưu vực Thủy thổ Sông Tiền & Cổ Chiên (Vĩnh Long)',
+    terroir_basin: PROVINCE_CONFIG.identity.terroirBasin,
     astronomical_tide: tide,
     seasonal_harvest: seasonal,
     weather_terroir: weather,

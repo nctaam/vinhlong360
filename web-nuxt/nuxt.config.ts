@@ -1,6 +1,17 @@
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 import { createLaunchRawArtifactPlugin } from './build/launchRawArtifactPlugin'
+
+const provinceConfig = JSON.parse(
+  readFileSync(fileURLToPath(new URL('../config/province.config.json', import.meta.url)), 'utf8'),
+)
+const provinceIdentity = provinceConfig.identity
+const provinceSiteUrl: string = provinceIdentity.siteUrl
+const provinceOgImage = provinceIdentity.ogImagePath.startsWith('http')
+  ? provinceIdentity.ogImagePath
+  : `${provinceSiteUrl}${provinceIdentity.ogImagePath}`
+const provinceStoragePrefix: string = provinceIdentity.storagePrefix
 
 const apiBase = process.env.API_BASE || 'http://localhost:8360'
 const siteNoindex = process.env.NUXT_PUBLIC_SITE_NOINDEX !== 'false'
@@ -14,6 +25,7 @@ export default defineNuxtConfig({
   alias: {
     '#launch-config': fileURLToPath(new URL('../config', import.meta.url)),
     '#privacy-policy': fileURLToPath(new URL('../config/privacy-policy.json', import.meta.url)),
+    '#province-config': fileURLToPath(new URL('../config/province.config.json', import.meta.url)),
     // Nitro giữ nguyên specifier '.mjs' tương đối và resolve từ vị trí bundle,
     // nên import tương đối từ server/ đi lạc thư mục. Alias tuyệt đối tránh việc đó.
     '#launch-validators': fileURLToPath(new URL('./utils/launchArtifactValidators.mjs', import.meta.url)),
@@ -24,7 +36,7 @@ export default defineNuxtConfig({
   modules: ['@nuxt/fonts', '@nuxt/image', '@nuxtjs/color-mode'],
 
   // Public theme is explicit: Nocturne by default, Parchment only by user choice.
-  colorMode: { classSuffix: '', preference: 'dark', fallback: 'dark', storageKey: 'vl360-color-mode' },
+  colorMode: { classSuffix: '', preference: 'dark', fallback: 'dark', storageKey: `${provinceStoragePrefix}-color-mode` },
 
   // Self-host font (bỏ Google CDN) — giảm latency bên thứ 3 + CLS (font-metric optimization).
   fonts: {
@@ -81,27 +93,27 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'vi' },
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
-      title: 'vinhlong360 — Du lịch & Sản phẩm địa phương',
+      title: provinceIdentity.seoTitle,
       meta: [
-        { name: 'description', content: 'Cổng du lịch và sản phẩm địa phương tỉnh Vĩnh Long (hợp nhất từ Vĩnh Long, Bến Tre, Trà Vinh cũ): miệt vườn, đặc sản theo mùa, OCOP, làng nghề, lịch trình gợi ý.' },
-        { property: 'og:title', content: 'vinhlong360 — Du lịch & Sản phẩm địa phương' },
-        { property: 'og:description', content: 'Khám phá tỉnh Vĩnh Long sau sáp nhập (gồm Bến Tre và Trà Vinh cũ): du lịch miệt vườn, đặc sản OCOP, làng nghề, lưu trú và lịch trình gợi ý.' },
+        { name: 'description', content: provinceIdentity.seoDescription },
+        { property: 'og:title', content: provinceIdentity.seoTitle },
+        { property: 'og:description', content: provinceIdentity.ogDescription },
         { name: 'theme-color', content: '#9C3D22', media: '(prefers-color-scheme: light)' },
         { name: 'theme-color', content: '#1a1a1a', media: '(prefers-color-scheme: dark)' },
         { name: 'color-scheme', content: 'light dark' },
         { name: 'format-detection', content: 'telephone=no' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
-        { name: 'apple-mobile-web-app-title', content: 'VinhLong360' },
-        { property: 'og:site_name', content: 'vinhlong360' },
+        { name: 'apple-mobile-web-app-title', content: provinceIdentity.brandDisplayName },
+        { property: 'og:site_name', content: provinceIdentity.brandName },
         { property: 'og:locale', content: 'vi_VN' },
         { property: 'og:type', content: 'website' },
-        { property: 'og:image', content: 'https://vinhlong360.vn/img/og-default.jpg' },
+        { property: 'og:image', content: provinceOgImage },
         { property: 'og:image:width', content: '1536' },
         { property: 'og:image:height', content: '1024' },
         { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:site', content: '@vinhlong360' },
-        { name: 'twitter:image', content: 'https://vinhlong360.vn/img/og-default.jpg' },
+        { name: 'twitter:site', content: provinceIdentity.twitterHandle },
+        { name: 'twitter:image', content: provinceOgImage },
       ],
       link: [
         // Preload the editorial-serif subsets the masthead (LCP element on every page) actually
@@ -115,9 +127,9 @@ export default defineNuxtConfig({
         // bản /_fonts/. Chống nháy chữ nay do chính @nuxt/fonts lo, bằng họ
         // fallback có khớp metric ("Fraunces Fallback: Times New Roman"/Georgia/
         // Noto Serif — đo được trên document.fonts), đúng cơ chế chống CLS.
-        { rel: 'canonical', href: 'https://vinhlong360.vn' },
-        { rel: 'preconnect', href: 'https://vinhlong360.vn' },
-        { rel: 'dns-prefetch', href: '//vinhlong360.vn' },
+        { rel: 'canonical', href: provinceSiteUrl },
+        { rel: 'preconnect', href: provinceSiteUrl },
+        { rel: 'dns-prefetch', href: `//${provinceIdentity.domain}` },
         { rel: 'preconnect', href: 'https://images.weserv.nl' },
         { rel: 'dns-prefetch', href: 'https://maptiles.openmap.vn' },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
@@ -136,22 +148,22 @@ export default defineNuxtConfig({
           innerHTML: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'WebSite',
-            'name': 'VinhLong360',
-            'alternateName': 'Khám phá tỉnh Vĩnh Long',
-            'url': 'https://vinhlong360.vn',
-            'description': 'Nền tảng khám phá du lịch, OCOP và cộng đồng cho tỉnh Vĩnh Long — tỉnh hợp nhất từ Vĩnh Long, Bến Tre và Trà Vinh cũ từ 7-2025',
+            'name': provinceIdentity.brandDisplayName,
+            'alternateName': provinceIdentity.alternateName,
+            'url': provinceSiteUrl,
+            'description': provinceIdentity.jsonLdDescription,
             'potentialAction': {
               '@type': 'SearchAction',
               'target': {
                 '@type': 'EntryPoint',
-                'urlTemplate': 'https://vinhlong360.vn/tim-kiem?q={search_term_string}',
+                'urlTemplate': `${provinceSiteUrl}/tim-kiem?q={search_term_string}`,
               },
               'query-input': 'required name=search_term_string',
             },
             'publisher': {
               '@type': 'Organization',
-              'name': 'VinhLong360',
-              'url': 'https://vinhlong360.vn',
+              'name': provinceIdentity.brandDisplayName,
+              'url': provinceSiteUrl,
             },
           }),
         },
