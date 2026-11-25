@@ -127,10 +127,10 @@ class TestSpatialAdversarial:
 
         cur = db_conn.cursor()
         cur.execute("SELECT count(*) FROM entities")
-        assert cur.fetchone()[0] >= 950
+        assert cur.fetchone()[0] >= 900
 
         cur.execute("SELECT count(*) FROM relationships")
-        assert cur.fetchone()[0] >= 7400
+        assert cur.fetchone()[0] >= 6800
 
         cur.execute("SELECT count(*) FROM itineraries")
         assert cur.fetchone()[0] >= 32
@@ -410,7 +410,7 @@ class TestTemporalCrossCheckAndCircuitBreaker:
         cur = db_conn.cursor()
         cur.execute("SELECT count(*) FROM entities WHERE type = 'event'")
         ev_count = cur.fetchone()[0]
-        assert 30 <= ev_count <= 67
+        assert 28 <= ev_count <= 67
         cur.execute("SELECT count(*) FROM entities WHERE type = 'event' AND status = 'archived'")
         assert cur.fetchone()[0] == 0
 

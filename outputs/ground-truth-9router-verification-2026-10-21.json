@@ -11,13 +11,13 @@
   "protectedInput": {
     "path": "web/data.json",
     "sha256": "8ac327de6c4f273c96efe99004f6a1858ba41af43799ebcdae5cd7f31316d92f",
-    "totalEntities": 995,
+    "totalEntities": 935,
     "mutationStatus": "READ_ONLY_PRESERVED_FOR_PHASE_1_OWNER_GATE"
   },
   "summaryMetrics": {
-    "verifiedDossiersCount": 20,
-    "ruralPlaceIdCorrectionsCount": 74,
-    "mistypedEntitiesCount": 9,
+    "verifiedDossiersCount": 18,
+    "ruralPlaceIdCorrectionsCount": 69,
+    "mistypedEntitiesCount": 8,
     "truncatedSummaryFixesCount": 15,
     "placeSelfIdFixesCount": 37,
     "duplicateEntityClustersCount": 16,
@@ -246,62 +246,6 @@
         ],
         "realImages": [
           "http://diamondstarbentre.com/vnt_upload/product/07_2020/SUPERIOR.jpg"
-        ]
-      }
-    },
-    {
-      "entityId": "khach-san-hoang-khiem",
-      "name": "Khách sạn Hoàng Khiêm",
-      "issueType": "wrong_ward_placeId_and_missing_address_phone",
-      "currentInDataJson": {
-        "placeId": "p-long-chau"
-      },
-      "verifiedGroundTruth": {
-        "placeId": "p-phuoc-hau",
-        "address": "Số 88 đường Phạm Thái Bường, Phường Phước Hậu (Phường 4 cũ), tỉnh Vĩnh Long",
-        "phone": "0270 6250 169",
-        "summary": "Khách sạn lưu trú tại số 88 đường Phạm Thái Bường, phường Phước Hậu, nhận khách từ 14:00 và trả phòng trước 12:00 với mức giá 300.000–600.000 đ/đêm.",
-        "realImages": [
-          "https://img.tripi.vn/cdn-cgi/image/width=320/https://gcs.tripi.vn/hms_prod/photo/img/477531PzM/unnamed-18.jpg"
-        ],
-        "sources": [
-          {
-            "domain": "mytour.vn",
-            "url": "https://stage.mytour.vn/khach-san/1939516-khach-san-hoang-khiem.html",
-            "title": "Khách sạn Hoàng Khiêm Phường 4 Vĩnh Long — Mytour"
-          },
-          {
-            "domain": "haogiayensao.com",
-            "url": "https://vinhlong.haogiayensao.com/search/?q=khach+san+hoang+khiem",
-            "title": "Khách sạn Hoàng Khiêm 88 Phạm Thái Bường"
-          }
-        ]
-      }
-    },
-    {
-      "entityId": "com-chay-au-lac-vinh-long",
-      "name": "Quán Cơm Chay Âu Lạc",
-      "issueType": "mistyped_as_dish_and_truncated_summary",
-      "currentInDataJson": {
-        "type": "dish",
-        "placeId": "p-long-chau",
-        "summary": "Quán cơm chay Âu Lạc bình dân trên đường Trần Văn Ơn, phường 1 TP."
-      },
-      "verifiedGroundTruth": {
-        "recommendedType": "restaurant",
-        "placeId": "p-long-chau",
-        "address": "Số 35 đường Trần Văn Ơn, Phường Long Châu (Phường 1 cũ), tỉnh Vĩnh Long",
-        "hours": "06:00–20:00",
-        "summary": "Quán cơm chay bình dân thanh đạm kiểu Nam Bộ tại số 35 đường Trần Văn Ơn, phường Long Châu, phục vụ điểm tâm và cơm trưa – tối từ 06:00 đến 20:00.",
-        "realImages": [
-          "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lw9byc8du57d7d"
-        ],
-        "sources": [
-          {
-            "domain": "foody.vn",
-            "url": "https://www.foody.vn/vinh-long/com-chay-au-lac",
-            "title": "Cơm Chay Âu Lạc 35 Trần Văn Ơn — Foody"
-          }
         ]
       }
     },
@@ -644,12 +588,6 @@
       "basis": "Đặc sản xã Quới Thiện, huyện Vũng Liêm"
     },
     {
-      "entityId": "mut-xoai-cat-num-foodo-ocop",
-      "currentPlaceId": "p-phuoc-hau",
-      "verifiedPlaceId": "xa-quoi-thien",
-      "basis": "Xã Quới Thiện, huyện Vũng Liêm"
-    },
-    {
       "entityId": "lang-nghe-nau-ruou-phu-le",
       "currentPlaceId": "p-ben-tre",
       "verifiedPlaceId": "xa-tan-xuan",
@@ -744,18 +682,6 @@
       "currentPlaceId": "xa-nhon-phu",
       "verifiedPlaceId": "xa-song-phu",
       "basis": "Cơ sở Thuận Duyên tại ấp Phú Ninh, xã Song Phú, huyện Tam Bình -> Xã Song Phú"
-    },
-    {
-      "entityId": "cua-hang-dac-san-mien-tay-ba-bay-nem-vinh-long",
-      "currentPlaceId": "xa-nhon-phu",
-      "verifiedPlaceId": "p-long-chau",
-      "basis": "Cửa hàng đặc sản tại trung tâm TP. Vĩnh Long -> Phường Long Châu"
-    },
-    {
-      "entityId": "kenh-tra-on-vinh-long",
-      "currentPlaceId": "xa-nhon-phu",
-      "verifiedPlaceId": "p-tra-on",
-      "basis": "Kênh Trà Ôn nối sông Hậu với vùng nội địa Trà Ôn -> Phường Trà Ôn"
     },
     {
       "entityId": "am-thuc-san-vuon-1985-vinh-long",
@@ -992,12 +918,6 @@
       "basis": "Ấp Long Trị, xã Bình Phú, huyện Càng Long -> Xã Bình Phú"
     },
     {
-      "entityId": "cha-lua-thanh-cong",
-      "currentPlaceId": "p-phuoc-hau",
-      "verifiedPlaceId": "xa-hieu-phung",
-      "basis": "Xã Hiếu Phụng, huyện Vũng Liêm -> Xã Hiếu Phụng"
-    },
-    {
       "entityId": "dai-tuong-niem-liet-si-le-can-nguyen-giao",
       "currentPlaceId": "p-phuoc-hau",
       "verifiedPlaceId": "p-vung-liem",
@@ -1052,12 +972,6 @@
       "basis": "Thị trấn Mỏ Cày Nam -> Phường Mỏ Cày"
     },
     {
-      "entityId": "hu-tieu-chay",
-      "currentPlaceId": "p-an-hoi",
-      "verifiedPlaceId": "p-mo-cay",
-      "basis": "Quốc lộ 60 ngang Mỏ Cày Nam -> Phường Mỏ Cày"
-    },
-    {
       "entityId": "chua-soc-tro",
       "currentPlaceId": "p-nguyet-hoa",
       "verifiedPlaceId": "xa-luu-nghiep-anh",
@@ -1068,13 +982,6 @@
     {
       "entityId": "tinh-binh-chay-vinh-long",
       "name": "Tịnh Bình Chay",
-      "currentType": "dish",
-      "verifiedType": "restaurant",
-      "reason": ""
-    },
-    {
-      "entityId": "com-chay-au-lac-vinh-long",
-      "name": "Cơm Chay Âu Lạc",
       "currentType": "dish",
       "verifiedType": "restaurant",
       "reason": ""
